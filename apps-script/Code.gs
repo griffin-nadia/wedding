@@ -11,13 +11,19 @@
  *   Songs    one row per song pick (written by the site)
  *   Log      every submission, for history (written by the site)
  *
- * Script properties (Project settings > Script properties):
+ * Script properties (Project settings > Script properties) override these defaults:
  *   SITE_URL       https://griffin-nadia.github.io/wedding
- *   CHANGES_LOCK   e.g. 2027-04-30  (after this date the site refuses edits)
- *   REPLY_TO       e.g. the wedding Gmail address
+ *   CHANGES_LOCK   2027-04-30  (after this date the site refuses edits)
+ *   REPLY_TO       griffinandnadia@gmail.com
  */
 
 const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log" }
+
+const DEFAULTS = {
+  SITE_URL: "https://griffin-nadia.github.io/wedding",
+  CHANGES_LOCK: "2027-04-30",
+  REPLY_TO: "griffinandnadia@gmail.com",
+}
 
 function onOpen() {
   SpreadsheetApp.getUi()
@@ -123,12 +129,11 @@ function saveRsvp_(household, body) {
 function sendConfirmation_(h) {
   const emails = rows_(TABS.guests).filter((r) => r.Token === h.token && r.Email).map((r) => r.Email)
   if (!emails.length) return
-  const props = PropertiesService.getScriptProperties()
-  const link = (props.getProperty("SITE_URL") || "") + "/?h=" + h.token
+  const link = prop_("SITE_URL") + "/?h=" + h.token
   const lines = h.guests.map((g) => `${g.firstName}: ${g.attending === "yes" ? "coming" : "can't make it"}${g.attending === "yes" && g.dietary !== "None" ? " (" + g.dietary + ")" : ""}`)
   MailApp.sendEmail({
     to: emails.join(","),
-    replyTo: props.getProperty("REPLY_TO") || undefined,
+    replyTo: prop_("REPLY_TO"),
     subject: "Your RSVP for Nadia & Griffin's wedding",
     body: `Hi ${h.displayName},\n\nThanks! Here's what we've got:\n\n${lines.join("\n")}\n\nChange it any time before the cut-off: ${link}\n\nSee you in Kyoto!\nNadia & Griffin`,
   })
@@ -141,7 +146,7 @@ function makeTokensAndLinks() {
   const s = sheet_(TABS.guests)
   const head = headers_(s)
   const data = s.getDataRange().getValues()
-  const site = PropertiesService.getScriptProperties().getProperty("SITE_URL") || ""
+  const site = prop_("SITE_URL")
   const byHousehold = {}
   for (let i = 1; i < data.length; i++) if (data[i][head.Token]) byHousehold[data[i][head.Household]] = data[i][head.Token]
   for (let i = 1; i < data.length; i++) {
@@ -159,6 +164,10 @@ function makeTokensAndLinks() {
 
 // ---------- helpers ----------
 
+function prop_(key) {
+  return PropertiesService.getScriptProperties().getProperty(key) || DEFAULTS[key]
+}
+
 function makeToken_() {
   const chars = "abcdefghjkmnpqrstuvwxyz23456789" // no look-alikes
   let t = ""
@@ -167,7 +176,7 @@ function makeToken_() {
 }
 
 function isLocked_() {
-  const d = PropertiesService.getScriptProperties().getProperty("CHANGES_LOCK")
+  const d = prop_("CHANGES_LOCK")
   return d ? new Date() > new Date(d + "T23:59:59+09:00") : false
 }
 

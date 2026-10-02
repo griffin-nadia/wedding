@@ -25,3 +25,7 @@ dist-ssr
 
 .env
 .env.local
+
+# clasp (Apps Script link)
+.clasp.json
+.clasprc.json
