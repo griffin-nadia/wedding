@@ -78,6 +78,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
   const [slow, setSlow] = useState(false)
   const [offline, setOffline] = useState(false)
   const replyId = useRef("")
+  const arrowKey = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
   // Each new step moves focus to its heading, so screen readers hear where they are
   const firstStep = useRef(true)
@@ -190,12 +191,13 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
               ) : (
                 <p className="mb-3 font-bold">{g.firstName}</p>
               )}
-              <RadioGroup aria-label={nameOf(g)} value={g.attending ?? ""} onValueChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })} className="grid grid-cols-2 gap-2">
+              <RadioGroup aria-label={nameOf(g)} value={g.attending ?? ""} onValueChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })} className="grid grid-cols-2 gap-2"
+                onKeyDown={(e) => { if (e.key.startsWith("Arrow")) arrowKey.current = true }}>
                 {(["yes", "no"] as const).map((v) => (
                   <Label key={v} htmlFor={`${g.id}-${v}`} className={cn("choice flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-base whitespace-nowrap has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50", g.attending === v && "border-2 border-primary bg-secondary font-semibold")}>
                     <RadioGroupItem id={`${g.id}-${v}`} value={v} className="sr-only"
-                      // Arrow keys always select (Radix skips the first press after the sheet focuses it)
-                      onFocus={(e) => { if (e.currentTarget.matches(":focus-visible") && g.attending !== v) setGuest(g.id, { attending: v }) }} />
+                      // Arrow keys always select (Radix can skip the first press after the sheet focuses it)
+                      onFocus={() => { if (arrowKey.current) { arrowKey.current = false; if (g.attending !== v) setGuest(g.id, { attending: v }) } }} />
                     <span aria-hidden className={cn("grid size-7 shrink-0 place-items-center rounded-full border-2 transition-colors", g.attending === v ? "seal border-primary bg-primary text-primary-foreground" : "border-muted-foreground/50")}>
                       {g.attending === v && <Check className="size-4" strokeWidth={3} />}
                     </span>

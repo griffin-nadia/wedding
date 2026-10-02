@@ -34,9 +34,8 @@ export function HomePage() {
   const [params] = useSearchParams()
   const [wantOpen, setWantOpen] = useState(params.get("rsvp") === "1")
   const now = useTick(60_000)
-  if (!household) return null
-  const done = Boolean(household.respondedAt)
-  const answer = answerOf(household)
+  const done = Boolean(household?.respondedAt)
+  const answer = household ? answerOf(household) : "none"
   const locked = isLocked()
   const left = countdownParts(now)
   const rsvpButton = (
@@ -58,12 +57,13 @@ export function HomePage() {
             <Lettering />
             <p className="eyebrow">{t.meta.eyebrow}</p>
             <div className="flex items-start gap-6 md:gap-8">
-              <p aria-label="15 October 2027" className="numerals flex flex-col text-[clamp(3rem,2rem+5vw,5rem)] leading-[0.9] text-primary">
+              <p className="numerals flex flex-col text-[clamp(3rem,2rem+5vw,5rem)] leading-[0.9] text-primary">
+                <span className="sr-only">{t.day.date}</span>
                 {t.home.dateStack.map((n) => <span key={n} aria-hidden>{n}</span>)}
               </p>
               <h1 className="names pt-1 text-foreground">
                 <span className="block">{COUPLE.first}</span>
-                <span className="ml-[0.35em] block translate-y-[0.06em] text-[0.66em] text-primary" aria-label="and">&amp;</span>
+                <span className="ml-[0.35em] block translate-y-[0.06em] text-[0.66em] text-primary">&amp;</span>
                 <span className="block">{COUPLE.second}</span>
               </h1>
             </div>
@@ -73,21 +73,31 @@ export function HomePage() {
               <p className="label-caps text-body">{t.home.placeLine}</p>
             </div>
             <div className="max-w-xl space-y-3">
-              <p className="hand text-xl text-foreground">{t.home.dear(household.displayName)}</p>
+              {household
+                ? <p className="hand text-xl text-foreground">{t.home.dear(household.displayName)}</p>
+                : <p aria-hidden className="washi h-7 w-48 rounded-md bg-muted" />}
               <p className="text-lg text-body">{t.home.intro}</p>
             </div>
           </div>
 
           <div className="space-y-6">
             <HeroPhoto caption={t.home.photoCaption} />
-            {/* RSVP card */}
+            {/* RSVP card (a quiet placeholder until the household arrives) */}
+            {!household ? (
+              <div role="status" className="space-y-4 rounded-[1.25rem] bg-card p-6 shadow-paper ring-1 ring-border">
+                <span className="sr-only">{t.loading}</span>
+                <div aria-hidden className="washi h-3 w-24 rounded bg-muted" />
+                <div aria-hidden className="washi h-8 w-44 rounded bg-muted" />
+                <div aria-hidden className="washi h-13 w-full rounded-full bg-muted sm:w-48" />
+              </div>
+            ) : (
             <div className="space-y-4 rounded-[1.25rem] bg-card p-6 shadow-paper ring-1 ring-border">
               <p className="label-caps text-muted-foreground">{t.home.rsvpLabel}</p>
               {done ? (
                 <>
                   <div className="flex items-center gap-3">
                     {answer !== "none" && <Hanko size="sm" />}
-                    <p className="font-display text-3xl">{answer === "all" ? t.home.rsvpDone : answer === "none" ? t.home.rsvpDoneNone : t.home.rsvpDoneMixed}</p>
+                    <p className="font-display text-2xl">{answer === "all" ? t.home.rsvpDone : answer === "none" ? t.home.rsvpDoneNone : t.home.rsvpDoneMixed}</p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm text-body">{t.home.youSaid}:</p>
@@ -109,7 +119,7 @@ export function HomePage() {
                 </>
               ) : (
                 <>
-                  <p className="font-display text-3xl">{t.home.rsvpNotDone}</p>
+                  <p className="font-display text-2xl">{t.home.rsvpNotDone}</p>
                   <p className="text-sm text-body">{t.home.rsvpDue}</p>
                 </>
               )}
@@ -122,6 +132,7 @@ export function HomePage() {
                 </Suspense>
               )}
             </div>
+            )}
           </div>
         </div>
       </section>

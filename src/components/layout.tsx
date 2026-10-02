@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { CalendarDays, CircleHelp, Home, Lamp, Plane, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -20,6 +21,8 @@ export function Layout() {
   const { theme, setTheme } = useTheme()
   const lantern = theme === "lantern"
   const { pathname } = useLocation()
+  // The fade only runs on page changes: the first page paints straight away (no hidden first paint).
+  const firstPath = useRef(pathname)
   return (
     <div className="min-h-dvh pb-[calc(4rem+env(safe-area-inset-bottom)+1.5rem)] md:pb-0">
       <header className="site-header mx-auto flex max-w-[60rem] items-center justify-between gap-4 px-4 py-3 md:px-8 md:py-4">
@@ -51,7 +54,7 @@ export function Layout() {
       </header>
 
       <main className="mx-auto max-w-[60rem] px-4 md:px-8">
-        <div key={pathname} className="page-in">
+        <div key={pathname} className={pathname === firstPath.current ? undefined : "page-in"}>
           <Outlet />
         </div>
       </main>
