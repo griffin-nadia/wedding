@@ -1,4 +1,5 @@
 import slots from "@/content/slots.json"
+import { JourneyMap } from "@/components/journey-map"
 
 // Slots for the couple's own touches. Each stays hidden until switched on in content/slots.json.
 type Img = { src: string; alt: string }
@@ -17,6 +18,7 @@ export function OurStory() {
     <section aria-labelledby="our-story" className="space-y-4">
       <h2 id="our-story" className="leaf-rule text-3xl">{s.title}</h2>
       {s.body && <p className="whitespace-pre-line text-body">{s.body}</p>}
+      {s.map?.show && <JourneyMap labels={s.map} stops={(s.stops ?? []).filter((x) => x.body)} />}
       {(s.photos as Img[]).length > 0 && (
         <div className="grid grid-cols-2 gap-3">
           {(s.photos as Img[]).map((p) => <img key={p.src} src={url(p.src)} alt={p.alt} loading="lazy" className="aspect-square w-full rounded-[1.25rem] object-cover" />)}

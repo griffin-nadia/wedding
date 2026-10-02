@@ -327,3 +327,7 @@
 .envelope-flap { animation: env-flap 1.3s var(--ease-paper) both; backface-visibility: hidden; }
 .envelope-seal { animation: env-seal 1.3s linear both; }
 .envelope-card { animation: env-card 1.3s var(--ease-paper) both; }
+
+/* Journey map lines draw in once. */
+.journey-line { transition: stroke-dashoffset 1.6s var(--ease-paper); }
+@media (prefers-reduced-motion: reduce) { .journey-line { transition: none; } }

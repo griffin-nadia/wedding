@@ -14,7 +14,27 @@
     "show": false,
     "title": "Our story",
     "body": "",
-    "photos": []
+    "photos": [],
+    "map": {
+      "show": true,
+      "brisbane": "Brisbane",
+      "canada": "Canada",
+      "kyoto": "Kyoto"
+    },
+    "stops": [
+      {
+        "title": "How we met",
+        "body": ""
+      },
+      {
+        "title": "Our first trip to Japan",
+        "body": ""
+      },
+      {
+        "title": "Why Kyoto",
+        "body": ""
+      }
+    ]
   },
   "paintings": {
     "show": false,
