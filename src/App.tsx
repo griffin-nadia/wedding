@@ -4,6 +4,7 @@ import { Layout } from "@/components/layout"
 import { HouseholdProvider, useHousehold } from "@/lib/household"
 import { LangProvider } from "@/lib/lang"
 import { ThemeProvider } from "@/lib/theme"
+import { Toaster } from "@/components/toast"
 import { HomePage } from "@/pages/home"
 import { NoInvitePage } from "@/pages/no-invite"
 
@@ -41,6 +42,7 @@ export default function App() {
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Gate />
         </BrowserRouter>
+        <Toaster />
       </HouseholdProvider>
     </LangProvider>
     </ThemeProvider>

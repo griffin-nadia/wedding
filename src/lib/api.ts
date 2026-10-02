@@ -203,3 +203,9 @@ export async function getFlying(): Promise<{ counts: Partial<Record<Flying, numb
   if (!config.apiUrl) return null
   try { const d = await call(`${config.apiUrl}?action=flying`); return d.ok ? d : null } catch { return null }
 }
+
+/** The 12 fortunes from the sheet's Content tab (falls back to the built-in drafts). */
+export async function getFortunes(): Promise<string[] | null> {
+  if (!config.apiUrl) return null
+  try { const d = await call(`${config.apiUrl}?action=fortunes`); return d.ok && Array.isArray(d.fortunes) ? d.fortunes : null } catch { return null }
+}

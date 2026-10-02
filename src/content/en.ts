@@ -4,6 +4,30 @@
 
 // The couple's names live here once. Swapping the order is this one line.
 export const COUPLE = { first: "Nadia", second: "Griffin" }
+
+// The venue for taxi drivers, in one place (Show the driver, the day sheet, Details).
+export const VENUE = {
+  please: "ここへお願いします",
+  nameJa: "ザ・ソウドウ 東山 京都",
+  addressJa: "〒605-0827 京都府京都市東山区八坂上町366",
+  name: "The Sodoh Higashiyama",
+}
+
+// Fortunes after RSVP: all 大吉 (great blessing). The site data sheet's Content tab overrides these.
+export const FORTUNES = [
+  "Higashiyama is all hills and stone steps. Pack shoes you can walk in.",
+  "Mid October days are mild and evenings cool. Bring a light layer.",
+  "Many small shops and temples are cash only. Keep some yen on you.",
+  "Get an IC card (ICOCA or Suica, or add one to your phone wallet) for buses and trains.",
+  "Taxi doors open and close by themselves. Let them.",
+  "There's no tipping in Japan. A thank you is plenty.",
+  "Rain happens. Any convenience store sells a good umbrella.",
+  "Send big bags ahead from the airport with a luggage delivery service.",
+  "The temples near the venue are calm before 8 am.",
+  "Public bins are rare. Carry a small bag for rubbish.",
+  "The Haruka train runs from Kansai Airport to Kyoto Station in about 75 minutes.",
+  "You will eat very well.",
+]
 const A = COUPLE.first
 const B = COUPLE.second
 const BOTH = `${A} & ${B}`
@@ -41,6 +65,14 @@ export const en = {
     flyingFrom: (n: number, of: number) => `${n} of ${of} households flying in`,
   },
   flying: { title: "Flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, noted." },
+  sound: { on: "Sound on", off: "Sound off", label: "Sound" },
+  fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes." },
+  driver: { label: "Taxi from Kyoto Station", fare: "Around ¥2,000, 15 to 20 minutes.", show: "Show the driver", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
+  countdownMore: {
+    until: "until we see you in Kyoto", tomorrow: "Tomorrow!", today: "Today's the day", married: "Married",
+    andCounting: "and counting", localTitle: (t: string) => `That's ${t} where you are`,
+    short: { months: "months", days: "days", hours: "hrs", mins: "mins", secs: "secs", years: "years" },
+  },
   footer: { made: `Made with love for ${BOTH}`, links: "More" },
   theme: { label: "Lantern mode" },
   home: {
@@ -94,6 +126,7 @@ export const en = {
     appleCalendar: "Apple or Outlook (.ics)",
     openMap: "Open the map",
     print: "Print the day",
+    now: "Now",
     tabs: { details: "Details", timeline: "Timeline", getting: "Getting there", stay: "Stay", faq: "FAQ" },
     detailsTitle: "The details",
     dressCode: "Dress code: no specific dress code. Wear something that makes you feel like your best self, with shoes that grip on stone.",
@@ -109,8 +142,6 @@ export const en = {
       { place: "The Sodoh Higashiyama", note: "Venue, Higashiyama" },
     ],
     driverTitle: "Show the driver",
-    driverName: "ザ・ソウドウ 東山 京都",
-    driverAddress: "京都市東山区八坂上町366",
     handyTitle: "Handy to know",
     handy: [
       { label: "Flying in", title: "Osaka (KIX) is easiest", body: "The Haruka train gets you to Kyoto Station in about 75 minutes. Visitor ticket ¥2,200.", action: { label: "Haruka tickets", href: "https://www.westjr.co.jp/global/en/ticket/icoca-haruka/" } },
@@ -130,7 +161,6 @@ export const en = {
     ],
     stayGood: "Good",
     stayWatch: "Keep in mind",
-    addressJa: "〒605-0827 京都府京都市東山区八坂上町366",
     showDriver: "For a taxi driver",
     contacts: "Phone numbers for the day: coming closer to the date.",
     mapQr: "Scan for the map",
@@ -221,6 +251,9 @@ export const en = {
     updatedEyebrow: "RSVP updated",
     savedEyebrow: "RSVP saved",
     backHome: "Back to your invite",
+    savedLine: "Saved. You can change it until 30 Apr.",
+    savingQuiet: "Saving…",
+    savedOffline: "Saved on this phone. It'll send when you're back online.",
     thanks: { all: (n: string) => `Thank you, ${n}. We can't wait to see you in Kyoto.`, mixed: (n: string) => `Thank you, ${n}. We can't wait to see who's coming in Kyoto.`, none: (n: string) => `Thank you, ${n}. We'll miss you, and we'll share photos after.` },
     changeReply: "Change my reply",
     summary: "Your reply",

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { Vine } from "@/components/nature"
+import { SoundToggle } from "@/components/sound-toggle"
 
 // 日本語 toggle hidden until the Japanese copy is proofread (needs-from-nadia.md).
 const SHOW_JA = false
@@ -67,6 +68,8 @@ export function Layout() {
             <p className="font-display text-4xl">{t.meta.shortTitle}</p>
             <p className="hand text-sm">{t.footer.made}</p>
           </div>
+          <div className="relative flex flex-col items-start gap-3 md:items-end">
+          <SoundToggle />
           <nav aria-label="Footer" className="relative">
             <ul className="flex flex-wrap gap-x-6 gap-y-2">
               {links.map((l) => (
@@ -74,6 +77,7 @@ export function Layout() {
               ))}
             </ul>
           </nav>
+          </div>
         </div>
       </footer>
 

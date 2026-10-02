@@ -369,8 +369,31 @@
 @media print { .settle { opacity: 1 !important; transform: none !important; filter: none !important; } }
 
 /* Countdown digits: only the one that changes rolls (220ms). Swaps without motion under reduced motion. */
-@keyframes digit-out { to { transform: translateY(-60%); opacity: 0; } }
-@keyframes digit-in { from { transform: translateY(60%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes digit-out { to { transform: translateY(-8px); opacity: 0; } }
+@keyframes digit-in { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 .digit-out { animation: digit-out 220ms cubic-bezier(.22,1,.36,1) both; }
 .digit-in { animation: digit-in 220ms cubic-bezier(.22,1,.36,1) both; }
 @media (prefers-reduced-motion: reduce) { .digit-out { display: none; } .digit-in { animation: none; } }
+
+/* Toast */
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.toast-in { animation: toast-in 180ms cubic-bezier(.22,1,.36,1) both; }
+/* Omikuji: the box tilts three times (900 ms), then the slip unfolds (400 ms). Reduced motion: fade only. */
+@keyframes omikuji-shake { 0%, 100% { rotate: 0deg; } 16% { rotate: -12deg; } 33% { rotate: 12deg; } 50% { rotate: -10deg; } 66% { rotate: 10deg; } 83% { rotate: -6deg; } }
+.omikuji-shake { animation: omikuji-shake 900ms ease-in-out both; }
+@keyframes slip-unfold { from { opacity: 0; transform: scaleY(0.2); transform-origin: top; } to { opacity: 1; transform: none; } }
+.omikuji-slip { animation: slip-unfold 400ms cubic-bezier(.22,1,.36,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .omikuji-shake { animation: none; }
+  .omikuji-slip { animation: toast-in 200ms linear both; transform: none; }
+}
+/* Driver card full screen: bigger in landscape */
+@media (orientation: landscape) and (max-height: 500px) { .driver-full p { line-height: 1.15; } }
+
+/* The seconds tile glows softly in Lantern mode (nothing else glows). */
+[data-theme="lantern"] .countdown-secs { box-shadow: 0 0 0 1px var(--border), 0 0 24px -4px rgb(213 163 79 / 0.45); }
+
+/* Names settle in once per visit (after the envelope on a first visit). */
+@keyframes names-settle { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+.names-settle { animation: names-settle 700ms cubic-bezier(.22,1,.36,1) 200ms both; }
+@media (prefers-reduced-motion: reduce) { .names-settle { animation: none; } }

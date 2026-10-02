@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { COUPLE } from "@/content/en"
+import { playPaper } from "@/lib/sound"
 
 const KEY = "ng-envelope"
 
@@ -19,6 +20,7 @@ export function Envelope() {
   })
   useEffect(() => {
     if (!show) return
+    playPaper()
     const done = () => setShow(false)
     const id = setTimeout(done, 1600)
     window.addEventListener("keydown", done, { once: true })

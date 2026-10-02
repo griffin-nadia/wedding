@@ -8,6 +8,9 @@ import { AddToCalendar } from "@/components/add-to-calendar"
 import { Qr } from "@/components/qr"
 import { Photo } from "@/components/photo"
 import { InfoBlock, TimelineRow } from "@/components/blocks"
+import { DriverCard } from "@/components/driver-card"
+import { Reveal } from "@/components/reveal"
+import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { jstLabel, kyotoNow, localTime } from "@/lib/time"
 import { mapUrl } from "@/lib/calendar"
@@ -21,6 +24,27 @@ const fromHash = (): Tab => {
 }
 const ICONS = [Flower2, Wine, UtensilsCrossed]
 
+/**
+ * On the wedding day only (Japan time): where "now" sits between the schedule rows, 0 to 1.
+ * ?now=2027-10-15T12:30 mocks the time for checking.
+ */
+function nowOnTheDay(real: Date, times: string[]) {
+  const mock = new URLSearchParams(location.search).get("now")
+  const now = mock ? new Date(`${mock}:00+09:00`) : real
+  if (now.toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" }) !== "2027-10-15") return null
+  const at = (hhmm: string) => new Date(`2027-10-15T${hhmm}:00+09:00`).getTime()
+  const start = at(times[0]), end = at("15:30")
+  return Math.min(1, Math.max(0, (now.getTime() - start) / (end - start)))
+}
+function NowMarker({ at, label }: { at: number; label: string }) {
+  return (
+    <span className="absolute -left-[0.2rem] z-10 flex items-center gap-2" style={{ top: `calc(${at * 100}% - 0.5rem)` }}>
+      <span aria-hidden className="size-3 rounded-full bg-primary ring-4 ring-background" />
+      <span className="label-caps rounded-full bg-primary px-2 py-0.5 text-primary-foreground">{label}</span>
+    </span>
+  )
+}
+
 /** The day as one tabbed panel (Susie & Jay): Details · Timeline · Getting there · Stay · FAQ. Deep-linkable. */
 export function DayPage() {
   const { t } = useLang()
@@ -32,6 +56,7 @@ export function DayPage() {
     const id = setInterval(() => setNow(new Date()), 60_000)
     return () => { window.removeEventListener("hashchange", onHash); clearInterval(id) }
   }, [])
+  const nowAt = nowOnTheDay(now, t.day.schedule.map((x) => x.time))
   const change = (v: string) => {
     setTab(v as Tab)
     history.replaceState(null, "", `#${v}`)
@@ -63,7 +88,7 @@ export function DayPage() {
             <div className="flex-1 space-y-2">
               <p className="text-sm text-body">{t.day.address}</p>
               <p className="label-caps text-muted-foreground">{t.day.showDriver}</p>
-              <p lang="ja" className="font-ja text-lg leading-snug">{t.day.addressJa}</p>
+              <p lang="ja" className="font-ja text-lg leading-snug">{VENUE.addressJa}</p>
             </div>
             <figure className="w-24 shrink-0 text-center">
               <Qr value={mapUrl} label={t.day.mapQr} className="size-24 text-foreground" />
@@ -83,9 +108,10 @@ export function DayPage() {
           <ol className="relative space-y-8 pl-12">
             <span aria-hidden className="absolute top-2 bottom-2 left-[1.15rem] w-0.5 rounded bg-border" />
             <span aria-hidden className="timeline-fill absolute top-2 bottom-2 left-[1.15rem] w-0.5 origin-top rounded bg-leaf" />
+            {nowAt !== null && <NowMarker at={nowAt} label={t.day.now} />}
             {t.day.schedule.map((s, i) => {
               const Icon = ICONS[i] ?? Flower2
-              return <TimelineRow key={s.time} icon={<Icon className="size-5" strokeWidth={1.6} />} time={jstLabel(s.time)} title={s.label} where={s.where} local={localTime(s.time)} />
+              return <Reveal key={s.time}><TimelineRow icon={<Icon className="size-5" strokeWidth={1.6} />} time={jstLabel(s.time)} title={s.label} where={s.where} local={localTime(s.time)} /></Reveal>
             })}
           </ol>
           <p className="flex items-start gap-2 rounded-[1.25rem] bg-card p-4 text-sm text-body ring-1 ring-border"><CloudRain aria-hidden className="size-5 shrink-0 text-muted-foreground" strokeWidth={1.6} />{t.day.rainPlan}</p>
@@ -112,12 +138,7 @@ export function DayPage() {
               ))}
             </ol>
           </section>
-          {/* Show the driver: big Japanese they can read from the back seat */}
-          <section aria-labelledby="driver" className="space-y-2 rounded-[1.25rem] bg-secondary p-5 ring-1 ring-border">
-            <h3 id="driver" className="label-caps text-body">{t.day.driverTitle}</h3>
-            <p lang="ja" className="font-ja text-3xl leading-snug">{t.day.driverName}</p>
-            <p lang="ja" className="font-ja text-xl">{t.day.driverAddress}</p>
-          </section>
+          <DriverCard />
           <section aria-labelledby="handy" className="space-y-3">
             <h3 id="handy" className="title text-[1.5rem]">{t.day.handyTitle}</h3>
             {t.day.handy.map((h) => (

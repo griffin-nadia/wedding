@@ -8,12 +8,21 @@ import { Chip, InfoBlock, ReviewRow, Seal, Skeleton, StepProgress, TimelineRow }
 import { InlineSubmit } from "@/components/inline-submit"
 import { Pill } from "@/components/pill"
 import { SongPicker } from "@/components/song-picker"
-import { Countdown } from "@/components/countdown"
+import { Countdown, CountdownTile } from "@/components/countdown"
+import { SoundToggle } from "@/components/sound-toggle"
+import { FortuneCard } from "@/components/fortune-card"
+import { DriverCard } from "@/components/driver-card"
 import { Hanko } from "@/components/hanko"
 import { Leaf, LeafDivider, Mist, Vine } from "@/components/nature"
 import { Photo } from "@/components/photo"
 import { JourneyMap } from "@/components/journey-map"
 import { useLang } from "@/lib/lang"
+
+/** An already-drawn fortune for the reference (marks it drawn for a demo token). */
+function FortuneCardOpen() {
+  try { localStorage.setItem("ng-fortune-kit-open-demo", "1") } catch { /* private mode */ }
+  return <FortuneCard token="kit-open-demo" />
+}
 
 /** The living reference: every component and state, light and Lantern side by side. Hidden, not linked. */
 export function KitPage() {
@@ -70,7 +79,16 @@ export function KitPage() {
         <ol className="relative pl-12"><TimelineRow icon={<Leaf className="size-5" />} time="11:00 am" title="Ceremony" where="The Garden" local="1:00 pm Fri in Melbourne" /></ol>
         <InfoBlock label="From Kyoto Station" action={{ label: "Open the map", href: "#" }}>Taxi is easiest: about 15 minutes.</InfoBlock>
       </Section>
-      <Section title="Countdown"><Countdown units={t.home.countdownUnits} kyotoLabel={t.home.kyotoTimeShort} /></Section>
+      <Section title="CountdownTile: default · ticking (secs) · live countdown">
+        <div aria-hidden className="grid max-w-sm grid-cols-2 gap-3"><CountdownTile value={14} unit="days" /><CountdownTile value={9} unit="secs" ticking /></div>
+        <Countdown units={t.countdownMore.short} words={t.countdownMore} kyotoLabel={t.home.kyotoTimeShort} />
+      </Section>
+      <Section title="SoundToggle (off by default, remembered on this device)"><SoundToggle /></Section>
+      <Section title="FortuneCard: closed · open (same tip per household)">
+        <FortuneCard token="kit-closed-demo" />
+        <FortuneCardOpen />
+      </Section>
+      <Section title="DriverCard: compact (tap Show the driver for full screen)"><DriverCard /></Section>
       <Section title="Hanko · leaves · vine · mist · divider · skeleton">
         <div className="flex items-center gap-4"><Hanko /><Hanko size="sm" /><Leaf kind="maple" /><Leaf kind="ivy" tone="b" /><Leaf kind="ginkgo" /></div>
         <Vine className="w-40" /><Mist /><LeafDivider />

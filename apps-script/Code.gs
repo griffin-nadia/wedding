@@ -111,6 +111,7 @@ function onOpen() {
     .addItem("Send a reminder to households who haven't replied…", "sendReminders")
     .addSeparator()
     .addItem("Set up the Emails tab", "setupEmailsTab")
+    .addItem("Set up the Content tab (fortunes)", "setupContentTab")
     .addItem("Check song search", "checkSongSearch")
     .addItem("Turn on the fast email queue", "setupQueue")
     .addItem("Reset test households…", "resetTestHouseholds")
@@ -132,6 +133,7 @@ function doGet(e) {
       return json_({ ok: true, household: h })
     }
     if (action === "flying") return json_(flyingCounts_())
+    if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_() })
     if (action === "ping") {
       // Health check: is the minute trigger set up? (No guest data here.)
       const props = PropertiesService.getScriptProperties()
@@ -744,6 +746,51 @@ function log_(household, token, changed, payload) {
   r[head.Token] = token
   r[head.Payload] = cell_(String(payload || "").slice(0, MAX.payload))
   s.appendRow(fill_(r, s.getLastColumn()))
+}
+
+// ---------- fortunes (Content tab) ----------
+
+// All "great blessing" (大吉): no bad luck at a wedding. Nadia can edit them in the Content tab.
+const FORTUNES = [
+  "Higashiyama is all hills and stone steps. Pack shoes you can walk in.",
+  "Mid October days are mild and evenings cool. Bring a light layer.",
+  "Many small shops and temples are cash only. Keep some yen on you.",
+  "Get an IC card (ICOCA or Suica, or add one to your phone wallet) for buses and trains.",
+  "Taxi doors open and close by themselves. Let them.",
+  "There's no tipping in Japan. A thank you is plenty.",
+  "Rain happens. Any convenience store sells a good umbrella.",
+  "Send big bags ahead from the airport with a luggage delivery service.",
+  "The temples near the venue are calm before 8 am.",
+  "Public bins are rare. Carry a small bag for rubbish.",
+  "The Haruka train runs from Kansai Airport to Kyoto Station in about 75 minutes.",
+  "You will eat very well.",
+]
+
+/** The 12 fortunes: from the Content tab (Key fortune_1 to fortune_12) where filled in, else the drafts. */
+function fortunes_() {
+  const cache = CacheService.getScriptCache()
+  const hit = cache.get("fortunes")
+  if (hit) return JSON.parse(hit)
+  const out = FORTUNES.slice()
+  const tab = SpreadsheetApp.getActive().getSheetByName("Content")
+  if (tab) rows_("Content").forEach((r) => {
+    const m = /^fortune_(\d+)$/.exec(String(r.Key || "").trim())
+    if (m && Number(m[1]) >= 1 && Number(m[1]) <= 12 && String(r.Text || "").trim()) out[Number(m[1]) - 1] = String(r.Text).trim()
+  })
+  cache.put("fortunes", JSON.stringify(out), 600)
+  return out
+}
+
+function setupContentTab() {
+  const ss = SpreadsheetApp.getActive()
+  if (ss.getSheetByName("Content")) return SpreadsheetApp.getUi().alert("The Content tab is already there.")
+  const s = ss.insertSheet("Content")
+  const rows = [["Key", "Text", "Notes"]].concat(FORTUNES.map((f, i) => ["fortune_" + (i + 1), f, i === 0 ? "Fortunes after RSVP. All great blessings, one per household. Edit the Text column only." : ""]))
+  s.getRange(1, 1, rows.length, 3).setValues(rows)
+  s.getRange(1, 1, 1, 3).setFontWeight("bold")
+  s.setColumnWidth(1, 120); s.setColumnWidth(2, 520); s.setColumnWidth(3, 360)
+  CacheService.getScriptCache().remove("fortunes")
+  SpreadsheetApp.getUi().alert("Added the Content tab with the 12 fortunes.")
 }
 
 // ---------- "Flying from" (anonymous counts for the journey map) ----------

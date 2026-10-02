@@ -28,6 +28,11 @@ import { Countdown } from "@/components/countdown"
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
 
 
+// Names settle in once per visit (session), then stay still.
+const SETTLE_NAMES = (() => {
+  try { const first = !sessionStorage.getItem("ng-names"); sessionStorage.setItem("ng-names", "1"); return first } catch { return false }
+})()
+
 /** Date stack and names. On the full-bleed photo everything is cream (4.5:1+ on the scrim). */
 function HeroTitle({ t, onPhoto = false }: { t: ReturnType<typeof useLang>["t"]; onPhoto?: boolean }) {
   return (
@@ -36,7 +41,7 @@ function HeroTitle({ t, onPhoto = false }: { t: ReturnType<typeof useLang>["t"];
         <span className="sr-only">{t.day.date}</span>
         {t.home.dateStack.map((n) => <span key={n} aria-hidden>{n}</span>)}
       </p>
-      <h1 aria-label={`${COUPLE.first} & ${COUPLE.second}`} className={cn("names pt-1", onPhoto ? "text-[#f3e7d3]" : "text-foreground")}>
+      <h1 aria-label={`${COUPLE.first} & ${COUPLE.second}`} className={cn("names pt-1", SETTLE_NAMES && "names-settle", onPhoto ? "text-[#f3e7d3]" : "text-foreground")}>
         <span aria-hidden className="block">{COUPLE.first}</span>
         <span aria-hidden className={cn("ml-[0.35em] block translate-y-[0.06em] text-[0.66em]", onPhoto ? "text-[#ebd48f]" : "text-primary")}>&amp;</span>
         <span aria-hidden className="block">{COUPLE.second}</span>
@@ -186,7 +191,7 @@ export function HomePage() {
       <section aria-labelledby="countdown" className="px-4 py-12 md:px-8 md:py-18">
         <div className="mx-auto max-w-[40rem] space-y-6 text-center">
           <h2 id="countdown" className="title">{t.home.countdownTitle}</h2>
-          <Countdown units={t.home.countdownUnits} kyotoLabel={t.home.kyotoTimeShort} />
+          <Countdown units={t.countdownMore.short} words={t.countdownMore} kyotoLabel={t.home.kyotoTimeShort} localTime={localTime("11:00")} />
           <p className="hand flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Leaf kind="maple" className="size-5" />{t.home.leavesNote}
           </p>

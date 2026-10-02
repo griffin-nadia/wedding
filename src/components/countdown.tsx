@@ -42,8 +42,27 @@ function Digit({ d }: { d: string }) {
   )
 }
 
-/** Live countdown to the ceremony with seconds, aligned to the second, paused when the tab is hidden. */
-export function Countdown({ units, kyotoLabel }: { units: Record<keyof Parts, string>; kyotoLabel: (t: string) => string }) {
+type Units = { months: string; days: string; hours: string; mins: string; secs: string; years: string }
+type Words = { until: string; tomorrow: string; today: string; married: string; andCounting: string; localTitle: (t: string) => string }
+
+/** One tile: tabular numerals; the seconds tile is tinted (and glows softly in Lantern mode). */
+export function CountdownTile({ value, unit, ticking = false, pad = 2 }: { value: number; unit: string; ticking?: boolean; pad?: number }) {
+  return (
+    <div className={cn("flex min-w-0 flex-col items-center gap-2 rounded-[1.25rem] py-4 shadow-paper ring-1 ring-border", ticking ? "countdown-secs bg-secondary" : "bg-card")}>
+      <span className="numerals text-[clamp(2rem,1.4rem+3vw,3.25rem)] leading-none">
+        {String(value).padStart(pad, "0").split("").map((c, i) => <Digit key={i} d={c} />)}
+      </span>
+      <span className={cn("label-caps", ticking ? "text-body" : "text-muted-foreground")}>{unit}</span>
+    </div>
+  )
+}
+
+/**
+ * Live countdown to the ceremony (Japan time), to the second, paused when the tab is hidden.
+ * Units drop off as the day gets close (no months under a month, hours only on the last day).
+ * Tiles are aria-hidden; screen readers get one calm sentence that never ticks.
+ */
+export function Countdown({ units, words, kyotoLabel, localTime }: { units: Units; words: Words; kyotoLabel: (t: string) => string; localTime?: string | null }) {
   const [now, setNow] = useState(() => new Date())
   const raf = useRef(0)
   useEffect(() => {
@@ -52,28 +71,43 @@ export function Countdown({ units, kyotoLabel }: { units: Record<keyof Parts, st
       setNow(new Date())
       timer = window.setTimeout(() => { raf.current = requestAnimationFrame(tick) }, 1000 - (Date.now() % 1000) + 5)
     }
-    const start = () => { stop(); tick() }
     const stop = () => { clearTimeout(timer); cancelAnimationFrame(raf.current) }
-    const vis = () => (document.hidden ? stop() : start())
-    start()
+    const vis = () => (document.hidden ? stop() : (stop(), tick()))
+    tick()
     document.addEventListener("visibilitychange", vis)
     return () => { stop(); document.removeEventListener("visibilitychange", vis) }
   }, [])
-  const p = partsAt(now)
+  const end = new Date(config.weddingStart)
   const kyoto = now.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Tokyo" }).toLowerCase()
-  return (
-    <div className="space-y-4">
-      <p className="sr-only" aria-live="off">{sentence(p)}</p>
-      <div aria-hidden className="grid grid-cols-5 gap-2 sm:gap-3">
-        {(["months", "days", "hours", "mins", "secs"] as const).map((k) => (
-          <div key={k} className={cn("flex flex-col items-center gap-2 rounded-[1.25rem] py-4 shadow-paper ring-1 ring-border", k === "secs" ? "bg-secondary" : "bg-card")}>
-            <span className="numerals text-[clamp(2rem,1.4rem+3vw,3.25rem)] leading-none">
-              {String(p[k]).padStart(k === "months" ? 1 : 2, "0").split("").map((c, i) => <Digit key={i} d={c} />)}
-            </span>
-            <span className={cn("label-caps", k === "secs" ? "text-body" : "text-muted-foreground")}>{units[k]}</span>
-          </div>
-        ))}
+  const jstDay = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" })
+
+  // After the wedding: years and days married
+  if (now >= end) {
+    const days = Math.floor((now.getTime() - end.getTime()) / 86_400_000)
+    return (
+      <div className="space-y-4">
+        <p className="title">{words.married}</p>
+        <div aria-hidden className="mx-auto grid max-w-xs grid-cols-2 gap-3">
+          <CountdownTile value={Math.floor(days / 365)} unit={units.years} pad={1} />
+          <CountdownTile value={days % 365} unit={units.days} pad={1} />
+        </div>
+        <p className="hand text-sm text-body">{words.andCounting}</p>
       </div>
+    )
+  }
+  const p = partsAt(now)
+  const lastDay = end.getTime() - now.getTime() < 86_400_000
+  const today = jstDay(now) === jstDay(end)
+  const tiles = ([["months", p.months], ["days", p.days], ["hours", p.hours], ["mins", p.mins], ["secs", p.secs]] as const)
+    .filter(([k, v]) => (k === "months" ? v > 0 && !lastDay : k === "days" ? !lastDay && (v > 0 || p.months > 0) : true))
+  return (
+    <div className="space-y-4" title={localTime ? words.localTitle(localTime) : undefined}>
+      {(today || lastDay) && <p className="title">{today ? words.today : words.tomorrow}</p>}
+      <p className="sr-only" aria-live="off">{sentence(p)}</p>
+      <div aria-hidden className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))` }}>
+        {tiles.map(([k, v]) => <CountdownTile key={k} value={v} unit={units[k]} ticking={k === "secs"} pad={k === "months" ? 1 : 2} />)}
+      </div>
+      <p className="text-sm text-body">{words.until}</p>
       <p className="hand text-sm text-body">{kyotoLabel(kyoto)}</p>
     </div>
   )

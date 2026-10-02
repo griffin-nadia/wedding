@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
-import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -11,7 +10,8 @@ import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
 import { Chip, ReviewRow, Seal, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
-import { Leaf } from "@/components/nature"
+import { FortuneCard } from "@/components/fortune-card"
+import { playFurin } from "@/lib/sound"
 import { FLYING, setFlying, type Flying, answerOf, ApiError, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
@@ -65,10 +65,9 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
   const { household, setHousehold } = useHousehold()
   const [open, setOpen] = useState(openOnLoad)
   const [step, setStep] = useState(1)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [done, setDone] = useState<SaveResult | null>(null)
-  const [slow, setSlow] = useState(false)
+  const [confirm, setConfirm] = useState<"saving" | "saved" | "offline" | null>(null)
   const [offline, setOffline] = useState(false)
   const replyId = useRef("")
   const arrowKey = useRef(false)
@@ -92,7 +91,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
   // Offline: wait, then send by itself when the connection is back
   useEffect(() => {
     if (!offline) return
-    const back = () => { setOffline(false); void send() }
+    const back = () => { setOffline(false); setDone(null); void send() }
     window.addEventListener("online", back)
     return () => window.removeEventListener("online", back)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -126,36 +125,44 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
     if (!o) setStep(1)
   }
 
+  // Saving feels instant: the stamp shows straight away and the save confirms quietly behind it
+  // (retries included). Only if every retry fails does the form come back, draft intact, with an error.
   async function send() {
     if (sending.current) return // no double submits, even on a fast double tap
     setError("")
-    if (typeof navigator !== "undefined" && navigator.onLine === false) return setOffline(true)
-    sending.current = true
-    setSaving(true)
-    setSlow(false)
-    const slowTimer = setTimeout(() => setSlow(true), 2500)
+    const before = household!
     replyId.current ||= crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    const optimistic = applyLocal(before, form)
+    setDone({ household: optimistic, updated: Boolean(before.respondedAt), changes: [] })
+    setHousehold(optimistic)
+    if (typeof navigator !== "undefined" && navigator.onLine === false) { setConfirm("offline"); setOffline(true); return }
+    sending.current = true
+    setConfirm("saving")
     try {
-      const result = await saveRsvpWithRetry(household!.token, form, household!, replyId.current)
-      clearDraft(household!.token)
+      const result = await saveRsvpWithRetry(before.token, form, before, replyId.current)
+      clearDraft(before.token)
       setHousehold(result.household)
-      setDone(result)
+      setDone((d) => (d ? { ...result } : d))
+      setConfirm("saved")
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "other"
-      if (code === "network" && navigator.onLine === false) setOffline(true)
-      else setError(code in t.rsvp.errors ? t.rsvp.errors[code as keyof typeof t.rsvp.errors] : t.rsvp.errors.other)
+      if (code === "network" && navigator.onLine === false) { setConfirm("offline"); setOffline(true); return }
+      setHousehold(before)
+      setDone(null)
+      setStep(3)
+      setConfirm(null)
+      setError(code in t.rsvp.errors ? t.rsvp.errors[code as keyof typeof t.rsvp.errors] : t.rsvp.errors.other)
     } finally {
-      clearTimeout(slowTimer)
       sending.current = false
-      setSaving(false)
     }
   }
+
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild disabled={locked}>{children}</SheetTrigger>
       <SheetContent side="right" className={cn("gap-0 overflow-y-auto border-border bg-background shadow-[0_24px_60px_-20px_rgb(var(--shadow-tint)/0.45)] data-[side=right]:w-full data-[side=right]:sm:max-w-lg sm:rounded-l-[1.5rem]", done && "[&>button.absolute]:z-10 [&>button.absolute]:text-on-band")}>
-        {done ? <Done result={done} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setStep(1) }} /> : <>
+        {done ? <Done result={done} confirm={confirm} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setStep(1) }} /> : <>
         <SheetHeader className="gap-3 px-6 pt-8">
           <p className="label-caps text-muted-foreground">{t.rsvp.step(step)}</p>
           <SheetTitle ref={heading} tabIndex={-1} className="font-display text-4xl font-normal outline-none">
@@ -264,10 +271,10 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
         </div>
 
         <SheetFooter className="sticky bottom-0 mt-auto flex-row gap-3 border-t bg-background/95 px-6 py-4 backdrop-blur">
-          {step > 1 && <Button variant="outline" size="lg" disabled={saving} onClick={() => setStep(step - 1)}>{t.rsvp.back}</Button>}
+          {step > 1 && <Button variant="outline" size="lg" onClick={() => setStep(step - 1)}>{t.rsvp.back}</Button>}
           {step < 3
             ? <Button size="lg" className="flex-1" disabled={!canNext} onClick={() => setStep(step + 1)}>{t.rsvp.next}</Button>
-            : <Button size="lg" className="flex-1" disabled={saving} aria-busy={saving} onClick={send}>{saving ? (<><Loader2 className="animate-spin" aria-hidden />{slow ? t.rsvp.stillSending : t.rsvp.saving}</>) : error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
+            : <Button size="lg" className="flex-1" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
         </SheetFooter>
         {step === 3 && <p className="px-6 pb-6 text-xs text-muted-foreground">{t.rsvp.privacy}</p>}
         </>}
@@ -277,24 +284,30 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
 }
 
 /** The success moment: the seal stamps onto a forest band, words match the answer, two leaves drift once. */
-function Done({ result, onClose, onChange }: { result: SaveResult; onClose: () => void; onChange: () => void }) {
+function Done({ result, confirm, onClose, onChange }: { result: SaveResult; confirm: "saving" | "saved" | "offline" | null; onClose: () => void; onChange: () => void }) {
   const { t } = useLang()
   const h = result.household
   const answer = answerOf(h)
   const coming = h.guests.filter((g) => g.attending === "yes")
   const names = (answer === "none" ? h.guests : coming).map((g) => g.firstName).filter(Boolean)
   const who = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0] || h.displayName
+  const title = useRef<HTMLHeadingElement>(null)
+  // The stamp lands (420 ms) with one furin ting if sound is on; focus goes to the heading
+  useEffect(() => {
+    title.current?.focus()
+    if (answer !== "none") playFurin()
+  }, [answer])
   return (
-    <div className="flex flex-1 flex-col" role="status">
+    <div className="flex flex-1 flex-col">
       <div className="band relative overflow-hidden px-6 pt-12 pb-8">
-        <Leaf kind="maple" className="leaf-drift absolute top-6 left-[18%] size-6" />
-        <Leaf kind="ivy" tone="b" className="leaf-drift absolute top-10 right-[22%] size-5 [animation-delay:.25s]" />
         {answer !== "none" && <Hanko stamp className="ring-8 ring-[var(--band)]" />}
         <p className="eyebrow mt-4">{result.updated ? t.rsvp.updatedEyebrow : t.rsvp.savedEyebrow}</p>
-        <SheetTitle className="mt-2 font-display text-4xl font-normal">{t.rsvp.doneTitle[answer]}</SheetTitle>
+        <SheetTitle ref={title} tabIndex={-1} className="mt-2 font-display text-4xl font-normal outline-none">{t.rsvp.doneTitle[answer]}</SheetTitle>
         <SheetDescription className="hand mt-3 text-lg">{t.rsvp.thanks[answer](who)}</SheetDescription>
+        <p role="status" className="mt-3 text-sm">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : t.rsvp.savedLine}</p>
       </div>
       <div className="flex-1 space-y-6 px-6 py-6">
+        {answer !== "none" && <FortuneCard token={h.token} />}
         <section aria-labelledby="sum" className="space-y-2">
           <h3 id="sum" className="label-caps text-muted-foreground">{t.rsvp.summary}</h3>
           <ul className="space-y-1 text-body">
@@ -309,10 +322,26 @@ function Done({ result, onClose, onChange }: { result: SaveResult; onClose: () =
       </div>
       <div className="sticky bottom-0 flex gap-3 border-t bg-background/95 px-6 py-4 backdrop-blur">
         <Button variant="outline" size="lg" onClick={onChange}>{t.rsvp.changeReply}</Button>
-        <Button size="lg" className="flex-1" onClick={onClose} autoFocus>{t.rsvp.backHome}</Button>
+        <Button size="lg" className="flex-1" onClick={onClose}>{t.rsvp.backHome}</Button>
       </div>
     </div>
   )
+}
+
+/** The household as it will be once this reply is saved (shown straight away, then confirmed). */
+function applyLocal(h: Household, form: RsvpPayload): Household {
+  const byId = new Map(form.guests.map((g) => [g.id, g]))
+  return {
+    ...h,
+    guests: h.guests.map((g) => {
+      const x = byId.get(g.id)
+      if (!x) return g
+      return { ...g, attending: x.attending, dietary: x.attending === "yes" ? x.dietary || "None" : "None", firstName: g.plusOne ? x.firstName.trim() || "Guest" : g.firstName }
+    }),
+    songs: form.songs.map((s) => s.trim()).filter(Boolean),
+    arrival: form.arrival, departure: form.departure, message: form.message.trim(), photos: form.photos === true,
+    respondedAt: new Date().toISOString(),
+  }
 }
 
 /** Optional after RSVP: where they're flying from (a short list). Only ever shown as counts. */
