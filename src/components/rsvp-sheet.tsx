@@ -178,7 +178,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
               )}
             </dl>
           )}
-          {step === 3 && <p className="text-xs text-muted-foreground">{t.rsvp.editUntil}</p>}
+          {step === 3 && <p className="hand text-sm text-muted-foreground">{t.rsvp.editUntil}</p>}
           {error && <p role="alert" className="rounded-md border border-destructive/40 bg-card px-4 py-3 text-sm text-destructive">{error}</p>}
         </div>
 
@@ -202,9 +202,9 @@ function Done({ result, onClose }: { result: SaveResult; onClose: () => void }) 
     <div className="flex flex-1 flex-col px-6 pt-12 pb-6" role="status">
       <div className="flex-1 space-y-5">
         {answer !== "none" && <Hanko stamp />}
-        <p className="eyebrow">{result.updated ? t.rsvp.updatedEyebrow : t.rsvp.savedEyebrow}</p>
+        <p className="eyebrow text-success">{result.updated ? t.rsvp.updatedEyebrow : t.rsvp.savedEyebrow}</p>
         <SheetTitle className="font-display text-3xl font-normal">{t.rsvp.doneTitle[answer]}</SheetTitle>
-        <SheetDescription className="text-base text-body">{t.rsvp.doneLead[answer]}</SheetDescription>
+        <SheetDescription className="hand text-lg text-body">{t.rsvp.doneLead[answer]}</SheetDescription>
         <p className="text-sm text-body">{result.household.hasEmail === false ? t.rsvp.doneBodyNoEmail : t.rsvp.doneBodyEmail}</p>
       </div>
       <Button size="lg" className="mt-8 w-full" onClick={onClose} autoFocus>{t.rsvp.backHome}</Button>

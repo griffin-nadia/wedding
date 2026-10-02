@@ -38,7 +38,7 @@ export function HomePage() {
     <div className="grid gap-10 py-6 md:grid-cols-[1.1fr_1fr] md:gap-16 md:py-16">
       <section className="space-y-6">
         <p className="eyebrow">{t.meta.eyebrow}</p>
-        <h1 className="text-4xl md:text-7xl">{t.home.greeting(household.displayName)}</h1>
+        <h1 className="title-hero">{t.home.greeting(household.displayName)}</h1>
         <p className="text-body">{t.day.date} · {t.day.venue}</p>
         <p className="max-w-xl font-display text-lg text-body md:text-xl">{t.home.intro}</p>
 
@@ -51,9 +51,20 @@ export function HomePage() {
                   {answer !== "none" && <Hanko size="sm" />}
                   <p className="font-display text-2xl">{answer === "all" ? t.home.rsvpDone : answer === "none" ? t.home.rsvpDoneNone : t.home.rsvpDoneMixed}</p>
                 </div>
-                <p className="text-sm text-body">
-                  {t.home.youSaid}: {household.guests.map((g) => `${g.firstName} ${g.attending === "yes" ? t.home.said.yes : g.attending === "no" ? t.home.said.no : t.home.said.none}`).join(", ")}
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-body">{t.home.youSaid}:</p>
+                  <ul className="flex flex-wrap gap-2">
+                    {household.guests.map((g) => (
+                      <li key={g.id} className={g.attending === "yes"
+                        ? "inline-flex items-center gap-1.5 rounded-full bg-leaf/15 px-3 py-1 text-sm text-success"
+                        : "inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm text-body"}>
+                        {g.attending === "yes" && <span aria-hidden className="size-1.5 rounded-full bg-leaf" />}
+                        <span className="font-semibold">{g.firstName}</span>
+                        {g.attending === "yes" ? t.home.said.yes : g.attending === "no" ? t.home.said.no : t.home.said.none}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
                 {(household.arrival || household.departure) && answer !== "none" && (
                   <p className="text-sm text-body">{t.rsvp.dates}: {fmtStay(household.arrival, household.departure, t.rsvp.notSet)}</p>
                 )}
@@ -87,7 +98,7 @@ export function HomePage() {
       </section>
 
       <section aria-labelledby="next-up" className="space-y-3">
-        <h2 id="next-up" className="font-sans text-sm font-bold">{t.home.nextUp}</h2>
+        <h2 id="next-up" className="leaf-rule font-sans text-sm font-bold">{t.home.nextUp}</h2>
         {[
           { to: "/travel", title: t.travel.title, body: "Passport, flights, SIM" },
           { to: "/the-day", title: t.day.title, body: "11:00 am ceremony in the garden" },

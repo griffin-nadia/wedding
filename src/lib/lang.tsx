@@ -8,9 +8,8 @@ const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: ReturnTyp
 let jaFonts: Promise<unknown> | null = null
 function loadJapaneseFonts() {
   jaFonts ??= Promise.all([
-    import("@fontsource/shippori-mincho/400.css"),
-    import("@fontsource/zen-kaku-gothic-new/400.css"),
-    import("@fontsource/zen-kaku-gothic-new/700.css"),
+    import("@fontsource/zen-old-mincho/400.css"),
+    import("@fontsource/klee-one/400.css"),
   ])
 }
 

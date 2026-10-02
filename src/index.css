@@ -24,6 +24,10 @@
   --color-highlight: var(--highlight);
   --color-eyebrow: var(--eyebrow);
   --color-body: var(--body);
+  --color-link: var(--link);
+  --color-success: var(--success);
+  --color-leaf: var(--leaf);
+  --color-glow: var(--glow);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -32,8 +36,21 @@
 
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
+  --font-hand: var(--font-hand);
   --shadow-paper: var(--shadow-paper);
   --ease-paper: var(--ease-paper);
+}
+
+/* EB Garamond has a small x-height, so the text scale runs one step larger than Tailwind's default. */
+@theme {
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.4;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1.125rem;
+  --text-base--line-height: 1.6;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.55;
 }
 
 @layer base {
@@ -44,8 +61,9 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-base text-foreground font-sans antialiased;
     line-height: 1.6;
+    font-feature-settings: "kern", "liga", "onum";
   }
   h1, h2, h3 {
     @apply font-display font-normal tracking-normal;
@@ -65,7 +83,7 @@
 
 /* Small helpers used across pages */
 @utility eyebrow {
-  @apply text-[11px] font-bold uppercase tracking-[0.08em] text-eyebrow;
+  @apply text-[13px] font-semibold uppercase tracking-[0.12em] text-eyebrow;
 }
 
 /* Hanko: the red seal stamped on "all set". Lands once; no motion when reduced motion is on. */
@@ -97,4 +115,36 @@
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
+}
+
+/* Little hand-written notes from Nadia and Griffin (Klee One). */
+@utility hand {
+  font-family: var(--font-hand);
+  font-feature-settings: normal;
+}
+
+/* The green, used sparingly: a thin moss rule under section headings. */
+@utility leaf-rule {
+  position: relative;
+  padding-bottom: 0.75rem;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 2.5rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--leaf);
+  }
+}
+
+/* Headings that don't balloon on desktop. */
+@utility title {
+  font-size: clamp(2.25rem, 4vw + 1rem, 3.5rem);
+  line-height: 1.1;
+}
+@utility title-hero {
+  font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
+  line-height: 1.05;
 }

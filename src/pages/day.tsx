@@ -21,7 +21,7 @@ export function DayPage() {
   return (
     <div className="max-w-2xl space-y-8 py-6 md:py-16">
       <header className="space-y-2">
-        <h1 className="text-4xl md:text-6xl">{t.day.title}</h1>
+        <h1 className="title leaf-rule">{t.day.title}</h1>
         <p className="text-body">{t.day.date} · {t.day.venue}</p>
       </header>
       <ol className="relative space-y-6 border-l-2 border-border pl-8">

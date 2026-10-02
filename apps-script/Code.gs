@@ -27,8 +27,8 @@
  *   RSVP_BY         2027-02-15
  *   TEST_EMAIL      where test invites go (asked for the first time you send a test)
  *   NOTIFY_CHANGES  "yes" to email REPLY_TO when someone changes from coming to not coming
- *   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET   from a free Spotify developer app (song search).
- *                   Without them, song search is off and guests just type.
+ *   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET   optional: Spotify for song search (needs a Premium
+ *                   app owner). Without them, or if Spotify says no, search uses iTunes.
  */
 
 const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", emails: "Emails" }
@@ -71,6 +71,8 @@ const ERRORS = {
   closed: "Changes are closed now. Please message Nadia or Griffin.",
   busy: "Lots of people are replying right now. Please try again in a minute.",
   server: "Something went wrong saving that. Please try again.",
+  read_failed: "We couldn't load your invite just now. Please try again.",
+  search_failed: "Song search isn't working right now. Just type the song instead.",
 }
 
 // Invite and reminder wording. The Emails tab overrides these, so Nadia can edit without code.
@@ -116,7 +118,7 @@ function doGet(e) {
       return json_({ ok: true, household: h })
     }
     if (action === "ping") return json_({ ok: true })
-    if (action === "songs") return json_(searchSongs_(p.q))
+    if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
       const token = String(p.token || "").trim()
       if (cachedHousehold_(token)) safely_(() => enqueue_("started", token))
@@ -125,7 +127,7 @@ function doGet(e) {
     if (action === "check") return json_(check_(p.token))
     return json_({ ok: true, service: "nadia-griffin-wedding" })
   } catch (err) {
-    return fail_("server", err)
+    return fail_(action === "songs" ? "search_failed" : "read_failed", err)
   }
 }
 
@@ -218,19 +220,56 @@ function check_(token) {
   }
 }
 
-// ---------- song search (Spotify, server side so guests never talk to Spotify) ----------
+// ---------- song search (server side, so guests' browsers never talk to Apple or Spotify) ----------
 
-function searchSongs_(q) {
+/**
+ * Up to 6 songs as { title, artist, artwork, url }. iTunes Search by default (no keys, no account);
+ * Spotify instead when SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET are set and it works.
+ * Artwork comes back as a small data: URL, so no image loads from a third party either.
+ */
+function searchSongs_(q, token) {
   q = text_(q, 80)
   if (q.length < 2) return { ok: true, results: [] }
-  const props = PropertiesService.getScriptProperties()
-  const id = props.getProperty("SPOTIFY_CLIENT_ID")
-  const secret = props.getProperty("SPOTIFY_CLIENT_SECRET")
-  if (!id || !secret) return { ok: false, code: "not_configured" }
   const cache = CacheService.getScriptCache()
+  if (token) {
+    // Rate limit per household: 40 searches a minute is plenty for typing with a 300ms debounce
+    const rl = "rl:" + token + ":" + Math.floor(Date.now() / 60000)
+    const n = Number(cache.get(rl) || 0)
+    if (n >= 40) return { ok: true, results: [], limited: true }
+    cache.put(rl, String(n + 1), 120)
+  }
   const key = "song:" + q.toLowerCase()
   const hit = cache.get(key)
   if (hit) return { ok: true, results: JSON.parse(hit) }
+  let results = null
+  try { results = spotifySearch_(q) } catch (err) { console.error("Spotify: " + err) }
+  if (!results) {
+    try { results = itunesSearch_(q) } catch (err) { console.error("iTunes: " + err) }
+  }
+  if (!results) return { ok: false, code: "search_failed", error: ERRORS.search_failed }
+  results = withArtwork_(results)
+  try { cache.put(key, JSON.stringify(results), 6 * 60 * 60) } catch (err) { /* over 100 KB: skip caching */ }
+  return { ok: true, results: results }
+}
+
+function itunesSearch_(q) {
+  const res = UrlFetchApp.fetch("https://itunes.apple.com/search?entity=song&limit=6&country=AU&term=" + encodeURIComponent(q), { muteHttpExceptions: true })
+  if (res.getResponseCode() !== 200) return null
+  return (JSON.parse(res.getContentText()).results || []).map((t) => ({
+    title: String(t.trackName || ""),
+    artist: String(t.artistName || ""),
+    artwork: String(t.artworkUrl100 || ""), // 100px: sharp enough for the 44px thumbnail on 2x screens
+    url: String(t.trackViewUrl || ""),
+  }))
+}
+
+/** Null when there are no keys or Spotify refuses (it needs a Premium owner for the Web API). */
+function spotifySearch_(q) {
+  const props = PropertiesService.getScriptProperties()
+  const id = props.getProperty("SPOTIFY_CLIENT_ID")
+  const secret = props.getProperty("SPOTIFY_CLIENT_SECRET")
+  if (!id || !secret) return null
+  const cache = CacheService.getScriptCache()
   let token = cache.get("spotify_token")
   if (!token) {
     const res = UrlFetchApp.fetch("https://accounts.spotify.com/api/token", {
@@ -239,7 +278,7 @@ function searchSongs_(q) {
       headers: { Authorization: "Basic " + Utilities.base64Encode(id + ":" + secret) },
       muteHttpExceptions: true,
     })
-    if (res.getResponseCode() !== 200) return { ok: false, code: "search_failed" }
+    if (res.getResponseCode() !== 200) return null
     const body = JSON.parse(res.getContentText())
     token = body.access_token
     cache.put("spotify_token", token, Math.max(60, (body.expires_in || 3600) - 300))
@@ -248,17 +287,37 @@ function searchSongs_(q) {
     headers: { Authorization: "Bearer " + token },
     muteHttpExceptions: true,
   })
-  if (res.getResponseCode() !== 200) return { ok: false, code: "search_failed" }
-  const results = (JSON.parse(res.getContentText()).tracks || { items: [] }).items.map((t) => ({
-    title: t.name,
-    artist: (t.artists || []).map((a) => a.name).join(", "),
-    url: t.external_urls ? t.external_urls.spotify : "",
-  }))
-  cache.put(key, JSON.stringify(results), 6 * 60 * 60)
-  return { ok: true, results: results }
+  if (res.getResponseCode() !== 200) return null
+  return ((JSON.parse(res.getContentText()).tracks || {}).items || []).map((t) => {
+    const imgs = (t.album && t.album.images) || []
+    return {
+      title: String(t.name || ""),
+      artist: (t.artists || []).map((a) => a.name).join(", "),
+      artwork: imgs.length ? imgs[imgs.length - 1].url : "",
+      url: t.external_urls ? t.external_urls.spotify : "",
+    }
+  })
 }
 
-// ---------- visits ----------
+/** Swaps artwork links for small inline images, fetched in parallel. Missing art is just left out. */
+function withArtwork_(results) {
+  const want = results.map((r, i) => ({ i: i, url: r.artwork })).filter((x) => /^https:\/\//.test(x.url))
+  if (!want.length) return results.map((r) => Object.assign({}, r, { artwork: "" }))
+  let responses = []
+  try {
+    responses = UrlFetchApp.fetchAll(want.map((x) => ({ url: x.url, muteHttpExceptions: true })))
+  } catch (err) {
+    responses = []
+  }
+  const out = results.map((r) => Object.assign({}, r, { artwork: "" }))
+  responses.forEach((res, k) => {
+    if (res.getResponseCode() !== 200) return
+    const type = String(res.getHeaders()["Content-Type"] || "image/jpeg").split(";")[0]
+    if (!/^image\//.test(type)) return
+    out[want[k].i].artwork = "data:" + type + ";base64," + Utilities.base64Encode(res.getContent())
+  })
+  return out
+}
 
 // ---------- cache ----------
 
@@ -861,9 +920,8 @@ function resetTestHouseholds() {
 function checkSongSearch() {
   const r = searchSongs_("September Earth Wind")
   SpreadsheetApp.getUi().alert(
-    r.ok ? "Song search works. First result: " + (r.results[0] ? r.results[0].title + ", " + r.results[0].artist : "none")
-      : r.code === "not_configured" ? "Song search is off. Add SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in Project settings > Script properties."
-      : "Spotify said no. Check the two keys are right.",
+    r.ok ? "Song search works (" + (PropertiesService.getScriptProperties().getProperty("SPOTIFY_CLIENT_ID") ? "Spotify, or iTunes if Spotify says no" : "iTunes") + "). First result: " + (r.results[0] ? r.results[0].title + ", " + r.results[0].artist : "none")
+      : "Song search didn't work just now. Guests can still type songs. Check Executions for the error.",
   )
 }
 
@@ -900,7 +958,7 @@ function makeToken_() {
 
 /** One simple layout for every email, in the site's colours. Returns { html, text }. */
 function buildEmail_(m) {
-  const c = { paper: "#f6efe3", card: "#fffdf8", ink: "#3a2a20", body: "#6b4a35", muted: "#736352", line: "#e6dcca", red: "#a8321f", onRed: "#fff6ea", eyebrow: "#b5482e" }
+  const c = { paper: "#f3e7d3", card: "#fbf5ea", ink: "#421a05", body: "#754b38", muted: "#8b5a3c", line: "#e5d0a8", red: "#a84f32", onRed: "#fbf5ea", eyebrow: "#a43108" }
   const serif = "Georgia, 'Times New Roman', serif"
   const sans = "-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
   const p = (s) => '<p style="margin:0 0 16px;font:16px/1.5 ' + sans + ";color:" + c.body + '">' + esc_(s).replace(/\n/g, "<br>") + "</p>"

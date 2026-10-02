@@ -20,9 +20,9 @@ export function TravelPage() {
   return (
     <div className="max-w-2xl space-y-6 py-6 md:py-16">
       <header className="space-y-2">
-        <h1 className="text-4xl md:text-6xl">{t.travel.title}</h1>
+        <h1 className="title leaf-rule">{t.travel.title}</h1>
         <p className="text-body">{t.travel.lead}</p>
-        <p className="text-sm text-muted-foreground">{t.travel.tickHint}</p>
+        <p className="hand text-sm text-muted-foreground">{t.travel.tickHint}</p>
       </header>
       <div className="space-y-3">
         {t.travel.items.map((item, i) => {
