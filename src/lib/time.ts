@@ -31,3 +31,27 @@ export function localTime(hhmm: string, timeZone = Intl.DateTimeFormat().resolve
 export function isLocked(now = new Date()) {
   return now > new Date(`${config.changesLock}T23:59:59+09:00`)
 }
+
+/** Months, days, hours and minutes to the ceremony (calendar months, Japan time). */
+export function countdownParts(now = new Date()) {
+  const end = new Date(config.weddingStart)
+  if (now >= end) return { months: 0, days: 0, hours: 0, mins: 0 }
+  const jst = (d: Date) => new Date(d.getTime() + 9 * 3_600_000) // read as UTC fields = Japan time
+  const a = jst(now), b = jst(end)
+  let months = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth())
+  const step = new Date(a)
+  step.setUTCMonth(a.getUTCMonth() + months)
+  if (step > b) { months--; step.setUTCMonth(a.getUTCMonth() + months) }
+  const rest = b.getTime() - step.getTime()
+  return {
+    months,
+    days: Math.floor(rest / 86_400_000),
+    hours: Math.floor((rest % 86_400_000) / 3_600_000),
+    mins: Math.floor((rest % 3_600_000) / 60_000),
+  }
+}
+
+/** The time in Kyoto now, e.g. "9:14 pm". */
+export function kyotoNow(now = new Date()) {
+  return now.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Tokyo" }).toLowerCase()
+}

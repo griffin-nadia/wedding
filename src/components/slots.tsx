@@ -49,3 +49,26 @@ export function TravelDates() {
     </section>
   )
 }
+
+/**
+ * The hero photo (Kyoto at night). Files live in public/photos/ and stay out of git until Nadia
+ * says a public photo is OK; switch on with heroPhoto.show (or VITE_HERO_PHOTO=1 for a local build).
+ */
+export function HeroPhoto({ caption }: { caption: string }) {
+  const s = slots.heroPhoto
+  if (!s.show && import.meta.env.VITE_HERO_PHOTO !== "1") return null
+  const p = (f: string) => url(`photos/${s.name}-${f}`)
+  return (
+    <figure className="hero-print">
+      <picture>
+        <source type="image/avif" media="(min-width: 768px)" srcSet={`${p("wide-1600.avif")} 1600w, ${p("wide-2400.avif")} 2400w`} sizes="(min-width: 960px) 440px, 45vw" />
+        <source type="image/webp" media="(min-width: 768px)" srcSet={`${p("wide-1600.webp")} 1600w, ${p("wide-2400.webp")} 2400w`} sizes="(min-width: 960px) 440px, 45vw" />
+        <source type="image/avif" srcSet={`${p("720.avif")} 720w, ${p("1080.avif")} 1080w, ${p("1600.avif")} 1600w`} sizes="100vw" />
+        <source type="image/webp" srcSet={`${p("720.webp")} 720w, ${p("1080.webp")} 1080w, ${p("1600.webp")} 1600w`} sizes="100vw" />
+        <img src={p("1080.jpg")} alt={s.alt} width={1080} height={1350} fetchPriority="high" decoding="async"
+          className="aspect-[4/5] w-full rounded-[4px] bg-[#473521] object-cover object-[50%_30%] md:aspect-[3/2]" />
+      </picture>
+      <figcaption className="hand mt-2 text-sm text-muted-foreground">{caption}</figcaption>
+    </figure>
+  )
+}

@@ -1,8 +1,8 @@
 /** First-visit placeholder in the shape of the greeting and RSVP card. Never a blank page. */
 export function InviteSkeleton({ label }: { label: string }) {
-  const bar = "rounded-md bg-muted motion-safe:animate-pulse"
+  const bar = "washi rounded-md bg-muted"
   return (
-    <div className="min-h-dvh">
+    <div className="skeleton-wait min-h-dvh">
       <div className="mx-auto flex max-w-[60rem] items-center justify-between px-4 py-3 md:px-8 md:py-4">
         <span className="font-display text-xl">N&amp;G</span>
       </div>

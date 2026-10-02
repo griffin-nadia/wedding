@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useLang } from "@/lib/lang"
@@ -19,7 +20,7 @@ export function TravelPage() {
     try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* private mode */ }
   }
   return (
-    <div className="max-w-[40rem] space-y-6 py-6 md:py-12">
+    <div className="mx-auto max-w-[40rem] space-y-6 py-6 md:py-12">
       <header className="space-y-2">
         <h1 className="title leaf-rule">{t.travel.title}</h1>
         <p className="text-body">{t.travel.lead}</p>
@@ -52,6 +53,21 @@ export function TravelPage() {
           )
         })}
       </div>
+      <section aria-labelledby="handy" className="space-y-3 pt-6">
+        <h2 id="handy" className="title leaf-rule">{t.travel.moreTitle}</h2>
+        {t.travel.more.map((m) => (
+          <div key={m.label} className="space-y-2 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
+            <h3 className="label-caps text-eyebrow">{m.label}</h3>
+            <p className="text-body">{m.body}</p>
+            {"action" in m && m.action && (
+              <a href={m.action.href} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-link underline underline-offset-4">{m.action.label}</a>
+            )}
+          </div>
+        ))}
+        <p className="text-sm text-muted-foreground">
+          <Link to="/the-day#getting-there" className="text-link underline underline-offset-4">{t.travel.toVenue}</Link>
+        </p>
+      </section>
     </div>
   )
 }

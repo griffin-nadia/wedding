@@ -5,7 +5,7 @@ import { defineConfig, type Plugin } from "vite"
 
 // Preloads the Latin subsets of our self-hosted fonts, so text paints in the right font first time.
 function preloadFonts(): Plugin {
-  const wanted = /(zen-old-mincho-latin-400|eb-garamond-latin-(400|600))-normal-.*\.woff2$/
+  const wanted = /(oranienbaum-latin-400|eb-garamond-latin-400|inter-latin-500)-normal-.*\.woff2$/
   return {
     name: "preload-fonts",
     transformIndexHtml(_html, ctx) {

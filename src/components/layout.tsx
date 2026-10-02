@@ -3,6 +3,7 @@ import { CalendarDays, CircleHelp, Home, Lamp, Plane, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
+import { Vine } from "@/components/nature"
 
 // 日本語 toggle hidden until the Japanese copy is proofread (needs-from-nadia.md).
 const SHOW_JA = false
@@ -54,6 +55,24 @@ export function Layout() {
           <Outlet />
         </div>
       </main>
+
+      {/* Footer: the one forest band per page */}
+      <footer className="band mt-12">
+        <div className="relative mx-auto flex max-w-[60rem] flex-col gap-6 overflow-hidden px-4 py-12 md:flex-row md:items-end md:justify-between md:px-8">
+          <Vine className="absolute -right-6 -bottom-10 w-40 opacity-70" />
+          <div className="relative space-y-2">
+            <p className="font-display text-4xl">{t.meta.shortTitle}</p>
+            <p className="hand text-sm">{t.footer.made}</p>
+          </div>
+          <nav aria-label="Footer" className="relative">
+            <ul className="flex flex-wrap gap-x-6 gap-y-2">
+              {links.map((l) => (
+                <li key={l.to}><NavLink to={l.to} end className="inline-flex min-h-11 items-center text-sm underline-offset-4 hover:underline">{t.nav[l.key]}</NavLink></li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </footer>
 
       {/* Phone tab bar: 64px plus the safe area, labels always under icons */}
       <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_-8px_rgb(var(--shadow-tint)/0.2)] backdrop-blur md:hidden">

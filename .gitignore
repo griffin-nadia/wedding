@@ -35,3 +35,6 @@ dist-ssr
 
 # QR cards and anything else made from guest data
 private/
+
+# Photos of the couple: not public until Nadia says yes
+public/photos/

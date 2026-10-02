@@ -136,14 +136,15 @@ export type SongHit = { title: string; artist: string; url: string; artwork?: st
  * Song search through our back end (iTunes, or Spotify if set up), so guests' browsers never talk
  * to Apple or Spotify. Artwork arrives inline. Any failure just returns [] and typing still works.
  */
-export async function searchSongs(q: string, token: string, signal?: AbortSignal): Promise<SongHit[]> {
+export async function searchSongs(q: string, token: string, signal?: AbortSignal): Promise<SongHit[] | null> {
   if (!config.apiUrl || q.trim().length < 2) return []
   try {
     const res = await fetch(`${config.apiUrl}?action=songs&token=${encodeURIComponent(token)}&q=${encodeURIComponent(q.trim())}`, { signal })
     const data = await res.json()
-    return Array.isArray(data.results) ? data.results : []
-  } catch {
-    return []
+    return Array.isArray(data.results) ? data.results : null
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") return []
+    return null // null = search isn't working; typing still works
   }
 }
 

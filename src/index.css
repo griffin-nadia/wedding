@@ -28,6 +28,12 @@
   --color-success: var(--success);
   --color-leaf: var(--leaf);
   --color-glow: var(--glow);
+  --color-section-alt: var(--section-alt);
+  --color-band: var(--band);
+  --color-on-band: var(--on-band);
+  --color-on-band-accent: var(--on-band-accent);
+  --color-leaf-a: var(--leaf-a);
+  --color-leaf-b: var(--leaf-b);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -37,6 +43,8 @@
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
   --font-hand: var(--font-hand);
+  --font-label: var(--font-label);
+  --font-ja: var(--font-ja);
   --shadow-paper: var(--shadow-paper);
   --ease-paper: var(--ease-paper);
 }
@@ -59,6 +67,7 @@
   }
   html {
     -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
   }
   body {
     @apply bg-background text-base text-foreground font-sans antialiased;
@@ -89,7 +98,7 @@
 
 /* Small helpers used across pages */
 @utility eyebrow {
-  @apply text-[13px] font-semibold uppercase tracking-[0.12em] text-eyebrow;
+  @apply font-label text-[13px] font-medium uppercase tracking-[0.12em] text-eyebrow;
 }
 
 /* Hanko: the red seal stamped on "all set". Lands once; no motion when reduced motion is on. */
@@ -147,8 +156,32 @@
 
 /* Headings that don't balloon on desktop. */
 @utility title {
-  font-size: clamp(2.25rem, 4vw + 1rem, 3.5rem);
-  line-height: 1.1;
+  /* Section titles: Oranienbaum, uppercase, wide tracking (Susie & Jay) */
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
+  line-height: 1.15;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+/* Small UI words: Inter, uppercase, 13px minimum */
+@utility label-caps {
+  font-family: var(--font-label);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+/* Big numerals (date stack, countdown, times) */
+@utility numerals {
+  font-family: var(--font-display);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+/* The names: big, tight, with a smaller maple "&" */
+@utility names {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 2rem + 9vw, 6.5rem);
+  letter-spacing: -0.04em;
+  line-height: 0.95;
 }
 @utility title-hero {
   font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
@@ -191,3 +224,106 @@
   main { max-width: none !important; padding: 0 !important; }
   .page-in { animation: none !important; }
 }
+
+/* Sage section: alternates with cream like a garden path. Small muted text uses chestnut here (5.7:1). */
+@utility section-alt {
+  background-color: var(--section-alt);
+  --muted-foreground: var(--body);
+}
+[data-theme="lantern"] .section-alt {
+  --muted-foreground: var(--kare);
+}
+/* Forest band: one per page at most (footer, success). */
+@utility band {
+  background-color: var(--band);
+  color: var(--on-band);
+  --foreground: var(--on-band);
+  --body: var(--on-band);
+  --muted-foreground: color-mix(in oklab, var(--on-band) 82%, var(--band));
+  --eyebrow: var(--on-band-accent);
+  --link: var(--on-band-accent);
+}
+
+/* Hero photo as a print on paper (light); sits straight on the evening page in Lantern mode. */
+@utility hero-print {
+  padding: 10px 10px 12px;
+  background: var(--card);
+  border-radius: 6px;
+  box-shadow: var(--shadow-paper);
+  transform: rotate(-1.2deg);
+}
+[data-theme="lantern"] .hero-print {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  transform: none;
+}
+
+/* Lantern mode lanterns (hidden in light mode). */
+.lanterns { display: none; }
+[data-theme="lantern"] .lanterns { display: block; }
+.lantern { transform-origin: top center; animation: lantern-sway 6s ease-in-out infinite alternate; }
+.lantern-glow {
+  position: absolute; left: 50%; bottom: 0; width: 140px; height: 140px; translate: -50% 35%;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--mitsu) 22%, transparent), transparent);
+  pointer-events: none;
+}
+@keyframes lantern-sway { from { rotate: -2.5deg; } to { rotate: 2.5deg; } }
+@media (prefers-reduced-motion: reduce) { .lantern { animation: none; } }
+
+/* Sections that run edge to edge, past the content column. */
+@utility full-bleed {
+  margin-inline: calc(50% - 50vw);
+  padding-inline: max(1rem, calc(50vw - 50%));
+}
+/* In Lantern mode the lanterns take the vine's corner. */
+[data-theme="lantern"] .hero-vine { display: none; }
+
+/* The day timeline: the line fills as you scroll (where the browser supports it). */
+@keyframes timeline-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@supports (animation-timeline: view()) {
+  .timeline-fill { animation: timeline-fill linear both; animation-timeline: view(); animation-range: entry 10% cover 55%; }
+}
+@media (prefers-reduced-motion: reduce) { .timeline-fill { animation: none !important; } }
+@media print { .timeline-fill { animation: none !important; transform: none !important; } }
+
+/* Success: two leaves drift once and settle. Still under reduced motion. */
+@keyframes leaf-drift {
+  0% { opacity: 0; transform: translate(0, -24px) rotate(-30deg); }
+  60% { opacity: 1; transform: translate(10px, 6px) rotate(18deg); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(0); }
+}
+@utility leaf-drift {
+  animation: leaf-drift 1.6s var(--ease-paper) both;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+/* Seal fill on the chosen answer: a small press when it lands. */
+@keyframes seal-in { from { transform: scale(0.6); } 70% { transform: scale(1.12); } to { transform: scale(1); } }
+.seal { animation: seal-in 260ms var(--ease-paper) both; }
+@media (prefers-reduced-motion: reduce) { .seal { animation: none; } }
+
+/* Primary "bead" button: a little depth, presses down 2px. */
+@utility bead {
+  box-shadow: 0 2px 0 color-mix(in oklab, var(--primary) 70%, black), 0 6px 16px -8px rgb(var(--shadow-tint) / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.18);
+  transition: transform 120ms var(--ease-paper), box-shadow 120ms var(--ease-paper), filter 150ms;
+  &:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 0 0 color-mix(in oklab, var(--primary) 70%, black), 0 2px 6px -4px rgb(var(--shadow-tint) / 0.4);
+  }
+}
+/* Skeleton: appears only after 300ms (fast loads never flash it), then breathes slowly. */
+@keyframes skeleton-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes washi-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+.skeleton-wait { animation: skeleton-in 200ms 300ms both; }
+.washi { animation: washi-breathe 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .washi { animation: none; } }
+
+/* First-visit envelope: flap opens, seal lifts, card rises, then everything fades (1.3 s). */
+@keyframes env-flap { 0%, 15% { transform: rotateX(0); } 45%, 100% { transform: rotateX(180deg); } }
+@keyframes env-seal { 0%, 10% { opacity: 1; } 25%, 100% { opacity: 0; } }
+@keyframes env-card { 0%, 40% { transform: translateY(0); } 80%, 100% { transform: translateY(-60%); } }
+@keyframes env-out { 0%, 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+.envelope { animation: env-out 1.6s var(--ease-paper) both; perspective: 600px; }
+.envelope-flap { animation: env-flap 1.3s var(--ease-paper) both; backface-visibility: hidden; }
+.envelope-seal { animation: env-seal 1.3s linear both; }
+.envelope-card { animation: env-card 1.3s var(--ease-paper) both; }

@@ -51,7 +51,7 @@ const WEDDING = {
 
 const DATE_RANGE = { from: "2027-09-01", to: "2027-11-30" }
 
-const MAX = { name: 40, dietary: 100, song: 200, message: 2000, songs: 3, payload: 5000 }
+const MAX = { name: 40, dietary: 200, song: 200, message: 2000, songs: 3, payload: 5000 }
 
 // A guest row whose First name is one of these is a plus one the household can name.
 const PLUS_ONE = /^(guest|plus one|\+1)$/i

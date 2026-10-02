@@ -4,6 +4,9 @@ import { createRoot } from "react-dom/client"
 import "./styles/fonts.css"
 import "./index.css"
 import App from "./App"
+import { applySeason } from "./lib/seasons"
+
+applySeason()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
