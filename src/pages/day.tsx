@@ -92,11 +92,47 @@ export function DayPage() {
           <p className="text-sm text-muted-foreground">{t.day.japanTime} <span className="no-print">{t.day.kyotoNow(kyotoNow(now))}</span></p>
         </TabsPrimitive.Content>
 
-        <TabsPrimitive.Content forceMount value="getting-there" className="print:!block print:mt-8 data-[state=inactive]:hidden space-y-3 outline-none">
-          <Photo name="yasaka-gate-shijo" treatment="split" sizes="(min-width: 640px) 640px, 100vw" className="no-print" />
-          {t.day.getting.map((g) => (
-            <InfoBlock key={g.label} label={g.label} action={"action" in g && g.action ? { label: g.action.label, href: mapUrl } : undefined}>{g.body}</InfoBlock>
-          ))}
+        <TabsPrimitive.Content forceMount value="getting-there" className="print:!block print:mt-8 data-[state=inactive]:hidden space-y-6 outline-none">
+          <Photo name="pontocho-lanterns" treatment="split" sizes="(min-width: 640px) 640px, 100vw" className="no-print" />
+          <header className="space-y-1">
+            <h2 className="font-display text-3xl">{t.day.gettingTitle} <span lang="ja" className="font-ja text-xl text-muted-foreground">· {t.day.gettingTitleJa}</span></h2>
+            <p className="text-body">{t.day.gettingIntro}</p>
+          </header>
+          {/* The easy way: three steps on one line of ink */}
+          <section aria-labelledby="easy" className="space-y-3 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
+            <h3 id="easy" className="label-caps text-eyebrow">{t.day.easyWay}</h3>
+            <ol className="relative space-y-4 pl-8">
+              <span aria-hidden className="absolute top-2 bottom-2 left-[0.6rem] w-0.5 rounded bg-border" />
+              {t.day.route.map((r, i) => (
+                <li key={r.place} className="relative">
+                  <span aria-hidden className={cn("absolute top-1.5 -left-8 size-4 rounded-full ring-4 ring-card", i === t.day.route.length - 1 ? "bg-primary" : "bg-leaf")} />
+                  <p className="font-semibold">{r.place}</p>
+                  <p className="text-sm text-body">{r.note}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+          {/* Show the driver: big Japanese they can read from the back seat */}
+          <section aria-labelledby="driver" className="space-y-2 rounded-[1.25rem] bg-secondary p-5 ring-1 ring-border">
+            <h3 id="driver" className="label-caps text-body">{t.day.driverTitle}</h3>
+            <p lang="ja" className="font-ja text-3xl leading-snug">{t.day.driverName}</p>
+            <p lang="ja" className="font-ja text-xl">{t.day.driverAddress}</p>
+          </section>
+          <section aria-labelledby="handy" className="space-y-3">
+            <h3 id="handy" className="title text-[1.5rem]">{t.day.handyTitle}</h3>
+            {t.day.handy.map((h) => (
+              <InfoBlock key={h.label} as="h4" label={h.label} action={h.action}>
+                <p className="font-semibold text-foreground">{h.title}</p>
+                <p className="text-sm">{h.body}</p>
+              </InfoBlock>
+            ))}
+          </section>
+          <section className="space-y-1 rounded-[1.25rem] border-2 border-highlight/60 bg-card p-5">
+            <p className="label-caps text-eyebrow">{t.day.headsUpLabel}</p>
+            <p className="font-semibold">{t.day.headsUpTitle}</p>
+            <p className="text-sm text-body">{t.day.headsUpBody}</p>
+          </section>
+          <InfoBlock label={t.day.earlyTitle} as="h3">{t.day.earlyBody}</InfoBlock>
         </TabsPrimitive.Content>
 
         <TabsPrimitive.Content value="stay" className="space-y-3 outline-none">

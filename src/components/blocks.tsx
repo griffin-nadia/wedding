@@ -48,7 +48,7 @@ export function ReviewRow({ label, children, edit, editLabel, block = false }: {
 }
 
 /** Short labelled block with at most one action (Veley / Ross style). */
-export function InfoBlock({ label, children, action, media, as: H = "h2" }: { label: string; children: ReactNode; action?: { label: string; href: string }; media?: ReactNode; as?: "h2" | "h3" }) {
+export function InfoBlock({ label, children, action, media, as: H = "h2" }: { label: string; children: ReactNode; action?: { label: string; href: string }; media?: ReactNode; as?: "h2" | "h3" | "h4" }) {
   return (
     <section className="space-y-2 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
       {media}
