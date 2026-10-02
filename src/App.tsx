@@ -16,7 +16,7 @@ function Gate() {
   const { status } = useHousehold()
   const { t } = useLang()
   if (status === "loading") return <InviteSkeleton label={t.loading} />
-  if (status !== "ready") return <NoInvitePage reason={status} />
+  if (status !== "ready") return <main><NoInvitePage reason={status} /></main>
   return (
     <Routes>
       <Route element={<Layout />}>

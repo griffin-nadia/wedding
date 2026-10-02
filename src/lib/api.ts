@@ -90,7 +90,7 @@ export function cleanPayload(p: RsvpPayload): RsvpPayload {
   }
 }
 
-export async function saveRsvp(token: string, payload: RsvpPayload, before: Household): Promise<SaveResult> {
+export async function saveRsvp(token: string, payload: RsvpPayload, before: Household, id = ""): Promise<SaveResult> {
   const clean = cleanPayload(payload)
   if (!config.apiUrl) {
     await new Promise((r) => setTimeout(r, 400))
@@ -105,7 +105,7 @@ export async function saveRsvp(token: string, payload: RsvpPayload, before: Hous
   const data = await call(config.apiUrl, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({ action: "rsvp", token, ...clean }),
+    body: JSON.stringify({ action: "rsvp", id, token, ...clean }),
   })
   if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
   return { household: data.household, updated: Boolean(data.updated), changes: data.changes ?? [] }
@@ -156,4 +156,33 @@ export async function resendLink(email: string): Promise<void> {
     body: JSON.stringify({ action: "resend", email: email.trim() }),
   })
   if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
+}
+
+/**
+ * Saves with up to 3 tries (1 s, 2 s, 4 s apart) when the server is busy or the connection drops.
+ * The same id goes with every try, so the back end never saves the reply twice.
+ */
+export async function saveRsvpWithRetry(token: string, payload: RsvpPayload, before: Household, id: string, tries = 3): Promise<SaveResult> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await saveRsvp(token, payload, before, id)
+    } catch (err) {
+      const code = err instanceof ApiError ? err.code : "network"
+      const retryable = code === "busy" || code === "network" || code === "server"
+      if (!retryable || attempt >= tries) throw err
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)))
+    }
+  }
+}
+
+/** A reply in progress, kept on this device so nothing typed is ever lost. */
+const draftKey = (token: string) => `ng-draft-${token}`
+export function readDraft(token: string): { form: RsvpPayload; at: number } | null {
+  try { return JSON.parse(localStorage.getItem(draftKey(token)) ?? "null") } catch { return null }
+}
+export function writeDraft(token: string, form: RsvpPayload) {
+  try { localStorage.setItem(draftKey(token), JSON.stringify({ form, at: Date.now() })) } catch { /* private mode */ }
+}
+export function clearDraft(token: string) {
+  try { localStorage.removeItem(draftKey(token)) } catch { /* private mode */ }
 }

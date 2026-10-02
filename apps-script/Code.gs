@@ -49,6 +49,8 @@ const WEDDING = {
   venue: "The Sodoh Higashiyama, Kyoto",
 }
 
+const DATE_RANGE = { from: "2027-09-01", to: "2027-11-30" }
+
 const MAX = { name: 40, dietary: 100, song: 200, message: 2000, songs: 3, payload: 5000 }
 
 // A guest row whose First name is one of these is a plus one the household can name.
@@ -69,7 +71,7 @@ const ERRORS = {
   not_found: "We couldn't find this invite.",
   bad_guest: "That RSVP included someone who isn't in this household.",
   bad_attending: "Please choose coming or can't make it for each person.",
-  bad_date: "Please check the dates.",
+  bad_date: "Please check your dates: between 1 Sep and 30 Nov 2027, and leaving on or after arriving.",
   closed: "Changes are closed now. Please message Nadia or Griffin.",
   busy: "Lots of people are replying right now. Please try again in a minute.",
   server: "Something went wrong saving that. Please try again.",
@@ -126,7 +128,9 @@ function doGet(e) {
     }
     if (action === "ping") {
       // Health check: is the minute trigger set up? (No guest data here.)
-      return json_({ ok: true, queue: PropertiesService.getScriptProperties().getProperty("flush_trigger") === "1", triggerError: CacheService.getScriptCache().get("trigger_err") || null })
+      const props = PropertiesService.getScriptProperties()
+      const pending = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0).length
+      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", pending: pending, lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null })
     }
     if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
@@ -151,6 +155,20 @@ function doPost(e) {
   if (body && body.action === "resend") return json_(resendLink_(body.email))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
   if (isLocked_()) return fail_("closed")
+
+  // The site sends one id per reply (kept across retries), so a retry never saves twice.
+  const idem = String(body.id || "").replace(/[^\w-]/g, "").slice(0, 64)
+  const cache = CacheService.getScriptCache()
+  if (idem) {
+    const seen = cache.get("idem:" + idem)
+    if (seen) return ContentService.createTextOutput(seen).setMimeType(ContentService.MimeType.JSON)
+  }
+  const remember = (out) => {
+    // Only successful saves are remembered; a "busy" or error answer must stay retryable
+    if (idem && out.getContent().startsWith('{"ok":true')) safely_(() => cache.put("idem:" + idem, out.getContent(), 21600))
+    return out
+  }
+  if (flushTriggerReady_()) return remember(fastSave_(body))
 
   const lock = LockService.getScriptLock()
   if (!lock.tryLock(30000)) return fail_("busy")
@@ -180,7 +198,67 @@ function doPost(e) {
     safely_(() => sendConfirmation_(after, updated ? changes : null))
     safely_(() => notifyDropped_(after.displayName, droppedNames_(before, after)))
   }
-  return json_({ ok: true, updated: updated, changes: changes, household: after })
+  return remember(json_({ ok: true, updated: updated, changes: changes, household: after }))
+}
+
+/**
+ * Fast save (used once the minute trigger is on): check the reply, queue it, update the cached
+ * household so a reload shows it straight away, and answer. flushQueue writes it to the sheet and
+ * sends the email within a minute. Uses the user lock, so it never waits behind a flush.
+ */
+function fastSave_(body) {
+  const lock = LockService.getUserLock()
+  if (!lock.tryLock(10000)) return fail_("busy")
+  try {
+    const before = cachedHousehold_(body.token)
+    if (!before) return fail_("not_found")
+    const input = validate_(before, body)
+    if (input.error) return fail_(input.error)
+    const after = applyInput_(before, input)
+    const changes = describeChanges_(before, after)
+    PropertiesService.getScriptProperties().setProperty(
+      "q:save:" + after.token + ":" + Date.now() + String(Math.floor(Math.random() * 1000)).padStart(3, "0"),
+      JSON.stringify({ input: input, changes: changes, replied: Boolean(before.respondedAt), dropped: droppedNames_(before, after) }),
+    )
+    CacheService.getScriptCache().put(cacheKey_(after.token), JSON.stringify(after), CACHE_SECONDS)
+    return json_({ ok: true, updated: Boolean(before.respondedAt), changes: changes, household: after })
+  } catch (err) {
+    return fail_("server", err)
+  } finally {
+    lock.releaseLock()
+  }
+}
+
+/** The household as it will be once this reply is applied (same shape as getHousehold_). */
+function applyInput_(h, input) {
+  const byId = {}
+  input.guests.forEach((g) => (byId[g.id] = g))
+  return Object.assign({}, h, {
+    guests: h.guests.map((g) => {
+      const x = byId[g.id]
+      if (!x) return g
+      return Object.assign({}, g, {
+        attending: x.attending || null,
+        dietary: x.attending === "yes" ? x.dietary || "None" : "None",
+        firstName: x.name !== null && x.name !== undefined ? x.name || "Guest" : g.firstName,
+      })
+    }),
+    songs: input.songs.slice(),
+    arrival: input.arrival,
+    departure: input.departure,
+    message: input.message,
+    photos: input.photos === "yes" ? true : input.photos === "no" ? false : null,
+    respondedAt: new Date().toISOString(),
+  })
+}
+
+/** Queued replies for this household that the minute trigger hasn't written yet, oldest first. */
+function pendingSaves_(token, all) {
+  all = all || PropertiesService.getScriptProperties().getProperties()
+  return Object.keys(all)
+    .filter((k) => k.indexOf("q:save:" + token + ":") === 0)
+    .sort()
+    .map((k) => ({ key: k, data: JSON.parse(all[k]) }))
 }
 
 // ---------- reads ----------
@@ -345,7 +423,8 @@ function cachedHousehold_(token) {
   const key = cacheKey_(token)
   const hit = c.get(key)
   if (hit) return JSON.parse(hit)
-  const h = getHousehold_(token)
+  let h = getHousehold_(token)
+  if (h) pendingSaves_(token).forEach((p) => (h = applyInput_(h, p.data.input)))
   if (h) c.put(key, JSON.stringify(h), CACHE_SECONDS)
   return h
 }
@@ -366,9 +445,15 @@ function onEdit() {
 
 // ---------- queue (sent by flushQueue every minute) ----------
 
-/** Visits: one property per event, so no lock is needed. */
+/**
+ * Visits: one property per household per 10 minutes (a repeat open in the same window just
+ * overwrites it), so the queue stays small even if the trigger is off. No lock needed.
+ */
 function enqueue_(kind, token) {
-  PropertiesService.getScriptProperties().setProperty("q:" + kind + ":" + token + ":" + Date.now() + Math.floor(Math.random() * 1000), "1")
+  const bucket = Math.floor(Date.now() / REPEAT_OPEN_MS) * REPEAT_OPEN_MS
+  const props = PropertiesService.getScriptProperties()
+  if (kind === "started" && props.getProperty("q:started:" + token + ":0000000000000")) return // keep the first time
+  props.setProperty("q:" + kind + ":" + token + ":" + (kind === "started" ? "0000000000000" : bucket), String(Date.now()))
 }
 
 /** Confirmation email for this save. Called under the save lock. Returns false if mail must go inline. */
@@ -407,12 +492,35 @@ function flushQueue() {
   let mails = []
   try {
     const all = props.getProperties()
-    const keys = Object.keys(all).filter((k) => k.indexOf("q:") === 0)
+    // Queued replies first, oldest first, one household at a time
+    const saveKeys = Object.keys(all).filter((k) => k.indexOf("q:save:") === 0).sort()
+    const byToken = {}
+    saveKeys.forEach((k) => (byToken[k.split(":")[2]] = byToken[k.split(":")[2]] || []).push(k))
+    Object.keys(byToken).forEach((token) => {
+      const mail = { updated: null, changes: [], dropped: [] }
+      byToken[token].forEach((k) => {
+        const item = JSON.parse(all[k])
+        const h = getHousehold_(token)
+        if (h) {
+          saveRsvp_(h, item.input)
+          log_(h.displayName, token, item.changes.join("\n"), JSON.stringify(item.input))
+          if (mail.updated === null) mail.updated = item.replied
+          mail.changes = mail.changes.concat(item.changes.filter((c) => c !== "No changes"))
+          mail.dropped = mail.dropped.concat(item.dropped || [])
+        }
+        props.deleteProperty(k)
+        SpreadsheetApp.flush()
+      })
+      if (mail.updated !== null) mails.push({ token: token, data: { updated: mail.updated, changes: mail.changes.length ? mail.changes : ["No changes"], dropped: mail.dropped } })
+      // Drop the cached copy once nothing newer is waiting, so the next read comes from the sheet
+      if (!pendingSaves_(token).length) forgetHousehold_(token)
+    })
+    const keys = Object.keys(all).filter((k) => k.indexOf("q:") === 0 && k.indexOf("q:save:") !== 0)
     const events = { open: {}, started: {} }
     keys.forEach((k) => {
       const parts = k.split(":")
       if (parts[1] === "mail") mails.push({ token: parts[2], data: JSON.parse(all[k]) })
-      else if (events[parts[1]]) (events[parts[1]][parts[2]] = events[parts[1]][parts[2]] || []).push(Number(parts[3].slice(0, 13)))
+      else if (events[parts[1]]) (events[parts[1]][parts[2]] = events[parts[1]][parts[2]] || []).push(Number(all[k]) > 1 ? Number(all[k]) : Number(parts[3].slice(0, 13)))
     })
     if (Object.keys(events.open).length || Object.keys(events.started).length) writeVisits_(events)
     keys.forEach((k) => props.deleteProperty(k))
@@ -539,6 +647,9 @@ function validate_(h, body) {
   const arrival = date_(body.arrival)
   const departure = date_(body.departure)
   if (arrival === null || departure === null) return { error: "bad_date" }
+  // Trip dates sit around the wedding (1 Sep to 30 Nov 2027) and leaving can't be before arriving
+  const inRange = (d) => !d || (d >= DATE_RANGE.from && d <= DATE_RANGE.to)
+  if (!inRange(arrival) || !inRange(departure) || (arrival && departure && departure < arrival)) return { error: "bad_date" }
   const songs = []
   ;(Array.isArray(body.songs) ? body.songs : []).forEach((s) => {
     const t = text_(s, MAX.song)
@@ -773,6 +884,8 @@ function sendInvitesTest() {
     const mail = inviteEmail_("invite", h, "Test: the real invite would go to " + (h.emails.join(", ") || "nobody (no email, text them the link)"))
     MailApp.sendEmail({ to: to, replyTo: prop_("REPLY_TO"), name: "Nadia & Griffin", subject: "[TEST] " + mail.subject, body: mail.text, htmlBody: mail.html })
   })
+  log_("(test send)", "", "Test invites: " + list.length + " sent to the test address. Invite sent not filled.", "")
+  PropertiesService.getScriptProperties().setProperty("last_test_send", new Date().toISOString() + " · " + list.length)
   ui.alert("Sent " + list.length + " test invite" + (list.length === 1 ? "" : "s") + " to " + to + ".\n\n\"Invite sent\" was not filled in. Nobody else got anything.")
 }
 

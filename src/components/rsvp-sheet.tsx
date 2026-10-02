@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -8,7 +9,7 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Textarea } from "@/components/ui/textarea"
 import { Hanko } from "@/components/hanko"
 import { SongField } from "@/components/song-field"
-import { answerOf, ApiError, saveRsvp, trackStarted, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
+import { answerOf, ApiError, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { config } from "@/lib/config"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
@@ -18,6 +19,8 @@ import { cn } from "@/lib/utils"
 
 // Same limits as the back end, so nothing gets cut off silently.
 const MAX = { name: 40, song: 200, message: 2000 }
+// Trip dates around the wedding, same rule as the back end
+const TRIP = { from: "2027-09-01", to: "2027-11-30" }
 
 /** A plus one still called "Guest" in the sheet shows as a blank name box. */
 const blankPlusOne = (g: Guest) => (g.plusOne && /^(guest|plus one|\+1)$/i.test(g.firstName.trim()) ? { ...g, firstName: "" } : g)
@@ -40,11 +43,28 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [done, setDone] = useState<SaveResult | null>(null)
+  const [slow, setSlow] = useState(false)
+  const [offline, setOffline] = useState(false)
+  const replyId = useRef("")
   const sending = useRef(false)
   const [form, setForm] = useState<RsvpPayload>(() => formFrom(household))
   // Opened by an early tap (before this form loaded): count it as a started RSVP too.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (openOnLoad && household) trackStarted(household.token) }, [])
+  // Keep the draft on this device from the first answer on
+  useEffect(() => {
+    if (open && household && !done) writeDraft(household.token, form)
+  }, [form, open, household, done])
+
+  // Offline: wait, then send by itself when the connection is back
+  useEffect(() => {
+    if (!offline) return
+    const back = () => { setOffline(false); void send() }
+    window.addEventListener("online", back)
+    return () => window.removeEventListener("online", back)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offline])
+
   if (!household) return null
   const locked = isLocked()
 
@@ -53,11 +73,19 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
     setForm((f) => ({ ...f, guests: f.guests.map((g) => (g.id === id ? { ...g, ...patch } : g)) }))
   const coming = form.guests.filter((g) => g.attending === "yes")
   const songsFilled = form.songs.map((x) => x.trim()).filter(Boolean)
-  const canNext = step !== 1 || form.guests.every((g) => g.attending)
+  const outside = (d: string) => Boolean(d) && (d < TRIP.from || d > TRIP.to)
+  const dateError = outside(form.arrival) || outside(form.departure)
+    ? t.rsvp.dateRange
+    : form.arrival && form.departure && form.departure < form.arrival ? t.rsvp.dateOrder : ""
+  const canNext = step === 1 ? form.guests.every((g) => g.attending) : step === 2 ? !dateError : true
 
   function onOpenChange(o: boolean) {
     if (o) {
-      setForm(formFrom(household))
+      // A draft from an earlier, unsent try wins over the saved answers if it's newer
+      const draft = readDraft(household!.token)
+      const savedAt = household!.respondedAt ? Date.parse(household!.respondedAt) : 0
+      setForm(draft && draft.at > savedAt ? draft.form : formFrom(household))
+      replyId.current = ""
       setError("")
       setDone(null)
       trackStarted(household!.token)
@@ -68,17 +96,24 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
 
   async function send() {
     if (sending.current) return // no double submits, even on a fast double tap
+    setError("")
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return setOffline(true)
     sending.current = true
     setSaving(true)
-    setError("")
+    setSlow(false)
+    const slowTimer = setTimeout(() => setSlow(true), 2500)
+    replyId.current ||= crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
     try {
-      const result = await saveRsvp(household!.token, form, household!)
+      const result = await saveRsvpWithRetry(household!.token, form, household!, replyId.current)
+      clearDraft(household!.token)
       setHousehold(result.household)
       setDone(result)
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "other"
-      setError(code in t.rsvp.errors ? t.rsvp.errors[code as keyof typeof t.rsvp.errors] : t.rsvp.errors.other)
+      if (code === "network" && navigator.onLine === false) setOffline(true)
+      else setError(code in t.rsvp.errors ? t.rsvp.errors[code as keyof typeof t.rsvp.errors] : t.rsvp.errors.other)
     } finally {
+      clearTimeout(slowTimer)
       sending.current = false
       setSaving(false)
     }
@@ -152,9 +187,13 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                 <p className="text-xs text-muted-foreground">{t.rsvp.songHint}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2"><Label htmlFor="arr">{t.rsvp.arrival}</Label><Input id="arr" type="date" value={form.arrival} onChange={(e) => setForm({ ...form, arrival: e.target.value })} /></div>
-                <div className="space-y-2"><Label htmlFor="dep">{t.rsvp.departure}</Label><Input id="dep" type="date" value={form.departure} onChange={(e) => setForm({ ...form, departure: e.target.value })} /></div>
-                <p className="col-span-2 text-xs text-muted-foreground">{t.rsvp.datesHint}</p>
+                <div className="space-y-2"><Label htmlFor="arr">{t.rsvp.arrival}</Label><Input id="arr" type="date" min={TRIP.from} max={TRIP.to} value={form.arrival}
+                  aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, arrival: e.target.value })} /></div>
+                <div className="space-y-2"><Label htmlFor="dep">{t.rsvp.departure}</Label><Input id="dep" type="date" min={form.arrival || TRIP.from} max={TRIP.to} value={form.departure}
+                  aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, departure: e.target.value })} /></div>
+                {dateError
+                  ? <p id="date-error" role="alert" className="col-span-2 text-sm text-destructive">{dateError}</p>
+                  : <p id="date-hint" className="col-span-2 text-xs text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</p>}
               </div>
               </>}
               <div className="space-y-2"><Label htmlFor="msg">{t.rsvp.message}</Label><Textarea id="msg" maxLength={MAX.message} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} /></div>
@@ -188,14 +227,15 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
             </label>
           )}
           {step === 3 && <p className="hand text-sm text-muted-foreground">{t.rsvp.editUntil}</p>}
-          {error && <p role="alert" className="rounded-md border border-destructive/40 bg-card px-4 py-3 text-sm text-destructive">{error}</p>}
+          {error && <p role="alert" className="rounded-xl border border-destructive/40 bg-card px-4 py-3 text-sm text-destructive">{error}</p>}
+          {offline && <p role="status" className="rounded-xl border bg-card px-4 py-3 text-sm text-body">{t.rsvp.offline}</p>}
         </div>
 
         <SheetFooter className="mt-auto flex-row gap-3 border-t px-6 py-4">
           {step > 1 && <Button variant="outline" size="lg" disabled={saving} onClick={() => setStep(step - 1)}>{t.rsvp.back}</Button>}
           {step < 3
             ? <Button size="lg" className="flex-1" disabled={!canNext} onClick={() => setStep(step + 1)}>{t.rsvp.next}</Button>
-            : <Button size="lg" className="flex-1" disabled={saving} aria-busy={saving} onClick={send}>{saving ? t.rsvp.saving : error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
+            : <Button size="lg" className="flex-1" disabled={saving} aria-busy={saving} onClick={send}>{saving ? (<><Loader2 className="animate-spin" aria-hidden />{slow ? t.rsvp.stillSending : t.rsvp.saving}</>) : error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
         </SheetFooter>
         {step === 3 && <p className="px-6 pb-4 text-xs text-muted-foreground">{t.rsvp.privacy}</p>}
         </>}
