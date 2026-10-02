@@ -3,7 +3,7 @@
 Private invite + RSVP site for Nadia and Griffin's wedding, Fri 15 Oct 2027, The Sodoh Higashiyama, Kyoto.
 Each household gets its own link (`/?h=token`). No logins, no app, no trackers.
 
-- **v1 (live Thu 15 Oct 2026):** Home, The day, Travel, Q&A, RSVP in a simple autumn look.
+- **v1 (live Thu 15 Oct 2026):** Home, The day, Travel, Q&A, RSVP in a simple autumn look. Invites send from the sheet menu.
 - **v2 (mid Dec 2026):** the look they pick, the envelope opening, delight moments, song search, Japanese.
 
 Design file: Figma "Nadia-Griffin-Wedding-site" (page 00 Overview). Plan: the planner sheet's Plan tab.
@@ -26,7 +26,7 @@ the back end exists. Copy `.env.example` to `.env` and paste the Apps Script URL
 | App | Vite + React + TypeScript, React Router | Simple static build, app-like tabs |
 | UI | shadcn/ui (Radix, `radix-vega` style) in `src/components/ui` | Accessible accordion, sheet, radio, form parts we own and restyle |
 | Styling | Tailwind v4, tokens in `src/styles/tokens.css` | One token file, themes via `data-theme` |
-| Fonts | Shippori Mincho + Zen Kaku Gothic New via Fontsource | Served from our own site, split by unicode range |
+| Fonts | Shippori Mincho + Zen Kaku Gothic New via Fontsource | Served from our own site, Latin files preloaded so text never swaps |
 | Data | Google Sheet + Apps Script web app (`apps-script/`) | Free, Nadia can edit, no server |
 | Hosting | GitHub Pages: `griffin-nadia.github.io/wedding` | Free. Repo is public, so **no guest data in code, ever** |
 
@@ -62,3 +62,10 @@ See `apps-script/README.md` and `docs/data-model.md`.
 - No guest names, emails or photos in the repo. They live in the Sheet.
 - `noindex` + `robots.txt` keep it out of search engines. It's private-by-link, not password-protected.
 - One delight moment per screen. Every animation has a still version (`prefers-reduced-motion`).
+- Visit counts live only in our sheet (opens, started RSVP). No cookies, analytics services or fonts from other sites.
+- The 日本語 toggle is hidden (`SHOW_JA` in `src/components/layout.tsx`) until the Japanese copy is proofread.
+
+## Delight moments
+
+Hanko "済" seal when you're all set, countdown, add to calendar (Google or .ics), "It's 6:17 pm in Kyoto right now"
+and your own local time on The day, tick-off travel checklist (saved on your device only), one maple leaf on Q&A.

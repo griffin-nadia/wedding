@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { Hanko } from "@/components/hanko"
+import { SongField } from "@/components/song-field"
 import { answerOf, ApiError, saveRsvp, trackStarted, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { config } from "@/lib/config"
 import { fmtStay } from "@/lib/dates"
@@ -138,8 +139,8 @@ export function RsvpSheet({ children }: { children: ReactNode }) {
               <div className="space-y-2" role="group" aria-labelledby="songs-label">
                 <p id="songs-label" className="text-sm font-medium">{t.rsvp.song}</p>
                 {Array.from({ length: config.maxSongs }).map((_, i) => (
-                  <Input key={i} aria-label={`Song ${i + 1}`} value={form.songs[i] ?? ""} maxLength={MAX.song} placeholder={i === 0 ? "September, Earth Wind & Fire" : ""}
-                    onChange={(e) => setForm((f) => { const songs = [...f.songs]; songs[i] = e.target.value; return { ...f, songs } })} />
+                  <SongField key={i} label={`Song ${i + 1}`} value={form.songs[i] ?? ""} maxLength={MAX.song} placeholder={i === 0 ? "September, Earth Wind & Fire" : ""}
+                    onChange={(v) => setForm((f) => { const songs = [...f.songs]; songs[i] = v; return { ...f, songs } })} />
                 ))}
                 <p className="text-xs text-muted-foreground">{t.rsvp.songHint}</p>
               </div>

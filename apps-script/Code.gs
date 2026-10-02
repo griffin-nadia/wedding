@@ -23,6 +23,8 @@
  *   RSVP_BY         2027-02-15
  *   TEST_EMAIL      where test invites go (asked for the first time you send a test)
  *   NOTIFY_CHANGES  "yes" to email REPLY_TO when someone changes from coming to not coming
+ *   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET   from a free Spotify developer app (song search).
+ *                   Without them, song search is off and guests just type.
  */
 
 const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", emails: "Emails" }
@@ -89,6 +91,8 @@ function onOpen() {
     .addItem("Send a reminder to households who haven't replied…", "sendReminders")
     .addSeparator()
     .addItem("Set up the Emails tab", "setupEmailsTab")
+    .addItem("Check song search (Spotify)", "checkSongSearch")
+    .addItem("Reset test households…", "resetTestHouseholds")
     .addToUi()
 }
 
@@ -103,6 +107,7 @@ function doGet(e) {
       if (h && p.open === "1") safely_(() => trackOpen_(h.token))
       return json_({ ok: true, household: h })
     }
+    if (action === "songs") return json_(searchSongs_(p.q))
     if (action === "started") {
       safely_(() => trackStarted_(String(p.token || "").trim()))
       return json_({ ok: true })
@@ -205,6 +210,46 @@ function check_(token) {
       .filter((r) => r.Token === h.token)
       .map((r) => ({ time: r.Time instanceof Date ? r.Time.toISOString() : String(r.Time), changed: String(r["What changed"]) })),
   }
+}
+
+// ---------- song search (Spotify, server side so guests never talk to Spotify) ----------
+
+function searchSongs_(q) {
+  q = text_(q, 80)
+  if (q.length < 2) return { ok: true, results: [] }
+  const props = PropertiesService.getScriptProperties()
+  const id = props.getProperty("SPOTIFY_CLIENT_ID")
+  const secret = props.getProperty("SPOTIFY_CLIENT_SECRET")
+  if (!id || !secret) return { ok: false, code: "not_configured" }
+  const cache = CacheService.getScriptCache()
+  const key = "song:" + q.toLowerCase()
+  const hit = cache.get(key)
+  if (hit) return { ok: true, results: JSON.parse(hit) }
+  let token = cache.get("spotify_token")
+  if (!token) {
+    const res = UrlFetchApp.fetch("https://accounts.spotify.com/api/token", {
+      method: "post",
+      payload: { grant_type: "client_credentials" },
+      headers: { Authorization: "Basic " + Utilities.base64Encode(id + ":" + secret) },
+      muteHttpExceptions: true,
+    })
+    if (res.getResponseCode() !== 200) return { ok: false, code: "search_failed" }
+    const body = JSON.parse(res.getContentText())
+    token = body.access_token
+    cache.put("spotify_token", token, Math.max(60, (body.expires_in || 3600) - 300))
+  }
+  const res = UrlFetchApp.fetch("https://api.spotify.com/v1/search?type=track&limit=6&market=AU&q=" + encodeURIComponent(q), {
+    headers: { Authorization: "Bearer " + token },
+    muteHttpExceptions: true,
+  })
+  if (res.getResponseCode() !== 200) return { ok: false, code: "search_failed" }
+  const results = (JSON.parse(res.getContentText()).tracks || { items: [] }).items.map((t) => ({
+    title: t.name,
+    artist: (t.artists || []).map((a) => a.name).join(", "),
+    url: t.external_urls ? t.external_urls.spotify : "",
+  }))
+  cache.put(key, JSON.stringify(results), 6 * 60 * 60)
+  return { ok: true, results: results }
 }
 
 // ---------- visits ----------
@@ -666,6 +711,53 @@ function emailCopy_() {
     if (r.Key in copy && String(r.Text || "").trim()) copy[r.Key] = String(r.Text)
   })
   return copy
+}
+
+// ---------- test data ----------
+
+// Households named like "Jehan (Test)" or "Test · Family". Real households never match.
+const TEST_HOUSEHOLD = /(^test\b|\(test\))/i
+
+/** Clears answers, songs, Log rows and visit counts for test households. Keeps their Guests rows. */
+function resetTestHouseholds() {
+  const ui = SpreadsheetApp.getUi()
+  const tests = households_().filter((h) => TEST_HOUSEHOLD.test(h.name))
+  if (!tests.length) return ui.alert("No test households found.")
+  const ok = ui.alert("Reset test households", "Clear answers, songs, Log rows and visits for:\n\n" + tests.map((h) => h.name).join("\n") + "\n\nTheir rows on Guests stay.", ui.ButtonSet.OK_CANCEL)
+  if (ok !== ui.Button.OK) return
+  const tokens = tests.map((h) => h.token)
+  const props = PropertiesService.getScriptProperties()
+
+  const g = sheet_(TABS.guests)
+  const head = headers_(g)
+  const data = g.getDataRange().getValues()
+  for (let i = 1; i < data.length; i++) {
+    if (tokens.indexOf(String(data[i][head.Token]).trim()) < 0) continue
+    ;["Attending", "Dietary", "Invite sent"].concat(VISITS).forEach((k) => {
+      if (k in head) g.getRange(i + 1, head[k] + 1).setValue("")
+    })
+    const id = String(data[i][head["Guest ID"]])
+    if (props.getProperty("plusone_" + id)) {
+      g.getRange(i + 1, head["First name"] + 1).setValue("Guest")
+      props.deleteProperty("plusone_" + id)
+    }
+  }
+  ;[TABS.rsvps, TABS.songs, TABS.log].forEach((name) => {
+    const s = sheet_(name)
+    const col = headers_(s).Token
+    const rows = s.getDataRange().getValues()
+    for (let i = rows.length - 1; i >= 1; i--) if (tokens.indexOf(String(rows[i][col]).trim()) >= 0) s.deleteRow(i + 1)
+  })
+  ui.alert("Reset " + tests.length + " test household" + (tests.length === 1 ? "" : "s") + ".")
+}
+
+function checkSongSearch() {
+  const r = searchSongs_("September Earth Wind")
+  SpreadsheetApp.getUi().alert(
+    r.ok ? "Song search works. First result: " + (r.results[0] ? r.results[0].title + ", " + r.results[0].artist : "none")
+      : r.code === "not_configured" ? "Song search is off. Add SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in Project settings > Script properties."
+      : "Spotify said no. Check the two keys are right.",
+  )
 }
 
 // ---------- tokens ----------

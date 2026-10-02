@@ -127,3 +127,24 @@ export function trackStarted(token: string) {
   } catch { /* private mode: the server ignores repeats anyway */ }
   fetch(`${config.apiUrl}?action=started&token=${encodeURIComponent(token)}`, { mode: "no-cors" }).catch(() => {})
 }
+
+export type SongHit = { title: string; artist: string; url: string }
+
+// Song search is off until the back end has Spotify keys. Once it says so, stop asking this visit.
+let songSearchOff = !config.apiUrl
+
+/** Spotify search through our back end (guests never talk to Spotify directly). [] when off. */
+export async function searchSongs(q: string, signal?: AbortSignal): Promise<SongHit[]> {
+  if (songSearchOff || q.trim().length < 2) return []
+  try {
+    const res = await fetch(`${config.apiUrl}?action=songs&q=${encodeURIComponent(q.trim())}`, { signal })
+    const data = await res.json()
+    if (!Array.isArray(data.results)) {
+      if (data.code !== "search_failed") songSearchOff = true
+      return []
+    }
+    return data.results
+  } catch {
+    return []
+  }
+}
