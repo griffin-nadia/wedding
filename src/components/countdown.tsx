@@ -70,7 +70,7 @@ export function Countdown({ units, kyotoLabel }: { units: Record<keyof Parts, st
             <span className="numerals text-[clamp(2rem,1.4rem+3vw,3.25rem)] leading-none">
               {String(p[k]).padStart(k === "months" ? 1 : 2, "0").split("").map((c, i) => <Digit key={i} d={c} />)}
             </span>
-            <span className="label-caps text-muted-foreground">{units[k]}</span>
+            <span className={cn("label-caps", k === "secs" ? "text-body" : "text-muted-foreground")}>{units[k]}</span>
           </div>
         ))}
       </div>

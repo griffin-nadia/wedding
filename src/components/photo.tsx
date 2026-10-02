@@ -73,7 +73,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
     return (
       <figure className={cn("photo-print", className)}>
         {frame}
-        {words.caption && <figcaption className="hand mt-2 text-sm text-muted-foreground">{words.caption}</figcaption>}
+        {words.caption && <figcaption className="hand mt-2 text-sm text-[#8b5a3c]">{words.caption}</figcaption>}
       </figure>
     )
   }

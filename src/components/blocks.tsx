@@ -34,15 +34,16 @@ export function StepProgress({ step, of, label }: { step: number; of: number; la
 /** A review row with an Edit link back to its step. */
 export function ReviewRow({ label, children, edit, editLabel, block = false }: { label: string; children: ReactNode; edit: () => void; editLabel: string; block?: boolean }) {
   return (
+    // dl > div > dt + dd only (the Edit button lives inside the dd)
     <div className={cn("flex gap-3 px-4 py-3 text-sm", block ? "flex-col" : "items-start justify-between")}>
-      <div className={cn("min-w-0", !block && "flex flex-1 justify-between gap-4")}>
-        <dt className="font-semibold">{label}</dt>
-        <dd className={cn("text-body", block ? "mt-1 whitespace-pre-line break-words" : "text-right")}>{children}</dd>
-      </div>
-      <button type="button" onClick={edit} aria-label={editLabel}
-        className={cn("inline-flex min-h-11 shrink-0 items-center gap-1 self-start rounded-full px-3 text-link underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none", block && "-ml-3")}>
-        <Pencil className="size-3.5" aria-hidden />Edit
-      </button>
+      <dt className="font-semibold">{label}</dt>
+      <dd className={cn("flex min-w-0 gap-2 text-body", block ? "flex-col" : "flex-1 items-start justify-end text-right")}>
+        <span className={cn(block && "whitespace-pre-line break-words")}>{children}</span>
+        <button type="button" onClick={edit} aria-label={editLabel}
+          className={cn("inline-flex min-h-11 shrink-0 items-center gap-1 self-start rounded-full px-3 text-link underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none", block ? "-ml-3" : "-mt-3")}>
+          <Pencil className="size-3.5" aria-hidden />Edit
+        </button>
+      </dd>
     </div>
   )
 }

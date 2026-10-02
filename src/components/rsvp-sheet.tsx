@@ -42,6 +42,14 @@ function dietString(set: string[], allergy: string) {
 /** A plus one still called "Guest" in the sheet shows as a blank name box. */
 const blankPlusOne = (g: Guest) => (g.plusOne && /^(guest|plus one|\+1)$/i.test(g.firstName.trim()) ? { ...g, firstName: "" } : g)
 
+/** A draft from an earlier, unsent try wins over the saved answers if it's newer (every way the form opens). */
+function startingForm(h: Household | null): RsvpPayload {
+  if (!h) return formFrom(h)
+  const draft = readDraft(h.token)
+  const savedAt = h.respondedAt ? Date.parse(h.respondedAt) : 0
+  return draft && draft.at > savedAt ? draft.form : formFrom(h)
+}
+
 const formFrom = (h: Household | null): RsvpPayload => ({
   guests: (h?.guests ?? []).map(blankPlusOne),
   songs: h?.songs ?? [],
@@ -72,7 +80,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
     heading.current?.focus()
   }, [step])
   const sending = useRef(false)
-  const [form, setForm] = useState<RsvpPayload>(() => formFrom(household))
+  const [form, setForm] = useState<RsvpPayload>(() => startingForm(household))
   // Opened by an early tap (before this form loaded): count it as a started RSVP too.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (openOnLoad && household) trackStarted(household.token) }, [])
@@ -108,10 +116,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
 
   function onOpenChange(o: boolean) {
     if (o) {
-      // A draft from an earlier, unsent try wins over the saved answers if it's newer
-      const draft = readDraft(household!.token)
-      const savedAt = household!.respondedAt ? Date.parse(household!.respondedAt) : 0
-      setForm(draft && draft.at > savedAt ? draft.form : formFrom(household))
+      setForm(startingForm(household))
       replyId.current = ""
       setError("")
       setDone(null)
