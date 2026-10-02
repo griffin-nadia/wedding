@@ -168,7 +168,7 @@ export function HomePage() {
       {/* The day at a glance, on sage */}
       <section aria-labelledby="schedule" className="section-alt full-bleed px-4 py-12 md:px-8 md:py-18">
         <Reveal className="mx-auto max-w-[40rem] space-y-6">
-          <h2 id="schedule" className="title leaf-rule">{t.home.scheduleTitle}</h2>
+          <h2 id="schedule" className="heading">{t.home.scheduleTitle}</h2>
           <ol className="divide-y divide-border">
             {t.day.schedule.map((s) => (
               <li key={s.time} className="grid grid-cols-[6.5rem_1fr] gap-4 py-4">
@@ -190,7 +190,7 @@ export function HomePage() {
       {/* Countdown (Susie & Jay) */}
       <section aria-labelledby="countdown" className="px-4 py-12 md:px-8 md:py-18">
         <div className="mx-auto max-w-[40rem] space-y-6 text-center">
-          <h2 id="countdown" className="title">{t.home.countdownTitle}</h2>
+          <h2 id="countdown" className="heading">{t.home.countdownTitle}</h2>
           <Countdown units={t.countdownMore.short} words={t.countdownMore} kyotoLabel={t.home.kyotoTimeShort} localTime={localTime("11:00")} />
           <p className="hand flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Leaf kind="maple" className="size-5" />{t.home.leavesNote}

@@ -120,22 +120,107 @@
   --leaf-red-2: var(--kitsune);
 }
 
+/* ─── v2 · The letter ─────────────────────────────────────────────────────────
+   One system: shape, space, type, states and motion. Every size is on the 4px grid,
+   vertical rhythm steps in 8. Figma mirrors these as the Tokens and Scale collections. */
 :root {
-  /* Shape, space, type, motion (same for every theme) */
-  --radius: 1rem; /* cards 16 to 20px */
-  /* Type (swap the Hand-made pairing back by using the commented display value) */
+  /* Radius: 4 chips and inputs · 8 cards in the letter · 12 buttons · 24 the letter · pill only for status and seal */
+  --radius-chip: 4px;
+  --radius-card: 8px;
+  --radius-button: 12px;
+  --radius-letter: 24px;
+  --radius-pill: 999px;
+  --radius: var(--radius-button); /* shadcn default */
+
+  /* Space: 4 8 12 16 24 32 48 64 96 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* Type: three sizes per screen (names or title, body, label). Fluid between the 390 and 1440 artboards. */
   --font-display: "Oranienbaum", "Zen Old Mincho", Georgia, serif;
-  /* --font-display: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;   Hand-made */
   --font-label: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: "EB Garamond", "Zen Old Mincho", "Hiragino Mincho ProN", Georgia, serif;
   --font-hand: "Klee One", "EB Garamond", cursive;
   --font-ja: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  --ease-paper: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --duration-quick: 150ms;
-  --duration-settle: 300ms;
-  --duration-drift: 600ms;
+  --text-names: clamp(56px, 44.11px + 3.048vw, 88px);  /* 56 → 88 */
+  --leading-names: 1;
+  --tracking-names: -0.02em;
+  --text-title: clamp(28px, 25.77px + 0.571vw, 34px);  /* 28 → 34 */
+  --leading-title: 36px;                                 /* 40 from 768 */
+  --tracking-title: -0.01em;
+  --text-body: clamp(18px, 17.63px + 0.095vw, 19px);   /* 18 → 19 */
+  --leading-body: 28px;
+  --text-note: clamp(15px, 14.63px + 0.095vw, 16px);   /* 15 → 16, Klee One */
+  --leading-note: 24px;
+  --text-small: 14px;                                   /* errors and fine print only */
+  --leading-small: 20px;
+  --text-label: 12px;
+  --leading-label: 16px;
+  --tracking-label: 0.08em;
+  --text-numerals: 32px;
+  --leading-numerals: 40px;
+
+  /* The letter */
+  --letter-width: 620px;
+  --letter-left: 180px;
+  --letter-top: 120px;
+  --letter-pad: 24px;
+  --letter-gap: 24px;
+  --letter-edge: 6px;
+  --rule-width: 40px;
+  --control-height: 52px; /* buttons and inputs on phones; 48 on desktop */
+  --tap-min: 44px;
+
+  /* Motion: paper rises and settles; nothing bounces except the one stamp */
+  --ease-paper: cubic-bezier(0.2, 0.7, 0.2, 1);   /* settle: things arriving */
+  --ease-letter: cubic-bezier(0.22, 1, 0.36, 1);  /* rise: the letter, the envelope */
+  --ease-out: cubic-bezier(0.4, 0, 1, 1);          /* leave: things going away */
+  --duration-press: 90ms;    /* pressed scale */
+  --duration-quick: 150ms;   /* hover, focus, colour */
+  --duration-settle: 300ms;  /* steps, accordions, page content, flap */
+  --duration-rise: 600ms;    /* letter rising, scene change */
+  --duration-drift: 6s;      /* scene layers, the slow things */
+  --press-scale: 0.98;
+
   --season-green: 100%; /* set per day by src/lib/seasons.ts */
   --leaf-a: color-mix(in oklch, var(--leaf-green) var(--season-green), var(--leaf-red));
   --leaf-b: color-mix(in oklch, var(--leaf-green-2) var(--season-green), var(--leaf-red-2));
   --shadow-paper: 0 1px 2px rgb(var(--shadow-tint) / 0.08), 0 6px 18px -6px rgb(var(--shadow-tint) / 0.18);
+  --shadow-letter: 0 2px 4px rgb(var(--shadow-tint) / 0.10), 0 32px 64px -24px rgb(var(--shadow-tint) / 0.45);
+}
+@media (min-width: 768px) {
+  :root {
+    --letter-pad: 56px;
+    --letter-gap: 32px;
+    --control-height: 48px;
+    --leading-title: 40px;
+  }
+}
+
+/* States: one system for every interactive thing (buttons, inputs, choice cards, chips, combobox, tabs) */
+:root,
+[data-theme="autumn"],
+[data-theme="lantern"] {
+  --state-border: var(--border);
+  --state-hover-border: var(--muted-foreground);
+  --state-focus-ring: var(--ring);
+  --state-pressed-fill: var(--secondary);
+  --state-selected-fill: var(--secondary);
+  --state-selected-border: var(--primary);
+  --state-disabled-fill: var(--background);
+  --state-error-border: var(--destructive);
+  --primary-hover: color-mix(in oklab, var(--primary) 92%, var(--foreground));
+  --letter-edge-color: var(--forest);
+  --scene-scrim: var(--kinari);
+}
+[data-theme="lantern"] {
+  --letter-edge-color: var(--hachimitsu);
+  --scene-scrim: var(--yoru);
 }

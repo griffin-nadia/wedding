@@ -86,7 +86,7 @@ export function Countdown({ units, words, kyotoLabel, localTime }: { units: Unit
     const days = Math.floor((now.getTime() - end.getTime()) / 86_400_000)
     return (
       <div className="space-y-4">
-        <p className="title">{words.married}</p>
+        <p className="heading">{words.married}</p>
         <div aria-hidden className="mx-auto grid max-w-xs grid-cols-2 gap-3">
           <CountdownTile value={Math.floor(days / 365)} unit={units.years} pad={1} />
           <CountdownTile value={days % 365} unit={units.days} pad={1} />
@@ -102,7 +102,7 @@ export function Countdown({ units, words, kyotoLabel, localTime }: { units: Unit
     .filter(([k, v]) => (k === "months" ? v > 0 && !lastDay : k === "days" ? !lastDay && (v > 0 || p.months > 0) : true))
   return (
     <div className="space-y-4" title={localTime ? words.localTitle(localTime) : undefined}>
-      {(today || lastDay) && <p className="title">{today ? words.today : words.tomorrow}</p>}
+      {(today || lastDay) && <p className="heading">{today ? words.today : words.tomorrow}</p>}
       <p className="sr-only" aria-live="off">{sentence(p)}</p>
       <div aria-hidden className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))` }}>
         {tiles.map(([k, v]) => <CountdownTile key={k} value={v} unit={units[k]} ticking={k === "secs"} pad={k === "months" ? 1 : 2} />)}

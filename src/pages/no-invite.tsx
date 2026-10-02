@@ -13,7 +13,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
   return (
     <div className="mx-auto max-w-md space-y-6 px-4 py-18 text-center">
       <p className="eyebrow">{t.meta.eyebrow}</p>
-      <h1 className="title">{copy.title}</h1>
+      <h1 className="heading">{copy.title}</h1>
       <p className="text-body">{copy.body}</p>
       {reason === "error" ? <Button size="lg" onClick={retry}>{t.offline.retry}</Button> : <ResendForm />}
     </div>

@@ -35,10 +35,18 @@
   --color-leaf-a: var(--leaf-a);
   --color-leaf-b: var(--leaf-b);
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  /* Radius scale (4 · 8 · 12 · 24). Tailwind's names land on it so nothing sits between steps. */
+  --radius-xs: var(--radius-chip);
+  --radius-sm: var(--radius-chip);
+  --radius-md: var(--radius-card);
+  --radius-lg: var(--radius-button);
+  --radius-xl: var(--radius-button);
+  --radius-2xl: var(--radius-button);
+  --radius-3xl: var(--radius-letter);
+  --radius-chip: var(--radius-chip);
+  --radius-card: var(--radius-card);
+  --radius-button: var(--radius-button);
+  --radius-letter: var(--radius-letter);
 
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
@@ -49,16 +57,27 @@
   --ease-paper: var(--ease-paper);
 }
 
-/* EB Garamond has a small x-height, so the text scale runs one step larger than Tailwind's default. */
-@theme {
-  --text-xs: 0.875rem;
-  --text-xs--line-height: 1.4;
-  --text-sm: 1rem;
-  --text-sm--line-height: 1.5;
-  --text-base: 1.125rem;
-  --text-base--line-height: 1.6;
-  --text-lg: 1.25rem;
-  --text-lg--line-height: 1.55;
+/* Three sizes per screen. Tailwind's text steps collapse onto the scale: xs = small print (14),
+   sm = note (15/16), base to xl = body (18/19), 2xl and up = title (28/34). Names use the names utility. */
+@theme inline {
+  --text-xs: var(--text-small);
+  --text-xs--line-height: var(--leading-small);
+  --text-sm: var(--text-note);
+  --text-sm--line-height: var(--leading-note);
+  --text-base: var(--text-body);
+  --text-base--line-height: var(--leading-body);
+  --text-lg: var(--text-body);
+  --text-lg--line-height: var(--leading-body);
+  --text-xl: var(--text-body);
+  --text-xl--line-height: var(--leading-body);
+  --text-2xl: var(--text-title);
+  --text-2xl--line-height: var(--leading-title);
+  --text-3xl: var(--text-title);
+  --text-3xl--line-height: var(--leading-title);
+  --text-4xl: var(--text-title);
+  --text-4xl--line-height: var(--leading-title);
+  --ease-letter: var(--ease-letter);
+  --shadow-letter: var(--shadow-letter);
 }
 
 @layer base {
@@ -70,18 +89,14 @@
     overflow-x: clip;
   }
   body {
-    @apply bg-background text-base text-foreground font-sans antialiased;
-    /* Warmth: a soft glow at the top and a faint paper grain. Fixed, so nothing shifts. */
-    background-image:
-      radial-gradient(70rem 40rem at 15% -10%, color-mix(in oklab, var(--glow) 38%, transparent), transparent 70%),
-      radial-gradient(50rem 30rem at 100% 0%, color-mix(in oklab, var(--highlight) 14%, transparent), transparent 70%),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.26 0 0 0 0 0.1 0 0 0 0 0.02 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-attachment: fixed;
-    line-height: 1.6;
+    @apply bg-background text-base font-sans antialiased;
+    color: var(--body);
     font-feature-settings: "kern", "liga", "onum";
   }
   h1, h2, h3 {
-    @apply font-display font-normal tracking-normal;
+    @apply font-display font-normal;
+    color: var(--foreground);
+    letter-spacing: var(--tracking-title);
   }
   :lang(ja) body,
   [lang="ja"] {
@@ -96,11 +111,24 @@
   }
 }
 
-/* Small helpers used across pages */
-@utility eyebrow {
-  @apply font-label text-[13px] font-medium uppercase tracking-[0.12em] text-eyebrow;
+/* Type roles (see docs/system.md). Label: Inter 12 caps, at most one per card. */
+@utility label-caps {
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
 }
-
+@utility eyebrow {
+  font-family: var(--font-label);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--eyebrow);
+}
 /* Hanko: the red seal stamped on "all set". Lands once; no motion when reduced motion is on. */
 @utility hanko {
   @apply inline-grid shrink-0 place-items-center rounded-full border-[3px] border-primary font-display text-primary;
@@ -119,80 +147,125 @@
   }
 }
 
-/* Maple leaf on Q&A: drifts down once, then rests. */
-@keyframes leaf-fall {
-  0% { opacity: 0; transform: translate(-14px, -40px) rotate(-40deg); }
-  50% { opacity: 1; transform: translate(8px, -12px) rotate(15deg); }
-  100% { opacity: 1; transform: translate(0, 0) rotate(0); }
-}
-@utility leaf-fall {
-  animation: leaf-fall 1.6s var(--ease-paper, ease-out) both;
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
-
-/* Little hand-written notes from Nadia and Griffin (Klee One). */
+/* Notes in Nadia and Griffin's voice (Klee One). */
 @utility hand {
   font-family: var(--font-hand);
+  font-size: var(--text-note);
+  line-height: var(--leading-note);
   font-feature-settings: normal;
 }
 
-/* The green, used sparingly: a thin moss rule under section headings. */
-@utility leaf-rule {
+/* Title: Oranienbaum, sentence case, a 40px moss rule under it. Green as a material, not an overlay. */
+@utility heading {
+  font-family: var(--font-display);
+  font-size: var(--text-title);
+  line-height: var(--leading-title);
+  letter-spacing: var(--tracking-title);
+  color: var(--foreground);
+  padding-bottom: var(--space-4);
   position: relative;
-  padding-bottom: 0.75rem;
   &::after {
     content: "";
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 2.5rem;
+    width: var(--rule-width);
     height: 2px;
-    border-radius: 2px;
     background: var(--leaf);
   }
 }
-
-/* Headings that don't balloon on desktop. */
-@utility title {
-  /* Section titles: Oranienbaum, uppercase, wide tracking (Susie & Jay) */
-  font-family: var(--font-display);
-  font-size: clamp(1.75rem, 1.4rem + 1.6vw, 2.5rem);
-  line-height: 1.15;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+/* A moss rule on its own (under the names) */
+@utility moss-rule {
+  display: block;
+  width: var(--rule-width);
+  height: 2px;
+  background: var(--leaf);
 }
-/* Small UI words: Inter, uppercase, 13px minimum */
-@utility label-caps {
-  font-family: var(--font-label);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-/* Big numerals (date stack, countdown, times) */
+/* Numerals: countdown only */
 @utility numerals {
   font-family: var(--font-display);
   font-variant-numeric: lining-nums tabular-nums;
 }
-/* The names: big, tight, with a smaller maple "&" */
+/* The names: Oranienbaum 56 → 88, tight, "&" in rust */
 @utility names {
   font-family: var(--font-display);
-  font-size: clamp(3.5rem, 2rem + 9vw, 6.5rem);
-  letter-spacing: -0.04em;
-  line-height: 0.95;
-}
-@utility title-hero {
-  font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
-  line-height: 1.05;
+  font-size: var(--text-names);
+  line-height: var(--leading-names);
+  letter-spacing: var(--tracking-names);
+  color: var(--foreground);
 }
 
-[data-theme="lantern"] body {
-  background-image:
-    radial-gradient(60rem 36rem at 15% -10%, color-mix(in oklab, var(--glow) 10%, transparent), transparent 70%),
-    radial-gradient(40rem 28rem at 100% 0%, color-mix(in oklab, var(--primary) 10%, transparent), transparent 70%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.9 0 0 0 0 0.75 0 0 0 .035 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+/* ─── One state system ──────────────────────────────────────────────────────
+   Every interactive thing: default · hover (pointer only, border only) · focus-visible (2px ring, 2px offset)
+   · pressed (secondary, .98) · selected (secondary, 2px primary) · disabled · error. docs/system.md. */
+@utility state {
+  border: 1px solid var(--state-border);
+  background-color: var(--card);
+  transition: border-color var(--duration-quick) var(--ease-paper), box-shadow var(--duration-quick) var(--ease-paper),
+    background-color var(--duration-quick) var(--ease-paper), transform var(--duration-press) var(--ease-paper);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  @media (hover: hover) {
+    &:hover:not(:disabled, [aria-disabled="true"], [aria-invalid="true"]) { border-color: var(--state-hover-border); }
+  }
+  &:focus-visible, &:has(:focus-visible) { outline-color: var(--state-focus-ring); }
+  &:active:not(:disabled, input, textarea, [aria-disabled="true"]) { background-color: var(--state-pressed-fill); transform: scale(var(--press-scale)); }
+  &[aria-pressed="true"], &[aria-selected="true"], &[data-state="active"], &:has([data-state="checked"]), &[data-selected="true"] {
+    background-color: var(--state-selected-fill);
+    border-color: var(--state-selected-border);
+    box-shadow: inset 0 0 0 1px var(--state-selected-border);
+  }
+  &:disabled, &[aria-disabled="true"] {
+    background-color: var(--state-disabled-fill);
+    color: color-mix(in oklab, currentColor 50%, transparent);
+    cursor: not-allowed;
+  }
+  &[aria-invalid="true"] {
+    border-color: var(--state-error-border);
+    box-shadow: inset 0 0 0 1px var(--state-error-border);
+  }
+}
+/* Text fields (inputs, textarea, the song combobox): the same states, no press */
+@utility field {
+  height: var(--control-height);
+  width: 100%;
+  border-radius: var(--radius-chip);
+  padding-inline: var(--space-4);
+  font-size: var(--text-body);
+  color: var(--foreground);
+  &::placeholder { color: var(--muted-foreground); }
+}
+/* Primary action: primary fill, hover mixes 8% foreground, pressed .98 */
+@utility btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid transparent;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: background-color var(--duration-quick) var(--ease-paper), transform var(--duration-press) var(--ease-paper);
+  @media (hover: hover) { &:hover:not(:disabled) { background-color: var(--primary-hover); } }
+  &:focus-visible { outline-color: var(--state-focus-ring); }
+  &:active:not(:disabled) { transform: scale(var(--press-scale)); }
+  &:disabled { background-color: var(--state-disabled-fill); color: color-mix(in oklab, var(--foreground) 50%, transparent); border-color: var(--border); cursor: not-allowed; }
+}
+/* Quiet text action (Change my reply, Edit): underline on hover, same focus ring */
+@utility btn-text {
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  border-radius: var(--radius-chip);
+  transition: text-decoration-thickness var(--duration-quick);
+  @media (hover: hover) { &:hover { text-decoration-thickness: 2px; } }
+  &:focus-visible { outline-color: var(--state-focus-ring); }
+}
+
+/* Press feedback for anything else tappable: instant and small */
+@utility press {
+  transition: transform var(--duration-press) var(--ease-paper);
+  &:active:not(:disabled) { transform: scale(var(--press-scale)); }
 }
 
 /* Page change: a small fade and rise. Off under reduced motion. */
@@ -246,16 +319,6 @@
 
 
 
-/* Lantern mode lanterns (hidden in light mode). */
-.lantern { transform-origin: top center; animation: lantern-sway 6s ease-in-out infinite alternate; }
-.lantern-glow {
-  position: absolute; left: 50%; bottom: 0; width: 140px; height: 140px; translate: -50% 35%;
-  background: radial-gradient(closest-side, color-mix(in oklab, var(--mitsu) 22%, transparent), transparent);
-  pointer-events: none;
-}
-@keyframes lantern-sway { from { rotate: -2.5deg; } to { rotate: 2.5deg; } }
-@media (prefers-reduced-motion: reduce) { .lantern { animation: none; } }
-
 /* Sections that run edge to edge, past the content column. */
 @utility full-bleed {
   margin-inline: calc(50% - 50vw);
@@ -270,30 +333,11 @@
 @media (prefers-reduced-motion: reduce) { .timeline-fill { animation: none !important; } }
 @media print { .timeline-fill { animation: none !important; transform: none !important; } }
 
-/* Success: two leaves drift once and settle. Still under reduced motion. */
-@keyframes leaf-drift {
-  0% { opacity: 0; transform: translate(0, -24px) rotate(-30deg); }
-  60% { opacity: 1; transform: translate(10px, 6px) rotate(18deg); }
-  100% { opacity: 1; transform: translate(0, 0) rotate(0); }
-}
-@utility leaf-drift {
-  animation: leaf-drift 1.6s var(--ease-paper) both;
-  @media (prefers-reduced-motion: reduce) { animation: none; }
-}
 /* Seal fill on the chosen answer: a small press when it lands. */
 @keyframes seal-in { from { transform: scale(0.6); } 70% { transform: scale(1.12); } to { transform: scale(1); } }
 .seal { animation: seal-in 260ms var(--ease-paper) both; }
 @media (prefers-reduced-motion: reduce) { .seal { animation: none; } }
 
-/* Primary "bead" button: a little depth, presses down 2px. */
-@utility bead {
-  box-shadow: 0 2px 0 color-mix(in oklab, var(--primary) 70%, black), 0 6px 16px -8px rgb(var(--shadow-tint) / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.18);
-  transition: transform 120ms var(--ease-paper), box-shadow 120ms var(--ease-paper), filter 150ms;
-  &:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: 0 0 0 color-mix(in oklab, var(--primary) 70%, black), 0 2px 6px -4px rgb(var(--shadow-tint) / 0.4);
-  }
-}
 /* Skeleton: appears only after 300ms (fast loads never flash it), then breathes slowly. */
 @keyframes skeleton-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes washi-breathe { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.55; } }
@@ -330,38 +374,9 @@
 }
 [data-theme="lantern"] .photo-img { filter: saturate(0.95) brightness(0.92); }
 
-/* Optional "painted Kyoto" look (data-look="painted"): foggy storybook mood. Original motifs only. */
-.clouds { display: none; }
-[data-look="painted"] .clouds { display: block; }
-[data-look="painted"] .cloud { animation: cloud-drift 60s linear infinite alternate; }
-[data-look="painted"] .cloud-2 { animation-duration: 80s; animation-direction: alternate-reverse; }
-@keyframes cloud-drift { from { translate: -4% 0; } to { translate: 6% 0; } }
-[data-look="painted"] {
-  --background: color-mix(in oklab, var(--kinari) 82%, #c9c6bd);
-  --card: color-mix(in oklab, var(--shiro-kinari) 88%, #d8d5cc);
-  --primary: color-mix(in oklab, var(--sabi) 85%, #7a7470);
-  --muted-foreground: var(--kuri); /* 5.75:1 on the misty paper */
-}
-[data-look="painted"][data-theme="lantern"] {
-  --background: color-mix(in oklab, var(--yoru) 85%, #3a3a40);
-  --card: color-mix(in oklab, var(--yoru-raised) 85%, #44444a);
-  --muted-foreground: var(--kare);
-  --primary: var(--kabocha);
-}
-[data-look="painted"] .eyebrow, [data-look="painted"] .label-caps { font-variant-caps: all-small-caps; text-transform: none; letter-spacing: 0.14em; font-size: 15px; }
-[data-look="painted"] .vine-leaf { transform-box: fill-box; transform-origin: 50% 100%; animation: leaf-sway 5s ease-in-out infinite alternate; }
-@keyframes leaf-sway { from { rotate: -4deg; } to { rotate: 4deg; } }
-@media (prefers-reduced-motion: reduce) {
-  [data-look="painted"] .cloud, [data-look="painted"] .vine-leaf { animation: none; }
-}
 /* Edge to edge with no inner padding (for decorative bands). */
 @utility bleed { margin-inline: calc(50% - 50vw); }
 
-/* Press feedback: instant and small (under 120ms). */
-@utility press {
-  transition: transform 100ms var(--ease-paper);
-  &:active:not(:disabled) { transform: scale(0.97); }
-}
 /* Settling paper reveal (once). */
 .settle { opacity: 0; transform: translateY(14px); filter: blur(4px); transition: opacity 700ms cubic-bezier(.22,1,.36,1), transform 700ms cubic-bezier(.22,1,.36,1), filter 700ms cubic-bezier(.22,1,.36,1); }
 .settle.settled { opacity: 1; transform: none; filter: none; }

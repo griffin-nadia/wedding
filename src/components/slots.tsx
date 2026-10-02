@@ -20,7 +20,7 @@ export function OurStory() {
   return (
     <section aria-labelledby="our-story" className="space-y-4">
       <Photo name="couple-brisbane-market" treatment="arch" sizes="280px" className="mx-auto w-56" />
-      <h2 id="our-story" className="title text-center">{s.title}</h2>
+      <h2 id="our-story" className="heading text-center">{s.title}</h2>
       {s.body && <p className="whitespace-pre-line text-body">{s.body}</p>}
       {s.map?.show && <JourneyMap labels={t.story} stops={(s.stops ?? []).filter((x) => x.body) as Stop[]} />}
       {(s.photos as Img[]).length > 0 && (

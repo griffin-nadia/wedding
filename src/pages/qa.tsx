@@ -6,7 +6,7 @@ export function QaPage() {
   const { t } = useLang()
   return (
     <div className="mx-auto max-w-[40rem] space-y-6 py-6 md:py-12">
-      <h1 className="title leaf-rule flex items-start gap-3">{t.qa.title}<MapleLeaf /></h1>
+      <h1 className="heading flex items-start gap-3">{t.qa.title}<MapleLeaf /></h1>
       <Accordion type="single" collapsible className="rounded-lg border bg-card px-6">
         {t.qa.items.map((item, i) => (
           <AccordionItem key={item.q} value={`q${i}`}>

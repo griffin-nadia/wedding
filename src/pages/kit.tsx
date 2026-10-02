@@ -109,7 +109,7 @@ export function KitPage() {
   )
   return (
     <main className="mx-auto max-w-[90rem] space-y-6 p-4 md:p-8">
-      <h1 className="title">Kit</h1>
+      <h1 className="heading">Kit</h1>
       <p className="text-sm text-body">Every component and state, light and Lantern. Not linked from the site.</p>
       <div className="grid gap-8 lg:grid-cols-2">
         <div data-theme="autumn" className="rounded-[1.5rem] bg-background p-6 text-foreground">{panel}</div>

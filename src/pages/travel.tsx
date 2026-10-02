@@ -24,7 +24,7 @@ export function TravelPage() {
   return (
     <div className="mx-auto max-w-[40rem] space-y-6 py-6 md:py-12">
       <header className="space-y-2">
-        <h1 className="title leaf-rule">{t.travel.title}</h1>
+        <h1 className="heading">{t.travel.title}</h1>
         <p className="text-body">{t.travel.lead}</p>
         <p className="hand text-sm text-muted-foreground">{t.travel.tickHint}</p>
       </header>
@@ -56,7 +56,7 @@ export function TravelPage() {
         })}
       </div>
       <section aria-labelledby="handy" className="space-y-3 pt-6">
-        <h2 id="handy" className="title leaf-rule">{t.travel.moreTitle}</h2>
+        <h2 id="handy" className="heading">{t.travel.moreTitle}</h2>
         {t.travel.more.map((m) => (
           <InfoBlock key={m.label} as="h3" label={m.label} action={"action" in m ? m.action : undefined}
             media={"photo" in m && m.photo ? <Photo name={m.photo} treatment="split" sizes="(min-width: 640px) 600px, 90vw" className="mb-3" /> : undefined}>

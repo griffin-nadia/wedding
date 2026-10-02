@@ -66,7 +66,7 @@ export function DayPage() {
   return (
     <div className="mx-auto max-w-[40rem] space-y-8 py-6 md:py-12">
       <header className="space-y-2">
-        <h1 className="title leaf-rule">{t.day.title}</h1>
+        <h1 className="heading">{t.day.title}</h1>
         <p className="text-body">{t.day.date} · {t.day.venue}</p>
       </header>
 
@@ -140,7 +140,7 @@ export function DayPage() {
           </section>
           <DriverCard />
           <section aria-labelledby="handy" className="space-y-3">
-            <h3 id="handy" className="title text-[1.5rem]">{t.day.handyTitle}</h3>
+            <h3 id="handy" className="heading text-[1.5rem]">{t.day.handyTitle}</h3>
             {t.day.handy.map((h) => (
               <InfoBlock key={h.label} as="h4" label={h.label} action={h.action}>
                 <p className="font-semibold text-foreground">{h.title}</p>
