@@ -1130,6 +1130,9 @@ function resetTestHouseholds() {
 
 /** Creates the 1-minute trigger that sends confirmation emails and writes visit counts. */
 function setupQueue() {
+  // Google's consent screen lets people untick single permissions. This asks again for the one the
+  // queue needs ("run when you are not present", i.e. triggers) if it was left unticked.
+  ScriptApp.requireScopes(ScriptApp.AuthMode.FULL, ["https://www.googleapis.com/auth/script.scriptapp"])
   PropertiesService.getScriptProperties().deleteProperty("flush_trigger")
   const ok = flushTriggerReady_()
   SpreadsheetApp.getUi().alert(ok ? "The email queue is on. Saves are faster, and visits are written every minute." : "Couldn't turn it on: " + (CacheService.getScriptCache().get("trigger_err") || "unknown error"))
