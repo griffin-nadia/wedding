@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 
 export type Theme = "autumn" | "lantern"
 
@@ -19,10 +19,11 @@ function saved(): Theme | null {
   }
 }
 
-/** Light (autumn) or Lantern mode. Follows the device until the guest picks one, then remembers it. */
-export function useTheme() {
-  const [theme, setThemeState] = useState<Theme>(() => (document.documentElement.getAttribute("data-theme") === "lantern" ? "lantern" : "autumn"))
+const Ctx = createContext<{ theme: Theme; setTheme: (t: Theme) => void } | null>(null)
 
+/** Light (autumn) or Lantern mode. Follows the device until the guest picks one, then remembers it. */
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(() => (document.documentElement.getAttribute("data-theme") === "lantern" ? "lantern" : "autumn"))
   useEffect(() => {
     const mq = window.matchMedia?.("(prefers-color-scheme: dark)")
     if (!mq) return
@@ -35,11 +36,16 @@ export function useTheme() {
     mq.addEventListener("change", follow)
     return () => mq.removeEventListener("change", follow)
   }, [])
-
   const setTheme = (next: Theme) => {
     apply(next)
     setThemeState(next)
     try { localStorage.setItem(KEY, next) } catch { /* private mode: still switches for this visit */ }
   }
-  return { theme, setTheme }
+  return <Ctx.Provider value={{ theme, setTheme }}>{children}</Ctx.Provider>
+}
+
+export function useTheme() {
+  const ctx = useContext(Ctx)
+  if (!ctx) throw new Error("useTheme must be used inside ThemeProvider")
+  return ctx
 }

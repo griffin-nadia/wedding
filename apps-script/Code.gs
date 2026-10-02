@@ -131,6 +131,7 @@ function doGet(e) {
       if (h && p.open === "1") safely_(() => enqueue_("open", h.token))
       return json_({ ok: true, household: h })
     }
+    if (action === "flying") return json_(flyingCounts_())
     if (action === "ping") {
       // Health check: is the minute trigger set up? (No guest data here.)
       const props = PropertiesService.getScriptProperties()
@@ -158,6 +159,7 @@ function doPost(e) {
     return fail_("bad_request")
   }
   if (body && body.action === "resend") return json_(resendLink_(body.email))
+  if (body && body.action === "flying") return json_(setFlying_(body.token, body.city))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
   if (isLocked_()) return fail_("closed")
 
@@ -742,6 +744,54 @@ function log_(household, token, changed, payload) {
   r[head.Token] = token
   r[head.Payload] = cell_(String(payload || "").slice(0, MAX.payload))
   s.appendRow(fill_(r, s.getLastColumn()))
+}
+
+// ---------- "Flying from" (anonymous counts for the journey map) ----------
+
+const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Somewhere else"]
+
+/** Saves the household's "Flying from" pick (a fixed list, never free text) in a Guests column at the end. */
+function setFlying_(token, city) {
+  token = String(token || "").trim()
+  city = String(city || "")
+  if (FLYING.indexOf(city) < 0) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
+  const lock = LockService.getUserLock()
+  if (!lock.tryLock(10000)) return { ok: false, code: "busy", error: ERRORS.busy }
+  try {
+    const s = sheet_(TABS.guests)
+    const head = ensureColumns_(s, ["Flying from"])
+    const data = s.getDataRange().getValues()
+    let found = false
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][head.Token]).trim() !== token) continue
+      s.getRange(i + 1, head["Flying from"] + 1).setValue(city)
+      found = true
+    }
+    if (!found) return { ok: false, code: "not_found", error: ERRORS.not_found }
+    CacheService.getScriptCache().remove("flying")
+    return { ok: true }
+  } finally {
+    lock.releaseLock()
+  }
+}
+
+/** Households per city plus how many households there are. Counts only, never names. */
+function flyingCounts_() {
+  const cache = CacheService.getScriptCache()
+  const hit = cache.get("flying")
+  if (hit) return JSON.parse(hit)
+  const seen = {}
+  const counts = {}
+  rows_(TABS.guests).forEach((r) => {
+    const t = String(r.Token || "").trim()
+    if (!t || TEST_HOUSEHOLD.test(String(r.Household || "")) || seen[t]) return
+    seen[t] = true
+    const c = String(r["Flying from"] || "")
+    if (c) counts[c] = (counts[c] || 0) + 1
+  })
+  const out = { ok: true, counts: counts, told: Object.values(counts).reduce((a, b) => a + b, 0), households: Object.keys(seen).length }
+  cache.put("flying", JSON.stringify(out), 600)
+  return out
 }
 
 // ---------- "Can't find your invite?" ----------

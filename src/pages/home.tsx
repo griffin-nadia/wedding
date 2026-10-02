@@ -9,7 +9,11 @@ import { countdownParts, isLocked, jstLabel, kyotoNow, localTime } from "@/lib/t
 import { answerOf } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { AddToCalendar } from "@/components/add-to-calendar"
-import { HeroPhoto, Lettering, OurStory, Paintings } from "@/components/slots"
+import { Lettering, OurStory, Paintings } from "@/components/slots"
+import { Photo, hasPublicPhotos } from "@/components/photo"
+import { Clouds } from "@/components/clouds"
+import { useTheme } from "@/lib/theme"
+import { cn } from "@/lib/utils"
 import { Hanko } from "@/components/hanko"
 import { Lanterns } from "@/components/lanterns"
 import { Leaf, Mist, Vine } from "@/components/nature"
@@ -28,9 +32,29 @@ function useTick(ms: number) {
   return now
 }
 
+/** Date stack and names. On the full-bleed photo everything is cream (4.5:1+ on the scrim). */
+function HeroTitle({ t, onPhoto = false }: { t: ReturnType<typeof useLang>["t"]; onPhoto?: boolean }) {
+  return (
+    <div className="flex items-start gap-6 md:gap-8">
+      <p className={cn("numerals flex flex-col text-[clamp(3rem,2rem+5vw,5rem)] leading-[0.9]", onPhoto ? "text-[#ebd48f]" : "text-primary")}>
+        <span className="sr-only">{t.day.date}</span>
+        {t.home.dateStack.map((n) => <span key={n} aria-hidden>{n}</span>)}
+      </p>
+      <h1 className={cn("names pt-1", onPhoto ? "text-[#f3e7d3]" : "text-foreground")}>
+        <span className="block">{COUPLE.first}</span>
+        <span className={cn("ml-[0.35em] block translate-y-[0.06em] text-[0.66em]", onPhoto ? "text-[#ebd48f]" : "text-primary")}>&amp;</span>
+        <span className="block">{COUPLE.second}</span>
+      </h1>
+    </div>
+  )
+}
+
 export function HomePage() {
   const { t } = useLang()
   const { household } = useHousehold()
+  const { theme } = useTheme()
+  const lantern = theme === "lantern"
+  const fullBleed = hasPublicPhotos && lantern
   const [params] = useSearchParams()
   const [wantOpen, setWantOpen] = useState(params.get("rsvp") === "1")
   const now = useTick(60_000)
@@ -48,25 +72,25 @@ export function HomePage() {
   return (
     <div className="-mx-4 md:-mx-8">
       <Envelope />
-      {/* Hero: paper and type (Look B), with a vine whose leaves turn with the seasons */}
+      {/* Lantern mode with photos: the night photo full-bleed (A), names in cream on a warm scrim */}
+      {fullBleed && (
+        <Photo name="kyoto-night" treatment="full" wide priority sizes="100vw" className="full-bleed min-h-[78svh] text-[#f3e7d3]">
+          <div className="mx-auto flex min-h-[78svh] max-w-[60rem] flex-col justify-end gap-4 px-4 pb-10 md:px-8">
+            <p className="eyebrow !text-[#ebd48f]">{t.meta.eyebrow}</p>
+            <HeroTitle t={t} onPhoto />
+          </div>
+        </Photo>
+      )}
+      {/* Hero: one layer only. Light: the print photo (B) or, without photos, the ivy vine.
+          Lantern: the full-bleed photo above or, without photos, the paper lanterns. */}
       <section className="relative overflow-hidden px-4 pt-6 pb-12 md:px-8 md:pt-12 md:pb-18">
-        <Vine className="hero-vine absolute -top-2 -right-6 w-40 md:right-0 md:w-56" />
-        <Lanterns />
+        {!hasPublicPhotos && (lantern ? <Lanterns /> : <Vine className="absolute -top-2 -right-6 w-40 md:right-0 md:w-56" />)}
+        <Clouds />
         <div className="relative grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] md:items-start md:gap-12">
           <div className="space-y-6">
             <Lettering />
-            <p className="eyebrow">{t.meta.eyebrow}</p>
-            <div className="flex items-start gap-6 md:gap-8">
-              <p className="numerals flex flex-col text-[clamp(3rem,2rem+5vw,5rem)] leading-[0.9] text-primary">
-                <span className="sr-only">{t.day.date}</span>
-                {t.home.dateStack.map((n) => <span key={n} aria-hidden>{n}</span>)}
-              </p>
-              <h1 className="names pt-1 text-foreground">
-                <span className="block">{COUPLE.first}</span>
-                <span className="ml-[0.35em] block translate-y-[0.06em] text-[0.66em] text-primary">&amp;</span>
-                <span className="block">{COUPLE.second}</span>
-              </h1>
-            </div>
+            {!fullBleed && <p className="eyebrow">{t.meta.eyebrow}</p>}
+            {!fullBleed && <HeroTitle t={t} />}
             <div className="space-y-3">
               <p lang="ja" className="font-ja text-3xl text-highlight">{t.home.kyoto}</p>
               <span aria-hidden className="block h-px w-16 bg-border" />
@@ -81,7 +105,7 @@ export function HomePage() {
           </div>
 
           <div className="space-y-6">
-            <HeroPhoto caption={t.home.photoCaption} />
+            {hasPublicPhotos && !lantern && <Photo name="couple-kyoto-view" treatment="print" priority sizes="(min-width: 768px) 420px, 90vw" className="mx-auto max-w-sm md:mx-0" />}
             {/* RSVP card (a quiet placeholder until the household arrives) */}
             {!household ? (
               <div role="status" className="space-y-4 rounded-[1.25rem] bg-card p-6 shadow-paper ring-1 ring-border">

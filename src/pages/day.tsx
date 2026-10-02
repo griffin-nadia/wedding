@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { Tabs as TabsPrimitive } from "radix-ui"
 import { MotionConfig, motion } from "motion/react"
-import { Flower2, Printer, UtensilsCrossed, Wine } from "lucide-react"
+import { CloudRain, Flower2, Printer, UtensilsCrossed, Wine } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { Qr } from "@/components/qr"
-import { Leaf } from "@/components/nature"
+import { Photo } from "@/components/photo"
 import { useLang } from "@/lib/lang"
 import { jstLabel, kyotoNow, localTime } from "@/lib/time"
 import { mapUrl } from "@/lib/calendar"
@@ -97,11 +97,12 @@ export function DayPage() {
               )
             })}
           </ol>
-          <p className="flex items-start gap-2 rounded-[1.25rem] bg-card p-4 text-sm text-body ring-1 ring-border"><Leaf kind="ivy" className="size-5 shrink-0" />{t.day.rainPlan}</p>
+          <p className="flex items-start gap-2 rounded-[1.25rem] bg-card p-4 text-sm text-body ring-1 ring-border"><CloudRain aria-hidden className="size-5 shrink-0 text-muted-foreground" strokeWidth={1.6} />{t.day.rainPlan}</p>
           <p className="text-sm text-muted-foreground">{t.day.japanTime} <span className="no-print">{t.day.kyotoNow(kyotoNow(now))}</span></p>
         </TabsPrimitive.Content>
 
         <TabsPrimitive.Content forceMount value="getting-there" className="print:!block print:mt-8 data-[state=inactive]:hidden space-y-3 outline-none">
+          <Photo name="yasaka-gate-shijo" treatment="split" sizes="(min-width: 640px) 640px, 100vw" className="no-print" />
           {t.day.getting.map((g) => (
             <section key={g.label} className="space-y-2 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
               <h2 className="label-caps text-eyebrow">{g.label}</h2>
@@ -114,6 +115,7 @@ export function DayPage() {
         </TabsPrimitive.Content>
 
         <TabsPrimitive.Content value="stay" className="space-y-3 outline-none">
+          <Photo name="higashiyama-bookshop" treatment="split" sizes="(min-width: 640px) 640px, 100vw" />
           <p className="text-body">{t.day.stayIntro}</p>
           {t.day.stay.map((a) => (
             <section key={a.label} className="space-y-2 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">

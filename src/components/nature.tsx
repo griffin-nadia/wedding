@@ -27,7 +27,7 @@ export function Vine({ className }: { className?: string }) {
     <svg aria-hidden viewBox="0 0 180 170" className={cn("pointer-events-none", className)} fill="none">
       <path d="M178 2C150 18 128 40 112 62s-36 50-58 66S16 152 2 168" stroke="var(--leaf)" strokeWidth="1.6" strokeLinecap="round" />
       {leaves.map(([d, x, y, s, r, tone], i) => (
-        <path key={i} d={d} fill={tone === "a" ? "var(--leaf-a)" : "var(--leaf-b)"} transform={`translate(${x - 12 * s} ${y - 12 * s}) rotate(${r} ${12 * s} ${12 * s}) scale(${s})`} />
+        <path key={i} className="vine-leaf" d={d} fill={tone === "a" ? "var(--leaf-a)" : "var(--leaf-b)"} transform={`translate(${x - 12 * s} ${y - 12 * s}) rotate(${r} ${12 * s} ${12 * s}) scale(${s})`} />
       ))}
     </svg>
   )

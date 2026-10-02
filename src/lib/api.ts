@@ -187,3 +187,19 @@ export function writeDraft(token: string, form: RsvpPayload) {
 export function clearDraft(token: string) {
   try { localStorage.removeItem(draftKey(token)) } catch { /* private mode */ }
 }
+
+export const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Somewhere else"] as const
+export type Flying = (typeof FLYING)[number]
+
+/** Optional, after RSVP: where the household is flying from (a fixed list). Only counts are ever shown. */
+export async function setFlying(token: string, city: Flying): Promise<void> {
+  if (!config.apiUrl) return
+  const data = await call(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "flying", token, city }) })
+  if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
+}
+
+/** Households per city and how many have told us, e.g. 17 of 40. Never names. */
+export async function getFlying(): Promise<{ counts: Partial<Record<Flying, number>>; told: number; households: number } | null> {
+  if (!config.apiUrl) return null
+  try { const d = await call(`${config.apiUrl}?action=flying`); return d.ok ? d : null } catch { return null }
+}

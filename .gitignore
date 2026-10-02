@@ -36,5 +36,6 @@ dist-ssr
 # QR cards and anything else made from guest data
 private/
 
-# Photos of the couple: not public until Nadia says yes
-public/photos/
+
+# Couple photos: private until Nadia says yes (PUBLIC_PHOTOS=1 copies the public set at build)
+photos-private/

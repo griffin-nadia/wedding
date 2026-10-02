@@ -244,24 +244,9 @@
   --link: var(--on-band-accent);
 }
 
-/* Hero photo as a print on paper (light); sits straight on the evening page in Lantern mode. */
-@utility hero-print {
-  padding: 10px 10px 12px;
-  background: var(--card);
-  border-radius: 6px;
-  box-shadow: var(--shadow-paper);
-  transform: rotate(-1.2deg);
-}
-[data-theme="lantern"] .hero-print {
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-  transform: none;
-}
+
 
 /* Lantern mode lanterns (hidden in light mode). */
-.lanterns { display: none; }
-[data-theme="lantern"] .lanterns { display: block; }
 .lantern { transform-origin: top center; animation: lantern-sway 6s ease-in-out infinite alternate; }
 .lantern-glow {
   position: absolute; left: 50%; bottom: 0; width: 140px; height: 140px; translate: -50% 35%;
@@ -276,8 +261,6 @@
   margin-inline: calc(50% - 50vw);
   padding-inline: max(1rem, calc(50vw - 50%));
 }
-/* In Lantern mode the lanterns take the vine's corner. */
-[data-theme="lantern"] .hero-vine { display: none; }
 
 /* The day timeline: the line fills as you scroll (where the browser supports it). */
 @keyframes timeline-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
@@ -328,6 +311,46 @@
 .envelope-seal { animation: env-seal 1.3s linear both; }
 .envelope-card { animation: env-card 1.3s var(--ease-paper) both; }
 
-/* Journey map lines draw in once. */
-.journey-line { transition: stroke-dashoffset 1.6s var(--ease-paper); }
-@media (prefers-reduced-motion: reduce) { .journey-line { transition: none; } }
+/* Journey map: each route draws in once (1.2 s); a soft honey glow in Lantern mode. */
+.journey-draw { transition: stroke-dashoffset 1.2s cubic-bezier(.22,1,.36,1); }
+@media (prefers-reduced-motion: reduce) { .journey-draw { transition: none; } }
+[data-theme="lantern"] .journey-route { filter: drop-shadow(0 0 4px rgb(213 163 79 / 0.25)); }
+
+/* Photo frames */
+@utility photo-print {
+  padding: 6px 6px 10px;
+  background: #fffdf8;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgb(66 26 5 / 0.08), 0 14px 30px -14px rgb(66 26 5 / 0.35);
+  transform: rotate(-2.5deg);
+}
+.photo-placeholder {
+  background-color: var(--muted);
+  background-image: radial-gradient(60% 60% at 30% 25%, color-mix(in oklab, var(--glow) 35%, transparent), transparent 70%);
+}
+[data-theme="lantern"] .photo-img { filter: saturate(0.95) brightness(0.92); }
+
+/* Optional "painted Kyoto" look (data-look="painted"): foggy storybook mood. Original motifs only. */
+.clouds { display: none; }
+[data-look="painted"] .clouds { display: block; }
+[data-look="painted"] .cloud { animation: cloud-drift 60s linear infinite alternate; }
+[data-look="painted"] .cloud-2 { animation-duration: 80s; animation-direction: alternate-reverse; }
+@keyframes cloud-drift { from { translate: -4% 0; } to { translate: 6% 0; } }
+[data-look="painted"] {
+  --background: color-mix(in oklab, var(--kinari) 82%, #c9c6bd);
+  --card: color-mix(in oklab, var(--shiro-kinari) 88%, #d8d5cc);
+  --primary: color-mix(in oklab, var(--sabi) 85%, #7a7470);
+  --muted-foreground: var(--kuri); /* 5.75:1 on the misty paper */
+}
+[data-look="painted"][data-theme="lantern"] {
+  --background: color-mix(in oklab, var(--yoru) 85%, #3a3a40);
+  --card: color-mix(in oklab, var(--yoru-raised) 85%, #44444a);
+  --muted-foreground: var(--kare);
+  --primary: var(--kabocha);
+}
+[data-look="painted"] .eyebrow, [data-look="painted"] .label-caps { font-variant-caps: all-small-caps; text-transform: none; letter-spacing: 0.14em; font-size: 15px; }
+[data-look="painted"] .vine-leaf { transform-box: fill-box; transform-origin: 50% 100%; animation: leaf-sway 5s ease-in-out infinite alternate; }
+@keyframes leaf-sway { from { rotate: -4deg; } to { rotate: 4deg; } }
+@media (prefers-reduced-motion: reduce) {
+  [data-look="painted"] .cloud, [data-look="painted"] .vine-leaf { animation: none; }
+}

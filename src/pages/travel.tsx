@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useLang } from "@/lib/lang"
 import { TravelDates } from "@/components/slots"
+import { Photo } from "@/components/photo"
 
 // Ticks live on this device only (localStorage), never sent anywhere.
 const KEY = "ng-trip-ticks"
@@ -57,6 +58,7 @@ export function TravelPage() {
         <h2 id="handy" className="title leaf-rule">{t.travel.moreTitle}</h2>
         {t.travel.more.map((m) => (
           <div key={m.label} className="space-y-2 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
+            {"photo" in m && m.photo && <Photo name={m.photo} treatment="split" sizes="(min-width: 640px) 600px, 90vw" className="mb-3" />}
             <h3 className="label-caps text-eyebrow">{m.label}</h3>
             <p className="text-body">{m.body}</p>
             {"action" in m && m.action && (

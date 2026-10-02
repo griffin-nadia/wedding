@@ -1,0 +1,272 @@
+{
+ "couple-brisbane-market": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "couple-brisbane-market-lqip.webp",
+  "width": 1600,
+  "height": 2844
+ },
+ "couple-dog-jumper": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "couple-dog-jumper-lqip.webp",
+  "width": 1600,
+  "height": 1200
+ },
+ "couple-kyoto-view": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "couple-kyoto-view-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "couple-night-lane-2": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "couple-night-lane-2-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "couple-osaka-castle": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "couple-osaka-castle-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "griffin-cedar-forest": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "griffin-cedar-forest-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "higashiyama-bookshop": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "higashiyama-bookshop-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "kyoto-night": {
+  "formats": {
+   "avif": [
+    720,
+    1080,
+    1600
+   ],
+   "jpg": [
+    1080
+   ],
+   "webp": [
+    720,
+    1080,
+    1600
+   ]
+  },
+  "wide": {
+   "avif": [
+    1600,
+    2400
+   ],
+   "webp": [
+    1600,
+    2400
+   ]
+  },
+  "lqip": "kyoto-night-lqip.webp",
+  "width": 1600,
+  "height": 2000
+ },
+ "nara-deer-moss": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "nara-deer-moss-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "nara-deer-nuzzle": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "nara-deer-nuzzle-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "pontocho-lanterns": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "pontocho-lanterns-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "stone-lantern-maple": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "stone-lantern-maple-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ },
+ "torii-mist": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "torii-mist-lqip.webp",
+  "width": 1600,
+  "height": 2846
+ },
+ "trio-mountain-town": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "trio-mountain-town-lqip.webp",
+  "width": 1600,
+  "height": 1200
+ },
+ "umbrellas-maple-rain": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "umbrellas-maple-rain-lqip.webp",
+  "width": 1600,
+  "height": 2845
+ },
+ "yasaka-gate-shijo": {
+  "formats": {
+   "avif": [
+    800,
+    1600
+   ],
+   "webp": [
+    800,
+    1600
+   ]
+  },
+  "wide": {},
+  "lqip": "yasaka-gate-shijo-lqip.webp",
+  "width": 1600,
+  "height": 2133
+ }
+}

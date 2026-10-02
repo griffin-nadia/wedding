@@ -11,7 +11,8 @@ import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { Leaf } from "@/components/nature"
-import { answerOf, ApiError, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
+import { Photo } from "@/components/photo"
+import { FLYING, setFlying, type Flying, answerOf, ApiError, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
@@ -313,6 +314,7 @@ function Done({ result, onClose, onChange }: { result: SaveResult; onClose: () =
         <SheetDescription className="hand mt-3 text-lg">{t.rsvp.thanks[answer](who)}</SheetDescription>
       </div>
       <div className="flex-1 space-y-6 px-6 py-6">
+        {answer !== "none" && <Photo name="nara-deer-nuzzle" treatment="arch" sizes="160px" className="mx-auto w-40" />}
         <section aria-labelledby="sum" className="space-y-2">
           <h3 id="sum" className="label-caps text-muted-foreground">{t.rsvp.summary}</h3>
           <ul className="space-y-1 text-body">
@@ -322,6 +324,7 @@ function Done({ result, onClose, onChange }: { result: SaveResult; onClose: () =
           </ul>
           <p className="text-sm text-body">{h.hasEmail === false ? t.rsvp.doneBodyNoEmail : t.rsvp.doneBodyEmail}</p>
         </section>
+        {answer !== "none" && <FlyingFrom token={h.token} />}
         {answer !== "none" && <AddToCalendar />}
         <section className="rounded-[1.25rem] bg-card p-4 ring-1 ring-border">
           <h3 className="label-caps text-muted-foreground">{t.rsvp.omikuji}</h3>
@@ -333,5 +336,28 @@ function Done({ result, onClose, onChange }: { result: SaveResult; onClose: () =
         <Button size="lg" className="flex-1" onClick={onClose} autoFocus>{t.rsvp.backHome}</Button>
       </div>
     </div>
+  )
+}
+
+/** Optional after RSVP: where they're flying from (a short list). Only ever shown as counts. */
+function FlyingFrom({ token }: { token: string }) {
+  const { t } = useLang()
+  const [picked, setPicked] = useState<Flying | null>(null)
+  const [saved, setSaved] = useState(false)
+  return (
+    <section aria-labelledby="flying" className="space-y-2">
+      <h3 id="flying" className="label-caps text-muted-foreground">{t.flying.title}</h3>
+      <p className="text-xs text-muted-foreground">{t.flying.hint}</p>
+      <div className="flex flex-wrap gap-2">
+        {FLYING.map((c) => (
+          <button key={c} type="button" aria-pressed={picked === c}
+            onClick={() => { setPicked(c); setSaved(false); setFlying(token, c).then(() => setSaved(true)).catch(() => setPicked(null)) }}
+            className={cn("inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors", picked === c ? "border-primary bg-secondary font-semibold" : "bg-card")}>
+            {picked === c ? <Check className="size-4 text-primary" strokeWidth={3} aria-hidden /> : null}{c}
+          </button>
+        ))}
+      </div>
+      {saved && <p role="status" className="text-sm text-success">{t.flying.thanks}</p>}
+    </section>
   )
 }

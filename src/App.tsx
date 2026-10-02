@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { Layout } from "@/components/layout"
 import { HouseholdProvider, useHousehold } from "@/lib/household"
 import { LangProvider } from "@/lib/lang"
+import { ThemeProvider } from "@/lib/theme"
 import { HomePage } from "@/pages/home"
 import { NoInvitePage } from "@/pages/no-invite"
 
@@ -31,6 +32,7 @@ function Gate() {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <LangProvider>
       <HouseholdProvider>
         <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
@@ -38,5 +40,6 @@ export default function App() {
         </BrowserRouter>
       </HouseholdProvider>
     </LangProvider>
+    </ThemeProvider>
   )
 }

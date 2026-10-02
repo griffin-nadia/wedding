@@ -1,10 +1,5 @@
 {
   "_note": "Things Nadia and Griffin will add later. Set show to true and fill in the words or images (put images in public/images/). Nothing appears while show is false.",
-  "heroPhoto": {
-    "show": false,
-    "name": "kyoto-night",
-    "alt": "Nadia and Griffin smiling in a lantern-lit Kyoto lane at night"
-  },
   "lettering": {
     "show": false,
     "image": "",
@@ -16,23 +11,23 @@
     "body": "",
     "photos": [],
     "map": {
-      "show": true,
-      "brisbane": "Brisbane",
-      "canada": "Canada",
-      "kyoto": "Kyoto"
+      "show": true
     },
     "stops": [
       {
-        "title": "How we met",
-        "body": ""
+        "title": "Brisbane",
+        "body": "",
+        "photo": "couple-brisbane-market"
       },
       {
-        "title": "Our first trip to Japan",
-        "body": ""
+        "title": "Japan, the first time",
+        "body": "",
+        "photo": "torii-mist"
       },
       {
-        "title": "Why Kyoto",
-        "body": ""
+        "title": "Kyoto",
+        "body": "",
+        "photo": "couple-night-lane-2"
       }
     ]
   },
