@@ -9,7 +9,7 @@ import { useLang } from "@/lib/lang"
 import { countdown, isLocked } from "@/lib/time"
 import { answerOf } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
-import { icsHref } from "@/lib/calendar"
+import { AddToCalendar } from "@/components/add-to-calendar"
 import { Hanko } from "@/components/hanko"
 
 export function HomePage() {
@@ -75,16 +75,14 @@ export function HomePage() {
             </div>
           ))}
         </dl>
-        <a href={icsHref()} download="nadia-griffin-wedding.ics" className="inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4">
-          {t.home.addToCalendar}
-        </a>
+        <AddToCalendar />
       </section>
 
       <section aria-labelledby="next-up" className="space-y-3">
         <h2 id="next-up" className="font-sans text-sm font-bold">{t.home.nextUp}</h2>
         {[
           { to: "/travel", title: t.travel.title, body: "Passport, flights, SIM" },
-          { to: "/the-day", title: t.day.title, body: "11:00 ceremony in the garden" },
+          { to: "/the-day", title: t.day.title, body: "11:00 am ceremony in the garden" },
           { to: "/qa", title: t.qa.title, body: "Gifts, what to wear, food" },
         ].map((c) => (
           <Link key={c.to} to={c.to} className="flex items-center justify-between rounded-lg border bg-card px-5 py-4 transition-colors hover:bg-muted">

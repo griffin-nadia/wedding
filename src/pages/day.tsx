@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useLang } from "@/lib/lang"
-import { homeTime } from "@/lib/time"
-import { icsHref, mapUrl } from "@/lib/calendar"
+import { jstLabel, localTime } from "@/lib/time"
+import { mapUrl } from "@/lib/calendar"
+import { AddToCalendar } from "@/components/add-to-calendar"
 
 function useKyotoTime() {
   const now = () => new Date().toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Tokyo" })
@@ -27,18 +28,16 @@ export function DayPage() {
         {t.day.schedule.map((s, i) => (
           <li key={s.time} className="relative">
             <span className={`absolute -left-[39px] top-1.5 size-3 rounded-full ${i === 0 ? "bg-primary" : "bg-highlight"}`} aria-hidden />
-            <p className="font-display text-2xl">{s.time} <span className="font-sans text-base font-bold">{s.label}</span></p>
+            <p className="font-display text-2xl">{jstLabel(s.time)} <span className="font-sans text-base font-bold">{s.label}</span></p>
             <p className="text-sm text-body">{s.where}</p>
-            <p className="text-xs text-muted-foreground">{homeTime(s.time)}</p>
+            {localTime(s.time) && <p className="text-xs text-muted-foreground">{localTime(s.time)}</p>}
           </li>
         ))}
       </ol>
       <p className="text-sm text-muted-foreground">{t.day.japanTime} {t.day.kyotoNow(kyotoNow)}</p>
       <p className="text-sm text-muted-foreground">{t.day.address}</p>
-      <div className="flex flex-wrap gap-3">
-        <Button asChild variant="outline" size="lg"><a href={icsHref()} download="nadia-griffin-wedding.ics">{t.day.addToCalendar}</a></Button>
-        <Button asChild variant="outline" size="lg"><a href={mapUrl} target="_blank" rel="noreferrer">{t.day.openMap}</a></Button>
-      </div>
+      <Button asChild variant="outline" size="lg"><a href={mapUrl} target="_blank" rel="noreferrer">{t.day.openMap}</a></Button>
+      <AddToCalendar />
     </div>
   )
 }

@@ -46,6 +46,7 @@ export function RsvpSheet({ children }: { children: ReactNode }) {
   const setGuest = (id: string, patch: Partial<Guest>) =>
     setForm((f) => ({ ...f, guests: f.guests.map((g) => (g.id === id ? { ...g, ...patch } : g)) }))
   const coming = form.guests.filter((g) => g.attending === "yes")
+  const songsFilled = form.songs.map((x) => x.trim()).filter(Boolean)
   const canNext = step !== 1 || form.guests.every((g) => g.attending)
 
   function onOpenChange(o: boolean) {
@@ -85,7 +86,7 @@ export function RsvpSheet({ children }: { children: ReactNode }) {
         <SheetHeader className="gap-3 px-6 pt-8">
           <p className="eyebrow text-muted-foreground">{t.rsvp.step(step)}</p>
           <SheetTitle className="font-display text-3xl font-normal">
-            {step === 1 ? t.rsvp.whoTitle : step === 2 ? t.rsvp.foodTitle : t.rsvp.checkTitle}
+            {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : t.rsvp.checkTitle}
           </SheetTitle>
           <SheetDescription className="sr-only">RSVP for {household.displayName}</SheetDescription>
           <div className="grid grid-cols-3 gap-2" aria-hidden>
@@ -133,6 +134,7 @@ export function RsvpSheet({ children }: { children: ReactNode }) {
                   </div>
                 </div>
               ))}
+              {coming.length > 0 && <>
               <div className="space-y-2" role="group" aria-labelledby="songs-label">
                 <p id="songs-label" className="text-sm font-medium">{t.rsvp.song}</p>
                 {Array.from({ length: config.maxSongs }).map((_, i) => (
@@ -146,6 +148,7 @@ export function RsvpSheet({ children }: { children: ReactNode }) {
                 <div className="space-y-2"><Label htmlFor="dep">{t.rsvp.departure}</Label><Input id="dep" type="date" value={form.departure} onChange={(e) => setForm({ ...form, departure: e.target.value })} /></div>
                 <p className="col-span-2 text-xs text-muted-foreground">{t.rsvp.datesHint}</p>
               </div>
+              </>}
               <div className="space-y-2"><Label htmlFor="msg">{t.rsvp.message}</Label><Textarea id="msg" maxLength={MAX.message} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} /></div>
             </>
           )}
@@ -158,11 +161,14 @@ export function RsvpSheet({ children }: { children: ReactNode }) {
                   <dd className="text-right text-body">{g.attending === "yes" ? `${t.rsvp.coming}${g.dietary && g.dietary !== "None" ? ` · ${g.dietary}` : ""}` : t.rsvp.notComing}</dd>
                 </div>
               ))}
-              {coming.length > 0 && (
-                <>
-                  <div className="flex justify-between gap-4 px-4 py-3 text-sm"><dt className="font-bold">{t.rsvp.songs}</dt><dd className="text-right text-body">{form.songs.map((s) => s.trim()).filter(Boolean).join(", ") || t.rsvp.noSongs}</dd></div>
-                  <div className="flex justify-between gap-4 px-4 py-3 text-sm"><dt className="font-bold">{t.rsvp.dates}</dt><dd className="text-right text-body">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</dd></div>
-                </>
+              {songsFilled.length > 0 && (
+                <div className="flex justify-between gap-4 px-4 py-3 text-sm"><dt className="font-bold">{t.rsvp.songs}</dt><dd className="text-right text-body">{songsFilled.join(", ")}</dd></div>
+              )}
+              {(form.arrival || form.departure) && (
+                <div className="flex justify-between gap-4 px-4 py-3 text-sm"><dt className="font-bold">{t.rsvp.dates}</dt><dd className="text-right text-body">{fmtStay(form.arrival, form.departure, t.rsvp.notSet)}</dd></div>
+              )}
+              {form.message.trim() && (
+                <div className="space-y-1 px-4 py-3 text-sm"><dt className="font-bold">{t.rsvp.messageLabel}</dt><dd className="whitespace-pre-line break-words text-body">{form.message.trim()}</dd></div>
               )}
             </dl>
           )}
@@ -171,9 +177,9 @@ export function RsvpSheet({ children }: { children: ReactNode }) {
         </div>
 
         <SheetFooter className="mt-auto flex-row gap-3 border-t px-6 py-4">
-          {step > 1 && <Button variant="outline" size="lg" disabled={saving} onClick={() => setStep(coming.length === 0 && step === 3 ? 1 : step - 1)}>{t.rsvp.back}</Button>}
+          {step > 1 && <Button variant="outline" size="lg" disabled={saving} onClick={() => setStep(step - 1)}>{t.rsvp.back}</Button>}
           {step < 3
-            ? <Button size="lg" className="flex-1" disabled={!canNext} onClick={() => setStep(coming.length === 0 && step === 1 ? 3 : step + 1)}>{t.rsvp.next}</Button>
+            ? <Button size="lg" className="flex-1" disabled={!canNext} onClick={() => setStep(step + 1)}>{t.rsvp.next}</Button>
             : <Button size="lg" className="flex-1" disabled={saving} aria-busy={saving} onClick={send}>{saving ? t.rsvp.saving : error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
         </SheetFooter>
         </>}

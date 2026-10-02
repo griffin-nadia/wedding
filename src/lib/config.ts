@@ -6,6 +6,5 @@ export const config = {
   rsvpDue: "2027-02-15",
   // Changes lock (TBC with Nadia & Griffin, suggested 30 Apr 2027, before final numbers)
   changesLock: "2027-04-30",
-  homeTimeZone: "Australia/Melbourne",
   maxSongs: 3,
 }

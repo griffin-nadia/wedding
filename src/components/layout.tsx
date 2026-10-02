@@ -3,6 +3,8 @@ import { CalendarDays, CircleHelp, Home, Plane } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
 
+const SHOW_JA = false
+
 const links = [
   { to: "/", key: "home", icon: Home },
   { to: "/the-day", key: "day", icon: CalendarDays },
@@ -23,14 +25,17 @@ export function Layout() {
             </NavLink>
           ))}
         </nav>
+        {/* 日本語 toggle hidden until the Japanese copy is proofread (needs-from-nadia.md). */}
+        {SHOW_JA ? (
         <button
-          type="button"
-          onClick={() => setLang(lang === "en" ? "ja" : "en")}
-          className="inline-flex min-h-11 items-center px-1 text-sm text-body hover:text-foreground"
-          aria-label="Switch language"
-        >
-          <span className={cn(lang === "en" && "font-bold text-foreground")}>EN</span> · <span className={cn(lang === "ja" && "font-bold text-foreground")}>日本語</span>
-        </button>
+            type="button"
+            onClick={() => setLang(lang === "en" ? "ja" : "en")}
+            className="inline-flex min-h-11 items-center px-1 text-sm text-body hover:text-foreground"
+            aria-label="Switch language"
+          >
+            <span className={cn(lang === "en" && "font-bold text-foreground")}>EN</span> · <span className={cn(lang === "ja" && "font-bold text-foreground")}>日本語</span>
+          </button>
+        ) : <span aria-hidden />}
       </header>
 
       <main className="mx-auto max-w-6xl px-5 md:px-10">

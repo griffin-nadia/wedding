@@ -8,13 +8,24 @@ export function countdown(now = new Date()) {
   return { days, hours, mins }
 }
 
-/** "1:00 pm in Melbourne" for a Japan-time HH:MM on the wedding day. */
-export function homeTime(jstTime: string, timeZone = config.homeTimeZone) {
-  const [h, m] = jstTime.split(":").map(Number)
-  const hour24 = h < 9 ? h + 12 : h // schedule uses 12-hour style after noon (1:00 = 13:00)
-  const d = new Date(`2027-10-15T${String(hour24).padStart(2, "0")}:${String(m).padStart(2, "0")}:00+09:00`)
-  const city = timeZone.split("/")[1]?.replace("_", " ")
-  return `${d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone })} in ${city}`
+/** "13:00" (Japan time on the day) → "1:00 pm". */
+export function jstLabel(hhmm: string) {
+  const [h, m] = hhmm.split(":").map(Number)
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`
+}
+
+/**
+ * The same moment on the guest's own clock, e.g. "7:00 pm Thu in Vancouver".
+ * Null when their device is already on Japan time, so the line can be hidden.
+ */
+export function localTime(hhmm: string, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
+  const d = new Date(`2027-10-15T${hhmm}:00+09:00`)
+  const fmt = (tz: string) => d.toLocaleString("en-AU", { weekday: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz })
+  if (!timeZone || fmt(timeZone) === fmt("Asia/Tokyo")) return null
+  const time = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone }).toLowerCase()
+  const day = d.toLocaleDateString("en-AU", { weekday: "short", timeZone })
+  const city = timeZone.split("/").pop()!.replace(/_/g, " ")
+  return `${time} ${day} in ${city}`
 }
 
 export function isLocked(now = new Date()) {
