@@ -104,7 +104,8 @@ function onOpen() {
     .addItem("Send a reminder to households who haven't replied…", "sendReminders")
     .addSeparator()
     .addItem("Set up the Emails tab", "setupEmailsTab")
-    .addItem("Check song search (Spotify)", "checkSongSearch")
+    .addItem("Check song search", "checkSongSearch")
+    .addItem("Turn on the fast email queue", "setupQueue")
     .addItem("Reset test households…", "resetTestHouseholds")
     .addSeparator()
     .addItem("Schedule the February reminder…", "scheduleReminder")
@@ -123,7 +124,10 @@ function doGet(e) {
       if (h && p.open === "1") safely_(() => enqueue_("open", h.token))
       return json_({ ok: true, household: h })
     }
-    if (action === "ping") return json_({ ok: true })
+    if (action === "ping") {
+      // Health check: is the minute trigger set up? (No guest data here.)
+      return json_({ ok: true, queue: PropertiesService.getScriptProperties().getProperty("flush_trigger") === "1", triggerError: CacheService.getScriptCache().get("trigger_err") || null })
+    }
     if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
       const token = String(p.token || "").trim()
@@ -390,6 +394,7 @@ function flushTriggerReady_() {
     props.setProperty("flush_trigger", "1")
     return true
   } catch (err) {
+    CacheService.getScriptCache().put("trigger_err", String(err).slice(0, 300), 21600)
     return false
   }
 }
@@ -1003,6 +1008,13 @@ function resetTestHouseholds() {
   })
   forgetAllHouseholds_()
   ui.alert("Reset " + tests.length + " test household" + (tests.length === 1 ? "" : "s") + ".")
+}
+
+/** Creates the 1-minute trigger that sends confirmation emails and writes visit counts. */
+function setupQueue() {
+  PropertiesService.getScriptProperties().deleteProperty("flush_trigger")
+  const ok = flushTriggerReady_()
+  SpreadsheetApp.getUi().alert(ok ? "The email queue is on. Saves are faster, and visits are written every minute." : "Couldn't turn it on: " + (CacheService.getScriptCache().get("trigger_err") || "unknown error"))
 }
 
 function checkSongSearch() {

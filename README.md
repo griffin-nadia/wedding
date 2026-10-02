@@ -26,20 +26,29 @@ the back end exists. Copy `.env.example` to `.env` and paste the Apps Script URL
 | App | Vite + React + TypeScript, React Router | Simple static build, app-like tabs |
 | UI | shadcn/ui (Radix, `radix-vega` style) in `src/components/ui` | Accessible accordion, sheet, radio, form parts we own and restyle |
 | Styling | Tailwind v4, tokens in `src/styles/tokens.css` | One token file, themes via `data-theme` |
-| Fonts | Shippori Mincho + Zen Kaku Gothic New via Fontsource | Served from our own site, Latin files preloaded so text never swaps |
+| Fonts | Zen Old Mincho, EB Garamond, Klee One via Fontsource | Served from our own site, Latin files preloaded, `font-display: optional` so text never swaps |
 | Data | Google Sheet + Apps Script web app (`apps-script/`) | Free, Nadia can edit, no server |
 | Hosting | GitHub Pages: `griffin-nadia.github.io/wedding` | Free. Repo is public, so **no guest data in code, ever** |
 
 ## Tokens and themes
 
-`src/styles/tokens.css` has two tiers: primitives (palette swatches) and semantic tokens
-(`--background`, `--primary`, `--border`...) that shadcn reads. They mirror the Figma variables collection
-**Tokens** on the design file's Components page.
+`src/styles/tokens.css` has two tiers: primitives (Nadia's palette, Japanese colour names) and semantic tokens
+(`--background`, `--primary`, `--leaf`...) that shadcn reads.
 
-- `data-theme="autumn"` (default) = Direction E, Autumn in Kyoto
-- `data-theme="evening"` = Direction C, proves a theme swap needs no component changes
+- `data-theme="autumn"` (default, light): Nadia's autumn palette with a quiet moss green.
+- `data-theme="lantern"`: Lantern mode, a warm evening theme. Follows the device setting until a guest picks
+  with the lamp/sun button; set before first paint by the inline script in `index.html`.
 
-If they pick a different look for v2, add a theme block. Components stay the same.
+## Features
+
+- Household link → greeting → RSVP in 3 steps (plus-one names, dietary, song search, dates, message, photo
+  consent) → success screen → home shows "You said …" with Change.
+- "Can't find your invite?" emails the link (same answer whether or not the email is listed).
+- The day: schedule in Japan time and the guest's own time, add to calendar (Google or .ics), printable A4
+  day sheet with the Japanese address and a map QR.
+- Song search through the back end (iTunes, or Spotify if keys are set), artwork inline.
+- Content slots for later (`src/content/slots.json`): lettering, our story, paintings, travel dates.
+- `npm run qr-cards -- path/to/Guests.csv` makes printable QR cards in `private/` (gitignored).
 
 ## Content
 
