@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom"
+import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { CalendarDays, CircleHelp, Home, Lamp, Plane, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
@@ -18,9 +18,10 @@ export function Layout() {
   const { t, lang, setLang } = useLang()
   const { theme, setTheme } = useTheme()
   const lantern = theme === "lantern"
+  const { pathname } = useLocation()
   return (
     <div className="min-h-dvh pb-[calc(4rem+env(safe-area-inset-bottom)+1.5rem)] md:pb-0">
-      <header className="mx-auto flex max-w-[60rem] items-center justify-between gap-4 px-4 py-3 md:px-8 md:py-5">
+      <header className="mx-auto flex max-w-[60rem] items-center justify-between gap-4 px-4 py-3 md:px-8 md:py-4">
         <span className="font-display text-xl">{t.meta.shortTitle}</span>
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
@@ -49,7 +50,9 @@ export function Layout() {
       </header>
 
       <main className="mx-auto max-w-[60rem] px-4 md:px-8">
-        <Outlet />
+        <div key={pathname} className="page-in">
+          <Outlet />
+        </div>
       </main>
 
       {/* Phone tab bar: 64px plus the safe area, labels always under icons */}
@@ -58,13 +61,13 @@ export function Layout() {
           {links.map((l) => (
             <li key={l.to} className="flex">
               <NavLink to={l.to} end className={({ isActive }) => cn(
-                "flex flex-1 flex-col items-center justify-center gap-0.5 text-[13px] text-muted-foreground",
+                "flex flex-1 flex-col items-center justify-center gap-1 text-[13px] text-muted-foreground",
                 isActive && "font-semibold text-foreground",
               )}>
                 {({ isActive }) => (<>
                   <span className={cn("relative flex h-7 w-14 items-center justify-center rounded-full transition-colors", isActive && "bg-secondary")}>
                     <l.icon className="size-6" strokeWidth={1.6} aria-hidden />
-                    {isActive && <span aria-hidden className="absolute -right-0.5 top-0.5 size-1.5 rounded-full bg-leaf" />}
+                    {isActive && <span aria-hidden className="absolute -right-1 top-1 size-1.5 rounded-full bg-leaf" />}
                   </span>
                   {t.nav[l.key]}
                 </>)}

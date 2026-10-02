@@ -18,7 +18,7 @@ export function TravelPage() {
     try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* private mode */ }
   }
   return (
-    <div className="max-w-2xl space-y-6 py-6 md:py-16">
+    <div className="max-w-[40rem] space-y-6 py-6 md:py-12">
       <header className="space-y-2">
         <h1 className="title leaf-rule">{t.travel.title}</h1>
         <p className="text-body">{t.travel.lead}</p>
@@ -30,8 +30,8 @@ export function TravelPage() {
           const id = `tick-${i}`
           return (
             <Card key={item.title}>
-              <CardContent className="flex gap-4">
-                <Checkbox id={id} checked={done} onCheckedChange={(v) => toggle(item.title, v === true)} className="mt-1 size-6" aria-describedby={`${id}-body`} />
+              <CardContent className="flex-row items-start gap-4">
+                <Checkbox id={id} checked={done} onCheckedChange={(v) => toggle(item.title, v === true)} className="mt-1 size-6 shrink-0 after:-inset-3" aria-describedby={`${id}-body`} />
                 <div className="space-y-2">
                   <label htmlFor={id} className="block cursor-pointer font-sans text-base font-bold">
                     {item.title}{done && <span className="ml-2 text-sm font-normal text-muted-foreground">{t.travel.ticked}</span>}

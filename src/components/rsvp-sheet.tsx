@@ -100,10 +100,10 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
 
         <div className="space-y-4 px-6 py-6">
           {step === 1 && form.guests.map((g) => (
-            <fieldset key={g.id} className="rounded-lg border bg-card p-4">
+            <fieldset key={g.id} className="rounded-[1.25rem] border bg-card p-4 shadow-paper">
               <legend className="sr-only">{nameOf(g)}</legend>
               {g.plusOne ? (
-                <div className="mb-3 space-y-1.5">
+                <div className="mb-3 space-y-2">
                   <Label htmlFor={`name-${g.id}`}>{t.rsvp.plusOne}</Label>
                   <Input id={`name-${g.id}`} value={g.firstName} maxLength={MAX.name} autoComplete="off"
                     onChange={(e) => setGuest(g.id, { firstName: e.target.value })} />
@@ -114,7 +114,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
               )}
               <RadioGroup aria-label={nameOf(g)} value={g.attending ?? ""} onValueChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })} className="grid grid-cols-2 gap-2">
                 {(["yes", "no"] as const).map((v) => (
-                  <Label key={v} htmlFor={`${g.id}-${v}`} className={cn("flex min-h-12 cursor-pointer items-center gap-2 rounded-md border px-3 py-3 has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50", g.attending === v && "border-2 border-primary bg-secondary font-bold")}>
+                  <Label key={v} htmlFor={`${g.id}-${v}`} className={cn("flex min-h-13 cursor-pointer items-center gap-2 rounded-xl border bg-card px-3 py-3 whitespace-nowrap has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50", g.attending === v && "border-2 border-primary bg-secondary font-bold")}>
                     <RadioGroupItem id={`${g.id}-${v}`} value={v}
                       // Arrow keys always select (Radix skips the first press after the sheet focuses it)
                       onFocus={(e) => { if (e.currentTarget.matches(":focus-visible") && g.attending !== v) setGuest(g.id, { attending: v }) }} />
@@ -133,7 +133,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                   <div className="flex flex-wrap gap-2">
                     {t.rsvp.dietaryOptions.map((o) => (
                       <button key={o} type="button" aria-pressed={g.dietary === o} onClick={() => setGuest(g.id, { dietary: o })}
-                        className={cn("rounded-md border px-3 py-2 text-sm", g.dietary === o ? "border-primary bg-primary text-primary-foreground" : "bg-card")}>
+                        className={cn("min-h-11 rounded-full border px-4 py-2 text-sm", g.dietary === o ? "border-primary bg-primary text-primary-foreground" : "bg-card")}>
                         {o}
                       </button>
                     ))}
@@ -200,7 +200,7 @@ function Done({ result, onClose }: { result: SaveResult; onClose: () => void }) 
   const answer = answerOf(result.household)
   return (
     <div className="flex flex-1 flex-col px-6 pt-12 pb-6" role="status">
-      <div className="flex-1 space-y-5">
+      <div className="flex-1 space-y-4">
         {answer !== "none" && <Hanko stamp />}
         <p className="eyebrow text-success">{result.updated ? t.rsvp.updatedEyebrow : t.rsvp.savedEyebrow}</p>
         <SheetTitle className="font-display text-3xl font-normal">{t.rsvp.doneTitle[answer]}</SheetTitle>

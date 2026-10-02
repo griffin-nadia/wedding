@@ -19,7 +19,7 @@ export function DayPage() {
   const { t } = useLang()
   const kyotoNow = useKyotoTime()
   return (
-    <div className="max-w-2xl space-y-8 py-6 md:py-16">
+    <div className="max-w-[40rem] space-y-8 py-6 md:py-12">
       <header className="space-y-2">
         <h1 className="title leaf-rule">{t.day.title}</h1>
         <p className="text-body">{t.day.date} · {t.day.venue}</p>
@@ -27,7 +27,7 @@ export function DayPage() {
       <ol className="relative space-y-6 border-l-2 border-border pl-8">
         {t.day.schedule.map((s, i) => (
           <li key={s.time} className="relative">
-            <span className={`absolute -left-[39px] top-1.5 size-3 rounded-full ${i === 0 ? "bg-primary" : "bg-highlight"}`} aria-hidden />
+            <span className={`absolute -left-[39px] top-2 size-3 rounded-full ${i === 0 ? "bg-primary" : "bg-highlight"}`} aria-hidden />
             <p className="font-display text-2xl">{jstLabel(s.time)} <span className="font-sans text-base font-bold">{s.label}</span></p>
             <p className="text-sm text-body">{s.where}</p>
             {localTime(s.time) && <p className="text-xs text-muted-foreground">{localTime(s.time)}</p>}

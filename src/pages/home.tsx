@@ -35,7 +35,7 @@ export function HomePage() {
   )
 
   return (
-    <div className="grid gap-10 py-6 md:grid-cols-[1.1fr_1fr] md:gap-16 md:py-16">
+    <div className="grid gap-12 py-6 md:grid-cols-[1.1fr_1fr] md:gap-18 md:py-12">
       <section className="space-y-6">
         <p className="eyebrow">{t.meta.eyebrow}</p>
         <h1 className="title-hero">{t.home.greeting(household.displayName)}</h1>
@@ -56,8 +56,8 @@ export function HomePage() {
                   <ul className="flex flex-wrap gap-2">
                     {household.guests.map((g) => (
                       <li key={g.id} className={g.attending === "yes"
-                        ? "inline-flex items-center gap-1.5 rounded-full bg-leaf/15 px-3 py-1 text-sm text-success"
-                        : "inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm text-body"}>
+                        ? "inline-flex items-center gap-2 rounded-full bg-leaf/15 px-3 py-1 text-sm text-success"
+                        : "inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm text-body"}>
                         {g.attending === "yes" && <span aria-hidden className="size-1.5 rounded-full bg-leaf" />}
                         <span className="font-semibold">{g.firstName}</span>
                         {g.attending === "yes" ? t.home.said.yes : g.attending === "no" ? t.home.said.no : t.home.said.none}
@@ -88,9 +88,10 @@ export function HomePage() {
 
         <dl className="grid grid-cols-3 gap-3" aria-label="Countdown">
           {(["days", "hours", "mins"] as const).map((k) => (
-            <div key={k} className="rounded-lg border bg-card py-4 text-center">
-              <dd className="font-display text-3xl">{left[k]}</dd>
-              <dt className="text-xs text-muted-foreground">{t.home.countdown[k]}</dt>
+            <div key={k} className="relative flex flex-col-reverse items-center gap-1 rounded-[1.25rem] bg-card py-4 text-center shadow-paper ring-1 ring-border">
+              {k === "days" && <span aria-hidden className="absolute top-3 right-3 size-1.5 rounded-full bg-leaf" />}
+              <dt className="text-xs tracking-wide text-muted-foreground">{t.home.countdown[k]}</dt>
+              <dd className="font-display text-4xl leading-none tabular-nums">{left[k]}</dd>
             </div>
           ))}
         </dl>
@@ -104,7 +105,7 @@ export function HomePage() {
           { to: "/the-day", title: t.day.title, body: "11:00 am ceremony in the garden" },
           { to: "/qa", title: t.qa.title, body: "Gifts, what to wear, food" },
         ].map((c) => (
-          <Link key={c.to} to={c.to} className="flex items-center justify-between rounded-lg border bg-card px-5 py-4 transition-colors hover:bg-muted">
+          <Link key={c.to} to={c.to} className="flex items-center justify-between rounded-lg border bg-card px-6 py-4 transition-colors hover:bg-muted">
             <span>
               <span className="block font-bold">{c.title}</span>
               <span className="text-sm text-body">{c.body}</span>

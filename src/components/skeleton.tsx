@@ -3,12 +3,12 @@ export function InviteSkeleton({ label }: { label: string }) {
   const bar = "rounded-md bg-muted motion-safe:animate-pulse"
   return (
     <div className="min-h-dvh">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 md:px-10">
+      <div className="mx-auto flex max-w-[60rem] items-center justify-between px-4 py-3 md:px-8 md:py-4">
         <span className="font-display text-xl">N&amp;G</span>
       </div>
-      <div className="mx-auto max-w-6xl px-5 md:px-10" role="status" aria-live="polite">
+      <div className="mx-auto max-w-[60rem] px-4 md:px-8" role="status" aria-live="polite">
         <span className="sr-only">{label}</span>
-        <div aria-hidden className="max-w-xl space-y-6 py-6 md:py-16">
+        <div aria-hidden className="max-w-xl space-y-6 py-6 md:py-12">
           <div className={`${bar} h-3 w-56`} />
           <div className={`${bar} h-12 w-64 md:h-16`} />
           <div className={`${bar} h-4 w-72`} />
