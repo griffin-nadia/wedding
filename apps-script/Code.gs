@@ -33,6 +33,11 @@
  *                   app owner). Without them, or if Spotify says no, search uses iTunes.
  */
 
+// The couple's names, once. Swapping the order is this one line (and COUPLE in src/content/en.ts).
+const FIRST = "Nadia"
+const SECOND = "Griffin"
+const COUPLE = FIRST + " & " + SECOND
+
 const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", emails: "Emails" }
 
 const DEFAULTS = {
@@ -72,7 +77,7 @@ const ERRORS = {
   bad_guest: "That RSVP included someone who isn't in this household.",
   bad_attending: "Please choose coming or can't make it for each person.",
   bad_date: "Please check your dates: between 1 Sep and 30 Nov 2027, and leaving on or after arriving.",
-  closed: "Changes are closed now. Please message Nadia or Griffin.",
+  closed: "Changes are closed now. Please message " + FIRST + " or " + SECOND + ".",
   busy: "Lots of people are replying right now. Please try again in a minute.",
   server: "Something went wrong saving that. Please try again.",
   read_failed: "We couldn't load your invite just now. Please try again.",
@@ -83,12 +88,12 @@ const ERRORS = {
 // Invite and reminder wording. The Emails tab overrides these, so Nadia can edit without code.
 // {household}, {rsvp_by}, {date} and {venue} are filled in when sending.
 const COPY = {
-  invite_subject: "You're invited: Nadia & Griffin, Kyoto, 15 October 2027",
+  invite_subject: "You're invited: " + COUPLE + ", Kyoto, 15 October 2027",
   invite_heading: "You're invited",
   invite_body:
     "Hi {household},\n\nWe're getting married in Kyoto and we'd love you to be there.\n\nYour invite page has everything: the day, travel tips and your RSVP. Please RSVP by {rsvp_by}.",
   invite_button: "Open your invite",
-  reminder_subject: "A quick reminder to RSVP: Nadia & Griffin",
+  reminder_subject: "A quick reminder to RSVP: " + COUPLE,
   reminder_heading: "Can you make it?",
   reminder_body:
     "Hi {household},\n\nJust a friendly nudge to RSVP for our wedding in Kyoto. It only takes a minute.\n\nPlease RSVP by {rsvp_by}.",
@@ -766,11 +771,11 @@ function resendLink_(email) {
     const mail = buildEmail_({
       eyebrow: "Your invite link",
       heading: "Here's your invite",
-      paragraphs: ["Hi " + h.name + ",", "Someone asked for your link to Nadia and Griffin's wedding site. Here it is."],
+      paragraphs: ["Hi " + h.name + ",", "Someone asked for your link to " + FIRST + " and " + SECOND + "'s wedding site. Here it is."],
       button: { label: "Open your invite", url: h.link },
       notes: ["This link is just for your household, so please don't share it.", "If you didn't ask for this, you can ignore it."],
     })
-    MailApp.sendEmail({ to: email, replyTo: prop_("REPLY_TO"), name: "Nadia & Griffin", subject: "Your link for Nadia & Griffin's wedding", body: mail.text, htmlBody: mail.html })
+    MailApp.sendEmail({ to: email, replyTo: prop_("REPLY_TO"), name: COUPLE, subject: "Your link for " + COUPLE + "'s wedding", body: mail.text, htmlBody: mail.html })
     log_(h.name, h.token, "Link re-sent to " + email + " (asked on the site)", "")
   })
   return same
@@ -839,8 +844,8 @@ function sendConfirmation_(h, changes) {
   MailApp.sendEmail({
     to: emails.join(","),
     replyTo: prop_("REPLY_TO"),
-    name: "Nadia & Griffin",
-    subject: (changes ? "Updated: your" : "Your") + " RSVP for Nadia & Griffin's wedding",
+    name: COUPLE,
+    subject: (changes ? "Updated: your" : "Your") + " RSVP for " + COUPLE + "'s wedding",
     body: mail.text,
     htmlBody: mail.html,
   })
@@ -882,7 +887,7 @@ function sendInvitesTest() {
   if (MailApp.getRemainingDailyQuota() < list.length) return ui.alert("Not enough emails left today. Try again tomorrow.")
   list.forEach((h) => {
     const mail = inviteEmail_("invite", h, "Test: the real invite would go to " + (h.emails.join(", ") || "nobody (no email, text them the link)"))
-    MailApp.sendEmail({ to: to, replyTo: prop_("REPLY_TO"), name: "Nadia & Griffin", subject: "[TEST] " + mail.subject, body: mail.text, htmlBody: mail.html })
+    MailApp.sendEmail({ to: to, replyTo: prop_("REPLY_TO"), name: COUPLE, subject: "[TEST] " + mail.subject, body: mail.text, htmlBody: mail.html })
   })
   log_("(test send)", "", "Test invites: " + list.length + " sent to the test address. Invite sent not filled.", "")
   PropertiesService.getScriptProperties().setProperty("last_test_send", new Date().toISOString() + " · " + list.length)
@@ -958,7 +963,7 @@ function sendBatch_(kind, list, markInvited) {
     const h = list[i]
     if (MailApp.getRemainingDailyQuota() < h.emails.length) return { sent: sent, left: list.length - i }
     const mail = inviteEmail_(kind, h)
-    MailApp.sendEmail({ to: h.emails.join(","), replyTo: prop_("REPLY_TO"), name: "Nadia & Griffin", subject: mail.subject, body: mail.text, htmlBody: mail.html })
+    MailApp.sendEmail({ to: h.emails.join(","), replyTo: prop_("REPLY_TO"), name: COUPLE, subject: mail.subject, body: mail.text, htmlBody: mail.html })
     if (markInvited) h.rows.forEach((r) => gSheet.getRange(r, head["Invite sent"] + 1).setValue(new Date()))
     log_(h.name, h.token, (kind === "invite" ? "Invite" : "Reminder") + " sent to " + h.emails.join(", "), "")
     SpreadsheetApp.flush()
@@ -1198,8 +1203,8 @@ function buildEmail_(m) {
     text += m.button.label + ":\n" + m.button.url + "\n\n"
   }
   ;(m.notes || []).forEach((n) => { html += p(n, 14, c.muted); text += n + "\n" })
-  html += p("Nadia & Griffin", 18, c.ink).replace("margin:0 0 14px", "margin:20px 0 0") + "</div>"
-  text += "\nNadia & Griffin"
+  html += p(COUPLE, 18, c.ink).replace("margin:0 0 14px", "margin:20px 0 0") + "</div>"
+  text += "\n" + COUPLE
   return { html: html, text: text }
 }
 
