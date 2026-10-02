@@ -1,0 +1,78 @@
+/*
+  Design tokens for the Nadia & Griffin site.
+  Mirrors the Figma variables collection "Tokens" in the design file (Components page).
+
+  Tier 1  primitives  raw colours per theme (named after the palette swatches in Figma 06)
+  Tier 2  semantic    what things are for (background, primary, border...). shadcn/ui reads these.
+
+  Switch theme with <html data-theme="autumn"> (default) or data-theme="evening".
+  A new look later = a new [data-theme] block. Components never change.
+*/
+
+:root,
+[data-theme="autumn"] {
+  /* Tier 1 · Direction E, Autumn in Kyoto (from their colours) */
+  --paper: #f6efe3;
+  --paper-raised: #fffdf8;
+  --kinari: #f1e7d6;
+  --kincha: #f1e2c8;
+  --sumi: #3a2a20;
+  --kurumi: #6b4a35;
+  --haizome: #8a7a68;
+  --line: #e6dcca;
+  --momiji: #a8321f;
+  --akane: #b5482e;
+  --ginkgo: #e0a030;
+  --on-momiji: #fff6ea;
+
+  /* Tier 2 · semantic */
+  --background: var(--paper);
+  --foreground: var(--sumi);
+  --card: var(--paper-raised);
+  --card-foreground: var(--sumi);
+  --popover: var(--paper-raised);
+  --popover-foreground: var(--sumi);
+  --primary: var(--momiji);
+  --primary-foreground: var(--on-momiji);
+  --secondary: var(--kincha);
+  --secondary-foreground: var(--sumi);
+  --muted: var(--kinari);
+  --muted-foreground: var(--haizome);
+  --accent: var(--kincha);
+  --accent-foreground: var(--sumi);
+  --highlight: var(--ginkgo);
+  --eyebrow: var(--akane);
+  --body: var(--kurumi);
+  --destructive: #b42318;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--akane);
+}
+
+[data-theme="evening"] {
+  /* Tier 1 · Direction C, Tokyo evening (proves the theme swap) */
+  --paper: #fffffb;
+  --paper-raised: #ffffff;
+  --kinari: #fedfe1;
+  --kincha: #fbeceb;
+  --sumi: #0f2540;
+  --kurumi: #34465c;
+  --haizome: #5c6670;
+  --line: #dadde0;
+  --momiji: #0f2540;
+  --akane: #d96c5c;
+  --ginkgo: #f19483;
+  --on-momiji: #fffffb;
+}
+
+:root {
+  /* Shape, space, type, motion (same for every theme) */
+  --radius: 0.5rem; /* Soft 8 */
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, sans-serif;
+  --ease-paper: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-quick: 150ms;
+  --duration-settle: 300ms;
+  --duration-drift: 600ms;
+  --shadow-paper: 0 2px 6px rgb(58 42 32 / 0.1);
+}
