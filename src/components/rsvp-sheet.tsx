@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
-import { Check, Loader2, Pencil } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -9,9 +9,9 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Textarea } from "@/components/ui/textarea"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
+import { Chip, ReviewRow, Seal, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { Leaf } from "@/components/nature"
-import { Photo } from "@/components/photo"
 import { FLYING, setFlying, type Flying, answerOf, ApiError, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
@@ -37,22 +37,6 @@ function parseDiet(v: string) {
 function dietString(set: string[], allergy: string) {
   const out = set.map((x) => (x === ALLERGY ? `${ALLERGY}: ${allergy.replace(/,/g, " ")}`.trimEnd() : x))
   return out.length ? out.join(", ") : "None"
-}
-
-/** A review row with an Edit link back to its step. */
-function Row({ label, children, edit, editLabel, block = false }: { label: string; children: ReactNode; edit: () => void; editLabel: string; block?: boolean }) {
-  return (
-    <div className={cn("flex gap-3 px-4 py-3 text-sm", block ? "flex-col" : "items-start justify-between")}>
-      <div className={cn("min-w-0", !block && "flex flex-1 justify-between gap-4")}>
-        <dt className="font-semibold">{label}</dt>
-        <dd className={cn("text-body", block ? "mt-1 whitespace-pre-line break-words" : "text-right")}>{children}</dd>
-      </div>
-      <button type="button" onClick={edit} aria-label={editLabel}
-        className={cn("inline-flex min-h-11 shrink-0 items-center gap-1 self-start rounded-full px-3 text-link underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none", block && "-ml-3")}>
-        <Pencil className="size-3.5" aria-hidden />Edit
-      </button>
-    </div>
-  )
 }
 
 /** A plus one still called "Guest" in the sheet shows as a blank name box. */
@@ -165,7 +149,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild disabled={locked}>{children}</SheetTrigger>
-      <SheetContent side="right" className={cn("gap-0 overflow-y-auto bg-background data-[side=right]:w-full data-[side=right]:sm:max-w-lg", done && "[&>button.absolute]:z-10 [&>button.absolute]:text-on-band")}>
+      <SheetContent side="right" className={cn("gap-0 overflow-y-auto border-border bg-background shadow-[0_24px_60px_-20px_rgb(var(--shadow-tint)/0.45)] data-[side=right]:w-full data-[side=right]:sm:max-w-lg sm:rounded-l-[1.5rem]", done && "[&>button.absolute]:z-10 [&>button.absolute]:text-on-band")}>
         {done ? <Done result={done} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setStep(1) }} /> : <>
         <SheetHeader className="gap-3 px-6 pt-8">
           <p className="label-caps text-muted-foreground">{t.rsvp.step(step)}</p>
@@ -173,9 +157,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
             {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : t.rsvp.checkTitle}
           </SheetTitle>
           <SheetDescription className="sr-only">RSVP for {household.displayName}</SheetDescription>
-          <div role="progressbar" aria-label={t.rsvp.step(step)} aria-valuemin={1} aria-valuemax={3} aria-valuenow={step} className="grid grid-cols-3 gap-2">
-            {[1, 2, 3].map((n) => <span key={n} className={cn("h-1.5 rounded-full transition-colors", n <= step ? "bg-primary" : "bg-border")} />)}
-          </div>
+          <StepProgress step={step} of={3} label={t.rsvp.step(step)} />
         </SheetHeader>
 
         <div className="space-y-4 px-6 py-6">
@@ -195,13 +177,11 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
               <RadioGroup aria-label={nameOf(g)} value={g.attending ?? ""} onValueChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })} className="grid grid-cols-2 gap-2"
                 onKeyDown={(e) => { if (e.key.startsWith("Arrow")) arrowKey.current = true }}>
                 {(["yes", "no"] as const).map((v) => (
-                  <Label key={v} htmlFor={`${g.id}-${v}`} className={cn("choice flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-base whitespace-nowrap has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50", g.attending === v && "border-2 border-primary bg-secondary font-semibold")}>
+                  <Label key={v} htmlFor={`${g.id}-${v}`} className={cn("choice press flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-base whitespace-nowrap has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50", g.attending === v && "border-2 border-primary bg-secondary font-semibold")}>
                     <RadioGroupItem id={`${g.id}-${v}`} value={v} className="sr-only"
                       // Arrow keys always select (Radix can skip the first press after the sheet focuses it)
                       onFocus={() => { if (arrowKey.current) { arrowKey.current = false; if (g.attending !== v) setGuest(g.id, { attending: v }) } }} />
-                    <span aria-hidden className={cn("grid size-7 shrink-0 place-items-center rounded-full border-2 transition-colors", g.attending === v ? "seal border-primary bg-primary text-primary-foreground" : "border-muted-foreground/50")}>
-                      {g.attending === v && <Check className="size-4" strokeWidth={3} />}
-                    </span>
+                    <Seal on={g.attending === v} />
                     {v === "yes" ? t.rsvp.coming : t.rsvp.notComing}
                   </Label>
                 ))}
@@ -218,11 +198,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                     {t.rsvp.dietaryOptions.map((o) => {
                       const d = parseDiet(g.dietary); const on = d.set.includes(o)
                       return (
-                        <button key={o} type="button" aria-pressed={on} onClick={() => setGuest(g.id, { dietary: dietString(on ? d.set.filter((x) => x !== o) : [...d.set, o], d.allergy) })}
-                          className={cn("inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors", on ? "border-primary bg-secondary font-semibold text-foreground" : "bg-card")}>
-                          {on ? <Check className="size-4 text-primary" strokeWidth={3} aria-hidden /> : <span aria-hidden className="size-4" />}
-                          {o}
-                        </button>
+                        <Chip key={o} on={on} onClick={() => setGuest(g.id, { dietary: dietString(on ? d.set.filter((x) => x !== o) : [...d.set, o], d.allergy) })}>{o}</Chip>
                       )
                     })}
                   </div>
@@ -239,7 +215,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
               ))}
               {coming.length > 0 && <>
               <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song}
-                t={{ label: t.rsvp.song, hint: t.rsvp.songHint, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded }} />
+                t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded }} />
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2"><Label htmlFor="arr">{t.rsvp.arrival}</Label><Input id="arr" type="date" min={TRIP.from} max={TRIP.to} value={form.arrival}
                   aria-invalid={Boolean(dateError)} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, arrival: e.target.value })} /></div>
@@ -257,17 +233,17 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
           {step === 3 && (
             <dl className="divide-y rounded-[1.25rem] bg-card shadow-paper ring-1 ring-border">
               {form.guests.map((g) => (
-                <Row key={g.id} label={nameOf(g)} edit={() => goTo(1)} editLabel={t.rsvp.edit(nameOf(g))}>
+                <ReviewRow key={g.id} label={nameOf(g)} edit={() => goTo(1)} editLabel={t.rsvp.edit(nameOf(g))}>
                   {g.attending === "yes" ? `${t.rsvp.coming}${g.dietary && g.dietary !== "None" ? ` · ${g.dietary}` : ""}` : t.rsvp.notComing}
-                </Row>
+                </ReviewRow>
               ))}
               {coming.length > 0 && (
-                <Row label={t.rsvp.songs} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.songs)}>{songsFilled.join(", ") || t.rsvp.noSongs}</Row>
+                <ReviewRow label={t.rsvp.songs} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.songs)}>{songsFilled.join(", ") || t.rsvp.noSongs}</ReviewRow>
               )}
               {coming.length > 0 && (
-                <Row label={t.rsvp.dates} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.notSet}</Row>
+                <ReviewRow label={t.rsvp.dates} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.notSet}</ReviewRow>
               )}
-              <Row label={t.rsvp.messageLabel} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</Row>
+              <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
             </dl>
           )}
           {step === 3 && (
@@ -314,7 +290,6 @@ function Done({ result, onClose, onChange }: { result: SaveResult; onClose: () =
         <SheetDescription className="hand mt-3 text-lg">{t.rsvp.thanks[answer](who)}</SheetDescription>
       </div>
       <div className="flex-1 space-y-6 px-6 py-6">
-        {answer !== "none" && <Photo name="nara-deer-nuzzle" treatment="arch" sizes="160px" className="mx-auto w-40" />}
         <section aria-labelledby="sum" className="space-y-2">
           <h3 id="sum" className="label-caps text-muted-foreground">{t.rsvp.summary}</h3>
           <ul className="space-y-1 text-body">
@@ -326,10 +301,6 @@ function Done({ result, onClose, onChange }: { result: SaveResult; onClose: () =
         </section>
         {answer !== "none" && <FlyingFrom token={h.token} />}
         {answer !== "none" && <AddToCalendar />}
-        <section className="rounded-[1.25rem] bg-card p-4 ring-1 ring-border">
-          <h3 className="label-caps text-muted-foreground">{t.rsvp.omikuji}</h3>
-          <p className="hand mt-1 text-sm text-body">{t.rsvp.omikujiSoon}</p>
-        </section>
       </div>
       <div className="sticky bottom-0 flex gap-3 border-t bg-background/95 px-6 py-4 backdrop-blur">
         <Button variant="outline" size="lg" onClick={onChange}>{t.rsvp.changeReply}</Button>
@@ -350,11 +321,7 @@ function FlyingFrom({ token }: { token: string }) {
       <p className="text-xs text-muted-foreground">{t.flying.hint}</p>
       <div className="flex flex-wrap gap-2">
         {FLYING.map((c) => (
-          <button key={c} type="button" aria-pressed={picked === c}
-            onClick={() => { setPicked(c); setSaved(false); setFlying(token, c).then(() => setSaved(true)).catch(() => setPicked(null)) }}
-            className={cn("inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors", picked === c ? "border-primary bg-secondary font-semibold" : "bg-card")}>
-            {picked === c ? <Check className="size-4 text-primary" strokeWidth={3} aria-hidden /> : null}{c}
-          </button>
+          <Chip key={c} on={picked === c} onClick={() => { setPicked(c); setSaved(false); setFlying(token, c).then(() => setSaved(true)).catch(() => setPicked(null)) }}>{c}</Chip>
         ))}
       </div>
       {saved && <p role="status" className="text-sm text-success">{t.flying.thanks}</p>}

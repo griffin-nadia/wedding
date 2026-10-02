@@ -26,13 +26,15 @@ function preloadFonts(): Plugin {
 // build (from photos-private/, or public/photos/ once committed). family-dinner never goes public.
 const PUBLIC_PHOTOS = process.env.PUBLIC_PHOTOS === "1"
 function copyPhotos(): Plugin {
+  let outDir = "dist"
   return {
     name: "copy-photos",
     apply: "build",
+    configResolved(c) { outDir = path.resolve(c.root, c.build.outDir) },
     closeBundle() {
       const from = path.resolve(__dirname, "photos-private")
       if (!PUBLIC_PHOTOS || !fs.existsSync(from)) return
-      const to = path.resolve(__dirname, "dist/photos")
+      const to = path.join(outDir, "photos")
       fs.mkdirSync(to, { recursive: true })
       for (const f of fs.readdirSync(from)) if (/\.(avif|webp|jpg)$/.test(f) && !f.startsWith("family-dinner")) fs.copyFileSync(path.join(from, f), path.join(to, f))
     },

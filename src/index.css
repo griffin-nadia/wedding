@@ -296,9 +296,9 @@
 }
 /* Skeleton: appears only after 300ms (fast loads never flash it), then breathes slowly. */
 @keyframes skeleton-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes washi-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes washi-breathe { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.55; } }
 .skeleton-wait { animation: skeleton-in 200ms 300ms both; }
-.washi { animation: washi-breathe 2.4s ease-in-out infinite; }
+.washi { animation: washi-breathe 1.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .washi { animation: none; } }
 
 /* First-visit envelope: flap opens, seal lifts, card rises, then everything fades (1.3 s). */
@@ -354,3 +354,23 @@
 @media (prefers-reduced-motion: reduce) {
   [data-look="painted"] .cloud, [data-look="painted"] .vine-leaf { animation: none; }
 }
+/* Edge to edge with no inner padding (for decorative bands). */
+@utility bleed { margin-inline: calc(50% - 50vw); }
+
+/* Press feedback: instant and small (under 120ms). */
+@utility press {
+  transition: transform 100ms var(--ease-paper);
+  &:active:not(:disabled) { transform: scale(0.97); }
+}
+/* Settling paper reveal (once). */
+.settle { opacity: 0; transform: translateY(14px); filter: blur(4px); transition: opacity 700ms cubic-bezier(.22,1,.36,1), transform 700ms cubic-bezier(.22,1,.36,1), filter 700ms cubic-bezier(.22,1,.36,1); }
+.settle.settled { opacity: 1; transform: none; filter: none; }
+@media (prefers-reduced-motion: reduce) { .settle { opacity: 1; transform: none; filter: none; transition: none; } }
+@media print { .settle { opacity: 1 !important; transform: none !important; filter: none !important; } }
+
+/* Countdown digits: only the one that changes rolls (220ms). Swaps without motion under reduced motion. */
+@keyframes digit-out { to { transform: translateY(-60%); opacity: 0; } }
+@keyframes digit-in { from { transform: translateY(60%); opacity: 0; } to { transform: none; opacity: 1; } }
+.digit-out { animation: digit-out 220ms cubic-bezier(.22,1,.36,1) both; }
+.digit-in { animation: digit-in 220ms cubic-bezier(.22,1,.36,1) both; }
+@media (prefers-reduced-motion: reduce) { .digit-out { display: none; } .digit-in { animation: none; } }

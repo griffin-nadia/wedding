@@ -2,9 +2,10 @@ import { useEffect, useId, useRef, useState } from "react"
 import { Loader2, Music2, Search, X } from "lucide-react"
 import { searchSongs, type SongHit } from "@/lib/api"
 import { cn } from "@/lib/utils"
+import { InlineSubmit } from "@/components/inline-submit"
 
 type Labels = {
-  label: string; hint: string; searching: string; noMatch: (q: string) => string; error: string
+  label: string; hint: string; placeholder: string; addTyped: string; justType: string; searching: string; noMatch: (q: string) => string; error: string
   remove: (s: string) => string; full: (n: number) => string; added: string
 }
 
@@ -72,7 +73,6 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
 
   return (
     <div className="space-y-3">
-      <label htmlFor={`${id}-in`} className="block text-sm font-medium">{t.label}</label>
       {list.length > 0 && (
         <ul aria-label={t.added} className="space-y-2">
           {list.map((s) => (
@@ -91,12 +91,14 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
         <p className="text-sm text-success">{t.full(list.length)}</p>
       ) : (
         <div className="relative">
-          <Search aria-hidden className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input ref={input} id={`${id}-in`} role="combobox" aria-autocomplete="list" aria-expanded={open && options.length > 0}
-            aria-controls={`${id}-list`} aria-describedby={`${id}-hint`} aria-busy={status === "loading"}
+          <InlineSubmit ref={input} id={`${id}-in`} label={t.label} helper={t.hint} submitLabel={t.addTyped}
+            leading={<Search className="size-4" />} onSubmit={() => q.trim() && add(q)}
+            fallback={q.trim().length > 1 ? { label: t.justType, onClick: () => add(q) } : undefined}
+            trailing={status === "loading" ? <Loader2 aria-hidden className="absolute top-1/2 right-16 size-4 -translate-y-1/2 animate-spin text-muted-foreground" /> : undefined}
+            role="combobox" aria-autocomplete="list" aria-expanded={open && options.length > 0}
+            aria-controls={`${id}-list`} aria-busy={status === "loading"}
             aria-activedescendant={open && active >= 0 ? `${id}-o${active}` : undefined}
-            value={q} maxLength={maxLength} autoComplete="off" placeholder={t.hint}
-            className="h-13 w-full rounded-xl border border-input bg-card pr-11 pl-11 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            value={q} maxLength={maxLength} autoComplete="off" placeholder={t.placeholder}
             onChange={(e) => setQ(e.target.value)}
             onFocus={() => q.trim().length > 1 && setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -109,12 +111,10 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
                 if (o) add(o.label, o.hit); else if (q.trim()) add(q)
               } else if (e.key === "Escape") setOpen(false)
             }} />
-          {status === "loading" && <Loader2 aria-hidden className="absolute top-1/2 right-4 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />}
-          <p id={`${id}-hint`} className="sr-only">{t.hint}</p>
           <p aria-live="polite" className="sr-only">{status === "loading" ? t.searching : status === "results" ? `${hits.length} results` : status === "none" ? t.noMatch(q.trim()) : ""}</p>
           {open && options.length > 0 && (
             <ul id={`${id}-list`} role="listbox" aria-label={t.label}
-              className={cn("absolute inset-x-0 top-full z-20 mt-2 max-h-96 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-paper", status === "loading" && "opacity-60")}>
+              className={cn("absolute inset-x-0 top-[5.5rem] z-20 mt-2 max-h-96 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-paper", status === "loading" && "opacity-60")}>
               {options.map((o, i) => (
                 <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={i === active}
                   onMouseDown={(e) => { e.preventDefault(); add(o.label, o.hit) }}

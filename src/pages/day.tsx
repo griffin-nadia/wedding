@@ -7,6 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { Qr } from "@/components/qr"
 import { Photo } from "@/components/photo"
+import { InfoBlock, TimelineRow } from "@/components/blocks"
 import { useLang } from "@/lib/lang"
 import { jstLabel, kyotoNow, localTime } from "@/lib/time"
 import { mapUrl } from "@/lib/calendar"
@@ -84,17 +85,7 @@ export function DayPage() {
             <span aria-hidden className="timeline-fill absolute top-2 bottom-2 left-[1.15rem] w-0.5 origin-top rounded bg-leaf" />
             {t.day.schedule.map((s, i) => {
               const Icon = ICONS[i] ?? Flower2
-              return (
-                <li key={s.time} className="relative">
-                  <span aria-hidden className="absolute top-0 -left-12 grid size-10 place-items-center rounded-full bg-card text-primary shadow-paper ring-1 ring-border">
-                    <Icon className="size-5" strokeWidth={1.6} />
-                  </span>
-                  <p className="numerals text-3xl leading-none">{jstLabel(s.time)}</p>
-                  <p className="mt-1 text-lg font-semibold">{s.label}</p>
-                  <p className="text-sm text-body">{s.where}</p>
-                  {localTime(s.time) && <p className="text-xs text-muted-foreground">{localTime(s.time)}</p>}
-                </li>
-              )
+              return <TimelineRow key={s.time} icon={<Icon className="size-5" strokeWidth={1.6} />} time={jstLabel(s.time)} title={s.label} where={s.where} local={localTime(s.time)} />
             })}
           </ol>
           <p className="flex items-start gap-2 rounded-[1.25rem] bg-card p-4 text-sm text-body ring-1 ring-border"><CloudRain aria-hidden className="size-5 shrink-0 text-muted-foreground" strokeWidth={1.6} />{t.day.rainPlan}</p>
@@ -104,13 +95,7 @@ export function DayPage() {
         <TabsPrimitive.Content forceMount value="getting-there" className="print:!block print:mt-8 data-[state=inactive]:hidden space-y-3 outline-none">
           <Photo name="yasaka-gate-shijo" treatment="split" sizes="(min-width: 640px) 640px, 100vw" className="no-print" />
           {t.day.getting.map((g) => (
-            <section key={g.label} className="space-y-2 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
-              <h2 className="label-caps text-eyebrow">{g.label}</h2>
-              <p className="text-body">{g.body}</p>
-              {"action" in g && g.action && (
-                <a href={mapUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-link underline underline-offset-4">{g.action.label}</a>
-              )}
-            </section>
+            <InfoBlock key={g.label} label={g.label} action={"action" in g && g.action ? { label: g.action.label, href: mapUrl } : undefined}>{g.body}</InfoBlock>
           ))}
         </TabsPrimitive.Content>
 
@@ -118,11 +103,10 @@ export function DayPage() {
           <Photo name="higashiyama-bookshop" treatment="split" sizes="(min-width: 640px) 640px, 100vw" />
           <p className="text-body">{t.day.stayIntro}</p>
           {t.day.stay.map((a) => (
-            <section key={a.label} className="space-y-2 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
-              <h2 className="font-display text-2xl">{a.label}</h2>
-              <p className="text-sm text-body"><span className="label-caps mr-2 text-success">{t.day.stayGood}</span>{a.good}</p>
-              <p className="text-sm text-body"><span className="label-caps mr-2 text-muted-foreground">{t.day.stayWatch}</span>{a.watch}</p>
-            </section>
+            <InfoBlock key={a.label} label={a.label}>
+              <p className="text-sm"><span className="label-caps mr-2 text-success">{t.day.stayGood}</span>{a.good}</p>
+              <p className="text-sm"><span className="label-caps mr-2 text-muted-foreground">{t.day.stayWatch}</span>{a.watch}</p>
+            </InfoBlock>
           ))}
         </TabsPrimitive.Content>
 

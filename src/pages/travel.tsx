@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useLang } from "@/lib/lang"
 import { TravelDates } from "@/components/slots"
 import { Photo } from "@/components/photo"
+import { InfoBlock } from "@/components/blocks"
 
 // Ticks live on this device only (localStorage), never sent anywhere.
 const KEY = "ng-trip-ticks"
@@ -57,14 +58,10 @@ export function TravelPage() {
       <section aria-labelledby="handy" className="space-y-3 pt-6">
         <h2 id="handy" className="title leaf-rule">{t.travel.moreTitle}</h2>
         {t.travel.more.map((m) => (
-          <div key={m.label} className="space-y-2 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
-            {"photo" in m && m.photo && <Photo name={m.photo} treatment="split" sizes="(min-width: 640px) 600px, 90vw" className="mb-3" />}
-            <h3 className="label-caps text-eyebrow">{m.label}</h3>
-            <p className="text-body">{m.body}</p>
-            {"action" in m && m.action && (
-              <a href={m.action.href} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center text-link underline underline-offset-4">{m.action.label}</a>
-            )}
-          </div>
+          <InfoBlock key={m.label} as="h3" label={m.label} action={"action" in m ? m.action : undefined}
+            media={"photo" in m && m.photo ? <Photo name={m.photo} treatment="split" sizes="(min-width: 640px) 600px, 90vw" className="mb-3" /> : undefined}>
+            {m.body}
+          </InfoBlock>
         ))}
         <p className="text-sm text-muted-foreground">
           <Link to="/the-day#getting-there" className="text-link underline underline-offset-4">{t.travel.toVenue}</Link>

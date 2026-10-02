@@ -24,20 +24,23 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
   const [loaded, setLoaded] = useState(false)
   if (!p) return null
   const ratio = treatment === "split" ? "1 / 1" : treatment === "full" ? undefined : `${p.width} / ${p.height}`
-  const set = (fmt: string) => {
-    const w = (wide && p.wide[fmt]) || p.formats[fmt] || []
-    return w.map((x) => `${src(`${name}-${wide && p.wide[fmt] ? "wide-" : ""}${x}.${fmt}`)} ${x}w`).join(", ")
+  const set = (fmt: string, useWide = false) => {
+    const w = (useWide ? p.wide[fmt] : p.formats[fmt]) || []
+    return w.map((x) => `${src(`${name}-${useWide ? "wide-" : ""}${x}.${fmt}`)} ${x}w`).join(", ")
   }
   const last = (a: number[] | undefined) => (a && a.length ? a[a.length - 1] : 800)
   const fallback = p.formats.jpg ? `${name}-${last(p.formats.jpg)}.jpg` : `${name}-${last(p.formats.webp)}.webp`
 
   const image = __PUBLIC_PHOTOS__ ? (
     <picture>
+      {/* The wide crop only from tablet up; phones keep the portrait crop (faces stay in frame) */}
+      {wide && p.wide.avif && <source type="image/avif" media="(min-width: 768px)" srcSet={set("avif", true)} sizes={sizes} />}
+      {wide && p.wide.webp && <source type="image/webp" media="(min-width: 768px)" srcSet={set("webp", true)} sizes={sizes} />}
       {p.formats.avif && <source type="image/avif" srcSet={set("avif")} sizes={sizes} />}
       {p.formats.webp && <source type="image/webp" srcSet={set("webp")} sizes={sizes} />}
       <img src={src(fallback)} alt={words.alt} width={p.width} height={p.height} sizes={sizes}
         loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" onLoad={() => setLoaded(true)}
-        className={cn("photo-img size-full object-cover transition-opacity duration-[400ms]", loaded ? "opacity-100" : "opacity-0")} />
+        className={cn("photo-img size-full object-cover object-[50%_30%] transition-opacity duration-[400ms]", loaded ? "opacity-100" : "opacity-0")} />
     </picture>
   ) : (
     <div role="img" aria-label={words.caption || words.alt} className="photo-placeholder grid size-full place-items-center p-4 text-center">

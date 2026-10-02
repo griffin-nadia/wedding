@@ -11,9 +11,12 @@ import { NoInvitePage } from "@/pages/no-invite"
 const DayPage = lazy(() => import("@/pages/day").then((m) => ({ default: m.DayPage })))
 const TravelPage = lazy(() => import("@/pages/travel").then((m) => ({ default: m.TravelPage })))
 const QaPage = lazy(() => import("@/pages/qa").then((m) => ({ default: m.QaPage })))
+// Hidden living reference of every component (not linked anywhere)
+const KitPage = lazy(() => import("@/pages/kit").then((m) => ({ default: m.KitPage })))
 
 function Gate() {
   const { status } = useHousehold()
+  if (window.location.pathname.replace(/\/$/, "").endsWith("/kit")) return <Suspense><KitPage /></Suspense>
   // While the invite loads, the pages render straight away (the hero paints first);
   // only Home's greeting and RSVP card wait for the household.
   if (status !== "ready" && status !== "loading") return <main><NoInvitePage reason={status} /></main>

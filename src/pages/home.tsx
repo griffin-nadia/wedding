@@ -1,11 +1,11 @@
-import { lazy, Suspense, useEffect, useState } from "react"
+import { lazy, Suspense, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useHousehold } from "@/lib/household"
 import { COUPLE } from "@/content/en"
 import { useLang } from "@/lib/lang"
-import { countdownParts, isLocked, jstLabel, kyotoNow, localTime } from "@/lib/time"
+import { isLocked, jstLabel, localTime } from "@/lib/time"
 import { answerOf } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { AddToCalendar } from "@/components/add-to-calendar"
@@ -14,23 +14,19 @@ import { Photo, hasPublicPhotos } from "@/components/photo"
 import { Clouds } from "@/components/clouds"
 import { useTheme } from "@/lib/theme"
 import { cn } from "@/lib/utils"
+import { Pill } from "@/components/pill"
+import { Skeleton } from "@/components/blocks"
+import { Reveal } from "@/components/reveal"
 import { Hanko } from "@/components/hanko"
 import { Lanterns } from "@/components/lanterns"
 import { Leaf, Mist, Vine } from "@/components/nature"
 import { Envelope } from "@/components/envelope"
+import { Countdown } from "@/components/countdown"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
 
-function useTick(ms: number) {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), ms)
-    return () => clearInterval(id)
-  }, [ms])
-  return now
-}
 
 /** Date stack and names. On the full-bleed photo everything is cream (4.5:1+ on the scrim). */
 function HeroTitle({ t, onPhoto = false }: { t: ReturnType<typeof useLang>["t"]; onPhoto?: boolean }) {
@@ -40,10 +36,10 @@ function HeroTitle({ t, onPhoto = false }: { t: ReturnType<typeof useLang>["t"];
         <span className="sr-only">{t.day.date}</span>
         {t.home.dateStack.map((n) => <span key={n} aria-hidden>{n}</span>)}
       </p>
-      <h1 className={cn("names pt-1", onPhoto ? "text-[#f3e7d3]" : "text-foreground")}>
-        <span className="block">{COUPLE.first}</span>
-        <span className={cn("ml-[0.35em] block translate-y-[0.06em] text-[0.66em]", onPhoto ? "text-[#ebd48f]" : "text-primary")}>&amp;</span>
-        <span className="block">{COUPLE.second}</span>
+      <h1 aria-label={`${COUPLE.first} & ${COUPLE.second}`} className={cn("names pt-1", onPhoto ? "text-[#f3e7d3]" : "text-foreground")}>
+        <span aria-hidden className="block">{COUPLE.first}</span>
+        <span aria-hidden className={cn("ml-[0.35em] block translate-y-[0.06em] text-[0.66em]", onPhoto ? "text-[#ebd48f]" : "text-primary")}>&amp;</span>
+        <span aria-hidden className="block">{COUPLE.second}</span>
       </h1>
     </div>
   )
@@ -57,11 +53,9 @@ export function HomePage() {
   const fullBleed = hasPublicPhotos && lantern
   const [params] = useSearchParams()
   const [wantOpen, setWantOpen] = useState(params.get("rsvp") === "1")
-  const now = useTick(60_000)
   const done = Boolean(household?.respondedAt)
   const answer = household ? answerOf(household) : "none"
   const locked = isLocked()
-  const left = countdownParts(now)
   const rsvpButton = (
     <Button size="lg" variant={done ? "outline" : "default"} className="w-full sm:w-auto" aria-busy={wantOpen}
       onClick={() => setWantOpen(true)}>
@@ -99,7 +93,7 @@ export function HomePage() {
             <div className="max-w-xl space-y-3">
               {household
                 ? <p className="hand text-xl text-foreground">{t.home.dear(household.displayName)}</p>
-                : <p aria-hidden className="washi h-7 w-48 rounded-md bg-muted" />}
+                : <Skeleton className="h-7 w-48" />}
               <p className="text-lg text-body">{t.home.intro}</p>
             </div>
           </div>
@@ -110,13 +104,16 @@ export function HomePage() {
             {!household ? (
               <div role="status" className="space-y-4 rounded-[1.25rem] bg-card p-6 shadow-paper ring-1 ring-border">
                 <span className="sr-only">{t.loading}</span>
-                <div aria-hidden className="washi h-3 w-24 rounded bg-muted" />
-                <div aria-hidden className="washi h-8 w-44 rounded bg-muted" />
-                <div aria-hidden className="washi h-13 w-full rounded-full bg-muted sm:w-48" />
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-8 w-44" />
+                <Skeleton className="h-13 w-full rounded-full sm:w-48" />
               </div>
             ) : (
             <div className="space-y-4 rounded-[1.25rem] bg-card p-6 shadow-paper ring-1 ring-border">
-              <p className="label-caps text-muted-foreground">{t.home.rsvpLabel}</p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="label-caps text-muted-foreground">{t.home.rsvpLabel}</p>
+                <Pill tone={done ? "good" : "warn"}>{done ? t.home.pills.replied : t.home.pills.notYet}</Pill>
+              </div>
               {done ? (
                 <>
                   <div className="flex items-center gap-3">
@@ -127,12 +124,11 @@ export function HomePage() {
                     <p className="text-sm text-body">{t.home.youSaid}:</p>
                     <ul className="flex flex-wrap gap-2">
                       {household.guests.map((g) => (
-                        <li key={g.id} className={g.attending === "yes"
-                          ? "inline-flex items-center gap-2 rounded-full bg-leaf/15 px-3 py-1 text-sm text-success"
-                          : "inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm text-body"}>
-                          {g.attending === "yes" && <span aria-hidden className="size-1.5 rounded-full bg-leaf" />}
-                          <span className="font-semibold">{g.firstName}</span>
-                          {g.attending === "yes" ? t.home.said.yes : g.attending === "no" ? t.home.said.no : t.home.said.none}
+                        <li key={g.id}>
+                          <Pill tone={g.attending === "yes" ? "good" : "neutral"} className="normal-case tracking-normal text-[13px]">
+                            <span className="font-semibold">{g.firstName}</span>
+                            {g.attending === "yes" ? t.home.said.yes : g.attending === "no" ? t.home.said.no : t.home.said.none}
+                          </Pill>
                         </li>
                       ))}
                     </ul>
@@ -147,6 +143,7 @@ export function HomePage() {
                   <p className="text-sm text-body">{t.home.rsvpDue}</p>
                 </>
               )}
+              {!locked && <Pill tone="neutral">{t.home.pills.lock}</Pill>}
               {locked ? (
                 <p className="text-sm text-body">{t.home.rsvpClosed}</p>
               ) : (
@@ -161,11 +158,11 @@ export function HomePage() {
         </div>
       </section>
 
-      <Mist className="full-bleed -mb-px" />
+      <div className="bleed -mb-px"><Mist /></div>
 
       {/* The day at a glance, on sage */}
       <section aria-labelledby="schedule" className="section-alt full-bleed px-4 py-12 md:px-8 md:py-18">
-        <div className="mx-auto max-w-[40rem] space-y-6">
+        <Reveal className="mx-auto max-w-[40rem] space-y-6">
           <h2 id="schedule" className="title leaf-rule">{t.home.scheduleTitle}</h2>
           <ol className="divide-y divide-border">
             {t.day.schedule.map((s) => (
@@ -182,22 +179,14 @@ export function HomePage() {
           <Link to="/the-day#timeline" className="inline-flex min-h-11 items-center gap-2 text-link underline underline-offset-4">
             {t.home.scheduleMore}<ArrowRight className="size-4" aria-hidden />
           </Link>
-        </div>
+        </Reveal>
       </section>
 
       {/* Countdown (Susie & Jay) */}
       <section aria-labelledby="countdown" className="px-4 py-12 md:px-8 md:py-18">
         <div className="mx-auto max-w-[40rem] space-y-6 text-center">
           <h2 id="countdown" className="title">{t.home.countdownTitle}</h2>
-          <dl aria-live="off" className="grid grid-cols-4 gap-2 sm:gap-4">
-            {(["months", "days", "hours", "mins"] as const).map((k) => (
-              <div key={k} className="flex flex-col-reverse items-center gap-2 rounded-[1.25rem] bg-card py-4 shadow-paper ring-1 ring-border">
-                <dt className="label-caps text-muted-foreground">{t.home.countdownUnits[k]}</dt>
-                <dd className="numerals text-[clamp(2.5rem,1.8rem+3vw,3.5rem)] leading-none">{left[k]}</dd>
-              </div>
-            ))}
-          </dl>
-          <p className="text-sm text-body">{t.home.kyotoTimeShort(kyotoNow(now))}</p>
+          <Countdown units={t.home.countdownUnits} kyotoLabel={t.home.kyotoTimeShort} />
           <p className="hand flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Leaf kind="maple" className="size-5" />{t.home.leavesNote}
           </p>
