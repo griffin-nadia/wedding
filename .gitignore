@@ -29,3 +29,6 @@ dist-ssr
 # clasp (Apps Script link)
 .clasp.json
 .clasprc.json
+
+# Private build briefs (test tokens, emails)
+.brief/
