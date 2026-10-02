@@ -27,6 +27,8 @@
  *   RSVP_BY         2027-02-15
  *   TEST_EMAIL      where test invites go (asked for the first time you send a test)
  *   NOTIFY_CHANGES  "yes" to email REPLY_TO when someone changes from coming to not coming
+ *   RESEND_LIVE     "yes" to let "Can't find your invite?" email real guests (test households only until then)
+ *   REMINDER_AT     when the gentle reminder goes, e.g. 2027-02-01T10:00:00+11:00 (off until you turn it on)
  *   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET   optional: Spotify for song search (needs a Premium
  *                   app owner). Without them, or if Spotify says no, search uses iTunes.
  */
@@ -72,6 +74,7 @@ const ERRORS = {
   busy: "Lots of people are replying right now. Please try again in a minute.",
   server: "Something went wrong saving that. Please try again.",
   read_failed: "We couldn't load your invite just now. Please try again.",
+  bad_email: "That doesn't look like an email address.",
   search_failed: "Song search isn't working right now. Just type the song instead.",
 }
 
@@ -103,6 +106,9 @@ function onOpen() {
     .addItem("Set up the Emails tab", "setupEmailsTab")
     .addItem("Check song search (Spotify)", "checkSongSearch")
     .addItem("Reset test households…", "resetTestHouseholds")
+    .addSeparator()
+    .addItem("Schedule the February reminder…", "scheduleReminder")
+    .addItem("Cancel the February reminder", "cancelReminder")
     .addToUi()
 }
 
@@ -138,6 +144,7 @@ function doPost(e) {
   } catch (err) {
     return fail_("bad_request")
   }
+  if (body && body.action === "resend") return json_(resendLink_(body.email))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
   if (isLocked_()) return fail_("closed")
 
@@ -201,6 +208,7 @@ function getHousehold_(token) {
     departure: fmtDate_(rsvp.Leaving),
     message: String(rsvp.Message || ""),
     respondedAt: rsvp["Responded at"] ? new Date(rsvp["Responded at"]).toISOString() : null,
+    photos: rsvp["Photos OK"] === "yes" ? true : rsvp["Photos OK"] === "no" ? false : null,
   }
 }
 
@@ -460,6 +468,17 @@ function visitsOf_(token) {
   return out
 }
 
+/** Adds any missing headers at the end of a tab (never moves existing ones). Returns the header map. */
+function ensureColumns_(s, names) {
+  let head = headers_(s)
+  const missing = names.filter((k) => !(k in head))
+  if (missing.length) {
+    s.getRange(1, s.getLastColumn() + 1, 1, missing.length).setValues([missing]).setFontWeight("bold")
+    head = headers_(s)
+  }
+  return head
+}
+
 /** Adds any missing visit columns at the end of Guests (never moves existing ones). */
 function ensureVisitColumns_(s) {
   let head = headers_(s)
@@ -520,7 +539,8 @@ function validate_(h, body) {
     const t = text_(s, MAX.song)
     if (t && songs.indexOf(t) < 0 && songs.length < MAX.songs) songs.push(t)
   })
-  return { guests: guests, songs: songs, arrival: arrival, departure: departure, message: text_(body.message, MAX.message, true) }
+  const photos = body.photos === true ? "yes" : body.photos === false ? "no" : ""
+  return { guests: guests, songs: songs, arrival: arrival, departure: departure, message: text_(body.message, MAX.message, true), photos: photos }
 }
 
 function saveRsvp_(h, input) {
@@ -551,7 +571,7 @@ function saveRsvp_(h, input) {
 
   // RSVPs: exactly one row per household
   const rSheet = sheet_(TABS.rsvps)
-  const rHead = headers_(rSheet)
+  const rHead = ensureColumns_(rSheet, ["Photos OK"])
   const rData = rSheet.getDataRange().getValues()
   const mine = []
   for (let i = 1; i < rData.length; i++) if (String(rData[i][rHead.Token]) === h.token) mine.push(i)
@@ -563,6 +583,7 @@ function saveRsvp_(h, input) {
   row[rHead.Leaving] = cell_(input.departure)
   row[rHead.Message] = cell_(input.message)
   row[rHead["Responded at"]] = now
+  row[rHead["Photos OK"]] = input.photos
   if (mine.length) {
     rSheet.getRange(mine[0] + 1, 1, 1, width).setValues([row])
     for (let k = mine.length - 1; k >= 1; k--) rSheet.deleteRow(mine[k] + 1)
@@ -602,6 +623,43 @@ function log_(household, token, changed, payload) {
   s.appendRow(fill_(r, s.getLastColumn()))
 }
 
+// ---------- "Can't find your invite?" ----------
+
+/**
+ * Emails the household link to an address on the guest list. Always answers the same way, so it
+ * never reveals who's invited. Rate limited per address and overall. Until RESEND_LIVE is "yes",
+ * it only sends to test households (so nothing reaches real guests before invites go out).
+ */
+function resendLink_(email) {
+  const same = { ok: true }
+  email = String(email || "").trim().toLowerCase().slice(0, 120)
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, code: "bad_email", error: ERRORS.bad_email }
+  const cache = CacheService.getScriptCache()
+  const hour = Math.floor(Date.now() / 3600000)
+  const per = "rs:" + email + ":" + hour
+  const all = "rs:all:" + hour
+  const nPer = Number(cache.get(per) || 0)
+  const nAll = Number(cache.get(all) || 0)
+  if (nPer >= 3 || nAll >= 30) return same
+  cache.put(per, String(nPer + 1), 3700)
+  cache.put(all, String(nAll + 1), 3700)
+  const h = households_().find((x) => x.emails.some((e) => e.toLowerCase() === email))
+  if (!h) return same
+  if (String(prop_("RESEND_LIVE")).toLowerCase() !== "yes" && !TEST_HOUSEHOLD.test(h.name)) return same
+  safely_(() => {
+    const mail = buildEmail_({
+      eyebrow: "Your invite link",
+      heading: "Here's your invite",
+      paragraphs: ["Hi " + h.name + ",", "Someone asked for your link to Nadia and Griffin's wedding site. Here it is."],
+      button: { label: "Open your invite", url: h.link },
+      notes: ["This link is just for your household, so please don't share it.", "If you didn't ask for this, you can ignore it."],
+    })
+    MailApp.sendEmail({ to: email, replyTo: prop_("REPLY_TO"), name: "Nadia & Griffin", subject: "Your link for Nadia & Griffin's wedding", body: mail.text, htmlBody: mail.html })
+    log_(h.name, h.token, "Link re-sent to " + email + " (asked on the site)", "")
+  })
+  return same
+}
+
 // ---------- describing changes ----------
 
 function status_(g) {
@@ -628,6 +686,7 @@ function describeChanges_(b, a) {
   const added = a.songs.filter((s) => b.songs.indexOf(s) < 0).map((s) => "added '" + s + "'")
   const removed = b.songs.filter((s) => a.songs.indexOf(s) < 0).map((s) => "removed '" + s + "'")
   if (added.length || removed.length) lines.push("Songs: " + added.concat(removed).join(", "))
+  if (b.photos !== a.photos && a.photos !== null) lines.push(a.photos ? "Photos: happy to be in shared photos" : "Photos: please leave us out of shared photos")
   if (b.message !== a.message) lines.push(!b.message ? "Message added" : !a.message ? "Message removed" : "Message updated")
   if (!lines.length) lines.push("No changes")
   return lines
@@ -799,7 +858,7 @@ function inviteEmail_(kind, h, testNote) {
       .replace(/\{date\}/g, WEDDING.date)
       .replace(/\{venue\}/g, WEDDING.venue)
   const mail = buildEmail_({
-    eyebrow: testNote || "Nadia & Griffin",
+    eyebrow: testNote || "",
     heading: fill(copy[kind + "_heading"]),
     paragraphs: fill(copy[kind + "_body"]).split(/\n\s*\n/),
     rows: [["When", WEDDING.date], ["Where", WEDDING.venue]],
@@ -843,6 +902,35 @@ function showResult_(title, text) {
     .setWidth(520)
     .setHeight(400)
   SpreadsheetApp.getUi().showModalDialog(html, title)
+}
+
+// ---------- gentle reminder (off until scheduled) ----------
+
+const REMINDER_DEFAULT = "2027-02-01T10:00:00+11:00" // Mon 1 Feb 2027, 10 am Melbourne
+
+/** Sets a one-off trigger for the reminder. Nothing is scheduled until someone runs this. */
+function scheduleReminder() {
+  const ui = SpreadsheetApp.getUi()
+  const at = new Date(prop_("REMINDER_AT") || REMINDER_DEFAULT)
+  if (isNaN(at) || at < new Date()) return ui.alert("REMINDER_AT needs to be a future date, like 2027-02-01T10:00:00+11:00.")
+  const ok = ui.alert("Schedule the reminder", "On " + Utilities.formatDate(at, "Australia/Melbourne", "EEE d MMM yyyy, h:mm a") + " (Melbourne), every invited household with an email that hasn't replied gets the reminder email. Schedule it?", ui.ButtonSet.OK_CANCEL)
+  if (ok !== ui.Button.OK) return
+  cancelReminder(true)
+  ScriptApp.newTrigger("sendScheduledReminder").timeBased().at(at).create()
+  ui.alert("Scheduled. Cancel any time from the Wedding site menu.")
+}
+
+function cancelReminder(quiet) {
+  ScriptApp.getProjectTriggers().filter((t) => t.getHandlerFunction() === "sendScheduledReminder").forEach((t) => ScriptApp.deleteTrigger(t))
+  if (quiet !== true) SpreadsheetApp.getUi().alert("The February reminder is off.")
+}
+
+/** Runs from the trigger: same list and limits as "Send a reminder…", no dialog. */
+function sendScheduledReminder() {
+  const list = households_().filter((h) => h.invited && !h.responded && h.emails.length)
+  const result = sendBatch_("reminder", list, false)
+  log_("Everyone", "", "Scheduled reminder: sent " + result.sent + (result.left ? ", " + result.left + " left (daily limit)" : ""), "")
+  cancelReminder(true)
 }
 
 // ---------- Emails tab ----------
@@ -956,44 +1044,37 @@ function makeToken_() {
 
 // ---------- email layout ----------
 
-/** One simple layout for every email, in the site's colours. Returns { html, text }. */
+/**
+ * Plain, text-first emails: no images, no capitals styling, one link. A light HTML version in the
+ * site's colours plus the same words as plain text, so they read well anywhere and stay out of spam.
+ */
 function buildEmail_(m) {
-  const c = { paper: "#f3e7d3", card: "#fbf5ea", ink: "#421a05", body: "#754b38", muted: "#8b5a3c", line: "#e5d0a8", red: "#a84f32", onRed: "#fbf5ea", eyebrow: "#a43108" }
-  const serif = "Georgia, 'Times New Roman', serif"
-  const sans = "-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
-  const p = (s) => '<p style="margin:0 0 16px;font:16px/1.5 ' + sans + ";color:" + c.body + '">' + esc_(s).replace(/\n/g, "<br>") + "</p>"
-  let html =
-    '<div style="background:' + c.paper + ';padding:24px 12px">' +
-    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:' + c.card + ";border:1px solid " + c.line + ';border-radius:12px">' +
-    '<tr><td style="padding:32px 28px">' +
-    '<p style="margin:0 0 8px;font:600 12px/1.4 ' + sans + ";letter-spacing:.08em;text-transform:uppercase;color:" + c.eyebrow + '">' + esc_(m.eyebrow) + "</p>" +
-    '<h1 style="margin:0 0 20px;font:400 28px/1.25 ' + serif + ";color:" + c.ink + '">' + esc_(m.heading) + "</h1>" +
-    (m.paragraphs || []).map(p).join("")
-  let text = m.heading + "\n\n" + (m.paragraphs || []).join("\n\n") + "\n\n"
+  const c = { ink: "#421a05", body: "#754b38", muted: "#8b5a3c", line: "#e5d0a8", link: "#a43108", button: "#a84f32", onButton: "#fbf5ea" }
+  const font = "Georgia, 'Times New Roman', serif"
+  const p = (s, size, colour) => '<p style="margin:0 0 14px;font:' + (size || 17) + "px/1.55 " + font + ";color:" + (colour || c.body) + '">' + esc_(s).replace(/\n/g, "<br>") + "</p>"
+  let html = '<div style="max-width:520px;margin:0 auto;padding:24px 16px">'
+  let text = ""
+  if (m.eyebrow) { html += p(m.eyebrow, 14, c.link); text += m.eyebrow + "\n\n" }
+  html += '<h1 style="margin:0 0 18px;font:400 26px/1.25 ' + font + ";color:" + c.ink + '">' + esc_(m.heading) + "</h1>"
+  text += m.heading + "\n\n"
+  ;(m.paragraphs || []).forEach((x) => { html += p(x); text += x + "\n\n" })
   if (m.list) {
-    html +=
-      '<p style="margin:0 0 6px;font:600 14px/1.4 ' + sans + ";color:" + c.ink + '">' + esc_(m.list.title) + "</p>" +
-      '<ul style="margin:0 0 20px;padding-left:20px;font:15px/1.5 ' + sans + ";color:" + c.body + '">' + m.list.items.map((i) => "<li>" + esc_(i) + "</li>").join("") + "</ul>"
+    html += p(m.list.title, 16, c.ink) + '<ul style="margin:0 0 18px;padding-left:20px;font:16px/1.55 ' + font + ";color:" + c.body + '">' + m.list.items.map((i) => "<li>" + esc_(i) + "</li>").join("") + "</ul>"
     text += m.list.title + ":\n" + m.list.items.map((i) => "- " + i).join("\n") + "\n\n"
   }
   if (m.rows && m.rows.length) {
-    html +=
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;border-top:1px solid ' + c.line + '">' +
-      m.rows
-        .map((r) => '<tr><td style="padding:10px 12px 10px 0;border-bottom:1px solid ' + c.line + ";font:600 15px/1.4 " + sans + ";color:" + c.ink + ';vertical-align:top">' + esc_(r[0]) + '</td><td align="right" style="padding:10px 0;border-bottom:1px solid ' + c.line + ";font:15px/1.4 " + sans + ";color:" + c.body + '">' + esc_(r[1]) + "</td></tr>")
-        .join("") +
+    html += '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 20px;border-top:1px solid ' + c.line + '">' +
+      m.rows.map((r) => '<tr><td style="padding:8px 12px 8px 0;border-bottom:1px solid ' + c.line + ";font:600 16px/1.4 " + font + ";color:" + c.ink + ';vertical-align:top">' + esc_(r[0]) + '</td><td style="padding:8px 0;border-bottom:1px solid ' + c.line + ";font:16px/1.4 " + font + ";color:" + c.body + '">' + esc_(r[1]) + "</td></tr>").join("") +
       "</table>"
     text += m.rows.map((r) => r[0] + ": " + r[1]).join("\n") + "\n\n"
   }
   if (m.button) {
-    html +=
-      '<p style="margin:0 0 24px"><a href="' + esc_(m.button.url) + '" style="display:inline-block;background:' + c.red + ";color:" + c.onRed + ";text-decoration:none;font:600 16px/1 " + sans + ';padding:16px 28px;border-radius:8px">' + esc_(m.button.label) + "</a></p>"
-    text += m.button.label + ": " + m.button.url + "\n\n"
+    html += '<p style="margin:4px 0 22px"><a href="' + esc_(m.button.url) + '" style="display:inline-block;background:' + c.button + ";color:" + c.onButton + ";text-decoration:none;font:600 17px/1 " + font + ';padding:14px 24px;border-radius:999px">' + esc_(m.button.label) + "</a></p>"
+    text += m.button.label + ":\n" + m.button.url + "\n\n"
   }
-  html += (m.notes || []).map((n) => '<p style="margin:0 0 6px;font:13px/1.5 ' + sans + ";color:" + c.muted + '">' + esc_(n) + "</p>").join("")
-  text += (m.notes || []).join("\n") + "\n\n"
-  html += '<p style="margin:24px 0 0;font:400 18px/1.4 ' + serif + ";color:" + c.ink + '">Nadia &amp; Griffin</p></td></tr></table></div>'
-  text += "Nadia & Griffin"
+  ;(m.notes || []).forEach((n) => { html += p(n, 14, c.muted); text += n + "\n" })
+  html += p("Nadia & Griffin", 18, c.ink).replace("margin:0 0 14px", "margin:20px 0 0") + "</div>"
+  text += "\nNadia & Griffin"
   return { html: html, text: text }
 }
 

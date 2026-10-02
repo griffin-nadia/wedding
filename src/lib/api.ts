@@ -20,16 +20,17 @@ export type Household = {
   departure: string
   message: string
   respondedAt: string | null
+  photos?: boolean | null // happy to be in photos shared with guests
 }
 
-export type RsvpPayload = Pick<Household, "guests" | "songs" | "arrival" | "departure" | "message">
+export type RsvpPayload = Pick<Household, "guests" | "songs" | "arrival" | "departure" | "message" | "photos">
 
 export type SaveResult = { household: Household; updated: boolean; changes: string[] }
 
 /** Error codes from the back end, plus "network" when it couldn't be reached at all. */
 export type ErrorCode =
   | "bad_request" | "not_found" | "bad_guest" | "bad_attending" | "bad_date"
-  | "closed" | "busy" | "server" | "network"
+  | "closed" | "busy" | "server" | "network" | "bad_email"
 
 export class ApiError extends Error {
   code: ErrorCode
@@ -84,6 +85,7 @@ export function cleanPayload(p: RsvpPayload): RsvpPayload {
     ...p,
     guests: p.guests.map((g) => ({ ...g, firstName: g.firstName.trim(), dietary: g.attending === "yes" ? g.dietary : "None" })),
     songs: p.songs.map((s) => s.trim()).filter(Boolean),
+    photos: p.photos === true, // left unticked means no
     message: p.message.trim(),
   }
 }
@@ -147,4 +149,15 @@ export async function searchSongs(q: string, signal?: AbortSignal): Promise<Song
   } catch {
     return []
   }
+}
+
+/** "Can't find your invite?": asks the back end to email the household link. Same answer either way. */
+export async function resendLink(email: string): Promise<void> {
+  if (!config.apiUrl) { await new Promise((r) => setTimeout(r, 400)); return }
+  const data = await call(config.apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action: "resend", email: email.trim() }),
+  })
+  if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
 }

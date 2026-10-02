@@ -21,7 +21,7 @@ export function Layout() {
   const { pathname } = useLocation()
   return (
     <div className="min-h-dvh pb-[calc(4rem+env(safe-area-inset-bottom)+1.5rem)] md:pb-0">
-      <header className="mx-auto flex max-w-[60rem] items-center justify-between gap-4 px-4 py-3 md:px-8 md:py-4">
+      <header className="site-header mx-auto flex max-w-[60rem] items-center justify-between gap-4 px-4 py-3 md:px-8 md:py-4">
         <span className="font-display text-xl">{t.meta.shortTitle}</span>
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
           {links.map((l) => (

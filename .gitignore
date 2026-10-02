@@ -32,3 +32,6 @@ dist-ssr
 
 # Private build briefs (test tokens, emails)
 .brief/
+
+# QR cards and anything else made from guest data
+private/

@@ -9,6 +9,7 @@ import { countdown, isLocked } from "@/lib/time"
 import { answerOf } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { AddToCalendar } from "@/components/add-to-calendar"
+import { Lettering, OurStory, Paintings } from "@/components/slots"
 import { Hanko } from "@/components/hanko"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows (inactive).
@@ -37,6 +38,7 @@ export function HomePage() {
   return (
     <div className="grid gap-12 py-6 md:grid-cols-[1.1fr_1fr] md:gap-18 md:py-12">
       <section className="space-y-6">
+        <Lettering />
         <p className="eyebrow">{t.meta.eyebrow}</p>
         <h1 className="title-hero">{t.home.greeting(household.displayName)}</h1>
         <p className="text-body">{t.day.date} · {t.day.venue}</p>
@@ -114,6 +116,7 @@ export function HomePage() {
           </Link>
         ))}
       </section>
+      <div className="space-y-12 md:col-span-2"><OurStory /><Paintings /></div>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useLang } from "@/lib/lang"
+import { TravelDates } from "@/components/slots"
 
 // Ticks live on this device only (localStorage), never sent anywhere.
 const KEY = "ng-trip-ticks"
@@ -24,6 +25,7 @@ export function TravelPage() {
         <p className="text-body">{t.travel.lead}</p>
         <p className="hand text-sm text-muted-foreground">{t.travel.tickHint}</p>
       </header>
+      <TravelDates />
       <div className="space-y-3">
         {t.travel.items.map((item, i) => {
           const done = ticks.includes(item.title)

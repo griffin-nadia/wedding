@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -27,6 +28,7 @@ const formFrom = (h: Household | null): RsvpPayload => ({
   arrival: h?.arrival ?? "",
   departure: h?.departure ?? "",
   message: h?.message ?? "",
+  photos: h?.photos ?? null,
 })
 
 /** Option D's RSVP: one household, three short steps, in a sheet (bottom on phones, right on desktop). */
@@ -178,6 +180,13 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
               )}
             </dl>
           )}
+          {step === 3 && (
+            <label htmlFor="photos" className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border bg-card p-4 text-sm text-body">
+              <Checkbox id="photos" className="mt-0.5 size-5 shrink-0" checked={form.photos === true}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, photos: v === true }))} />
+              {t.rsvp.photos}
+            </label>
+          )}
           {step === 3 && <p className="hand text-sm text-muted-foreground">{t.rsvp.editUntil}</p>}
           {error && <p role="alert" className="rounded-md border border-destructive/40 bg-card px-4 py-3 text-sm text-destructive">{error}</p>}
         </div>
@@ -188,6 +197,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
             ? <Button size="lg" className="flex-1" disabled={!canNext} onClick={() => setStep(step + 1)}>{t.rsvp.next}</Button>
             : <Button size="lg" className="flex-1" disabled={saving} aria-busy={saving} onClick={send}>{saving ? t.rsvp.saving : error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
         </SheetFooter>
+        {step === 3 && <p className="px-6 pb-4 text-xs text-muted-foreground">{t.rsvp.privacy}</p>}
         </>}
       </SheetContent>
     </Sheet>

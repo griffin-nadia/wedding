@@ -1,0 +1,7 @@
+{
+  "_note": "Things Nadia and Griffin will add later. Set show to true and fill in the words or images (put images in public/images/). Nothing appears while show is false.",
+  "lettering": { "show": false, "image": "", "alt": "Nadia & Griffin, hand lettered by Nadia" },
+  "ourStory": { "show": false, "title": "Our story", "body": "", "photos": [] },
+  "paintings": { "show": false, "title": "Painted by Nadia", "images": [] },
+  "travelDates": { "show": false, "title": "Plan your dates", "body": "" }
+}
