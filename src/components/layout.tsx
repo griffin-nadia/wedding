@@ -18,7 +18,7 @@ export function Layout() {
         <span className="font-display text-xl">{t.meta.shortTitle}</span>
         <nav aria-label="Main" className="hidden items-center gap-8 md:flex">
           {links.map((l) => (
-            <NavLink key={l.to} to={l.to} end className={({ isActive }) => cn("text-sm text-body hover:text-foreground", isActive && "font-bold text-primary")}>
+            <NavLink key={l.to} to={l.to} end className={({ isActive }) => cn("inline-flex min-h-11 items-center text-sm text-body hover:text-foreground", isActive && "font-bold text-primary")}>
               {t.nav[l.key]}
             </NavLink>
           ))}
@@ -26,7 +26,7 @@ export function Layout() {
         <button
           type="button"
           onClick={() => setLang(lang === "en" ? "ja" : "en")}
-          className="text-sm text-body hover:text-foreground"
+          className="inline-flex min-h-11 items-center px-1 text-sm text-body hover:text-foreground"
           aria-label="Switch language"
         >
           <span className={cn(lang === "en" && "font-bold text-foreground")}>EN</span> · <span className={cn(lang === "ja" && "font-bold text-foreground")}>日本語</span>

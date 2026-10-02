@@ -701,7 +701,7 @@ function makeToken_() {
 
 /** One simple layout for every email, in the site's colours. Returns { html, text }. */
 function buildEmail_(m) {
-  const c = { paper: "#f6efe3", card: "#fffdf8", ink: "#3a2a20", body: "#6b4a35", muted: "#8a7a68", line: "#e6dcca", red: "#a8321f", onRed: "#fff6ea", eyebrow: "#b5482e" }
+  const c = { paper: "#f6efe3", card: "#fffdf8", ink: "#3a2a20", body: "#6b4a35", muted: "#736352", line: "#e6dcca", red: "#a8321f", onRed: "#fff6ea", eyebrow: "#b5482e" }
   const serif = "Georgia, 'Times New Roman', serif"
   const sans = "-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
   const p = (s) => '<p style="margin:0 0 16px;font:16px/1.5 ' + sans + ";color:" + c.body + '">' + esc_(s).replace(/\n/g, "<br>") + "</p>"
