@@ -10,6 +10,7 @@ export const en = {
     fullTitle: "Nadia Baguley and Griffin Suddaby Super Duper Wedding Extravaganza",
   },
   nav: { home: "Home", day: "The day", travel: "Travel", qa: "Q&A" },
+  theme: { label: "Lantern mode" },
   home: {
     greeting: (names: string) => `Hi ${names}`,
     intro:

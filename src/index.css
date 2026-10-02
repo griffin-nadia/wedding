@@ -148,3 +148,8 @@
   font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
   line-height: 1.05;
 }
+
+/* Lantern mode: photos sit a touch dimmer so they don't glare. */
+[data-theme="lantern"] img {
+  filter: brightness(0.9);
+}
