@@ -146,7 +146,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
               <div className="space-y-2" role="group" aria-labelledby="songs-label">
                 <p id="songs-label" className="text-sm font-medium">{t.rsvp.song}</p>
                 {Array.from({ length: config.maxSongs }).map((_, i) => (
-                  <SongField key={i} label={`Song ${i + 1}`} value={form.songs[i] ?? ""} maxLength={MAX.song} placeholder={i === 0 ? "September, Earth Wind & Fire" : ""}
+                  <SongField key={i} token={household.token} label={`Song ${i + 1}`} value={form.songs[i] ?? ""} maxLength={MAX.song} placeholder={i === 0 ? t.rsvp.songPlaceholder : ""}
                     onChange={(v) => setForm((f) => { const songs = [...f.songs]; songs[i] = v; return { ...f, songs } })} />
                 ))}
                 <p className="text-xs text-muted-foreground">{t.rsvp.songHint}</p>

@@ -4,11 +4,11 @@ import { searchSongs, type SongHit } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
 /**
- * A song box with Spotify suggestions (when the back end has keys). Typing anything still works.
+ * A song box with search suggestions (with artwork) from our back end. Typing anything still works.
  * Keyboard: arrows move through suggestions, Enter picks, Escape closes.
  */
-export function SongField({ label, value, onChange, placeholder, maxLength }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string; maxLength?: number
+export function SongField({ label, value, onChange, placeholder, maxLength, token }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; maxLength?: number; token: string
 }) {
   const id = useId()
   const [hits, setHits] = useState<SongHit[]>([])
@@ -20,14 +20,14 @@ export function SongField({ label, value, onChange, placeholder, maxLength }: {
     if (!typed.current) return
     const ctrl = new AbortController()
     const t = setTimeout(() => {
-      searchSongs(value, ctrl.signal).then((r) => { setHits(r); setOpen(r.length > 0); setActive(-1) })
-    }, 350)
+      searchSongs(value, token, ctrl.signal).then((r) => { setHits(r); setOpen(r.length > 0); setActive(-1) })
+    }, 300)
     return () => { clearTimeout(t); ctrl.abort() }
-  }, [value])
+  }, [value, token])
 
   const pick = (h: SongHit) => {
     typed.current = false
-    onChange(`${h.title}, ${h.artist}`)
+    onChange(`${h.title} · ${h.artist}`)
     setOpen(false)
   }
 
@@ -48,13 +48,18 @@ export function SongField({ label, value, onChange, placeholder, maxLength }: {
         }}
       />
       {open && (
-        <ul id={`${id}-list`} role="listbox" aria-label={`${label} suggestions`} className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-md border bg-card shadow-paper">
+        <ul id={`${id}-list`} role="listbox" aria-label={`${label} suggestions`} className="absolute inset-x-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-paper">
           {hits.map((h, i) => (
             <li key={h.url || i} id={`${id}-${i}`} role="option" aria-selected={i === active}
               onMouseDown={(e) => { e.preventDefault(); pick(h) }}
-              className={cn("flex min-h-11 cursor-pointer flex-col justify-center px-3 py-2 text-sm", i === active && "bg-secondary")}>
-              <span className="font-bold">{h.title}</span>
-              <span className="text-xs text-muted-foreground">{h.artist}</span>
+              className={cn("flex min-h-13 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-secondary", i === active && "bg-secondary")}>
+              {h.artwork
+                ? <img src={h.artwork} alt="" className="size-11 shrink-0 rounded-md object-cover" />
+                : <span aria-hidden className="size-11 shrink-0 rounded-md bg-muted" />}
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">{h.title}</span>
+                <span className="block truncate text-xs text-muted-foreground">{h.artist}</span>
+              </span>
             </li>
           ))}
         </ul>

@@ -130,22 +130,18 @@ export function trackStarted(token: string) {
   fetch(`${config.apiUrl}?action=started&token=${encodeURIComponent(token)}`, { mode: "no-cors" }).catch(() => {})
 }
 
-export type SongHit = { title: string; artist: string; url: string }
+export type SongHit = { title: string; artist: string; url: string; artwork?: string }
 
-// Song search is off until the back end has Spotify keys. Once it says so, stop asking this visit.
-let songSearchOff = !config.apiUrl
-
-/** Spotify search through our back end (guests never talk to Spotify directly). [] when off. */
-export async function searchSongs(q: string, signal?: AbortSignal): Promise<SongHit[]> {
-  if (songSearchOff || q.trim().length < 2) return []
+/**
+ * Song search through our back end (iTunes, or Spotify if set up), so guests' browsers never talk
+ * to Apple or Spotify. Artwork arrives inline. Any failure just returns [] and typing still works.
+ */
+export async function searchSongs(q: string, token: string, signal?: AbortSignal): Promise<SongHit[]> {
+  if (!config.apiUrl || q.trim().length < 2) return []
   try {
-    const res = await fetch(`${config.apiUrl}?action=songs&q=${encodeURIComponent(q.trim())}`, { signal })
+    const res = await fetch(`${config.apiUrl}?action=songs&token=${encodeURIComponent(token)}&q=${encodeURIComponent(q.trim())}`, { signal })
     const data = await res.json()
-    if (!Array.isArray(data.results)) {
-      if (data.code !== "search_failed") songSearchOff = true
-      return []
-    }
-    return data.results
+    return Array.isArray(data.results) ? data.results : []
   } catch {
     return []
   }
