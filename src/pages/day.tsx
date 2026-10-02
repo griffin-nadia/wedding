@@ -1,21 +1,22 @@
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useLang } from "@/lib/lang"
 import { homeTime } from "@/lib/time"
+import { icsHref, mapUrl } from "@/lib/calendar"
 
-const mapUrl = "https://www.google.com/maps/search/?api=1&query=The+Sodoh+Higashiyama+Kyoto"
-
-function icsHref() {
-  const ics = [
-    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//N&G//Wedding//EN", "BEGIN:VEVENT",
-    "UID:nadia-griffin-2027@wedding", "DTSTART:20271015T020000Z", "DTEND:20271015T063000Z",
-    "SUMMARY:Nadia & Griffin's wedding", "LOCATION:The Sodoh Higashiyama\\, Kyoto",
-    "END:VEVENT", "END:VCALENDAR",
-  ].join("\r\n")
-  return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`
+function useKyotoTime() {
+  const now = () => new Date().toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Tokyo" })
+  const [time, setTime] = useState(now)
+  useEffect(() => {
+    const id = setInterval(() => setTime(now()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+  return time
 }
 
 export function DayPage() {
   const { t } = useLang()
+  const kyotoNow = useKyotoTime()
   return (
     <div className="max-w-2xl space-y-8 py-6 md:py-16">
       <header className="space-y-2">
@@ -32,7 +33,8 @@ export function DayPage() {
           </li>
         ))}
       </ol>
-      <p className="text-sm text-muted-foreground">{t.day.japanTime} {t.day.address}</p>
+      <p className="text-sm text-muted-foreground">{t.day.japanTime} {t.day.kyotoNow(kyotoNow)}</p>
+      <p className="text-sm text-muted-foreground">{t.day.address}</p>
       <div className="flex flex-wrap gap-3">
         <Button asChild variant="outline" size="lg"><a href={icsHref()} download="nadia-griffin-wedding.ics">{t.day.addToCalendar}</a></Button>
         <Button asChild variant="outline" size="lg"><a href={mapUrl} target="_blank" rel="noreferrer">{t.day.openMap}</a></Button>

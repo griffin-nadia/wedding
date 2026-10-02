@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { ArrowRight, Check } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { RsvpSheet } from "@/components/rsvp-sheet"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
-import { countdown } from "@/lib/time"
+import { countdown, isLocked } from "@/lib/time"
+import { answerOf } from "@/lib/api"
+import { fmtStay } from "@/lib/dates"
+import { icsHref } from "@/lib/calendar"
+import { Hanko } from "@/components/hanko"
 
 export function HomePage() {
   const { t } = useLang()
@@ -18,31 +22,48 @@ export function HomePage() {
   }, [])
   if (!household) return null
   const done = Boolean(household.respondedAt)
+  const answer = answerOf(household)
+  const locked = isLocked()
 
   return (
     <div className="grid gap-10 py-6 md:grid-cols-[1.1fr_1fr] md:gap-16 md:py-16">
       <section className="space-y-6">
         <p className="eyebrow">{t.meta.eyebrow}</p>
         <h1 className="text-4xl md:text-7xl">{t.home.greeting(household.displayName)}</h1>
-        <p className="text-body">Friday 15 October 2027 · The Sodoh Higashiyama, Kyoto</p>
+        <p className="text-body">{t.day.date} · {t.day.venue}</p>
         <p className="max-w-xl font-display text-lg text-body md:text-xl">{t.home.intro}</p>
 
         <Card className="shadow-paper">
           <CardContent className="space-y-3">
             <p className="eyebrow text-muted-foreground">{t.home.rsvpLabel}</p>
             {done ? (
-              <p className="flex items-center gap-2 font-display text-2xl"><Check className="size-5 text-primary" aria-hidden />{t.home.rsvpDone}</p>
+              <>
+                <div className="flex items-center gap-3">
+                  {answer !== "none" && <Hanko size="sm" />}
+                  <p className="font-display text-2xl">{answer === "all" ? t.home.rsvpDone : answer === "none" ? t.home.rsvpDoneNone : t.home.rsvpDoneMixed}</p>
+                </div>
+                <p className="text-sm text-body">
+                  {t.home.youSaid}: {household.guests.map((g) => `${g.firstName} ${g.attending === "yes" ? t.home.said.yes : g.attending === "no" ? t.home.said.no : t.home.said.none}`).join(", ")}
+                </p>
+                {(household.arrival || household.departure) && answer !== "none" && (
+                  <p className="text-sm text-body">{t.rsvp.dates}: {fmtStay(household.arrival, household.departure, t.rsvp.notSet)}</p>
+                )}
+              </>
             ) : (
               <>
                 <p className="font-display text-2xl">{t.home.rsvpNotDone}</p>
                 <p className="text-sm text-body">{t.home.rsvpDue}</p>
               </>
             )}
-            <RsvpSheet>
-              <Button size="lg" variant={done ? "outline" : "default"} className="w-full md:w-auto">
-                {done ? t.home.rsvpChange : t.home.rsvpButton}
-              </Button>
-            </RsvpSheet>
+            {locked ? (
+              <p className="text-sm text-body">{t.home.rsvpClosed}</p>
+            ) : (
+              <RsvpSheet>
+                <Button size="lg" variant={done ? "outline" : "default"} className="w-full md:w-auto">
+                  {done ? t.home.rsvpChange : t.home.rsvpButton}
+                </Button>
+              </RsvpSheet>
+            )}
           </CardContent>
         </Card>
 
@@ -54,6 +75,9 @@ export function HomePage() {
             </div>
           ))}
         </dl>
+        <a href={icsHref()} download="nadia-griffin-wedding.ics" className="inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4">
+          {t.home.addToCalendar}
+        </a>
       </section>
 
       <section aria-labelledby="next-up" className="space-y-3">

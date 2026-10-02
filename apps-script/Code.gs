@@ -12,6 +12,10 @@
  *   Log      every submission and send, in plain words (written by the site)
  *   Emails   invite and reminder wording (created by the menu, edited by Nadia)
  *
+ * Visit counts (privacy first, only in this sheet: no cookies, IP addresses or third parties) go in
+ * columns added at the END of Guests: First opened, Last opened, Opens, Started RSVP.
+ * Repeat opens within 10 minutes aren't counted.
+ *
  * Script properties (Project settings > Script properties) override these defaults:
  *   SITE_URL        https://griffin-nadia.github.io/wedding
  *   CHANGES_LOCK    2027-04-30  (after this date the site refuses edits)
@@ -41,6 +45,9 @@ const MAX = { name: 40, dietary: 100, song: 200, message: 2000, songs: 3, payloa
 
 // A guest row whose First name is one of these is a plus one the household can name.
 const PLUS_ONE = /^(guest|plus one|\+1)$/i
+
+const VISITS = ["First opened", "Last opened", "Opens", "Started RSVP"]
+const REPEAT_OPEN_MS = 10 * 60 * 1000
 
 // Test sends stop after this many households, so a test never eats the day's email quota.
 const TEST_SAMPLE = 5
@@ -91,7 +98,15 @@ function doGet(e) {
   const p = (e && e.parameter) || {}
   const action = String(p.action || "").toLowerCase()
   try {
-    if (action === "household") return json_({ ok: true, household: getHousehold_(p.token) })
+    if (action === "household") {
+      const h = getHousehold_(p.token)
+      if (h && p.open === "1") safely_(() => trackOpen_(h.token))
+      return json_({ ok: true, household: h })
+    }
+    if (action === "started") {
+      safely_(() => trackStarted_(String(p.token || "").trim()))
+      return json_({ ok: true })
+    }
     if (action === "check") return json_(check_(p.token))
     return json_({ ok: true, service: "nadia-griffin-wedding" })
   } catch (err) {
@@ -184,11 +199,92 @@ function check_(token) {
     ok: true,
     household: h,
     rsvpRows: rows_(TABS.rsvps).filter((r) => r.Token === h.token).length,
+    visits: visitsOf_(h.token),
     songRows: rows_(TABS.songs).filter((r) => r.Token === h.token).length,
     log: rows_(TABS.log)
       .filter((r) => r.Token === h.token)
       .map((r) => ({ time: r.Time instanceof Date ? r.Time.toISOString() : String(r.Time), changed: String(r["What changed"]) })),
   }
+}
+
+// ---------- visits ----------
+
+function trackOpen_(token) {
+  withHouseholdRows_(token, (s, head, rows, data) => {
+    const now = new Date()
+    const last = data[rows[0] - 1][head["Last opened"]]
+    if (last instanceof Date && now - last < REPEAT_OPEN_MS) return
+    const opens = Number(data[rows[0] - 1][head.Opens]) || 0
+    rows.forEach((r) => {
+      if (!data[r - 1][head["First opened"]]) s.getRange(r, head["First opened"] + 1).setValue(now)
+      s.getRange(r, head["Last opened"] + 1).setValue(now)
+      s.getRange(r, head.Opens + 1).setValue(opens + 1)
+    })
+  })
+}
+
+function trackStarted_(token) {
+  withHouseholdRows_(token, (s, head, rows, data) => {
+    if (data[rows[0] - 1][head["Started RSVP"]]) return
+    rows.forEach((r) => s.getRange(r, head["Started RSVP"] + 1).setValue(new Date()))
+  })
+}
+
+/** Runs fn with the household's Guests rows (1-based), under a short lock. Skips if busy. */
+function withHouseholdRows_(token, fn) {
+  if (!token) return
+  const lock = LockService.getScriptLock()
+  if (!lock.tryLock(5000)) return
+  try {
+    const s = sheet_(TABS.guests)
+    const head = ensureVisitColumns_(s)
+    const data = s.getDataRange().getValues()
+    const rows = []
+    for (let i = 1; i < data.length; i++) if (String(data[i][head.Token]).trim() === token) rows.push(i + 1)
+    if (rows.length) fn(s, head, rows, data)
+  } finally {
+    lock.releaseLock()
+  }
+}
+
+function visitsOf_(token) {
+  const r = rows_(TABS.guests).find((x) => x.Token === token) || {}
+  const out = {}
+  VISITS.forEach((k) => (out[k] = r[k] instanceof Date ? r[k].toISOString() : r[k] === undefined ? null : r[k]))
+  return out
+}
+
+/** Adds any missing visit columns at the end of Guests (never moves existing ones). */
+function ensureVisitColumns_(s) {
+  let head = headers_(s)
+  const missing = VISITS.filter((k) => !(k in head))
+  if (missing.length) {
+    const start = s.getLastColumn() + 1
+    s.getRange(1, start, 1, missing.length).setValues([missing]).setFontWeight("bold")
+    head = headers_(s)
+    addVisitNotes_()
+  }
+  return head
+}
+
+/** Explains the visit columns at the bottom of the How to update tab, once. */
+function addVisitNotes_() {
+  const s = SpreadsheetApp.getActive().getSheetByName("How to update")
+  if (!s) return
+  const text = s.getDataRange().getValues().map((r) => r.join(" ")).join(" ")
+  if (text.indexOf("First opened") >= 0) return
+  const lines = [
+    ["Visits (last columns on Guests)"],
+    ["Counted only in this sheet. No cookies, IP addresses or tracking services. Opens within 10 minutes of the last one aren't counted."],
+    ["First opened: the first time the household opened their link."],
+    ["Last opened: the most recent time."],
+    ["Opens: how many separate visits."],
+    ["Started RSVP: when they first opened the RSVP form."],
+    ["Funnel: invited (Invite sent) → opened (First opened) → started (Started RSVP) → replied (RSVPs tab, Responded at)."],
+  ]
+  const start = s.getLastRow() + 2
+  s.getRange(start, 1, lines.length, 1).setValues(lines)
+  s.getRange(start, 1).setFontWeight("bold")
 }
 
 // ---------- writes ----------
@@ -725,6 +821,14 @@ function longDate_(ymd) {
 
 function esc_(s) {
   return String(s == null ? "" : s).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch])
+}
+
+function safely_(fn) {
+  try {
+    fn()
+  } catch (err) {
+    console.error(String(err && err.stack ? err.stack : err))
+  }
 }
 
 function json_(obj) {

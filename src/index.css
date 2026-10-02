@@ -67,3 +67,34 @@
 @utility eyebrow {
   @apply text-[11px] font-bold uppercase tracking-[0.08em] text-eyebrow;
 }
+
+/* Hanko: the red seal stamped on "all set". Lands once; no motion when reduced motion is on. */
+@utility hanko {
+  @apply inline-grid shrink-0 place-items-center rounded-full border-[3px] border-primary font-display text-primary;
+  box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 3.5px var(--primary);
+  transform: rotate(-8deg);
+}
+@keyframes hanko-stamp {
+  0% { opacity: 0; transform: scale(1.6) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(0.94) rotate(-7deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+@utility hanko-stamp {
+  animation: hanko-stamp 420ms var(--ease-paper, ease-out) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* Maple leaf on Q&A: drifts down once, then rests. */
+@keyframes leaf-fall {
+  0% { opacity: 0; transform: translate(-14px, -40px) rotate(-40deg); }
+  50% { opacity: 1; transform: translate(8px, -12px) rotate(15deg); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(0); }
+}
+@utility leaf-fall {
+  animation: leaf-fall 1.6s var(--ease-paper, ease-out) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

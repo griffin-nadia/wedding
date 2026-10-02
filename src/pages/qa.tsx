@@ -1,11 +1,12 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useLang } from "@/lib/lang"
+import { MapleLeaf } from "@/components/maple-leaf"
 
 export function QaPage() {
   const { t } = useLang()
   return (
     <div className="max-w-2xl space-y-6 py-6 md:py-16">
-      <h1 className="text-4xl md:text-6xl">{t.qa.title}</h1>
+      <h1 className="flex items-start gap-3 text-4xl md:text-6xl">{t.qa.title}<MapleLeaf /></h1>
       <Accordion type="single" collapsible className="rounded-lg border bg-card px-5">
         {t.qa.items.map((item, i) => (
           <AccordionItem key={item.q} value={`q${i}`}>

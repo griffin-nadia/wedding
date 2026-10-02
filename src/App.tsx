@@ -2,7 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { Layout } from "@/components/layout"
 import { Toaster } from "@/components/ui/sonner"
 import { HouseholdProvider, useHousehold } from "@/lib/household"
-import { LangProvider } from "@/lib/lang"
+import { LangProvider, useLang } from "@/lib/lang"
 import { DayPage } from "@/pages/day"
 import { HomePage } from "@/pages/home"
 import { NoInvitePage } from "@/pages/no-invite"
@@ -11,8 +11,9 @@ import { TravelPage } from "@/pages/travel"
 
 function Gate() {
   const { status } = useHousehold()
-  if (status === "loading") return <p className="py-24 text-center text-muted-foreground">Opening your invite…</p>
-  if (status !== "ready") return <NoInvitePage />
+  const { t } = useLang()
+  if (status === "loading") return <p role="status" className="py-24 text-center text-muted-foreground">{t.loading}</p>
+  if (status !== "ready") return <NoInvitePage reason={status} />
   return (
     <Routes>
       <Route element={<Layout />}>
