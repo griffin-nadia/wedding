@@ -4,11 +4,23 @@ import { getContent, type Lang } from "@/content"
 const KEY = "ng-lang"
 const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: ReturnType<typeof getContent> } | null>(null)
 
+// The Japanese font files (hundreds of small subsets) only load when someone picks 日本語.
+let jaFonts: Promise<unknown> | null = null
+function loadJapaneseFonts() {
+  jaFonts ??= Promise.all([
+    import("@fontsource/shippori-mincho/400.css"),
+    import("@fontsource/zen-kaku-gothic-new/400.css"),
+    import("@fontsource/zen-kaku-gothic-new/700.css"),
+  ])
+}
+
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => {
     try { return (localStorage.getItem(KEY) as Lang) || "en" } catch { return "en" }
   })
+  if (lang === "ja") loadJapaneseFonts()
   const setLang = (l: Lang) => {
+    if (l === "ja") loadJapaneseFonts()
     setLangState(l)
     document.documentElement.lang = l
     try { localStorage.setItem(KEY, l) } catch { /* ignore */ }

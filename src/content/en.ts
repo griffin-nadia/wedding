@@ -53,7 +53,7 @@ export const en = {
     tickHint: "Tick things off as you go. Your ticks stay on this device.",
     ticked: "Done",
     items: [
-      { title: "Passport", body: "Please ensure your passport is valid for at least 6 months past your return date. If you need to renew your passport, please do so soon! Aussies don't need a visa for a short trip to Japan." },
+      { title: "Passport", body: "Please ensure your passport is valid for at least 6 months past your return date. If you need to renew your passport, please do so soon! Aussies don't need a visa for a short trip to Japan. We'll let you know if Japan's entry rules change before the trip." },
       { title: "Flights", body: "Please book flights as early as you can. The date of the wedding is locked in, so no chance of missing it! If you can, please take the opportunity to enjoy Japan while you are here. We will have suggestions for activities for several days leading up to the wedding, and encourage you to stick around for a few days after if you are able." },
       { title: "Where to stay", body: "Please book accommodation once you have your flights booked. We will collect some recommendations for hotels or Airbnbs near the venue. Please keep in mind Japanese hotels tend to be quite small and perfunctory, so factor that into your decision-making. If you would like to coordinate with other guests and share accommodation, please do so!" },
       { title: "SIM or pocket wifi", body: "Look into buying a SIM card or pocket wifi for travel! We will provide some recommendations.", links: [

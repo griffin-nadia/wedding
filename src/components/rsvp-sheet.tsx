@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,16 +30,19 @@ const formFrom = (h: Household | null): RsvpPayload => ({
 })
 
 /** Option D's RSVP: one household, three short steps, in a sheet (bottom on phones, right on desktop). */
-export function RsvpSheet({ children }: { children: ReactNode }) {
+export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNode; openOnLoad?: boolean }) {
   const { t } = useLang()
   const { household, setHousehold } = useHousehold()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(openOnLoad)
   const [step, setStep] = useState(1)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [done, setDone] = useState<SaveResult | null>(null)
   const sending = useRef(false)
   const [form, setForm] = useState<RsvpPayload>(() => formFrom(household))
+  // Opened by an early tap (before this form loaded): count it as a started RSVP too.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (openOnLoad && household) trackStarted(household.token) }, [])
   if (!household) return null
   const locked = isLocked()
 
@@ -112,7 +115,9 @@ export function RsvpSheet({ children }: { children: ReactNode }) {
               <RadioGroup aria-label={nameOf(g)} value={g.attending ?? ""} onValueChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })} className="grid grid-cols-2 gap-2">
                 {(["yes", "no"] as const).map((v) => (
                   <Label key={v} htmlFor={`${g.id}-${v}`} className={cn("flex min-h-12 cursor-pointer items-center gap-2 rounded-md border px-3 py-3 has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50", g.attending === v && "border-2 border-primary bg-secondary font-bold")}>
-                    <RadioGroupItem id={`${g.id}-${v}`} value={v} />
+                    <RadioGroupItem id={`${g.id}-${v}`} value={v}
+                      // Arrow keys always select (Radix skips the first press after the sheet focuses it)
+                      onFocus={(e) => { if (e.currentTarget.matches(":focus-visible") && g.attending !== v) setGuest(g.id, { attending: v }) }} />
                     {v === "yes" ? t.rsvp.coming : t.rsvp.notComing}
                   </Label>
                 ))}

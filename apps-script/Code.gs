@@ -16,6 +16,10 @@
  * columns added at the END of Guests: First opened, Last opened, Opens, Started RSVP.
  * Repeat opens within 10 minutes aren't counted.
  *
+ * Speed: households are cached for 6 hours (cleared on save and on any edit in the sheet). Visit
+ * counts and confirmation emails are queued and sent by a 1-minute trigger (flushQueue), so guests
+ * never wait on Gmail or extra sheet writes. If the trigger can't be set up, emails send inline.
+ *
  * Script properties (Project settings > Script properties) override these defaults:
  *   SITE_URL        https://griffin-nadia.github.io/wedding
  *   CHANGES_LOCK    2027-04-30  (after this date the site refuses edits)
@@ -49,6 +53,10 @@ const MAX = { name: 40, dietary: 100, song: 200, message: 2000, songs: 3, payloa
 const PLUS_ONE = /^(guest|plus one|\+1)$/i
 
 const VISITS = ["First opened", "Last opened", "Opens", "Started RSVP"]
+const CACHE_SECONDS = 6 * 60 * 60
+
+// Invite week: ping the web app every 15 minutes so the first guests don't hit a cold start.
+const WARM = { from: "2026-10-15T00:00:00+11:00", to: "2026-10-23T00:00:00+11:00", url: "https://script.google.com/macros/s/AKfycbxkbvJ9oRlafnzMYY-iBGKeC-0u9TP85jUzPeRtHIAnXs7aNspQRciOagH9FKzHhWIbZw/exec" }
 const REPEAT_OPEN_MS = 10 * 60 * 1000
 
 // Test sends stop after this many households, so a test never eats the day's email quota.
@@ -103,13 +111,15 @@ function doGet(e) {
   const action = String(p.action || "").toLowerCase()
   try {
     if (action === "household") {
-      const h = getHousehold_(p.token)
-      if (h && p.open === "1") safely_(() => trackOpen_(h.token))
+      const h = cachedHousehold_(p.token)
+      if (h && p.open === "1") safely_(() => enqueue_("open", h.token))
       return json_({ ok: true, household: h })
     }
+    if (action === "ping") return json_({ ok: true })
     if (action === "songs") return json_(searchSongs_(p.q))
     if (action === "started") {
-      safely_(() => trackStarted_(String(p.token || "").trim()))
+      const token = String(p.token || "").trim()
+      if (cachedHousehold_(token)) safely_(() => enqueue_("started", token))
       return json_({ ok: true })
     }
     if (action === "check") return json_(check_(p.token))
@@ -131,7 +141,7 @@ function doPost(e) {
 
   const lock = LockService.getScriptLock()
   if (!lock.tryLock(30000)) return fail_("busy")
-  let before, after, changes
+  let before, after, changes, queued
   try {
     before = getHousehold_(body.token)
     if (!before) return fail_("not_found")
@@ -143,23 +153,19 @@ function doPost(e) {
     changes = describeChanges_(before, after)
     log_(after.displayName, after.token, changes.join("\n"), JSON.stringify(input))
     SpreadsheetApp.flush()
+    forgetHousehold_(after.token)
+    queued = queueMail_(before, after, changes)
   } catch (err) {
     return fail_("server", err)
   } finally {
     lock.releaseLock()
   }
 
-  // Emails go out after the lock is released, so other saves don't wait on Gmail.
+  // No trigger to send queued mail (not authorised yet): send now, after the lock is released.
   const updated = Boolean(before.respondedAt)
-  try {
-    sendConfirmation_(after, updated ? changes : null)
-  } catch (err) {
-    console.error("Confirmation email failed: " + err)
-  }
-  try {
-    notifyIfDropped_(before, after)
-  } catch (err) {
-    console.error("Change notice failed: " + err)
+  if (!queued) {
+    safely_(() => sendConfirmation_(after, updated ? changes : null))
+    safely_(() => notifyDropped_(after.displayName, droppedNames_(before, after)))
   }
   return json_({ ok: true, updated: updated, changes: changes, household: after })
 }
@@ -254,42 +260,138 @@ function searchSongs_(q) {
 
 // ---------- visits ----------
 
-function trackOpen_(token) {
-  withHouseholdRows_(token, (s, head, rows, data) => {
-    const now = new Date()
-    const last = data[rows[0] - 1][head["Last opened"]]
-    if (last instanceof Date && now - last < REPEAT_OPEN_MS) return
-    const opens = Number(data[rows[0] - 1][head.Opens]) || 0
-    rows.forEach((r) => {
-      if (!data[r - 1][head["First opened"]]) s.getRange(r, head["First opened"] + 1).setValue(now)
-      s.getRange(r, head["Last opened"] + 1).setValue(now)
-      s.getRange(r, head.Opens + 1).setValue(opens + 1)
-    })
-  })
+// ---------- cache ----------
+
+function cacheKey_(token) {
+  const c = CacheService.getScriptCache()
+  return "h:" + (c.get("gen") || "0") + ":" + token
 }
 
-function trackStarted_(token) {
-  withHouseholdRows_(token, (s, head, rows, data) => {
-    if (data[rows[0] - 1][head["Started RSVP"]]) return
-    rows.forEach((r) => s.getRange(r, head["Started RSVP"] + 1).setValue(new Date()))
-  })
+function cachedHousehold_(token) {
+  token = String(token || "").trim()
+  if (!token) return null
+  const c = CacheService.getScriptCache()
+  const key = cacheKey_(token)
+  const hit = c.get(key)
+  if (hit) return JSON.parse(hit)
+  const h = getHousehold_(token)
+  if (h) c.put(key, JSON.stringify(h), CACHE_SECONDS)
+  return h
 }
 
-/** Runs fn with the household's Guests rows (1-based), under a short lock. Skips if busy. */
-function withHouseholdRows_(token, fn) {
-  if (!token) return
-  const lock = LockService.getScriptLock()
-  if (!lock.tryLock(5000)) return
+function forgetHousehold_(token) {
+  CacheService.getScriptCache().remove(cacheKey_(token))
+}
+
+/** Clears every cached household (a new generation). */
+function forgetAllHouseholds_() {
+  CacheService.getScriptCache().put("gen", String(Date.now()), CACHE_SECONDS)
+}
+
+/** Simple trigger: any hand edit in the sheet (names, emails, rows) clears the cache. */
+function onEdit() {
+  forgetAllHouseholds_()
+}
+
+// ---------- queue (sent by flushQueue every minute) ----------
+
+/** Visits: one property per event, so no lock is needed. */
+function enqueue_(kind, token) {
+  PropertiesService.getScriptProperties().setProperty("q:" + kind + ":" + token + ":" + Date.now() + Math.floor(Math.random() * 1000), "1")
+}
+
+/** Confirmation email for this save. Called under the save lock. Returns false if mail must go inline. */
+function queueMail_(b, a, changes) {
+  if (!flushTriggerReady_()) return false
+  const props = PropertiesService.getScriptProperties()
+  const key = "q:mail:" + a.token
+  const prev = JSON.parse(props.getProperty(key) || "null")
+  const updated = prev ? prev.updated : Boolean(b.respondedAt)
+  const all = prev ? prev.changes.concat(changes).filter((c) => c !== "No changes") : changes
+  const dropped = (prev ? prev.dropped : []).concat(droppedNames_(b, a))
+  props.setProperty(key, JSON.stringify({ updated: updated, changes: all.length ? all : ["No changes"], dropped: dropped }))
+  return true
+}
+
+function flushTriggerReady_() {
+  const props = PropertiesService.getScriptProperties()
+  if (props.getProperty("flush_trigger") === "1") return true
   try {
-    const s = sheet_(TABS.guests)
-    const head = ensureVisitColumns_(s)
-    const data = s.getDataRange().getValues()
-    const rows = []
-    for (let i = 1; i < data.length; i++) if (String(data[i][head.Token]).trim() === token) rows.push(i + 1)
-    if (rows.length) fn(s, head, rows, data)
+    if (!ScriptApp.getProjectTriggers().some((t) => t.getHandlerFunction() === "flushQueue")) {
+      ScriptApp.newTrigger("flushQueue").timeBased().everyMinutes(1).create()
+    }
+    props.setProperty("flush_trigger", "1")
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+/** Every minute: write queued visits, send queued confirmation emails, keep warm in invite week. */
+function flushQueue() {
+  const lock = LockService.getScriptLock()
+  if (!lock.tryLock(20000)) return
+  const props = PropertiesService.getScriptProperties()
+  let mails = []
+  try {
+    const all = props.getProperties()
+    const keys = Object.keys(all).filter((k) => k.indexOf("q:") === 0)
+    const events = { open: {}, started: {} }
+    keys.forEach((k) => {
+      const parts = k.split(":")
+      if (parts[1] === "mail") mails.push({ token: parts[2], data: JSON.parse(all[k]) })
+      else if (events[parts[1]]) (events[parts[1]][parts[2]] = events[parts[1]][parts[2]] || []).push(Number(parts[3].slice(0, 13)))
+    })
+    if (Object.keys(events.open).length || Object.keys(events.started).length) writeVisits_(events)
+    keys.forEach((k) => props.deleteProperty(k))
   } finally {
     lock.releaseLock()
   }
+  mails.forEach((m) => {
+    const h = getHousehold_(m.token)
+    if (!h) return
+    safely_(() => sendConfirmation_(h, m.data.updated ? m.data.changes : null))
+    safely_(() => notifyDropped_(h.displayName, m.data.dropped || []))
+  })
+  const now = Date.now()
+  if (now >= new Date(WARM.from).getTime() && now < new Date(WARM.to).getTime() && new Date().getMinutes() % 15 === 0) {
+    safely_(() => UrlFetchApp.fetch(WARM.url + "?action=ping", { muteHttpExceptions: true }))
+  }
+}
+
+/** Applies queued opens (10-minute rule) and first "Started RSVP" times to Guests. */
+function writeVisits_(events) {
+  const s = sheet_(TABS.guests)
+  const head = ensureVisitColumns_(s)
+  const data = s.getDataRange().getValues()
+  const rowsOf = {}
+  for (let i = 1; i < data.length; i++) {
+    const t = String(data[i][head.Token]).trim()
+    if (t) (rowsOf[t] = rowsOf[t] || []).push(i)
+  }
+  const tokens = Object.keys(Object.assign({}, events.open, events.started))
+  tokens.forEach((token) => {
+    const rows = rowsOf[token]
+    if (!rows) return
+    const first = data[rows[0]]
+    let firstOpened = first[head["First opened"]]
+    let last = first[head["Last opened"]]
+    let opens = Number(first[head.Opens]) || 0
+    ;(events.open[token] || []).sort().forEach((ms) => {
+      if (last instanceof Date && ms - last.getTime() < REPEAT_OPEN_MS) return
+      last = new Date(ms)
+      if (!firstOpened) firstOpened = last
+      opens++
+    })
+    let started = first[head["Started RSVP"]]
+    if (!started && events.started[token]) started = new Date(Math.min.apply(null, events.started[token]))
+    rows.forEach((r) => {
+      s.getRange(r + 1, head["First opened"] + 1).setValue(firstOpened || "")
+      s.getRange(r + 1, head["Last opened"] + 1).setValue(last || "")
+      s.getRange(r + 1, head.Opens + 1).setValue(opens || "")
+      s.getRange(r + 1, head["Started RSVP"] + 1).setValue(started || "")
+    })
+  })
 }
 
 function visitsOf_(token) {
@@ -510,18 +612,22 @@ function sendConfirmation_(h, changes) {
   })
 }
 
-function notifyIfDropped_(b, a) {
-  if (String(prop_("NOTIFY_CHANGES")).toLowerCase() !== "yes") return
-  const dropped = a.guests.filter((g) => {
-    const old = b.guests.find((x) => x.id === g.id)
-    return old && old.attending === "yes" && g.attending === "no"
-  })
-  if (!dropped.length) return
-  const names = dropped.map((g) => g.firstName).join(", ")
+function droppedNames_(b, a) {
+  return a.guests
+    .filter((g) => {
+      const old = b.guests.find((x) => x.id === g.id)
+      return old && old.attending === "yes" && g.attending === "no"
+    })
+    .map((g) => g.firstName)
+}
+
+function notifyDropped_(household, names) {
+  if (String(prop_("NOTIFY_CHANGES")).toLowerCase() !== "yes" || !names.length) return
+  const list = names.join(", ")
   MailApp.sendEmail({
     to: prop_("REPLY_TO"),
-    subject: "RSVP change: " + names + " can't make it now",
-    body: a.displayName + " changed their RSVP.\n\n" + names + ": coming → can't make it\n\nSee the Log tab for details.",
+    subject: "RSVP change: " + list + " can't make it now",
+    body: household + " changed their RSVP.\n\n" + list + ": coming → can't make it\n\nSee the Log tab for details.",
   })
 }
 
@@ -748,6 +854,7 @@ function resetTestHouseholds() {
     const rows = s.getDataRange().getValues()
     for (let i = rows.length - 1; i >= 1; i--) if (tokens.indexOf(String(rows[i][col]).trim()) >= 0) s.deleteRow(i + 1)
   })
+  forgetAllHouseholds_()
   ui.alert("Reset " + tests.length + " test household" + (tests.length === 1 ? "" : "s") + ".")
 }
 

@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { RsvpSheet } from "@/components/rsvp-sheet"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { countdown, isLocked } from "@/lib/time"
@@ -12,10 +11,14 @@ import { fmtStay } from "@/lib/dates"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { Hanko } from "@/components/hanko"
 
+// The RSVP form loads just after the greeting paints. Until then the same button shows (inactive).
+const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
+
 export function HomePage() {
   const { t } = useLang()
   const { household } = useHousehold()
   const [left, setLeft] = useState(countdown())
+  const [wantOpen, setWantOpen] = useState(false)
   useEffect(() => {
     const id = setInterval(() => setLeft(countdown()), 30_000)
     return () => clearInterval(id)
@@ -24,6 +27,12 @@ export function HomePage() {
   const done = Boolean(household.respondedAt)
   const answer = answerOf(household)
   const locked = isLocked()
+  const rsvpButton = (
+    <Button size="lg" variant={done ? "outline" : "default"} className="w-full md:w-auto" aria-busy={wantOpen}
+      onClick={() => setWantOpen(true)}>
+      {done ? t.home.rsvpChange : t.home.rsvpButton}
+    </Button>
+  )
 
   return (
     <div className="grid gap-10 py-6 md:grid-cols-[1.1fr_1fr] md:gap-16 md:py-16">
@@ -58,11 +67,10 @@ export function HomePage() {
             {locked ? (
               <p className="text-sm text-body">{t.home.rsvpClosed}</p>
             ) : (
-              <RsvpSheet>
-                <Button size="lg" variant={done ? "outline" : "default"} className="w-full md:w-auto">
-                  {done ? t.home.rsvpChange : t.home.rsvpButton}
-                </Button>
-              </RsvpSheet>
+              // A tap before the form has loaded still opens it as soon as it arrives.
+              <Suspense fallback={rsvpButton}>
+                <RsvpSheet openOnLoad={wantOpen}>{rsvpButton}</RsvpSheet>
+              </Suspense>
             )}
           </CardContent>
         </Card>
