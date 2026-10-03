@@ -8,9 +8,20 @@ See it live at `/kit` (every component, Light and Lantern side by side, every st
 
 - **Mood:** painted, foggy, warm, autumn Kyoto. Original only: nothing that references or imitates a show, film or studio.
 - **Voice:** warm, plain, a bit playful. Australian English, sentence case, no em dashes. Guests never see back-end words; their reply "goes only to Nadia and Griffin".
-- **Marks:** the names in Oranienbaum with a rust "&" (the one accent), the N&G seal (favicon, envelope, credit), the hanko 京 for "done".
-- **Photos:** only behind the envelope on arrival. Everywhere else, the paper scene.
+- **Marks:** the names in Oranienbaum with a sage "&", the N&G seal (favicon, envelope, credit), the hanko 京 for "done".
+- **Photos:** one per mode, behind every page: kyoto-view by day, night-lane in Lantern. Fixed and cover; nothing moves, rescales or reflows it. Each has a face-safe rect in `scenes.json` that nothing on the arrival may cover.
 - **Texture:** one fine paper grain of our own, on the letter itself.
+
+## Colour: one action, one story accent, one ink
+
+| Role | Token | Light | Used for |
+|---|---|---|---|
+| Action (the only one) | `--sys-accent` | sage `#5b6b3a` | buttons, toggles, focus ring, selected states, the dock marker, the seal, the "&" |
+| Links | `--sys-link` | forest | text links |
+| Story accent | `--sys-story` | rust | Our story only: map lines, chapter labels, stop numbers. Never on a control |
+| Stamp | `--sys-stamp` | vermilion | the hanko when a reply lands, nothing else |
+
+**The letter is always cream.** The letter, the envelope, the RSVP sheet and the driver card carry `.paper`, which re-declares the light system and component tokens, so they read the same in both modes. Lantern changes only the scene, the dock, the top bar and the photo.
 
 ## Tokens: three layers
 
@@ -48,7 +59,7 @@ At most two sizes in any one component. Caps only on the status pill. Semibold a
 ## Layout
 
 - **Scene:** fills the viewport behind everything; static under reduced motion.
-- **Letter:** 620 wide from 1024, 180 from the left; texture on the card, a 1px line, no top bar, no blur ring.
+- **Letter:** 740 wide from 1024, 48 to 180 from the left (scales so the photo keeps room); texture on the card, a 1px line, no top bar, no blur ring.
 - **Nav:** four items rendered once. Dock on phones, thin top bar from 768 with RSVP as a button. No footer, no tabs.
 - **Home:** the letterhead, greeting, RSVP or the Replied pill, then the countdown row under the card (outside the letter).
 - **Fits:** Home fits 390×844 and 1440×900. Every page ends 16px clear of the dock.

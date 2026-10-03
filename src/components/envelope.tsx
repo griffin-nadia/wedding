@@ -104,7 +104,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
             <span aria-hidden className="noren-panel noren-right"><span>{COUPLE.second[0]}</span></span>
           </button>
         ) : (
-          <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope">
+          <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper">
             <span aria-hidden className="envelope-back" />
             <span aria-hidden className="envelope-paper" />
             <span aria-hidden className="envelope-front" />

@@ -261,7 +261,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
       <Dialog.Trigger asChild disabled={locked}>{children}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="rsvp-overlay" />
-        <Dialog.Content ref={sheet} className="letter rsvp-letter" aria-describedby={undefined}
+        <Dialog.Content ref={sheet} className="letter paper rsvp-letter" aria-describedby={undefined}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}
           // Only X, Esc or "Back to your invite" close the sheet; a tap outside never does (v3 A)
           onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}

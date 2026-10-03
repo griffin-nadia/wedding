@@ -43,7 +43,7 @@ export function StampBook() {
       <Dialog.Trigger className="utility-btn press stamp-trigger" aria-label={t.stamps.open}><BookMarked className="size-5" aria-hidden /></Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="rsvp-overlay" />
-        <Dialog.Content className="letter rsvp-letter" aria-describedby={undefined} onPointerDownOutside={(e) => e.preventDefault()}>
+        <Dialog.Content className="letter paper rsvp-letter" aria-describedby={undefined} onPointerDownOutside={(e) => e.preventDefault()}>
           <Dialog.Close className="rsvp-close press" aria-label={t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
           <div className="rsvp-head flex flex-col gap-2">
             <Dialog.Title className="heading">{t.stamps.title}</Dialog.Title>

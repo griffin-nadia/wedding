@@ -472,7 +472,7 @@ export function KitPage() {
           </header>
           <div className={cn("grid gap-6", panels.length > 1 && "xl:grid-cols-2")}>
             {panels.map((m) => (
-              <section key={m} data-theme={m} aria-label={m === "autumn" ? "Light" : "Lantern"} className="kit-panel flex min-w-0 flex-col gap-4 rounded-3xl border-t-[6px] border-(--letter-edge-color) bg-background p-6 text-body shadow-paper">
+              <section key={m} data-theme={m} aria-label={m === "autumn" ? "Light" : "Lantern"} className="kit-panel paper flex min-w-0 flex-col gap-4 rounded-3xl border-t-[6px] border-(--letter-edge-color) bg-background p-6 text-body shadow-paper">
                 <p className="label-caps text-muted-foreground">{m === "autumn" ? "Light" : "Lantern"}</p>
                 {page.render()}
               </section>

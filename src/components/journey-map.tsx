@@ -59,7 +59,7 @@ export function JourneyMap({ stops, labels, showFlying = false }: { stops: Stop[
     <ol className="space-y-4">
       {stops.map((s, i) => (
         <li key={s.title} className="grid grid-cols-[2rem_1fr] gap-3">
-          <span className="numerals text-2xl text-primary">{i + 1}</span>
+          <span className="numerals text-2xl text-(--sys-story)">{i + 1}</span>
           <span><span className="block font-medium">{s.title}</span><span className="block text-body">{s.body}</span></span>
         </li>
       ))}
@@ -110,7 +110,7 @@ export function JourneyMap({ stops, labels, showFlying = false }: { stops: Stop[
           {stops.map((s, i) => (
             <li key={s.title} className="flex-1">
               <button type="button" onClick={() => setOpen(i)} className="min-h-13 w-full rounded-lg bg-card px-2 text-sm ring-1 ring-border">
-                <span className="numerals mr-1 text-primary">{i + 1}</span>{s.title}
+                <span className="numerals mr-1 text-(--sys-story)">{i + 1}</span>{s.title}
               </button>
             </li>
           ))}

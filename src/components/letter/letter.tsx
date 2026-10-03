@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
  * scene within 24px of its edge so it reads as paper. The only UI surface on the site.
  */
 export function Letter({ children, className, as: Tag = "article", ...rest }: { children: ReactNode; className?: string; as?: "article" | "div" | "section" } & React.HTMLAttributes<HTMLElement>) {
-  return <Tag className={cn("letter", className)} {...rest}>{children}</Tag>
+  return <Tag className={cn("letter paper", className)} {...rest}>{children}</Tag>
 }
 
 /** End of every letter: their sign-off and nothing else (Nadia's handwriting replaces Klee One when it arrives). */

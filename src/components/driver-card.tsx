@@ -72,7 +72,7 @@ export function DriverCard() {
         )}
       </section>
       {full && createPortal(
-        <div className="driver-modal" role="dialog" aria-modal="true" aria-labelledby="driver-full">
+        <div className="driver-modal paper" role="dialog" aria-modal="true" aria-labelledby="driver-full">
           <div className="driver-card">
             <div className="driver-body" lang="ja">
               <p id="driver-full" className="driver-please font-ja">{VENUE.please}</p>

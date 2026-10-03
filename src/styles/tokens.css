@@ -48,11 +48,17 @@
   --brand-kare: #b8a07f;
   --brand-sage: #a3a37e;
   --brand-rust-light: #f08a6c;
+  /* v3 U (6 Oct): one green for every action, one story accent, one ink */
+  --brand-sage-ink: #5b6b3a;      /* sage, deep enough for cream text (5.4:1): buttons, focus, toggles, the seal */
+  --brand-shu: #b7321d;           /* vermilion: the hanko when a reply lands, nothing else */
 }
 
 /* ─── 2 · System (per mode) ─────────────────────────────────────────────────── */
 :root,
-[data-theme="autumn"] {
+[data-theme="autumn"],
+.paper {
+  /* .paper: the letter, the envelope and the sheets stay cream in both modes (v3 U). Lantern reaches only the
+     scene, the dock and the top bar. Declared again on .paper so every alias below resolves to the light values. */
   color-scheme: light;
   --sys-surface: var(--brand-kinari);              /* the letter */
   --sys-surface-raised: var(--brand-shiro-kinari); /* inputs, cards on the letter */
@@ -61,12 +67,14 @@
   --sys-ink: var(--brand-kogecha);                 /* names, headings, input text */
   --sys-ink-soft: var(--brand-kuri);               /* body: never lighter than this */
   --sys-ink-muted: var(--brand-nikkei);            /* hints, labels */
-  --sys-accent: var(--brand-sabi);                 /* primary button, "&", seal */
+  --sys-accent: var(--brand-sage-ink);             /* the one action colour: buttons, toggles, the seal, "&" */
   --sys-accent-ink: var(--brand-shiro-kinari);     /* text on accent */
-  --sys-link: var(--brand-doro);
+  --sys-link: var(--brand-forest);
+  --sys-story: var(--brand-sabi);                  /* Our story only: map lines, chapter labels, stop numbers; never a control */
+  --sys-stamp: var(--brand-shu);                   /* the hanko only */
   --sys-line: var(--brand-wara);
   --sys-line-strong: var(--brand-nikkei);          /* hover border */
-  --sys-focus: var(--brand-doro);
+  --sys-focus: var(--brand-sage-ink);
   --sys-success: var(--brand-uguisu-cha);
   --sys-moss: var(--brand-koke);
   --sys-danger: var(--brand-danger);
@@ -87,12 +95,14 @@
   --sys-ink: var(--brand-kinari);
   --sys-ink-soft: var(--brand-wara);
   --sys-ink-muted: var(--brand-kare);
-  --sys-accent: var(--brand-kabocha);
+  --sys-accent: var(--brand-sage);
   --sys-accent-ink: var(--brand-yoru);
-  --sys-link: var(--brand-hachimitsu);
+  --sys-link: var(--brand-mitsu);
+  --sys-story: var(--brand-kabocha);
+  --sys-stamp: var(--brand-shu);
   --sys-line: var(--brand-yoru-line);
   --sys-line-strong: var(--brand-kare);
-  --sys-focus: var(--brand-hachimitsu);
+  --sys-focus: var(--brand-sage);
   --sys-success: var(--brand-sage);
   --sys-moss: var(--brand-sage);
   --sys-danger: var(--brand-rust-light);
@@ -106,7 +116,8 @@
    Then layer 3, component tokens: each aliases the system so the tuning panel can move one alone. */
 :root,
 [data-theme="autumn"],
-[data-theme="lantern"] {
+[data-theme="lantern"],
+.paper {
   --background: var(--sys-surface);
   --foreground: var(--sys-ink);
   --card: var(--sys-surface-raised);
