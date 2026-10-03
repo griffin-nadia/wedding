@@ -441,6 +441,9 @@
 @media (prefers-reduced-motion: reduce) { .names-settle { animation: none; } }
 
 /* ─── Scene and letter (v2) ─────────────────────────────────────────────────── */
+/* The photo never moves (Jehan, 6 Oct): pinned to the large viewport, so the phone's URL bar, the dock, the
+   sheet or the keyboard never rescale or shift it. No parallax. */
+.scene { inset: 0 auto auto 0; width: 100%; height: 100vh; height: 100lvh; }
 .scene-layer { transition: opacity var(--duration-rise) var(--ease-letter); }
 .scene-photo img { filter: var(--scene-filter); }
 .scene-fill { filter: blur(24px) var(--scene-filter); transform: scale(1.12); }
@@ -667,8 +670,9 @@
 .arch-photo { overflow: hidden; border-radius: 999px 999px var(--radius-card) var(--radius-card); aspect-ratio: 4 / 3; }
 .arch-photo img { width: 100%; height: 100%; object-fit: cover; filter: var(--scene-filter); }
 /* Lantern toggle in the chrome: top right of the scene on phones (44px target, 12px in), in the top bar from 768 */
-.chrome-lantern { position: fixed; z-index: 41; top: 12px; right: 12px; background: var(--letter-bg); box-shadow: var(--shadow-paper); }
-@media (min-width: 768px) { .chrome-lantern { position: static; width: 44px; height: 44px; background: transparent; box-shadow: none; } }
+.mode-switches { display: inline-flex; align-items: center; gap: 0; }
+.chrome-lantern { position: fixed; z-index: 41; top: 12px; right: 12px; border-radius: var(--radius-pill); background: var(--letter-bg); box-shadow: var(--shadow-paper); }
+@media (min-width: 768px) { .chrome-lantern { position: static; background: transparent; box-shadow: none; } }
 .home-countdown .numerals { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); font-variant-numeric: lining-nums tabular-nums; }
 /* Segmented / tabs: one look everywhere, the nav's sliding sage marker (200 ms) */
 .segmented { position: relative; display: inline-flex; width: max-content; max-width: 100%; gap: var(--space-1); padding: var(--space-1); border-radius: calc(var(--radius-control) + 4px); outline: 2px solid transparent; outline-offset: 2px; background: color-mix(in oklab, var(--sys-fill) 45%, transparent); }
@@ -830,7 +834,7 @@ svg.lucide { stroke-width: 1.5; }
 /* Evening switch inside the letter on phones (A): no gap above the letter */
 .letter-lantern { display: none; }
 @media (max-width: 767px) {
-  :root:not([data-opt-toggle="corner"]) .letter-lantern { display: inline-grid; position: absolute; top: 8px; right: 8px; z-index: 1; }
+  :root:not([data-opt-toggle="corner"]) .letter-lantern { display: inline-flex; position: absolute; top: 8px; right: 8px; z-index: 1; }
   :root:not([data-opt-toggle="corner"]):not([data-sealed]) .chrome-lantern { display: none; }
   :root:not([data-opt-toggle="corner"]) .letter-wrap { padding-top: 8px; }
 }
@@ -894,7 +898,13 @@ svg.lucide { stroke-width: 1.5; }
 @media (min-width: 1024px) and (hover: hover) { .desk-tab:hover { transform: translateX(8px); } }
 /* Evening mode switch (v3 S): the new mode grows in a circle from the toggle */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-::view-transition-new(root) { animation: mode-reveal var(--duration-rise) var(--ease-letter); }
+/* One reveal, nothing else moving inside it (6 Oct): the photo swaps instantly under the snapshot, so it never
+   fades twice. Slower and eased at both ends so the edge glides rather than snaps. */
+::view-transition-new(root) { animation: mode-reveal var(--duration-mode) var(--ease-mode); }
+:root[data-vt="fade"]::view-transition-new(root) { animation: mode-fade var(--duration-mode) var(--ease-mode); }
+:root[data-vt="fade"]::view-transition-old(root) { animation: mode-fade var(--duration-mode) var(--ease-mode) reverse; }
+@keyframes mode-fade { from { opacity: 0; } to { opacity: 1; } }
+:root[data-vt] .scene-layer, :root[data-vt] * { transition: none !important; }
 @keyframes mode-reveal { from { clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0)); } to { clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0)); } }
 /* Segmented choice: a small tick in a slot, mirrored by an equal empty slot on the right, so every label sits centred */
 .segmented[role="radiogroup"] .segmented-item { justify-content: center; padding-inline: var(--space-3); }

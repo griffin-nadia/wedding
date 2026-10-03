@@ -12,6 +12,37 @@ const set = (name: string, fmt: string) => [800, 1200, 1600].map((w) => `${base}
  * Graded with --scene-filter. Changes cross-fade (600 ms); nothing moves under reduced motion.
  */
 export function Scene({ source, dim = false, className }: { source: SceneSource; dim?: boolean; className?: string }) {
+  if ("photo" in source) return <PhotoPair name={source.photo} dim={dim} className={className} />
+  return <Layers source={source} dim={dim} className={className} />
+}
+
+/**
+ * Their photo, one per mode (Jehan, 6 Oct). Both stay mounted (the other mode's loads once the page is idle),
+ * so switching mode never waits on a download: the toggle waits for the new photo to decode, then the whole
+ * page changes in one reveal. Without View Transitions the photos cross-fade.
+ */
+const PAIR = ["kyoto-view", "night-lane"] as const
+function PhotoPair({ name, dim, className }: { name: string; dim: boolean; className?: string }) {
+  const [both, setBoth] = useState(false)
+  useEffect(() => {
+    const go = () => setBoth(true)
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback
+    if (document.readyState === "complete") { if (idle) idle(go); else setTimeout(go, 1500) }
+    else window.addEventListener("load", () => (idle ? idle(go) : setTimeout(go, 1500)), { once: true })
+  }, [])
+  return (
+    <div aria-hidden className={cn("scene fixed inset-0 -z-10 overflow-hidden bg-[var(--scene-scrim)]", dim && "scene-dim", className)}>
+      {PAIR.filter((n) => n === name || both).map((n) => (
+        <div key={n} data-photo={n} className={cn("scene-layer absolute inset-0", n === name ? "opacity-100" : "opacity-0")}>
+          <PhotoScene name={n} priority={n === name} onReady={() => {}} />
+        </div>
+      ))}
+      <div className="scene-scrim absolute inset-0" />
+    </div>
+  )
+}
+
+function Layers({ source, dim = false, className }: { source: SceneSource; dim?: boolean; className?: string }) {
   const key = "photo" in source ? source.photo : "plate" in source ? source.plate : "walk" in source ? "walk" : "paper"
   // Keep the previous scene underneath until the next one has loaded, so changes cross-fade
   const [layers, setLayers] = useState<{ key: string; source: SceneSource; ready: boolean }[]>([{ key, source, ready: false }])

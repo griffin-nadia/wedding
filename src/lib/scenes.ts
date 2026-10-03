@@ -11,8 +11,6 @@ export type SceneName = keyof typeof meta
 export type SceneSource = { photo: SceneName } | { plate: string; fallback?: SceneName } | { paper: true } | { walk: true }
 export const SCENES = meta as Record<SceneName, { w: number; h: number; lqip: string }>
 
-const LIGHT: Record<string, SceneName> = { home: "kyoto-view", day: "castle", travel: "cedar-forest", stay: "cedar-forest", qa: "stone-lantern" }
-const NIGHT: Record<string, SceneName> = { home: "night-lane", day: "pontocho", travel: "pontocho", stay: "pontocho", qa: "pontocho" }
 
 // The four painted plates (from Nadia, Jehan or commissioned), named now so dropping art in changes nothing else
 const PLATES: Record<string, string> = { home: "morning-hills", day: "the-garden", travel: "the-road", qa: "morning-hills" }
@@ -27,16 +25,15 @@ export function sceneKind(option: string | null, preset: string | null): SceneKi
   return "photo"
 }
 /** Behind the sealed envelope only: the photo with their faces (the one photo on the launch site). */
-export const arrivalScene = (theme: Theme): SceneSource => ({ photo: theme === "lantern" ? "night-lane" : "kyoto-view" })
+export const arrivalScene = (theme: Theme): { photo: SceneName } => ({ photo: theme === "lantern" ? "night-lane" : "kyoto-view" })
 
 export function sceneFor(page: string, theme: Theme, kind: SceneKind = "paper"): SceneSource {
-  const map = theme === "lantern" ? NIGHT : LIGHT
-  const photo = map[page] ?? map.home
+  // One photo per mode on every page (Jehan, 6 Oct): the arrival photo, kyoto-view by day, night-lane in Lantern
+  const photo = arrivalScene(theme).photo
   if (kind === "paper") return { paper: true }
   if (kind === "walk") return { walk: true }
   if (kind === "plate") return { plate: theme === "lantern" ? "lantern-night" : PLATES[page] ?? PLATES.home, fallback: photo }
-  // The one photo of them (the same as behind the envelope) on every page, for now
-  return arrivalScene(theme)
+  return { photo }
 }
 
 export const pageOf = (pathname: string) => {

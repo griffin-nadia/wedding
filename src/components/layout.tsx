@@ -9,7 +9,7 @@ import { useHousehold } from "@/lib/household"
 import { arrivalScene, pageOf, sceneFor, sceneKind } from "@/lib/scenes"
 import { setStoryLetter, usePageTurn, usePaperScroll } from "@/lib/page-turn"
 import { usePaperGL } from "@/components/letter/use-paper-gl"
-import { LanternToggle } from "@/components/lantern-toggle"
+import { ModeSwitches } from "@/components/lantern-toggle"
 import { HomeCountdown } from "@/components/home-countdown"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
@@ -113,13 +113,13 @@ export function Layout() {
         <Nav />
         {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-(length:--type-ui-size) font-medium md:inline-flex">{t.nav.rsvp}</Link>}
         {stampsOn && <Suspense><StampBook /></Suspense>}
-        <LanternToggle className="chrome-lantern" />
+        <ModeSwitches className="chrome-lantern" />
       </header>
 
       <main className="letter-wrap">
         <Arrival key={resealed} sealedAgain={resealed > 0} enabled={page === "home"} onOpened={() => setSealed(false)}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
-            <LanternToggle className="letter-lantern" />
+            <ModeSwitches className="letter-lantern" />
             <div key={pathname} className="letter-body">
               <Outlet />
             </div>

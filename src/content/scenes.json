@@ -8,25 +8,5 @@
   "w": 1600,
   "h": 2000,
   "lqip": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAACQBQCdASoYAB4APu1gq02ppSQiMBgMATAdiWIAtRr1QXAkytnlYjojKIitdW3i99IB2e99AAD+7pDtATm1CFmss1GKbOSiRRUF30HI9x9Cluwxg36Fl3OoGzMN6+SKK/ZTDdTc2tTdQkJi4TiJhvCIMwOkVy6JMifirPt5GgQ2ZCqFE14pKS8gawAAAA=="
- },
- "castle": {
-  "w": 1600,
-  "h": 2133,
-  "lqip": "data:image/webp;base64,UklGRsIAAABXRUJQVlA4ILYAAAAQBgCdASoYACAAPtlgo02oJiMiN/qoAQAbCWoArDlBUoAWhkQ0tDKoWvxizyvgFw0Pa71pkhfneQAA/qIN7ocQ9aMCEOWba/Oio7BazNvPJE+bPzVYucv9+pjrSxVvCoCBSIAdlYwyBMlkL/BqTzTbVtUWHhTuhnyaGYJ0JyFL42xjOn5v/wsR7+yft3hxoVF4mnuXMghjlxvnFtapJ69hzY2HmTaNXrtGzXsTvV2JC+S6ZvoAAA=="
- },
- "cedar-forest": {
-  "w": 1600,
-  "h": 2133,
-  "lqip": "data:image/webp;base64,UklGRoQAAABXRUJQVlA4IHgAAABwBACdASoYACAAPu1uq1GppiOiqAqpMB2JZQDDNAxKcV8acj8bnoTIp6cgAAD+vW8FQONhpQSEmd7EQBtSD2qhpAmlhLQbpHQUp3vloEpKu/PuNdZLdcocPzvr0rzV4/9Mgj4vv9ZM1XpDJ30RJA7NSWJFR+GAAAA="
- },
- "stone-lantern": {
-  "w": 1600,
-  "h": 2133,
-  "lqip": "data:image/webp;base64,UklGRsYAAABXRUJQVlA4ILoAAAAwBgCdASoYACAAPu1kqU2ppaQiMAgBMB2JQBXJ3tAbA2KmzsrDd0UHIHBq3axG9diCu5remKHDhMoAAP7rnNwwYIi9wxUW5thUsH1FCxJtmsz9ZDR6kjaLm4GHyk9A/Fe1TJsWHqAINnEfif8wqRWXjQtlb3nc+4baIHwFZe/OcH9xKyZ+A+rzaoq/QM8zRwF6Pn9del534fo3+bFBcuwfTgWpxdauhqXF7rQt7piS+lxZwq9heJgV6AA="
- },
- "pontocho": {
-  "w": 1600,
-  "h": 2133,
-  "lqip": "data:image/webp;base64,UklGRpoAAABXRUJQVlA4II4AAABQBQCdASoYACAAPu1eqE4ppKOiMBgMATAdiWMAwP0gBKgAS/3/SXFOhlGmrvnbaWPPNAAA/vhNwiC7ddxo888x3+B0LaFRvMidDUvBf0Vd+4nlWjw6P75TvG6q0DCCL80xxBoVjsTUw7gYUkGYv/rGml44aKEzQtW669K7h2mGS0WNnxkdWZqDeWp3OAAA"
  }
 }

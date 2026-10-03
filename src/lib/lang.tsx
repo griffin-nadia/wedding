@@ -26,9 +26,15 @@ export function LangProvider({ children }: { children: ReactNode }) {
   }, [lang])
   // Crew preview (v3 S): the Options panel's Language switch, until the Japanese is checked and guests get one
   useEffect(() => {
-    const on = () => { const v = document.documentElement.getAttribute("data-opt-lang"); setLangState(v === "ja" ? "ja" : "en"); if (v !== "ja") document.documentElement.lang = "en" }
+    // Only follow the Options switch when it changes, so it never undoes the あ / A button
+    let prev = document.documentElement.getAttribute("data-opt-lang")
+    const on = () => {
+      const v = document.documentElement.getAttribute("data-opt-lang")
+      if (v === prev) return
+      prev = v; setLangState(v === "ja" ? "ja" : "en"); document.documentElement.lang = v === "ja" ? "ja" : "en"
+    }
     window.addEventListener("ng-tune", on)
-    if (document.documentElement.getAttribute("data-opt-lang") === "ja") on()
+    if (prev === "ja") setLangState("ja")
     return () => window.removeEventListener("ng-tune", on)
   }, [])
   const setLang = (l: Lang) => {
