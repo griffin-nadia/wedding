@@ -462,7 +462,7 @@
   position: relative;
   min-height: 100svh;
   overflow-x: clip; /* the paper blur ring may reach past the screen edge on phones */
-  padding: 72px 12px calc(64px + 12px + env(safe-area-inset-bottom) + 16px);
+  padding: 72px 12px calc(66px + 12px + env(safe-area-inset-bottom) + 16px); /* dock (64 + its border), its offset, then 16 */
 }
 @media (min-width: 768px) { .letter-wrap { padding: var(--letter-top) 24px var(--space-8); } }
 @media (min-width: 1024px) { .letter-wrap { padding-left: var(--letter-left); } }
@@ -791,3 +791,10 @@ svg.lucide { stroke-width: 1.5; }
 /* Song versions (v3 Q3): the "N versions" row reads as a link under its song; versions sit indented under it */
 .combo-option-more { min-height: 44px; padding-left: calc(var(--space-3) + 32px + var(--space-3)); color: var(--sys-link); font-size: var(--type-small-size); text-decoration: underline; text-underline-offset: 3px; }
 .combo-option-version { padding-left: calc(var(--space-3) + 32px + var(--space-3)); }
+/* Home countdown (v3 Q6): five 48px paper tiles under the card, outside the letter */
+.home-count { width: 100%; max-width: var(--letter-width, 620px); margin: var(--space-4) auto 0; }
+.home-count-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-2); }
+.home-count-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 48px; padding: 0; border-radius: var(--radius-control); border: 1px solid var(--sys-line); background: var(--letter-bg); box-shadow: var(--letter-shadow); }
+.home-count-tile .numerals { font-family: var(--font-display); font-size: var(--type-lead-size); line-height: 24px; color: var(--sys-ink); }
+.home-count-unit { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-muted); }
+@media (min-width: 1024px) { .home-count { margin-left: 0; } }

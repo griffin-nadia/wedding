@@ -11,6 +11,7 @@ import { CreditMark } from "@/components/credit-mark"
 import { setStoryLetter, usePageTurn, usePaperScroll } from "@/lib/page-turn"
 import { usePaperGL } from "@/components/letter/use-paper-gl"
 import { LanternToggle } from "@/components/lantern-toggle"
+import { HomeCountdown } from "@/components/home-countdown"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase } from "@/components/envelope"
@@ -135,6 +136,7 @@ export function Layout() {
             <SignOff />
           </Letter>
         </Arrival>
+        {page === "home" && !sealed && <HomeCountdown />}
       </main>
       <PhoneQr />
       <CreditMark />

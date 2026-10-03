@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 
 type Parts = { months: number; days: number; hours: number; mins: number; secs: number }
 
-function partsAt(now: Date): Parts {
+export function partsAt(now: Date): Parts {
   const end = new Date(config.weddingStart)
   if (now >= end) return { months: 0, days: 0, hours: 0, mins: 0, secs: 0 }
   const jst = (d: Date) => new Date(d.getTime() + 9 * 3_600_000)
@@ -21,7 +21,7 @@ function partsAt(now: Date): Parts {
 }
 
 /** "1 year and 11 days to go": a calm sentence for screen readers (no ticking). */
-function sentence(p: Parts) {
+export function sentence(p: Parts) {
   const y = Math.floor(p.months / 12), m = p.months % 12
   const bits = [y && `${y} year${y > 1 ? "s" : ""}`, m && `${m} month${m > 1 ? "s" : ""}`, p.days && `${p.days} day${p.days > 1 ? "s" : ""}`].filter(Boolean) as string[]
   if (!bits.length) return "Today's the day"
