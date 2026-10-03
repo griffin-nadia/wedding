@@ -13,22 +13,23 @@ export type ComboStatus = "idle" | "loading" | "results" | "empty" | "error"
  * empty and error rows say what to do ("just type it"). WAI-ARIA combobox with listbox.
  */
 export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag, query, onQuery, options, onPick, status, emptyText, errorText,
-  placeholder, action, maxLength = 200, removeLabel = (s) => `Remove ${s}`, openOnFocus = false, className }: {
+  placeholder, action, maxLength = 200, removeLabel = (s) => `Remove ${s}`, openOnFocus = false, forceOpen = false, className }: {
   id?: string; label: string; help?: ReactNode; error?: string
   tags?: Option[]; onRemoveTag?: (o: Option) => void
   query: string; onQuery: (q: string) => void
   options: Option[]; onPick: (o: Option) => void
   status: ComboStatus; emptyText?: string; errorText?: string
-  placeholder?: string; action?: ReactNode; maxLength?: number; removeLabel?: (s: string) => string; openOnFocus?: boolean; className?: string
+  placeholder?: string; action?: ReactNode; maxLength?: number; removeLabel?: (s: string) => string; openOnFocus?: boolean; forceOpen?: boolean; className?: string
 }) {
   const auto = useId()
   const id = given ?? `cb-${auto}`
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(forceOpen)
   const [active, setActive] = useState(-1)
   // Skeleton rows only once loading has lasted 150 ms; the last results stay on screen meanwhile
-  const [slow, setSlow] = useState(false)
+  const [slow, setSlow] = useState(forceOpen && status === "loading")
   useEffect(() => {
     if (status !== "loading") { setSlow(false); return }
+    if (forceOpen) { setSlow(true); return }
     const t = setTimeout(() => setSlow(true), 150)
     return () => clearTimeout(t)
   }, [status])
@@ -57,7 +58,7 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
             value={query} maxLength={maxLength} autoComplete="off" placeholder={tags.length ? "" : placeholder}
             onChange={(e) => { onQuery(e.target.value); setOpen(true) }}
             onFocus={() => (openOnFocus || query.trim().length > 1) && setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 150)}
+            onBlur={() => setTimeout(() => setOpen(forceOpen), 150)}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, options.length - 1)) }
               else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)) }

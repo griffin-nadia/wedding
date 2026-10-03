@@ -55,6 +55,7 @@ const GROUPS: Group[] = [
       { id: "colour", name: "Colour", purpose: "Brand tokens are Nadia's palette. System tokens say what each colour is for, per mode. Components only use system tokens.", render: () => <Colour /> },
       { id: "type", name: "Type", purpose: "Display (names, numerals), heading and body are separate scales. Content from the sheet is always body.", render: () => <Type /> },
       { id: "space", name: "Space and radius", purpose: "4px grid, 8px vertical rhythm. Radius 4 chips and inputs, 8 cards, 12 buttons, 24 the letter.", render: () => <Space /> },
+      { id: "between", name: "In-between states", purpose: "Every component, five states: idle, loading (after 150 ms, previous content stays, no layout shift), success (settles in 300 ms), error (inline, says what to do), empty (says what to do instead).", render: () => <Between /> },
       { id: "motion", name: "Motion and delight", purpose: "Paper rises and settles. One signature moment per screen, always with a still version.", render: () => <Motion /> },
     ],
   },
@@ -181,6 +182,40 @@ function ChipDemo() {
         <Row key={s} label={s}><span {...force(s)} className="state chip">Vegetarian</span></Row>
       ))}
     </>
+  )
+}
+
+const na = <span className="text-sm text-muted-foreground">n/a</span>
+function Between() {
+  const cols = ["Idle", "Loading", "Success", "Error", "Empty"]
+  const rows: [string, ReactNode[]][] = [
+    ["Button", [<Button key="i">Send our reply</Button>, <Button key="l" aria-busy>Sending…</Button>, <Button key="s" variant="outline">Sent</Button>, <span key="e" className="flex flex-col gap-2"><Button>Try again</Button><span className="text-xs text-destructive">We couldn't send that. Try again.</span></span>, na]],
+    ["Inline submit", [
+      <InlineSubmit key="i" id="b-i1" label="Your email" submitLabel="Send my link" onSubmit={() => {}} />,
+      <InlineSubmit key="l" id="b-i2" label="Your email" submitLabel="Send my link" busy defaultValue="sam@example.com" onSubmit={() => {}} />,
+      <p key="s" role="status" className="rounded-md bg-section-alt p-3 text-sm">Your link is on its way.</p>,
+      <InlineSubmit key="e" id="b-i4" label="Your email" submitLabel="Send my link" error="That doesn't look like an email address." defaultValue="sam@" onSubmit={() => {}} />, na]],
+    ["Combobox", [
+      <Combobox key="i" id="b-c1" label="A song" query="" onQuery={() => {}} options={[]} onPick={() => {}} status="idle" placeholder="Search for a song" />,
+      <Combobox key="l" id="b-c2" label="A song" query="sept" onQuery={() => {}} options={[]} onPick={() => {}} status="loading" forceOpen />,
+      <Combobox key="s" id="b-c3" label="A song" query="sept" onQuery={() => {}} options={[{ key: "1", label: "September", sub: "Earth, Wind & Fire", img: null }]} onPick={() => {}} status="results" forceOpen />,
+      <Combobox key="e" id="b-c4" label="A song" query="sept" onQuery={() => {}} options={[]} onPick={() => {}} status="error" errorText="Search isn't working right now. Just type it." forceOpen />,
+      <Combobox key="m" id="b-c5" label="A song" query="zzzz" onQuery={() => {}} options={[]} onPick={() => {}} status="empty" emptyText='Nothing matched, just type it.' forceOpen />]],
+    ["Text field", [<Input key="i" aria-label="Name" />, na, <Input key="s" aria-label="Name" defaultValue="Robin" data-filled />, <Input key="e" aria-label="Name" aria-invalid defaultValue="Robin" />, na]],
+    ["Fortune card", [<FortuneCard key="i" token="kit-between" />, na, na, na, na]],
+    ["Skeleton", [na, <div key="l" className="flex flex-col gap-2"><Skeleton className="h-4 w-40" /><Skeleton className="h-11 w-full" /></div>, na, na, na]],
+  ]
+  return (
+    <div className="flex flex-col gap-6">
+      {rows.map(([name, cells]) => (
+        <section key={name} aria-label={name} className="flex flex-col gap-3 border-b border-border pb-6 last:border-b-0">
+          <h3 className="font-semibold text-foreground">{name}</h3>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-x-4 gap-y-6">
+            {cells.map((c, i) => <div key={cols[i]} className={cn("flex flex-col gap-2", name === "Combobox" ? "min-h-64" : "min-h-24")}><span className="label-caps text-muted-foreground">{cols[i]}</span>{c}</div>)}
+          </div>
+        </section>
+      ))}
+    </div>
   )
 }
 
