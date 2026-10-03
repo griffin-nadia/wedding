@@ -27,13 +27,7 @@
   --color-link: var(--link);
   --color-success: var(--success);
   --color-leaf: var(--leaf);
-  --color-glow: var(--glow);
   --color-section-alt: var(--section-alt);
-  --color-band: var(--band);
-  --color-on-band: var(--on-band);
-  --color-on-band-accent: var(--on-band-accent);
-  --color-leaf-a: var(--leaf-a);
-  --color-leaf-b: var(--leaf-b);
 
   /* Radius scale (4 · 8 · 12 · 24). Tailwind's names land on it so nothing sits between steps. */
   --radius-xs: var(--radius-chip);
@@ -43,10 +37,6 @@
   --radius-xl: var(--radius-button);
   --radius-2xl: var(--radius-button);
   --radius-3xl: var(--radius-letter);
-  --radius-chip: var(--radius-chip);
-  --radius-card: var(--radius-card);
-  --radius-button: var(--radius-button);
-  --radius-letter: var(--radius-letter);
 
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
@@ -60,24 +50,23 @@
 /* Three sizes per screen. Tailwind's text steps collapse onto the scale: xs = small print (14),
    sm = note (15/16), base to xl = body (18/19), 2xl and up = title (28/34). Names use the names utility. */
 @theme inline {
-  --text-xs: var(--text-small);
-  --text-xs--line-height: var(--leading-small);
-  --text-sm: var(--text-note);
-  --text-sm--line-height: var(--leading-note);
-  --text-base: var(--text-body);
-  --text-base--line-height: var(--leading-body);
-  --text-lg: var(--text-body);
-  --text-lg--line-height: var(--leading-body);
-  --text-xl: var(--text-body);
-  --text-xl--line-height: var(--leading-body);
-  --text-2xl: var(--text-title);
-  --text-2xl--line-height: var(--leading-title);
-  --text-3xl: var(--text-title);
-  --text-3xl--line-height: var(--leading-title);
-  --text-4xl: var(--text-title);
-  --text-4xl--line-height: var(--leading-title);
+  --text-xs: var(--type-small-size);
+  --text-xs--line-height: var(--type-small-leading);
+  --text-sm: var(--type-note-size);
+  --text-sm--line-height: var(--type-note-leading);
+  --text-base: var(--type-body-size);
+  --text-base--line-height: var(--type-body-leading);
+  --text-lg: var(--type-body-size);
+  --text-lg--line-height: var(--type-body-leading);
+  --text-xl: var(--type-body-size);
+  --text-xl--line-height: var(--type-body-leading);
+  --text-2xl: var(--type-heading-size);
+  --text-2xl--line-height: var(--type-heading-leading);
+  --text-3xl: var(--type-heading-size);
+  --text-3xl--line-height: var(--type-heading-leading);
+  --text-4xl: var(--type-heading-size);
+  --text-4xl--line-height: var(--type-heading-leading);
   --ease-letter: var(--ease-letter);
-  --shadow-letter: var(--shadow-letter);
 }
 
 @layer base {
@@ -96,7 +85,7 @@
   h1, h2, h3 {
     @apply font-display font-normal;
     color: var(--foreground);
-    letter-spacing: var(--tracking-title);
+    letter-spacing: var(--type-heading-tracking);
   }
   :lang(ja) body,
   [lang="ja"] {
@@ -114,18 +103,18 @@
 /* Type roles (see docs/system.md). Label: Inter 12 caps, at most one per card. */
 @utility label-caps {
   font-family: var(--font-label);
-  font-size: var(--text-label);
-  line-height: var(--leading-label);
+  font-size: var(--type-label-size);
+  line-height: var(--type-label-leading);
   font-weight: 500;
-  letter-spacing: var(--tracking-label);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
 }
 @utility eyebrow {
   font-family: var(--font-label);
-  font-size: var(--text-label);
-  line-height: var(--leading-label);
+  font-size: var(--type-label-size);
+  line-height: var(--type-label-leading);
   font-weight: 500;
-  letter-spacing: var(--tracking-label);
+  letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
   color: var(--eyebrow);
 }
@@ -150,17 +139,17 @@
 /* Notes in Nadia and Griffin's voice (Klee One). */
 @utility hand {
   font-family: var(--font-hand);
-  font-size: var(--text-note);
-  line-height: var(--leading-note);
+  font-size: var(--type-note-size);
+  line-height: var(--type-note-leading);
   font-feature-settings: normal;
 }
 
 /* Title: Oranienbaum, sentence case, a 40px moss rule under it. Green as a material, not an overlay. */
 @utility heading {
   font-family: var(--font-display);
-  font-size: var(--text-title);
-  line-height: var(--leading-title);
-  letter-spacing: var(--tracking-title);
+  font-size: var(--type-heading-size);
+  line-height: var(--type-heading-leading);
+  letter-spacing: var(--type-heading-tracking);
   color: var(--foreground);
   padding-bottom: var(--space-4);
   position: relative;
@@ -189,9 +178,9 @@
 /* The names: Oranienbaum 56 → 88, tight, "&" in rust */
 @utility names {
   font-family: var(--font-display);
-  font-size: var(--text-names);
-  line-height: var(--leading-names);
-  letter-spacing: var(--tracking-names);
+  font-size: var(--type-display-names-size);
+  line-height: var(--type-display-names-leading);
+  letter-spacing: var(--type-display-names-tracking);
   color: var(--foreground);
 }
 
@@ -199,54 +188,55 @@
    Every interactive thing: default · hover (pointer only, border only) · focus-visible (2px ring, 2px offset)
    · pressed (secondary, .98) · selected (secondary, 2px primary) · disabled · error. docs/system.md. */
 @utility state {
-  border: 1px solid var(--state-border);
-  background-color: var(--card);
+  border: 1px solid var(--input-line);
+  background-color: var(--input-bg);
   transition: border-color var(--duration-quick) var(--ease-paper), box-shadow var(--duration-quick) var(--ease-paper),
     background-color var(--duration-quick) var(--ease-paper), transform var(--duration-press) var(--ease-paper);
   outline: 2px solid transparent;
   outline-offset: 2px;
   @media (hover: hover) {
-    &:hover:not(:disabled, [aria-disabled="true"], [aria-invalid="true"]) { border-color: var(--state-hover-border); }
+    &:hover:not(:disabled, [aria-disabled="true"], [aria-invalid="true"]) { border-color: var(--input-line-hover); }
   }
-  &:focus-visible, &:has(:focus-visible) { outline-color: var(--state-focus-ring); }
-  &:active:not(:disabled, input, textarea, [aria-disabled="true"]) { background-color: var(--state-pressed-fill); transform: scale(var(--press-scale)); }
+  &:focus-visible, &:has(:focus-visible) { outline-color: var(--input-focus); }
+  &:active:not(:disabled, input, textarea, [aria-disabled="true"]) { background-color: var(--input-pressed-bg); transform: scale(var(--press-scale)); }
   &[aria-pressed="true"], &[aria-selected="true"], &[data-state="active"], &:has([data-state="checked"]), &[data-selected="true"] {
-    background-color: var(--state-selected-fill);
-    border-color: var(--state-selected-border);
-    box-shadow: inset 0 0 0 1px var(--state-selected-border);
+    background-color: var(--input-selected-bg);
+    border-color: var(--input-selected-line);
+    box-shadow: inset 0 0 0 1px var(--input-selected-line);
   }
   &:disabled, &[aria-disabled="true"] {
-    background-color: var(--state-disabled-fill);
+    background-color: var(--input-disabled-bg);
     color: color-mix(in oklab, currentColor 50%, transparent);
     cursor: not-allowed;
   }
   &[aria-invalid="true"] {
-    border-color: var(--state-error-border);
-    box-shadow: inset 0 0 0 1px var(--state-error-border);
+    border-color: var(--input-error);
+    box-shadow: inset 0 0 0 1px var(--input-error);
   }
 }
-/* Text fields (inputs, textarea, the song combobox): the same states, no press */
+/* Text fields (inputs, textarea, the song combobox): the same states, no press. Caret in the accent. */
 @utility field {
-  height: var(--control-height);
+  height: var(--input-height);
   width: 100%;
-  border-radius: var(--radius-chip);
-  padding-inline: var(--space-4);
-  font-size: var(--text-body);
-  color: var(--foreground);
-  &::placeholder { color: var(--muted-foreground); }
+  border-radius: var(--input-radius);
+  padding-inline: var(--input-pad);
+  font-size: var(--type-body-size);
+  color: var(--input-ink);
+  caret-color: var(--input-caret);
+  &::placeholder { color: var(--sys-ink-muted); }
 }
-/* Primary action: primary fill, hover mixes 8% foreground, pressed .98 */
+/* Primary action: accent fill, hover mixes 8% ink, pressed .98 */
 @utility btn-primary {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
+  background-color: var(--button-bg);
+  color: var(--button-ink);
   border: 1px solid transparent;
   outline: 2px solid transparent;
   outline-offset: 2px;
   transition: background-color var(--duration-quick) var(--ease-paper), transform var(--duration-press) var(--ease-paper);
-  @media (hover: hover) { &:hover:not(:disabled) { background-color: var(--primary-hover); } }
-  &:focus-visible { outline-color: var(--state-focus-ring); }
+  @media (hover: hover) { &:hover:not(:disabled) { background-color: var(--button-bg-hover); } }
+  &:focus-visible { outline-color: var(--input-focus); }
   &:active:not(:disabled) { transform: scale(var(--press-scale)); }
-  &:disabled { background-color: var(--state-disabled-fill); color: color-mix(in oklab, var(--foreground) 50%, transparent); border-color: var(--border); cursor: not-allowed; }
+  &:disabled { background-color: var(--input-disabled-bg); color: color-mix(in oklab, var(--sys-ink) 50%, transparent); border-color: var(--sys-line); cursor: not-allowed; }
 }
 /* Quiet text action (Change my reply, Edit): underline on hover, same focus ring */
 @utility btn-text {
@@ -259,7 +249,7 @@
   border-radius: var(--radius-chip);
   transition: text-decoration-thickness var(--duration-quick);
   @media (hover: hover) { &:hover { text-decoration-thickness: 2px; } }
-  &:focus-visible { outline-color: var(--state-focus-ring); }
+  &:focus-visible { outline-color: var(--input-focus); }
 }
 
 /* Press feedback for anything else tappable: instant and small */
@@ -297,27 +287,6 @@
   main { max-width: none !important; padding: 0 !important; }
   .page-in { animation: none !important; }
 }
-
-/* Sage section: alternates with cream like a garden path. Small muted text uses chestnut here (5.7:1). */
-@utility section-alt {
-  background-color: var(--section-alt);
-  --muted-foreground: var(--body);
-}
-[data-theme="lantern"] .section-alt {
-  --muted-foreground: var(--kare);
-}
-/* Forest band: one per page at most (footer, success). */
-@utility band {
-  background-color: var(--band);
-  color: var(--on-band);
-  --foreground: var(--on-band);
-  --body: var(--on-band);
-  --muted-foreground: color-mix(in oklab, var(--on-band) 82%, var(--band));
-  --eyebrow: var(--on-band-accent);
-  --link: var(--on-band-accent);
-}
-
-
 
 /* Sections that run edge to edge, past the content column. */
 @utility full-bleed {
@@ -368,10 +337,7 @@
   box-shadow: 0 1px 2px rgb(66 26 5 / 0.08), 0 14px 30px -14px rgb(66 26 5 / 0.35);
   transform: rotate(-2.5deg);
 }
-.photo-placeholder {
-  background-color: var(--muted);
-  background-image: radial-gradient(60% 60% at 30% 25%, color-mix(in oklab, var(--glow) 35%, transparent), transparent 70%);
-}
+.photo-placeholder { background-color: var(--muted); }
 [data-theme="lantern"] .photo-img { filter: saturate(0.95) brightness(0.92); }
 
 /* Edge to edge with no inner padding (for decorative bands). */
@@ -412,3 +378,89 @@
 @keyframes names-settle { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 .names-settle { animation: names-settle 700ms cubic-bezier(.22,1,.36,1) 200ms both; }
 @media (prefers-reduced-motion: reduce) { .names-settle { animation: none; } }
+
+/* ─── Scene and letter (v2) ─────────────────────────────────────────────────── */
+.scene-layer { transition: opacity var(--duration-rise) var(--ease-letter); }
+.scene-photo img { filter: var(--scene-filter); }
+.scene-fill { filter: blur(24px) var(--scene-filter); transform: scale(1.12); }
+.scene-scrim { background: transparent; transition: background-color var(--duration-settle) var(--ease-paper); }
+.scene-dim .scene-scrim { background: rgb(var(--sys-shadow-tint) / 0.45); }
+[data-theme="lantern"] .scene-dim .scene-scrim { background: rgb(0 0 0 / 0.5); }
+@media (min-width: 1024px) {
+  /* Clear photo on the right where the faces are; the letter sits over the soft fill on the left */
+  .scene-photo {
+    left: auto;
+    width: calc(100vw - var(--letter-left) - var(--letter-width) + 160px);
+    mask-image: linear-gradient(to right, transparent, #000 160px);
+  }
+}
+@media (prefers-reduced-motion: reduce) { .scene-layer { transition: none; } }
+
+.letter-wrap {
+  position: relative;
+  min-height: 100svh;
+  padding: 72px 12px calc(64px + env(safe-area-inset-bottom) + 16px);
+}
+@media (min-width: 768px) { .letter-wrap { padding: var(--letter-top) 24px var(--space-8); } }
+@media (min-width: 1024px) { .letter-wrap { padding-left: var(--letter-left); } }
+
+.letter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--letter-gap);
+  max-width: var(--letter-width);
+  margin-inline: auto;
+  padding: var(--letter-pad);
+  border-top: var(--letter-edge) solid var(--letter-edge-color);
+  border-radius: var(--letter-radius);
+  background: var(--letter-bg);
+  color: var(--letter-ink);
+  box-shadow: var(--letter-shadow);
+  outline: none;
+}
+@media (min-width: 1024px) { .letter { margin-inline: 0; } }
+/* A soft blur of the scene within 24px of the paper edge */
+.letter::after {
+  content: "";
+  position: absolute;
+  inset: -24px;
+  z-index: -1;
+  border-radius: calc(var(--letter-radius) + 24px);
+  backdrop-filter: blur(var(--letter-blur));
+  -webkit-backdrop-filter: blur(var(--letter-blur));
+  mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent),
+    linear-gradient(to bottom, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+  pointer-events: none;
+}
+.letter-body { display: flex; flex-direction: column; gap: var(--letter-gap); }
+
+/* Site bar: thin bar on top from 768; on phones only the Lantern button shows up top and the nav is a tab bar */
+.site-bar { position: fixed; z-index: 40; top: 0; inset-inline: 0; display: flex; align-items: center; justify-content: flex-end; height: 56px; padding: 0 12px; pointer-events: none; }
+.site-bar > * { pointer-events: auto; }
+.site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--sys-ink); }
+.theme-toggle { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); background: var(--letter-bg); color: var(--sys-ink); box-shadow: var(--shadow-paper); outline: 2px solid transparent; outline-offset: 2px; }
+.theme-toggle:focus-visible { outline-color: var(--input-focus); }
+.site-nav { position: fixed; inset-inline: 0; bottom: 0; background: color-mix(in oklab, var(--letter-bg) 94%, transparent); border-top: 1px solid var(--sys-line); padding-bottom: env(safe-area-inset-bottom); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.site-nav ul { display: grid; grid-template-columns: repeat(5, 1fr); height: 64px; }
+.site-nav li { display: flex; }
+.site-nav-link { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-family: var(--font-label); font-size: var(--type-label-size); line-height: var(--type-label-leading); font-weight: 500; color: var(--sys-ink-muted); outline: 2px solid transparent; outline-offset: -4px; border-radius: var(--radius-card); transition: color var(--duration-quick); }
+.site-nav-link svg { padding: 2px 12px; box-sizing: content-box; border-radius: var(--radius-pill); transition: background-color var(--duration-quick); }
+.site-nav-link.is-active { color: var(--sys-ink); }
+.site-nav-link.is-active svg { background: var(--sys-fill); }
+.site-nav-link:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .site-nav-link:hover { color: var(--sys-ink); } }
+@media (min-width: 768px) {
+  .site-bar { height: 64px; padding: 0 24px; background: color-mix(in oklab, var(--letter-bg) 90%, transparent); border-bottom: 1px solid color-mix(in oklab, var(--sys-line) 60%, transparent); pointer-events: auto; }
+  .site-nav { position: static; background: none; border: 0; padding: 0; backdrop-filter: none; -webkit-backdrop-filter: none; margin-right: var(--space-4); }
+  .site-nav ul { display: flex; gap: var(--space-1); height: auto; }
+  .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-3); font-size: 15px; letter-spacing: 0; outline-offset: 2px; }
+  .site-nav-link.is-active { background: var(--sys-fill); }
+  .theme-toggle { box-shadow: none; background: transparent; }
+}
+@media (min-width: 1024px) { .site-bar { padding-left: var(--letter-left); } .site-mark { position: absolute; left: 24px; } }
+
+.skip-link { position: absolute; left: 12px; top: -64px; z-index: 60; padding: var(--space-2) var(--space-4); border-radius: var(--radius-chip); background: var(--letter-bg); color: var(--sys-ink); }
+.skip-link:focus { top: 12px; }

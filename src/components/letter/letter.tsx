@@ -1,0 +1,35 @@
+import { createContext, useContext, useState, type ReactNode } from "react"
+import { useLang } from "@/lib/lang"
+import { SoundToggle } from "@/components/sound-toggle"
+import { cn } from "@/lib/utils"
+
+/**
+ * The letter: the cream sheet every page is read on. 620px wide from 1024 (180px from the left,
+ * 120px from the top), 6px forest edge on top (honey in Lantern), 24px radius, a soft blur of the
+ * scene within 24px of its edge so it reads as paper. The only UI surface on the site.
+ */
+export function Letter({ children, className, as: Tag = "article", ...rest }: { children: ReactNode; className?: string; as?: "article" | "div" | "section" } & React.HTMLAttributes<HTMLElement>) {
+  return <Tag className={cn("letter", className)} {...rest}>{children}</Tag>
+}
+
+/** Sign-off at the end of every letter: their note, the tiny sound toggle, then the one credit line. */
+export function SignOff() {
+  const { t } = useLang()
+  return (
+    <footer className="letter-end mt-auto flex flex-col gap-2 pt-2">
+      <div className="flex items-center justify-between gap-4">
+        <p className="hand text-foreground">{t.letter.signOff}</p>
+        <SoundToggle />
+      </div>
+      <p className="label-caps text-muted-foreground">{t.letter.credit}</p>
+    </footer>
+  )
+}
+
+/** The scene dims while the RSVP letter is open over it. */
+const DimCtx = createContext<{ dim: boolean; setDim: (d: boolean) => void }>({ dim: false, setDim: () => {} })
+export function SceneDimProvider({ children }: { children: ReactNode }) {
+  const [dim, setDim] = useState(false)
+  return <DimCtx.Provider value={{ dim, setDim }}>{children}</DimCtx.Provider>
+}
+export const useSceneDim = () => useContext(DimCtx)

@@ -41,3 +41,8 @@ export function Envelope() {
     </div>
   )
 }
+
+/** Placeholder until the arrival envelope is rebuilt on the scene (v2 step 3). */
+export function Arrival({ children }: { enabled: boolean; children: React.ReactNode }) {
+  return <>{children}</>
+}

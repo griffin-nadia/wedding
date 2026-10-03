@@ -39,7 +39,14 @@ export const en = {
     eyebrow: "The Super Duper Wedding Extravaganza",
     fullTitle: `Nadia Baguley and Griffin Suddaby Super Duper Wedding Extravaganza`,
   },
-  nav: { home: "Home", day: "The day", travel: "Travel", qa: "Q&A" },
+  nav: { home: "Home", day: "The day", travel: "Travel", stay: "Stay", qa: "Q&A" },
+  letter: {
+    signOff: "With love, N & G",
+    credit: "Website designed by Jehan Baguley",
+    skip: "Skip to the letter",
+    open: "Tap to open",
+    openLabel: (name: string) => `Open your invitation${name ? `, ${name}` : ""}`,
+  },
   // Photo captions and alt text (the moment, not the file). Captions are placeholders until the couple writes them.
   photos: {
     "couple-kyoto-view": { alt: `${A} and ${B} smiling on a hill above Kyoto, autumn trees behind them`, caption: "Kyoto, where it all started" },
@@ -192,13 +199,18 @@ export const en = {
       { title: "Getting to the venue", body: "From Kyoto Station it's about a 15 minute taxi (around ¥2,000) or bus 206." },
     ],
   },
+  stay: {
+    title: "Where to stay",
+    mapLink: "See the three areas on a map",
+    mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
+  },
   qa: {
     title: "Q&A",
     items: [
       { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "What should I wear?", a: "No specific dress code, wear something that makes you feel like your best self!" },
       { q: "What about food?", a: "The wedding lunch will be catered and the menu will be determined several months before the wedding. Please let us know your dietary requirements in your RSVP!" },
-      { q: "What happens to my details?", a: `Your RSVP goes only to ${A} and ${B}'s own Google Sheet, not a wedding website company. Only ${A}, ${B} and Jehan can see it. No ads, no tracking, and everything is deleted 3 months after the wedding.` },
+      { q: "What happens to my details?", a: `Your reply goes only to ${A} and ${B}, and only they can see it. No ads, no tracking, and it's all deleted 3 months after the wedding.` },
       { q: "Is it a traditional Japanese wedding?", a: "No, it's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are." },
     ],
     contact: "If you have ANY questions at all please feel free to reach out to either of us at any time - we are always happy to assist whenever we can!",
@@ -276,7 +288,7 @@ export const en = {
     },
     tryAgain: "Try again",
     photos: "Happy for photos with you in them to be shared with other guests",
-    privacy: `Your answers go only to ${A} and ${B}'s own Google Sheet. Only ${A}, ${B} and Jehan can see them, and they're deleted 3 months after the wedding.`,
+    privacy: `Your reply goes only to ${A} and ${B}, and only they can see it.`,
   },
   notFound: {
     title: "Can't find your invite?",

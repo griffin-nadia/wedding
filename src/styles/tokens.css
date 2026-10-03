@@ -1,136 +1,187 @@
 /*
-  Design tokens for the Nadia & Griffin site.
-  Colours are Nadia's palettes (Figma, Autumn palette + the green she asked for).
+  Design tokens for the Nadia & Griffin site. Three layers (docs/system.md):
 
-  Tier 1  primitives  raw colours, named in the Japanese colour style
-  Tier 2  semantic    what things are for (background, primary, border...). shadcn/ui reads these.
+  1 Brand      --brand-*   Nadia's palette, named in the Japanese colour style. Changes only if she changes it.
+  2 System     --sys-*     What things are for (surface, ink, accent, line, focus...), per mode.
+                           Components only ever use system tokens.
+  3 Component  --input-*, --button-*, --letter-*, --countdown-*, --scene-*
+                           Alias system tokens by default, so one component can be tuned without the rest.
 
-  Themes: <html data-theme="autumn"> (light, default) or data-theme="lantern" (Lantern mode, dark).
-  The theme is set before first paint by the inline script in index.html.
-  Text pairs are checked to WCAG AA (4.5:1). Decoration-only colours never carry text.
+  Plus scales that are the same in every mode: type (--type-*), space (--space-*), radius (--radius-*),
+  motion (--duration-*, --ease-*). Every size sits on the 4px grid; vertical rhythm steps in 8.
+
+  Modes: <html data-theme="autumn"> (light, default) or data-theme="lantern" (dark), set before first paint
+  by the inline script in index.html. Text pairs are checked to WCAG AA (4.5:1).
+  Figma mirrors this: Tokens collection (brand/, sys/ and component groups; Light and Lantern modes)
+  and Scale collection (type, space, radius, motion).
 */
 
+/* ─── 1 · Brand ─────────────────────────────────────────────────────────────── */
 :root {
-  /* Tier 1 · Nadia's autumn palette */
-  --kinari: #f3e7d3;        /* warm cream */
-  --shiro-kinari: #fbf5ea;  /* lifted cream */
-  --wara: #e5d0a8;          /* oat straw: fills and borders only */
-  --kogecha: #421a05;       /* Old Study */
-  --kuri: #754b38;          /* chestnut */
-  --nikkei: #8b5a3c;        /* cinnamon brown */
-  --sabi: #a84f32;          /* maple rust */
-  --doro: #a43108;          /* Muddy */
-  --uguisu-cha: #5c5011;    /* Mud Brown, green text */
-  --koke: #727354;          /* moss: leaves, dots, rules, never small text */
-  --inaho: #8a7424;         /* Corn Harvest: decoration */
-  --kabocha: #c8783e;       /* pumpkin: decoration */
-  --kitsune: #cf6811;       /* Cinnamon: decoration */
-  --hachimitsu: #d5a34f;    /* honey: decoration */
-  --mitsu: #ebd48f;         /* Nectar: decoration */
-  --taisha: #b96845;        /* sienna: decoration */
-  /* Greens from Nadia's ivy palette */
-  --sage-paper: #e6e2cc;    /* alternate section background */
-  --forest: #3e4a26;        /* deep green band (cream text 7.8:1) */
-
-  /* Tier 1 · Lantern mode (evening) */
-  --yoru: #22160e;
-  --yoru-raised: #2f2016;
-  --yoru-line: #4a3424;
-  --kare: #b8a07f;
-  --sage: #a3a37e;
-  --leaf-dark: #8e9a5b;
+  /* Autumn */
+  --brand-kinari: #f3e7d3;        /* warm cream: the letter */
+  --brand-shiro-kinari: #fbf5ea;  /* lifted cream: inputs and cards on the letter */
+  --brand-wara: #e5d0a8;          /* oat straw: fills and lines only */
+  --brand-kogecha: #421a05;       /* Old Study: ink */
+  --brand-kuri: #754b38;          /* chestnut: body text */
+  --brand-nikkei: #8b5a3c;        /* cinnamon brown: muted text */
+  --brand-sabi: #a84f32;          /* maple rust: accent */
+  --brand-doro: #a43108;          /* Muddy: links and focus */
+  --brand-uguisu-cha: #5c5011;    /* Mud Brown: success text */
+  --brand-koke: #727354;          /* moss: the rule, the tick, never small text */
+  --brand-kabocha: #c8783e;       /* pumpkin: Lantern accent */
+  --brand-hachimitsu: #d5a34f;    /* honey */
+  --brand-mitsu: #ebd48f;         /* Nectar */
+  --brand-sage-paper: #e6e2cc;    /* sage paper: the second surface */
+  --brand-forest: #3e4a26;        /* forest: the letter's top edge */
+  --brand-danger: #a1260c;
+  /* Lantern (evening) */
+  --brand-yoru: #22160e;
+  --brand-yoru-raised: #2f2016;
+  --brand-yoru-fill: #3d2b1d;
+  --brand-yoru-line: #4a3424;
+  --brand-yoru-sage: #2c2a1c;
+  --brand-kare: #b8a07f;
+  --brand-sage: #a3a37e;
+  --brand-rust-light: #f08a6c;
 }
 
+/* ─── 2 · System (per mode) ─────────────────────────────────────────────────── */
 :root,
 [data-theme="autumn"] {
   color-scheme: light;
-  /* Tier 2 · semantic */
-  --background: var(--kinari);
-  --foreground: var(--kogecha);
-  --card: var(--shiro-kinari);
-  --card-foreground: var(--kogecha);
-  --popover: var(--shiro-kinari);
-  --popover-foreground: var(--kogecha);
-  --primary: var(--sabi);
-  --primary-foreground: var(--shiro-kinari);
-  --secondary: var(--wara);
-  --secondary-foreground: var(--kogecha);
-  --muted: var(--wara);
-  --muted-foreground: var(--nikkei);
-  --accent: var(--wara);
-  --accent-foreground: var(--kogecha);
-  --highlight: var(--hachimitsu);
-  --eyebrow: var(--doro);
-  --link: var(--doro);
-  --body: var(--kuri);
-  --success: var(--uguisu-cha);
-  --leaf: var(--koke);
-  --glow: var(--mitsu);
-  --destructive: #a1260c;
-  --border: var(--wara);
-  --input: var(--wara);
-  --ring: var(--doro);
-  --shadow-tint: 66 26 5; /* Old Study, for warm shadows */
-  --section-alt: var(--sage-paper);
-  --band: var(--forest);
-  --on-band: var(--kinari);
-  --on-band-accent: var(--mitsu);
-  /* Seasons: leaves mix from these greens to these reds as the day gets closer (--season-green %) */
-  --leaf-green: var(--koke);
-  --leaf-green-2: var(--inaho);
-  --leaf-red: var(--sabi);
-  --leaf-red-2: var(--kitsune);
+  --sys-surface: var(--brand-kinari);              /* the letter */
+  --sys-surface-raised: var(--brand-shiro-kinari); /* inputs, cards on the letter */
+  --sys-surface-alt: var(--brand-sage-paper);      /* the second surface (driver card) */
+  --sys-fill: var(--brand-wara);                   /* pressed, selected, skeleton */
+  --sys-ink: var(--brand-kogecha);                 /* names, headings, input text */
+  --sys-ink-soft: var(--brand-kuri);               /* body: never lighter than this */
+  --sys-ink-muted: var(--brand-nikkei);            /* hints, labels */
+  --sys-accent: var(--brand-sabi);                 /* primary button, "&", seal */
+  --sys-accent-ink: var(--brand-shiro-kinari);     /* text on accent */
+  --sys-link: var(--brand-doro);
+  --sys-line: var(--brand-wara);
+  --sys-line-strong: var(--brand-nikkei);          /* hover border */
+  --sys-focus: var(--brand-doro);
+  --sys-success: var(--brand-uguisu-cha);
+  --sys-moss: var(--brand-koke);
+  --sys-danger: var(--brand-danger);
+  --sys-highlight: var(--brand-hachimitsu);
+  --sys-edge: var(--brand-forest);                 /* the letter's top edge */
+  --sys-scene-scrim: var(--brand-kinari);
+  --sys-shadow-tint: 66 26 5;
 }
 
 [data-theme="lantern"] {
   color-scheme: dark;
-  --background: var(--yoru);
-  --foreground: var(--kinari);
-  --card: var(--yoru-raised);
-  --card-foreground: var(--kinari);
-  --popover: var(--yoru-raised);
-  --popover-foreground: var(--kinari);
-  --primary: var(--kabocha);
-  --primary-foreground: var(--yoru);
-  --secondary: #3d2b1d;
-  --secondary-foreground: var(--kinari);
-  --muted: #3d2b1d;
-  --muted-foreground: var(--kare);
-  --accent: #3d2b1d;
-  --accent-foreground: var(--kinari);
-  --highlight: var(--hachimitsu);
-  --eyebrow: var(--hachimitsu);
-  --link: var(--hachimitsu);
-  --body: var(--wara);
-  --success: var(--sage);
-  --leaf: var(--sage);
-  --glow: var(--mitsu);
-  --destructive: #f08a6c;
-  --border: var(--yoru-line);
-  --input: var(--yoru-line);
-  --ring: var(--hachimitsu);
-  --shadow-tint: 0 0 0;
-  --section-alt: #2a1d13;
-  --band: #2c3519;
-  --on-band: var(--kinari);
-  --on-band-accent: var(--mitsu);
-  --leaf-green: var(--leaf-dark);
-  --leaf-green-2: var(--sage);
-  --leaf-red: var(--kabocha);
-  --leaf-red-2: var(--kitsune);
+  --sys-surface: var(--brand-yoru);
+  --sys-surface-raised: var(--brand-yoru-raised);
+  --sys-surface-alt: var(--brand-yoru-sage);
+  --sys-fill: var(--brand-yoru-fill);
+  --sys-ink: var(--brand-kinari);
+  --sys-ink-soft: var(--brand-wara);
+  --sys-ink-muted: var(--brand-kare);
+  --sys-accent: var(--brand-kabocha);
+  --sys-accent-ink: var(--brand-yoru);
+  --sys-link: var(--brand-hachimitsu);
+  --sys-line: var(--brand-yoru-line);
+  --sys-line-strong: var(--brand-kare);
+  --sys-focus: var(--brand-hachimitsu);
+  --sys-success: var(--brand-sage);
+  --sys-moss: var(--brand-sage);
+  --sys-danger: var(--brand-rust-light);
+  --sys-highlight: var(--brand-hachimitsu);
+  --sys-edge: var(--brand-hachimitsu);
+  --sys-scene-scrim: var(--brand-yoru);
+  --sys-shadow-tint: 0 0 0;
 }
 
-/* ─── v2 · The letter ─────────────────────────────────────────────────────────
-   One system: shape, space, type, states and motion. Every size is on the 4px grid,
-   vertical rhythm steps in 8. Figma mirrors these as the Tokens and Scale collections. */
+/* shadcn/ui and Tailwind read these names; they only alias the system layer.
+   Then layer 3, component tokens: each aliases the system so the tuning panel can move one alone. */
+:root,
+[data-theme="autumn"],
+[data-theme="lantern"] {
+  --background: var(--sys-surface);
+  --foreground: var(--sys-ink);
+  --card: var(--sys-surface-raised);
+  --card-foreground: var(--sys-ink);
+  --popover: var(--sys-surface-raised);
+  --popover-foreground: var(--sys-ink);
+  --primary: var(--sys-accent);
+  --primary-foreground: var(--sys-accent-ink);
+  --secondary: var(--sys-fill);
+  --secondary-foreground: var(--sys-ink);
+  --muted: var(--sys-fill);
+  --muted-foreground: var(--sys-ink-muted);
+  --accent: var(--sys-fill);
+  --accent-foreground: var(--sys-ink);
+  --destructive: var(--sys-danger);
+  --border: var(--sys-line);
+  --input: var(--sys-line);
+  --ring: var(--sys-focus);
+  --body: var(--sys-ink-soft);
+  --link: var(--sys-link);
+  --eyebrow: var(--sys-link);
+  --success: var(--sys-success);
+  --leaf: var(--sys-moss);
+  --highlight: var(--sys-highlight);
+  --section-alt: var(--sys-surface-alt);
+  --shadow-tint: var(--sys-shadow-tint);
+
+  /* Letter */
+  --letter-bg: var(--sys-surface);
+  --letter-ink: var(--sys-ink-soft);
+  --letter-edge-color: var(--sys-edge);
+  --letter-edge: 6px;
+  --letter-radius: var(--radius-letter);
+  --letter-width: 620px;
+  --letter-left: 180px;
+  --letter-top: 120px;
+  --letter-pad: var(--space-5);
+  --letter-gap: var(--space-5);
+  --letter-blur: 12px;
+  --letter-shadow: 0 2px 4px rgb(var(--sys-shadow-tint) / 0.1), 0 32px 64px -24px rgb(var(--sys-shadow-tint) / 0.45);
+  /* Inputs: fields, combobox, chips and choice cards share these */
+  --input-bg: var(--sys-surface-raised);
+  --input-ink: var(--sys-ink);
+  --input-line: var(--sys-line);
+  --input-line-hover: var(--sys-line-strong);
+  --input-focus: var(--sys-focus);
+  --input-caret: var(--sys-accent);
+  --input-selected-bg: var(--sys-fill);
+  --input-selected-line: var(--sys-accent);
+  --input-pressed-bg: var(--sys-fill);
+  --input-disabled-bg: var(--sys-surface);
+  --input-error: var(--sys-danger);
+  --input-tick: var(--sys-moss);
+  --input-height: 52px;
+  --input-radius: var(--radius-chip);
+  --input-pad: var(--space-4);
+  /* Buttons */
+  --button-bg: var(--sys-accent);
+  --button-ink: var(--sys-accent-ink);
+  --button-bg-hover: color-mix(in oklab, var(--sys-accent) 92%, var(--sys-ink));
+  --button-height: 52px;
+  --button-radius: var(--radius-button);
+  --button-pad: var(--space-5);
+  /* Countdown */
+  --countdown-ink: var(--sys-ink);
+  --countdown-bg: var(--sys-surface-raised);
+  --countdown-line: var(--sys-line);
+  /* Scene grade: saturate .92, contrast .95, warm tint 4% */
+  --scene-filter: saturate(0.92) contrast(0.95) sepia(0.04);
+  --scene-scrim: var(--sys-scene-scrim);
+}
+
+/* ─── Scales (same in every mode) ───────────────────────────────────────────── */
 :root {
-  /* Radius: 4 chips and inputs · 8 cards in the letter · 12 buttons · 24 the letter · pill only for status and seal */
+  /* Radius: 4 chips and inputs · 8 cards in the letter · 12 buttons · 24 the letter · pill for status and seal only */
   --radius-chip: 4px;
   --radius-card: 8px;
   --radius-button: 12px;
   --radius-letter: 24px;
   --radius-pill: 999px;
-  --radius: var(--radius-button); /* shadcn default */
+  --radius: var(--radius-button);
 
   /* Space: 4 8 12 16 24 32 48 64 96 */
   --space-1: 4px;
@@ -143,84 +194,57 @@
   --space-8: 64px;
   --space-9: 96px;
 
-  /* Type: three sizes per screen (names or title, body, label). Fluid between the 390 and 1440 artboards. */
+  /* Type. Display (names, numerals), heading (titles on the letter) and body are separate scales so one
+     can move without the others. Fluid between the 390 and 1440 artboards; line heights land on 4. */
   --font-display: "Oranienbaum", "Zen Old Mincho", Georgia, serif;
   --font-label: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: "EB Garamond", "Zen Old Mincho", "Hiragino Mincho ProN", Georgia, serif;
   --font-hand: "Klee One", "EB Garamond", cursive;
   --font-ja: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  --text-names: clamp(56px, 44.11px + 3.048vw, 88px);  /* 56 → 88 */
-  --leading-names: 1;
-  --tracking-names: -0.02em;
-  --text-title: clamp(28px, 25.77px + 0.571vw, 34px);  /* 28 → 34 */
-  --leading-title: 36px;                                 /* 40 from 768 */
-  --tracking-title: -0.01em;
-  --text-body: clamp(18px, 17.63px + 0.095vw, 19px);   /* 18 → 19 */
-  --leading-body: 28px;
-  --text-note: clamp(15px, 14.63px + 0.095vw, 16px);   /* 15 → 16, Klee One */
-  --leading-note: 24px;
-  --text-small: 14px;                                   /* errors and fine print only */
-  --leading-small: 20px;
-  --text-label: 12px;
-  --leading-label: 16px;
-  --tracking-label: 0.08em;
-  --text-numerals: 32px;
-  --leading-numerals: 40px;
 
-  /* The letter */
-  --letter-width: 620px;
-  --letter-left: 180px;
-  --letter-top: 120px;
-  --letter-pad: 24px;
-  --letter-gap: 24px;
-  --letter-edge: 6px;
+  --type-display-names-size: clamp(56px, 44.11px + 3.048vw, 88px);
+  --type-display-names-leading: 1;
+  --type-display-names-tracking: -0.02em;
+  --type-display-numerals-size: 32px;
+  --type-display-numerals-leading: 40px;
+  --type-heading-size: clamp(28px, 25.77px + 0.571vw, 34px);
+  --type-heading-leading: 36px;
+  --type-heading-tracking: -0.01em;
+  --type-body-size: clamp(18px, 17.63px + 0.095vw, 19px);
+  --type-body-leading: 28px;
+  --type-note-size: clamp(15px, 14.63px + 0.095vw, 16px);
+  --type-note-leading: 24px;
+  --type-small-size: 14px;
+  --type-small-leading: 20px;
+  --type-label-size: 12px;
+  --type-label-leading: 16px;
+  --type-label-tracking: 0.08em;
+
   --rule-width: 40px;
-  --control-height: 52px; /* buttons and inputs on phones; 48 on desktop */
   --tap-min: 44px;
 
   /* Motion: paper rises and settles; nothing bounces except the one stamp */
-  --ease-paper: cubic-bezier(0.2, 0.7, 0.2, 1);   /* settle: things arriving */
-  --ease-letter: cubic-bezier(0.22, 1, 0.36, 1);  /* rise: the letter, the envelope */
-  --ease-out: cubic-bezier(0.4, 0, 1, 1);          /* leave: things going away */
-  --duration-press: 90ms;    /* pressed scale */
-  --duration-quick: 150ms;   /* hover, focus, colour */
-  --duration-settle: 300ms;  /* steps, accordions, page content, flap */
-  --duration-rise: 600ms;    /* letter rising, scene change */
-  --duration-drift: 6s;      /* scene layers, the slow things */
+  --ease-paper: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-letter: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.4, 0, 1, 1);
+  --duration-press: 90ms;
+  --duration-quick: 150ms;
+  --duration-settle: 300ms;
+  --duration-rise: 600ms;
+  --duration-drift: 6s;
   --press-scale: 0.98;
 
-  --season-green: 100%; /* set per day by src/lib/seasons.ts */
-  --leaf-a: color-mix(in oklch, var(--leaf-green) var(--season-green), var(--leaf-red));
-  --leaf-b: color-mix(in oklch, var(--leaf-green-2) var(--season-green), var(--leaf-red-2));
-  --shadow-paper: 0 1px 2px rgb(var(--shadow-tint) / 0.08), 0 6px 18px -6px rgb(var(--shadow-tint) / 0.18);
-  --shadow-letter: 0 2px 4px rgb(var(--shadow-tint) / 0.10), 0 32px 64px -24px rgb(var(--shadow-tint) / 0.45);
+  --season-green: 100%;
+  --shadow-paper: 0 1px 2px rgb(var(--sys-shadow-tint) / 0.08), 0 6px 18px -6px rgb(var(--sys-shadow-tint) / 0.18);
 }
 @media (min-width: 768px) {
-  :root {
+  :root,
+  [data-theme="autumn"],
+  [data-theme="lantern"] {
     --letter-pad: 56px;
-    --letter-gap: 32px;
-    --control-height: 48px;
-    --leading-title: 40px;
+    --letter-gap: var(--space-6);
+    --input-height: 48px;
+    --button-height: 48px;
+    --type-heading-leading: 40px;
   }
-}
-
-/* States: one system for every interactive thing (buttons, inputs, choice cards, chips, combobox, tabs) */
-:root,
-[data-theme="autumn"],
-[data-theme="lantern"] {
-  --state-border: var(--border);
-  --state-hover-border: var(--muted-foreground);
-  --state-focus-ring: var(--ring);
-  --state-pressed-fill: var(--secondary);
-  --state-selected-fill: var(--secondary);
-  --state-selected-border: var(--primary);
-  --state-disabled-fill: var(--background);
-  --state-error-border: var(--destructive);
-  --primary-hover: color-mix(in oklab, var(--primary) 92%, var(--foreground));
-  --letter-edge-color: var(--forest);
-  --scene-scrim: var(--kinari);
-}
-[data-theme="lantern"] {
-  --letter-edge-color: var(--hachimitsu);
-  --scene-scrim: var(--yoru);
 }

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
-import { Music2, VolumeX } from "lucide-react"
+import { Volume2, VolumeX } from "lucide-react"
 import { setSound, soundOn } from "@/lib/sound"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
 
-/** Footer switch for the two little sounds. Off by default, remembered on this device. */
+/** The tiny switch for the two little sounds, at the end of the letter. Off by default, remembered on this device. */
 export function SoundToggle({ className }: { className?: string }) {
   const { t } = useLang()
   const [on, setOn] = useState(soundOn)
@@ -15,8 +15,8 @@ export function SoundToggle({ className }: { className?: string }) {
   }, [])
   return (
     <button type="button" aria-pressed={on} onClick={() => setSound(!on)}
-      className={cn("press inline-flex min-h-11 items-center gap-2 rounded-full border border-current/30 px-4 text-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none", className)}>
-      {on ? <Music2 className="size-4" aria-hidden /> : <VolumeX className="size-4" aria-hidden />}
+      className={cn("press label-caps inline-flex min-h-11 shrink-0 items-center gap-2 rounded-sm px-2 text-muted-foreground outline-2 outline-offset-2 outline-transparent transition-colors hover:text-foreground focus-visible:outline-ring", className)}>
+      {on ? <Volume2 className="size-4" aria-hidden /> : <VolumeX className="size-4" aria-hidden />}
       <span className="sr-only">{t.sound.label}: </span>{on ? t.sound.on : t.sound.off}
     </button>
   )

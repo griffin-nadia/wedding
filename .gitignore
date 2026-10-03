@@ -39,3 +39,4 @@ private/
 
 # Couple photos: private until Nadia says yes (PUBLIC_PHOTOS=1 copies the public set at build)
 photos-private/
+dist-*
