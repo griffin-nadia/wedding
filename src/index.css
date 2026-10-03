@@ -462,7 +462,7 @@
   position: relative;
   min-height: 100svh;
   overflow-x: clip; /* the paper blur ring may reach past the screen edge on phones */
-  padding: 72px 12px calc(66px + 12px + env(safe-area-inset-bottom) + 16px); /* dock (64 + its border), its offset, then 16 */
+  padding: 72px 12px var(--dock-band); /* the letter ends 8px above the dock (v3 U) */
 }
 @media (min-width: 768px) { .letter-wrap { padding: var(--letter-top) 24px var(--space-8); } }
 @media (min-width: 1024px) { .letter-wrap { padding-left: var(--letter-left); } }
@@ -558,7 +558,10 @@
 .rsvp-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: var(--space-2) var(--sheet-pad) calc(var(--sheet-pad) + 16px); scrollbar-width: thin; scrollbar-color: var(--sys-line-strong) transparent; }
 .rsvp-done { padding-top: var(--sheet-pad); }
 @media (pointer: coarse) { .rsvp-body { scrollbar-width: none; } .rsvp-body::-webkit-scrollbar { display: none; } }
-.rsvp-letter[data-state="open"] { animation: letter-in var(--duration-settle) var(--ease-paper) both; }
+/* The sheet rises the way the letter rises out of the envelope (v3 U): same 600 ms and easing; from the bottom on phones */
+.rsvp-letter[data-state="open"] { animation: sheet-rise var(--duration-rise) var(--ease-letter) both; }
+@keyframes sheet-rise { from { opacity: 0; transform: translateY(var(--rise-from, 48px)); } to { opacity: 1; transform: none; } }
+@media (max-width: 767px) { .rsvp-letter { --rise-from: 40%; } }
 .rsvp-overlay[data-state="open"] { animation: fade-in var(--duration-settle) var(--ease-paper) both; }
 @keyframes letter-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -992,3 +995,17 @@ svg.lucide { stroke-width: 1.5; }
 .arrival:not(.is-pulling) .envelope { transition: translate var(--duration-flap) var(--ease-spring), opacity var(--duration-flap) var(--ease-paper), transform var(--duration-quick) var(--ease-paper); }
 /* From 1024 the envelope sits on warm paper, not the photo: the note is ink there, not white */
 @media (min-width: 1024px) { .arrival-note { color: var(--sys-ink-soft); filter: none; } }
+
+/* Phones (v3 U): the letter never sits under the dock. --dock-band is the dock (64 + its border), its 12 offset,
+   the safe area and 8 of air; .scene-band repaints the scene over the letter in exactly that strip. */
+:root { --dock-band: calc(66px + 12px + env(safe-area-inset-bottom) + 8px); }
+.scene-band { display: none; }
+@media (max-width: 767px) {
+  .scene.scene-band { display: block; z-index: 10; pointer-events: none; clip-path: inset(calc(100dvh - var(--dock-band)) 0 0 0); }
+  /* Always in the strip (a short page pushes it to the bottom), so only a bounce past the end shows it, never over a face */
+  .letter-wrap { display: flex; flex-direction: column; }
+  .credit-inline { position: relative; z-index: 1; display: grid; place-items: center; align-self: flex-start; width: 44px; height: 44px; margin: auto 0 -52px 4px; padding-top: 8px; box-sizing: content-box; color: var(--sys-ink-muted); opacity: 0.7; }
+  .credit-inline .credit-tip { display: none; }
+}
+@media (min-width: 768px) { .credit-inline { display: none; } }
+[data-sheet] .scene-band, [data-modal] .scene-band { visibility: hidden; }
