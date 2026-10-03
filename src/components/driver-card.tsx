@@ -6,6 +6,9 @@ import { useLang } from "@/lib/lang"
 import { toast } from "@/components/toast"
 import { copyText } from "@/lib/copy"
 import { Button } from "@/components/ui/button"
+import { MapPin } from "lucide-react"
+import { directionsUrl } from "@/lib/calendar"
+import { useOption } from "@/lib/options"
 
 /**
  * Show the driver. Compact in the page; on tap a modal above everything (v3 Q4): the brightest paper,
@@ -43,16 +46,30 @@ export function DriverCard() {
   const copy = async () => {
     if (await copyText(`${VENUE.nameJa}\n${VENUE.addressJa}`)) toast(t.driver.copied)
   }
+  const mapsFirst = useOption("getthere") !== "driver"
   return (
     <>
       <section aria-labelledby="driver" className="flex flex-col gap-3 rounded-md bg-section-alt p-4 md:p-6">
         <h2 id="driver" className="label-caps text-muted-foreground">{t.driver.label}</h2>
         <p className="flex flex-col"><span className="font-medium text-foreground">{VENUE.name}</span><span lang="ja" className="font-ja">{VENUE.nameJa}</span></p>
         <p>{t.driver.fare}</p>
-        <div className="flex flex-wrap gap-3">
-          <Button ref={opener} size="lg" onClick={() => setFull(true)}>{t.driver.show}</Button>
-          <Button size="lg" variant="outline" onClick={copy}><Copy aria-hidden />{t.driver.copy}</Button>
-        </div>
+        {mapsFirst ? (
+          <div className="flex flex-col gap-3">
+            <Button asChild size="lg" className="w-full sm:w-auto sm:self-start">
+              <a href={directionsUrl} target="_blank" rel="noreferrer"><MapPin aria-hidden />{t.driver.maps}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
+            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button ref={opener} size="lg" variant="outline" onClick={() => setFull(true)}>{t.driver.show}</Button>
+              <Button size="lg" variant="outline" onClick={copy}><Copy aria-hidden />{t.driver.copy}</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-3">
+            <Button ref={opener} size="lg" onClick={() => setFull(true)}>{t.driver.show}</Button>
+            <Button size="lg" variant="outline" onClick={copy}><Copy aria-hidden />{t.driver.copy}</Button>
+            <Button asChild size="lg" variant="outline"><a href={directionsUrl} target="_blank" rel="noreferrer"><MapPin aria-hidden />{t.driver.maps}</a></Button>
+          </div>
+        )}
       </section>
       {full && createPortal(
         <div className="driver-modal" role="dialog" aria-modal="true" aria-labelledby="driver-full">

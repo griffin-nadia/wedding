@@ -846,3 +846,7 @@ svg.lucide { stroke-width: 1.5; }
 @media (hover: hover) { .reply-chip:hover { border-color: var(--sys-line-strong); } }
 @media (min-width: 1024px) { :root[data-opt-names="two"] { --type-display-names-size: 88px; } }
 .count-strip .count-tile-secs { background: none; }
+/* Before you fly: tick on the left, the row opens on the right (v3 S) */
+.check-acc { display: flex; align-items: center; gap: var(--space-4); }
+.check-acc > h3, .check-acc > [data-slot="accordion-header"] { flex: 1; min-width: 0; }
+.check-acc-box { flex: none; }

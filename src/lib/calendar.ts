@@ -10,6 +10,8 @@ const INVITED = stamp(`${DATES.invites}T00:00:00Z`)
 const address = "The Sodoh Higashiyama, 366 Yasaka Kamimachi, Higashiyama Ward, Kyoto 605-0827, Japan"
 
 export const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+/** Google Maps directions to the venue from wherever the guest is (v3 S): the main way to get there. */
+export const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
 
 const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/[,;]/g, (c) => `\\${c}`).replace(/\n/g, "\\n")
 

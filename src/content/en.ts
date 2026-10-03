@@ -93,7 +93,7 @@ export const en = {
   },
   flying: { title: "Flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it." },
   fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes." },
-  driver: { label: "Taxi from Kyoto Station", fare: "Around ¥2,000, 15 to 20 minutes.", show: "Show the driver", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
+  driver: { label: "Taxi from Kyoto Station", fare: "Around ¥2,000, 15 to 20 minutes.", show: "Show the driver", maps: "Directions in Google Maps", mapsOpens: "opens Google Maps", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
   countdownMore: {
     until: "until we see you in Kyoto", tomorrow: "Tomorrow", today: "Today's the day", married: "Married",
     andCounting: "and counting", localTitle: (t: string) => `That's ${t} where you are`,
@@ -181,6 +181,8 @@ export const en = {
   },
   getting: {
     title: "Getting there",
+    ticked: (n: number, of: number) => `${n} of ${of} ticked off`,
+    tick: (what: string) => `Done: ${what}`,
     intro: "From the airport to the garden, in the order you'll need it. The easiest way on the day: a taxi from Kyoto Station, about 15 minutes and around ¥2,000.",
     rowsLabel: "Getting there, step by step",
     beforeTitle: "Before you fly",

@@ -1,4 +1,5 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { Checkbox } from "@/components/ui/checkbox"
 import { ChevronRight } from "lucide-react"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Disclosure } from "@/components/disclosure"
@@ -13,29 +14,40 @@ function Ext({ href, children }: { href: string; children: React.ReactNode }) {
   return <a href={href} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{children}</a>
 }
 
-/** A numbered row with a one-line reveal (v3 M). */
-function Row({ n, value, title, children }: { n: number; value: string; title: string; children: React.ReactNode }) {
+/**
+ * Before you fly as a checklist inside the accordion (v3 S): each row has its own tick (saved on this
+ * device) and opens for the detail. The tick is the marker, so no numbers.
+ */
+function Row({ value, title, done, onTick, tickLabel, children }: { value: string; title: string; done: boolean; onTick: (v: boolean) => void; tickLabel: string; children: React.ReactNode }) {
   return (
     <AccordionItem value={value}>
-      <AccordionTrigger>
-        <span className="flex items-baseline gap-4">
-          <span aria-hidden className="numerals w-6 shrink-0 text-primary">{String(n).padStart(2, "0")}</span>
-          <span><span className="sr-only">{n}. </span>{title}</span>
-        </span>
-      </AccordionTrigger>
+      <div className="check-acc">
+        <Checkbox checked={done} onCheckedChange={(v) => onTick(v === true)} aria-label={tickLabel} className="check-acc-box" />
+        <AccordionTrigger><span className={done ? "text-muted-foreground" : undefined}>{title}</span></AccordionTrigger>
+      </div>
       <AccordionContent><div className="flex flex-col gap-3 pl-10">{children}</div></AccordionContent>
     </AccordionItem>
   )
 }
 
+/** The ticks, per household, on this device only. */
+function useTicks(token: string | undefined) {
+  const key = `ng-fly-${token ?? "anon"}`
+  const [ticks, setTicks] = useState<Record<string, boolean>>(() => { try { return JSON.parse(localStorage.getItem(key) || "{}") } catch { return {} } })
+  const set = (k: string, v: boolean) => setTicks((t) => { const n = { ...t, [k]: v }; try { localStorage.setItem(key, JSON.stringify(n)) } catch { /* fine */ } return n })
+  return [ticks, set] as const
+}
+
 /**
- * Travel (v3 A): Getting there (one paragraph, the driver card, the trail), Where to stay (three rows,
- * the whole row opens Maps), Before you fly (numbered rows). No checklist, no tiles.
+ * Travel (v3 S): in the order a guest needs it. Getting there (one paragraph, then the venue card with
+ * Google Maps directions first, Show the driver and Copy address beside it, then the trail), Where to stay
+ * (three rows, the whole row opens the place in Maps), Before you fly (a checklist in one accordion).
  */
 export function TravelPage() {
   const { t } = useLang()
   const g = t.getting
   const { household } = useHousehold()
+  const [ticks, setTick] = useTicks(household?.token)
   const coming = household?.guests.some((x) => x.attending === "yes")
   // v3 P: "Flying from" exists only when the story map (Our story B) and its Flying from option are on
   const storyOpt = useOption("story"), flyingOpt = useOption("flying")
@@ -76,10 +88,9 @@ export function TravelPage() {
         <h2 id="stay-title" className="font-display text-2xl text-foreground">{t.stay.title}</h2>
         <p>{t.stay.intro}</p>
         <ol className="flex flex-col border-y border-border">
-          {t.day.stay.map((a, i) => (
+          {t.day.stay.map((a) => (
             <li key={a.label} className="border-b border-border last:border-b-0">
               <a href={a.maps} target="_blank" rel="noreferrer" className="stay-row">
-                <span aria-hidden className="numerals w-6 shrink-0 text-primary">{String(i + 1).padStart(2, "0")}</span>
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="font-medium text-foreground">{a.label}</span>
                   <span className="text-sm">{t.day.stayGood}: {a.good}</span>
@@ -95,8 +106,9 @@ export function TravelPage() {
 
       <section id="before" aria-labelledby="before-title" className="flex scroll-mt-24 flex-col gap-4">
         <h2 id="before-title" className="font-display text-2xl text-foreground">{g.beforeTitle}</h2>
+        <p className="text-sm text-muted-foreground" aria-live="polite">{g.ticked(rows.filter(([v]) => ticks[v]).length, rows.length)}</p>
         <Disclosure label={g.beforeTitle}>
-          {rows.map(([value, title, body], i) => <Row key={value} n={i + 1} value={value} title={title}>{body}</Row>)}
+          {rows.map(([value, title, body]) => <Row key={value} value={value} title={title} done={Boolean(ticks[value])} onTick={(v) => setTick(value, v)} tickLabel={g.tick(title)}>{body}</Row>)}
         </Disclosure>
       </section>
     </>
