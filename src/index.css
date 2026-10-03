@@ -876,7 +876,7 @@ svg.lucide { stroke-width: 1.5; }
 .count-boxes-list { display: flex; gap: var(--space-2); }
 .count-box { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 64px; height: 56px; padding: 0 var(--space-3); border-radius: var(--radius-control); background: var(--sys-surface-alt); perspective: 400px; }
 .count-box-num { display: block; font-family: var(--font-label); font-size: var(--type-lead-size); line-height: 24px; font-weight: 500; color: var(--sys-ink); font-variant-numeric: tabular-nums; transform-origin: 50% 50%; backface-visibility: hidden; }
-.count-box-unit, .count-boxes-caption { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-muted); }
+.count-box-unit, .count-boxes-caption { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-soft); }
 @keyframes count-flip { from { transform: rotateX(-90deg); opacity: 0.4; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: no-preference) { .count-flip { animation: count-flip var(--duration-settle) var(--ease-letter) both; } }
 /* Crew gate note centred on the page */
@@ -908,7 +908,7 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* Our story · journey map (Figma D1 / M2, v3 S) */
 .journey { display: grid; gap: var(--space-5); }
-@media (min-width: 768px) { .journey { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; } }
+@media (min-width: 768px) { .journey { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; } }
 .journey-map { width: 100%; height: auto; border-radius: var(--radius-section); background: var(--sys-surface-alt); }
 .journey-land { fill: color-mix(in oklab, var(--brand-wara) 70%, var(--sys-surface-alt)); }
 .journey-land-green { fill: color-mix(in oklab, var(--sys-moss) 70%, var(--sys-surface-alt)); }

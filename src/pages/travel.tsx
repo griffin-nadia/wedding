@@ -51,7 +51,7 @@ export function TravelPage() {
   const coming = household?.guests.some((x) => x.attending === "yes")
   // v3 P: "Flying from" exists only when the story map (Our story B) and its Flying from option are on
   const storyOpt = useOption("story"), flyingOpt = useOption("flying")
-  const flyingOn = storyOpt === "b" && flyingOpt === "on"
+  const flyingOn = (storyOpt ?? "b") === "b" && flyingOpt === "on"
   // /travel#stay and #before scroll to their section once the page is in
   useEffect(() => {
     const id = location.hash.slice(1)

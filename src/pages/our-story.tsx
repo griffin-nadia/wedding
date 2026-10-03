@@ -132,7 +132,7 @@ function StoryStack({ chapters }: { chapters: Chapter[] }) {
   )
 }
 
-/** Our story (hidden until the story text exists in the Content tab): D, the card stack, by default; A, B and C as options. */
+/** Our story (hidden until the story text exists in the Content tab): the journey map (their Figma plan) by default; the card stack, letter pages and timeline as options. */
 export function StoryPage() {
   const { t } = useLang()
   const { story, ready } = useContent()
@@ -143,7 +143,7 @@ export function StoryPage() {
     return (
       <>
         <h1 className="heading">{t.story.title}</h1>
-        {!view || view === "d" ? <StoryStack chapters={story} /> : view === "b" ? (journey
+        {view === "d" ? <StoryStack chapters={story} /> : !view || view === "b" ? (journey
           ? <StoryJourney chapters={story} showFlying={flying} />
           : <StoryMap chapters={story} />) : view === "c" ? <StoryTimeline chapters={story} /> : <StoryLetter chapters={story} />}
       </>
