@@ -478,3 +478,41 @@
 
 .skip-link { position: absolute; left: 12px; top: -64px; z-index: 60; padding: var(--space-2) var(--space-4); border-radius: var(--radius-chip); background: var(--letter-bg); color: var(--sys-ink); }
 .skip-link:focus { top: 12px; }
+
+/* ─── RSVP on the letter ────────────────────────────────────────────────────── */
+.rsvp-overlay { position: fixed; inset: 0; z-index: 50; background: rgb(var(--sys-shadow-tint) / 0.35); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+[data-theme="lantern"] .rsvp-overlay { background: rgb(0 0 0 / 0.5); }
+.rsvp-letter {
+  position: fixed; z-index: 50;
+  inset: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  max-width: none; margin: 0;
+  overflow-y: auto; overscroll-behavior: contain;
+  padding-bottom: 0;
+}
+.rsvp-letter::after { display: none; }
+@media (min-width: 768px) {
+  .rsvp-letter { inset: var(--letter-top) auto auto 50%; translate: -50% 0; width: min(var(--letter-width), calc(100vw - 48px)); max-height: calc(100svh - var(--letter-top) - 24px); }
+}
+@media (min-width: 1024px) { .rsvp-letter { left: var(--letter-left); translate: none; } }
+.rsvp-letter[data-state="open"] { animation: letter-in var(--duration-settle) var(--ease-paper) both; }
+.rsvp-overlay[data-state="open"] { animation: fade-in var(--duration-settle) var(--ease-paper) both; }
+@keyframes letter-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.rsvp-close { position: absolute; top: 16px; right: 16px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--sys-ink); outline: 2px solid transparent; outline-offset: 2px; }
+@media (min-width: 768px) { .rsvp-close { top: 24px; right: 24px; } }
+.rsvp-close:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .rsvp-close:hover { background: var(--sys-fill); } }
+.rsvp-actions { position: sticky; bottom: 0; z-index: 1; display: flex; gap: var(--space-3); margin-inline: calc(-1 * var(--letter-pad)); margin-top: auto; padding: var(--space-4) var(--letter-pad) calc(var(--space-4) + env(safe-area-inset-bottom)); background: var(--letter-bg); border-top: 1px solid var(--sys-line); }
+.rsvp-letter > :last-child:not(.rsvp-actions) { padding-bottom: var(--letter-pad); }
+/* Steps slide the way you're going (300 ms); a fade only under reduced motion */
+.step-fwd { animation: step-fwd var(--duration-settle) var(--ease-paper) both; }
+.step-back { animation: step-back var(--duration-settle) var(--ease-paper) both; }
+@keyframes step-fwd { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes step-back { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .step-fwd, .step-back, .rsvp-letter[data-state="open"] { animation: fade-in 150ms linear both; } }
+/* Filled fields show a small moss tick on the right */
+.field[data-filled="true"]:not([type="date"]):not(textarea) { padding-right: 44px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23727354' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-size: 18px; background-position: right 16px center; }
+[data-theme="lantern"] .field[data-filled="true"]:not([type="date"]):not(textarea) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a37e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+.field[aria-invalid="true"] { background-image: none !important; }
+.chip-tick { animation: tick-in var(--duration-quick) var(--ease-paper) both; }
+@keyframes tick-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
