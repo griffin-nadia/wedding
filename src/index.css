@@ -1004,6 +1004,7 @@ svg.lucide { stroke-width: 1.5; }
   .scene.scene-band { display: block; z-index: 10; pointer-events: none; clip-path: inset(calc(100dvh - var(--dock-band)) 0 0 0); }
   /* Always in the strip (a short page pushes it to the bottom), so only a bounce past the end shows it, never over a face */
   .letter-wrap { display: flex; flex-direction: column; }
+  .letter-wrap > :not(.credit-inline) { width: 100%; } /* full width from the first paint, not shrink-to-fit while the page loads */
   .credit-inline { position: relative; z-index: 1; display: grid; place-items: center; align-self: flex-start; width: 44px; height: 44px; margin: auto 0 -52px 4px; padding-top: 8px; box-sizing: content-box; color: var(--sys-ink-muted); opacity: 0.7; }
   .credit-inline .credit-tip { display: none; }
 }

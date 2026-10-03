@@ -4,9 +4,10 @@ import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig, type Plugin } from "vite"
 
-// Preloads the Latin subsets of our self-hosted fonts, so text paints in the right font first time.
+// Preloads the Latin subsets of our self-hosted fonts, so text paints in the right font first time. Klee One (the
+// sign-off and the arrival note only) loads when used, so it never competes with their photo for the first paint.
 function preloadFonts(): Plugin {
-  const wanted = /(oranienbaum-latin-400|inter-latin-400|inter-latin-500|klee-one-latin-400)-normal-.*\.woff2$/
+  const wanted = /(oranienbaum-latin-400|inter-latin-400|inter-latin-500)-normal-.*\.woff2$/
   return {
     name: "preload-fonts",
     transformIndexHtml(_html, ctx) {

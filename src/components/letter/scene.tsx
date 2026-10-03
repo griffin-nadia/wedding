@@ -22,6 +22,8 @@ export function Scene({ source, dim = false, className }: { source: SceneSource;
  * page changes in one reveal. Without View Transitions the photos cross-fade.
  */
 const PAIR = ["kyoto-view", "night-lane"] as const
+// The HTML's first-paint copy of the photo (index.html, phones) goes once the app's own has loaded
+const dropShell = () => { document.getElementById("scene-shell")?.remove(); document.getElementById("scene-shell-band")?.remove() }
 function PhotoPair({ name, dim, className }: { name: string; dim: boolean; className?: string }) {
   const [both, setBoth] = useState(false)
   useEffect(() => {
@@ -34,7 +36,7 @@ function PhotoPair({ name, dim, className }: { name: string; dim: boolean; class
     <div aria-hidden className={cn("scene fixed inset-0 -z-10 overflow-hidden bg-[var(--scene-scrim)]", dim && "scene-dim", className)}>
       {PAIR.filter((n) => n === name || both).map((n) => (
         <div key={n} data-photo={n} className={cn("scene-layer absolute inset-0", n === name ? "opacity-100" : "opacity-0")}>
-          <PhotoScene name={n} priority={n === name} onReady={() => {}} />
+          <PhotoScene name={n} priority={n === name} onReady={n === name ? dropShell : () => {}} />
         </div>
       ))}
       <div className="scene-scrim absolute inset-0" />
@@ -43,6 +45,7 @@ function PhotoPair({ name, dim, className }: { name: string; dim: boolean; class
 }
 
 function Layers({ source, dim = false, className }: { source: SceneSource; dim?: boolean; className?: string }) {
+  useEffect(dropShell, [])
   const key = "photo" in source ? source.photo : "plate" in source ? source.plate : "walk" in source ? "walk" : "paper"
   // Keep the previous scene underneath until the next one has loaded, so changes cross-fade
   const [layers, setLayers] = useState<{ key: string; source: SceneSource; ready: boolean }[]>([{ key, source, ready: false }])
