@@ -99,7 +99,7 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
           {list.map((s) => (
             <li key={s} className="flex min-h-14 items-center gap-3 rounded-md border bg-card py-1 pr-1 pl-2">
               {art[s] ? <img src={art[s]} alt="" className="size-10 rounded-sm object-cover" /> : <span aria-hidden className="grid size-10 place-items-center rounded-sm bg-muted text-muted-foreground"><Music2 className="size-4" /></span>}
-              <span className="min-w-0 flex-1 truncate font-label text-(length:--type-ui-size) text-foreground">{s}</span>
+              <span className="min-w-0 flex-1 break-words font-label text-(length:--type-ui-size) text-foreground">{s}</span>
               <button type="button" onClick={() => onChange(list.filter((x) => x !== s))} aria-label={t.remove(s)}
                 className="press grid size-11 shrink-0 place-items-center rounded-sm text-muted-foreground outline-2 outline-offset-2 outline-transparent hover:text-foreground focus-visible:outline-ring">
                 <X className="size-4" aria-hidden />

@@ -221,7 +221,7 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
               {state.notes.map((n, i) => (
                 <li key={n.id} className="flex gap-2 rounded-sm border border-border p-2 text-sm">
                   <span className="tune-pin !static">{i + 1}</span>
-                  <span className="min-w-0 flex-1"><span className="block text-foreground">{n.text}</span><span className="block truncate text-muted-foreground">{n.path} · {n.viewport.w}×{n.viewport.h} · {n.theme}</span></span>
+                  <span className="min-w-0 flex-1"><span className="block text-foreground">{n.text}</span><span className="block break-words text-muted-foreground">{n.path} · {n.viewport.w}×{n.viewport.h} · {n.theme}</span></span>
                   <button type="button" aria-label={`Delete note ${i + 1}`} onClick={() => update({ ...state, notes: state.notes.filter((x) => x.id !== n.id) })} className="press grid size-11 shrink-0 place-items-center rounded-sm"><X className="size-4" aria-hidden /></button>
                 </li>
               ))}
@@ -253,8 +253,8 @@ function TokenRow({ t, value, host, onChange }: { t: Token; value?: string; host
   return (
     <div className={cn("flex items-center gap-2 py-1", value !== undefined && "tune-changed")}>
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-label text-[12px] text-foreground" title={t.name}>{t.name.replace(/^--/, "")}</span>
-        {t.comment && <span className="block truncate text-[12px] text-muted-foreground" title={t.comment}>{t.comment}</span>}
+        <span className="block break-all font-label text-[12px] text-foreground" title={t.name}>{t.name.replace(/^--/, "")}</span>
+        {t.comment && <span className="block break-words text-[12px] text-muted-foreground" title={t.comment}>{t.comment}</span>}
       </span>
       {colour ? (
         <input type="color" aria-label={t.name} value={host.current ? toHex(v, host.current) : "#000000"} onChange={(e) => onChange(e.target.value)} className="h-8 w-10 cursor-pointer rounded-sm border border-border bg-transparent" />

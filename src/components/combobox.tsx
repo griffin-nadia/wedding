@@ -81,8 +81,8 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
                     {multi && <Check aria-hidden className={cn("size-4 shrink-0 text-primary", !o.selected && "invisible")} />}
                     {o.img !== undefined && (o.img ? <img src={o.img} alt="" className="size-8 shrink-0 rounded-sm object-cover" /> : <span aria-hidden className="size-8 shrink-0 rounded-sm bg-muted" />)}
                     <span className="min-w-0">
-                      <span className="block truncate">{o.label}</span>
-                      {o.sub && <span className="block truncate text-xs text-muted-foreground">{o.sub}</span>}
+                      <span className="block break-words">{o.label}</span>
+                      {o.sub && <span className="block break-words text-xs text-muted-foreground">{o.sub}</span>}
                     </span>
                   </li>
                 ))}
