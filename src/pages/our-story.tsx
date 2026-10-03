@@ -79,7 +79,60 @@ function StoryTimeline({ chapters }: { chapters: Chapter[] }) {
   )
 }
 
-/** Our story (hidden until the story text exists in the Content tab): A by default, B and C as lab options. */
+/**
+ * Journey D · card stack (v3 S, the pick): the chapters as paper cards in a loose pile. Drag the top card
+ * left or right past a third of its width (or flick it) and it slides to the back; let go short and it
+ * springs home. Previous / next buttons and the arrow keys do the same. Still under reduced motion.
+ */
+function StoryStack({ chapters }: { chapters: Chapter[] }) {
+  const { t } = useLang()
+  const [top, setTop] = useState(0)
+  const [dx, setDx] = useState(0)
+  const [leaving, setLeaving] = useState<0 | 1 | -1>(0)
+  const start = useRef<{ x: number; t: number } | null>(null)
+  const still = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  const n = chapters.length
+  const go = (dir: 1 | -1) => {
+    if (still) { setTop((v) => (v + dir + n) % n); setDx(0); return }
+    setLeaving(dir)
+    window.setTimeout(() => { setTop((v) => (v + dir + n) % n); setLeaving(0); setDx(0) }, 280)
+  }
+  const order = chapters.map((_, k) => (top + k) % n)
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="story-stack" role="group" aria-roledescription="card stack" aria-label={t.story.title}
+        onKeyDown={(e) => { if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1) }}>
+        {order.slice().reverse().map((ci) => {
+          const depth = order.indexOf(ci), c = chapters[ci], isTop = depth === 0
+          const x = isTop ? (leaving ? leaving * -420 : dx) : 0
+          return (
+            <article key={c.key} aria-hidden={!isTop} tabIndex={isTop ? 0 : -1} className="story-card"
+              style={{ transform: `translate(${x}px, ${depth * 8}px) rotate(${isTop ? x / 24 : [0, -2, 2.5, -1.5][depth % 4]}deg) scale(${1 - depth * 0.03})`, zIndex: n - depth, transition: start.current && isTop ? "none" : undefined, opacity: depth > 2 ? 0 : 1 }}
+              onPointerDown={isTop ? (e) => { start.current = { x: e.clientX, t: performance.now() }; (e.target as Element).setPointerCapture?.(e.pointerId) } : undefined}
+              onPointerMove={isTop ? (e) => { if (start.current) setDx(e.clientX - start.current.x) } : undefined}
+              onPointerUp={isTop ? (e) => {
+                const s = start.current; start.current = null; if (!s) return
+                const d = e.clientX - s.x, v = Math.abs(d) / Math.max(1, performance.now() - s.t), w = (e.currentTarget as HTMLElement).offsetWidth
+                if (Math.abs(d) > Math.min(w / 3, 140) || v > 0.6) go(d < 0 ? 1 : -1); else setDx(0)
+              } : undefined}
+              onPointerCancel={isTop ? () => { start.current = null; setDx(0) } : undefined}>
+              <p className="text-sm text-muted-foreground">{c.year}</p>
+              <h2 className="font-display text-2xl text-foreground">{c.title}</h2>
+              {c.body.map((p, k) => <p key={k}>{p}</p>)}
+            </article>
+          )
+        })}
+      </div>
+      <div className="flex items-center justify-between">
+        <button type="button" className="utility-btn" onClick={() => go(-1)} aria-label={t.story.prevChapter}><ChevronLeft className="size-5" aria-hidden /></button>
+        <span className="text-sm text-muted-foreground" aria-live="polite">{t.story.page(top + 1, n)}</span>
+        <button type="button" className="utility-btn" onClick={() => go(1)} aria-label={t.story.nextChapter}><ChevronRight className="size-5" aria-hidden /></button>
+      </div>
+    </div>
+  )
+}
+
+/** Our story (hidden until the story text exists in the Content tab): D, the card stack, by default; A, B and C as options. */
 export function StoryPage() {
   const { t } = useLang()
   const { story, ready } = useContent()
@@ -90,7 +143,7 @@ export function StoryPage() {
     return (
       <>
         <h1 className="heading">{t.story.title}</h1>
-        {view === "b" ? (journey
+        {!view || view === "d" ? <StoryStack chapters={story} /> : view === "b" ? (journey
           ? <JourneyMap stops={story.map((c) => ({ title: c.title, body: c.body.join(" "), at: [0, 0] }))} labels={t.story} showFlying={flying} />
           : <StoryMap chapters={story} />) : view === "c" ? <StoryTimeline chapters={story} /> : <StoryLetter chapters={story} />}
       </>

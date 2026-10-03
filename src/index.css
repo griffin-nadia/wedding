@@ -762,7 +762,7 @@ svg.lucide { stroke-width: 1.5; }
 .story-pages { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; gap: var(--space-6); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
 .story-pages::-webkit-scrollbar { display: none; }
 .story-page { display: flex; flex-direction: column; gap: var(--space-3); scroll-snap-align: start; }
-@media (min-width: 1024px) { .story-pages { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; } [data-page="story"].letter { max-width: 960px; } }
+@media (min-width: 1024px) { .story-pages { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; } :root[data-opt-story="a"] [data-page="story"].letter { max-width: 960px; } }
 .story-stop { pointer-events: auto; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
 .story-stop:focus-visible { outline-color: var(--input-focus); }
 .story-stop.is-on .trail-icon { background: var(--sys-moss); color: var(--sys-surface); }
@@ -850,3 +850,9 @@ svg.lucide { stroke-width: 1.5; }
 .check-acc { display: flex; align-items: center; gap: var(--space-4); }
 .check-acc > h3, .check-acc > [data-slot="accordion-header"] { flex: 1; min-width: 0; }
 .check-acc-box { flex: none; }
+/* Our story · card stack (v3 S) */
+.story-stack { position: relative; display: grid; width: 100%; max-width: 440px; margin-inline: auto; min-height: 320px; padding-bottom: 24px; touch-action: pan-y; }
+.story-card { grid-area: 1 / 1; display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); box-shadow: var(--letter-shadow); cursor: grab; user-select: none; transition: transform var(--duration-turn) var(--ease-letter), opacity var(--duration-quick) var(--ease-paper); outline: 2px solid transparent; outline-offset: 2px; }
+.story-card:active { cursor: grabbing; }
+.story-card:focus-visible { outline-color: var(--input-focus); }
+@media (prefers-reduced-motion: reduce) { .story-card { transition: none; } }
