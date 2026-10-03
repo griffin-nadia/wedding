@@ -122,7 +122,7 @@ export function DayPage() {
   )
   return (
     <>
-      {paper && <div className="arch-photo"><img src={`${import.meta.env.BASE_URL}scenes/castle-900.webp`} alt={t.day.archAlt} /></div>}
+      {paper && <div className="arch-photo"><img src={`${import.meta.env.BASE_URL}scenes/castle-1200.webp`} alt={t.day.archAlt} /></div>}
       <header className="flex flex-col gap-4">
         <p className="label-caps text-muted-foreground">{t.day.date}</p>
         <h1 className="heading">{t.day.title}</h1>

@@ -3,7 +3,7 @@ import { SCENES, type SceneSource } from "@/lib/scenes"
 import { cn } from "@/lib/utils"
 
 const base = import.meta.env.BASE_URL
-const set = (name: string, fmt: string) => [900, 1600].map((w) => `${base}scenes/${name}-${w}.${fmt} ${w}w`).join(", ")
+const set = (name: string, fmt: string) => [800, 1200, 1600].map((w) => `${base}scenes/${name}-${w}.${fmt} ${w}w`).join(", ")
 
 /**
  * The scene behind the letter: a real photo now, a painted plate (three layers) later.
@@ -52,7 +52,7 @@ function PhotoScene({ name, priority, onReady }: { name: string; priority: boole
       <picture className="scene-photo absolute inset-0">
         <source type="image/avif" srcSet={set(name, "avif")} sizes="(min-width: 1024px) 60vw, 100vw" />
         <source type="image/webp" srcSet={set(name, "webp")} sizes="(min-width: 1024px) 60vw, 100vw" />
-        <img ref={img} src={`${base}scenes/${name}-900.webp`} alt="" width={meta.w} height={meta.h} decoding="async"
+        <img ref={img} src={`${base}scenes/${name}-1600.webp`} alt="" width={meta.w} height={meta.h} decoding="async"
           fetchPriority={priority ? "high" : "auto"} onLoad={onReady} className="size-full object-cover" />
       </picture>
     </>

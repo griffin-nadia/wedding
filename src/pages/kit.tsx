@@ -261,7 +261,7 @@ function HankoDemo() {
 function LetterDemo() {
   return (
     <div className="relative h-80 overflow-hidden rounded-md">
-      <img src={`${import.meta.env.BASE_URL}scenes/kyoto-view-900.webp`} alt="" className="absolute inset-0 size-full object-cover" style={{ filter: "var(--scene-filter)" }} />
+      <img src={`${import.meta.env.BASE_URL}scenes/kyoto-view-1200.webp`} alt="" className="absolute inset-0 size-full object-cover" style={{ filter: "var(--scene-filter)" }} />
       <div className="letter absolute top-8 left-6 w-64 !gap-3 !p-6">
         <p className="label-caps text-muted-foreground">Fri 15 Oct 2027 · Kyoto</p>
         <p className="font-display text-[40px] leading-none text-foreground">{COUPLE.first} <span className="text-primary">&amp;</span></p>
