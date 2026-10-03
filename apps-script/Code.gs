@@ -203,7 +203,7 @@ function doPost(e) {
     SpreadsheetApp.flush()
     after = getHousehold_(before.token)
     changes = describeChanges_(before, after)
-    log_(after.displayName, after.token, changes.join("\n"), JSON.stringify(input))
+    log_(after.displayName, after.token, changes.join("\n"), JSON.stringify(input), after)
     SpreadsheetApp.flush()
     forgetHousehold_(after.token)
     queued = queueMail_(before, after, changes)
@@ -329,7 +329,7 @@ function check_(token) {
     duplicateFlags: rows_(TABS.guests).filter((r) => r.Token === h.token && /Possible duplicate:/.test(String(r.Notes || ""))).length,
     log: rows_(TABS.log)
       .filter((r) => r.Token === h.token)
-      .map((r) => ({ time: r.Time instanceof Date ? r.Time.toISOString() : String(r.Time), changed: String(r["What changed"]) })),
+      .map((r) => ({ time: r.Time instanceof Date ? r.Time.toISOString() : String(r.Time), kind: String(r.Kind || ""), flag: String(r.Flag || ""), changed: String(r["What changed"]) })),
   }
 }
 
@@ -529,7 +529,7 @@ function flushQueue() {
         const h = getHousehold_(token)
         if (h) {
           saveRsvp_(h, item.input)
-          log_(h.displayName, token, item.changes.join("\n"), JSON.stringify(item.input))
+          log_(h.displayName, token, item.changes.join("\n"), JSON.stringify(item.input), applyInput_(h, item.input))
           if (mail.updated === null) mail.updated = item.replied
           mail.changes = mail.changes.concat(item.changes.filter((c) => c !== "No changes"))
           mail.dropped = mail.dropped.concat(item.dropped || [])
@@ -779,16 +779,70 @@ function flagDuplicate_(gSheet, rowIndex, name, token, gData) {
   if (next !== prior) cell.setValue(next)
 }
 
-function log_(household, token, changed, payload) {
+// The Log tab, laid out so Nadia can read it at a glance (v3 S): one row per event, who's coming and
+// what they said in their own columns, and a Flag (with a soft highlight) on anything that needs a look.
+const LOG_COLUMNS = ["Time", "Household", "Kind", "Coming", "Not coming", "Dietary", "Songs", "Dates", "Message", "Flag", "What changed", "Token", "Payload"]
+const LOG_FLAG_BG = "#fbf1d9" // honey paper: needs a look
+const LOG_MESSAGE_BG = "#eef1e6" // sage paper: they wrote something
+
+/** Adds any missing Log columns just before "What changed" (old rows keep their values), once. */
+function ensureLogLayout_(s) {
+  let head = headers_(s)
+  if ("Kind" in head && "Flag" in head) return head
+  LOG_COLUMNS.forEach((name) => {
+    if (name in head) return
+    const before = "What changed" in head ? head["What changed"] + 1 : s.getLastColumn() + 1
+    s.insertColumnBefore(before)
+    s.getRange(1, before).setValue(name)
+    head = headers_(s)
+  })
+  s.getRange(1, 1, 1, s.getLastColumn()).setFontWeight("bold")
+  s.setFrozenRows(1)
+  ;[["Kind", 120], ["Coming", 200], ["Not coming", 160], ["Dietary", 220], ["Songs", 220], ["Dates", 150], ["Message", 320], ["Flag", 220]].forEach(([k, w]) => s.setColumnWidth(head[k] + 1, w))
+  return head
+}
+
+/** What kind of entry this is, from its wording. */
+function logKind_(changed, after) {
+  if (after) return /^First reply/.test(changed) ? "First reply" : "Changed reply"
+  if (/^Invite sent/.test(changed)) return "Invite sent"
+  if (/^Reminder sent/.test(changed)) return "Reminder sent"
+  if (/^Final numbers note/.test(changed)) return "Final numbers note"
+  if (/^Link re-sent/.test(changed)) return "Link re-sent"
+  if (/^Test/.test(changed)) return "Test send"
+  if (/reminder/i.test(changed)) return "Reminders"
+  return "Note"
+}
+
+function log_(household, token, changed, payload, after) {
   const s = sheet_(TABS.log)
-  const head = headers_(s)
+  const head = ensureLogLayout_(s)
   const r = []
   r[head.Time] = new Date()
   r[head.Household] = household
+  r[head.Kind] = logKind_(String(changed || ""), after)
+  let flagged = false, wrote = false
+  if (after) {
+    const yes = after.guests.filter((g) => g.attending === "yes"), no = after.guests.filter((g) => g.attending === "no")
+    r[head.Coming] = yes.map((g) => g.firstName).join(", ")
+    r[head["Not coming"]] = no.map((g) => g.firstName).join(", ")
+    r[head.Dietary] = cell_(yes.filter((g) => g.dietary && g.dietary !== "None").map((g) => g.firstName + ": " + g.dietary).join("; "))
+    r[head.Songs] = cell_(after.songs.join("; "))
+    r[head.Dates] = after.arrival || after.departure ? (shortDate_(after.arrival) || "?") + " to " + (shortDate_(after.departure) || "?") : ""
+    r[head.Message] = cell_(after.message || "")
+    const flags = []
+    if (/→ can't make it/.test(changed)) flags.push("Now can't make it")
+    const dup = rows_(TABS.guests).filter((g) => g.Token === token && /Possible duplicate:/.test(String(g.Notes || ""))).map((g) => String(g.Notes).match(/Possible duplicate: [^\n]*/)[0])
+    if (dup.length) flags.push(dup.join("; "))
+    if (after.message && /Message (added|updated)|^First reply/.test(changed)) { flags.push("New message"); wrote = true }
+    r[head.Flag] = flags.join("; ")
+    flagged = flags.some((f) => f !== "New message")
+  }
   r[head["What changed"]] = cell_(changed)
   r[head.Token] = token
   r[head.Payload] = cell_(String(payload || "").slice(0, MAX.payload))
   s.appendRow(fill_(r, s.getLastColumn()))
+  if (flagged || wrote) s.getRange(s.getLastRow(), 1, 1, s.getLastColumn()).setBackground(flagged ? LOG_FLAG_BG : LOG_MESSAGE_BG)
 }
 
 // ---------- fortunes (Content tab) ----------
