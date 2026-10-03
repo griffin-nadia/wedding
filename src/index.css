@@ -540,8 +540,9 @@
 
 /* ─── RSVP on the letter ────────────────────────────────────────────────────── */
 /* The sheet covers the letter fully (v3 A): an opaque paper backdrop, nothing shows underneath */
-.rsvp-overlay { position: fixed; inset: 0; z-index: 50; background: linear-gradient(160deg, var(--brand-kinari), var(--brand-sage-paper)); }
-[data-theme="lantern"] .rsvp-overlay { background: linear-gradient(160deg, var(--brand-yoru), var(--brand-yoru-raised)); }
+/* v3 Q9: the sheet opens over the paper scene dimmed to 40%; the letter, countdown and chrome step aside so nothing reads underneath */
+.rsvp-overlay { position: fixed; inset: 0; z-index: 50; background: color-mix(in oklab, var(--brand-ink-deep) 60%, transparent); }
+[data-sheet] .letter-wrap > *, [data-sheet] .site-bar, [data-sheet] .site-nav, [data-sheet] .phone-qr, [data-sheet] .credit-mark { visibility: hidden; }
 /* The RSVP sheet is the letter: fixed header and footer, only the content scrolls. Height follows the content. */
 .rsvp-letter {
   --sheet-pad: var(--space-5);

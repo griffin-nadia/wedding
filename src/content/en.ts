@@ -235,7 +235,6 @@ export const en = {
     dietary: "Any dietary needs?",
     dietaryOptions: ["Vegetarian", "Vegan", "Gluten free", "Dairy free", "Halal", "Kosher", "Nut allergy", "Shellfish allergy", "Egg allergy", "Other"],
     dietaryPlaceholder: "Start typing, or pick from the list",
-    dietaryHelp: "Pick as many as you need.",
     dietaryOther: (name: string) => `Anything else for ${name}? A word or two`,
     dietaryOtherMissing: "Add a word or two so the kitchen knows.",
     dietaryEmpty: "Nothing matches. Pick Other and tell us in a word.",

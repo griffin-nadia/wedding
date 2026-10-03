@@ -112,6 +112,11 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   const { household, setHousehold } = useHousehold()
   const { setDim } = useSceneDim()
   const [open, setOpen] = useState(openOnLoad)
+  // v3 Q9: while the sheet is open the letter steps aside and the sheet sits over the scene, dimmed to 40%
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-sheet", open)
+    return () => document.documentElement.removeAttribute("data-sheet")
+  }, [open])
   const [step, setStep] = useState(1)
   const [dir, setDir] = useState<"fwd" | "back">("fwd")
   const [error, setError] = useState("")
@@ -304,10 +309,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
               <>
                 {coming.length > 0 && (
                   <section aria-labelledby="diet-q" className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1">
-                      <h3 id="diet-q" className="font-medium text-foreground">{t.rsvp.dietary}</h3>
-                      <p className="text-sm text-muted-foreground">{t.rsvp.dietaryHelp}</p>
-                    </div>
+                    <h3 id="diet-q" className="font-medium text-foreground">{t.rsvp.dietary}</h3>
                     {coming.map((g) => (
                       <DietField key={g.id} g={g} name={nameOf(g)} error={missing[`diet-other-${g.id}`]} onChange={(dietary) => setGuest(g.id, { dietary })} />
                     ))}
