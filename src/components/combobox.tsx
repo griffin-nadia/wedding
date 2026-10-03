@@ -63,28 +63,34 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
               if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, options.length - 1)) }
               else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)) }
               else if (e.key === "Enter") { const o = active >= 0 ? options[active] : undefined; if (o) { e.preventDefault(); pick(o) } }
-              else if (e.key === "Escape") setOpen(false)
+              // Escape closes the list only; the sheet around it stays open
+              else if (e.key === "Escape" && showList) setOpen(false)
               else if (e.key === "Backspace" && !query && tags.length && onRemoveTag) onRemoveTag(tags[tags.length - 1])
             }}
             className="combo-input" />
         </div>
         {action}
+        {!showList && <ul id={`${id}-list`} role="listbox" aria-label={label} hidden />}
         {showList && (
-          <ul id={`${id}-list`} role="listbox" aria-label={label} className="combo-list">
-            {options.map((o, i) => (
-              <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={i === active}
-                onMouseDown={(e) => { e.preventDefault(); pick(o) }} className="combo-option">
-                {o.img !== undefined && (o.img ? <img src={o.img} alt="" className="size-8 shrink-0 rounded-sm object-cover" /> : <span aria-hidden className="size-8 shrink-0 rounded-sm bg-muted" />)}
-                <span className="min-w-0">
-                  <span className="block truncate">{o.label}</span>
-                  {o.sub && <span className="block truncate text-xs text-muted-foreground">{o.sub}</span>}
-                </span>
-              </li>
-            ))}
-            {status === "loading" && slow && !options.length && [0, 1, 2].map((k) => <li key={`s${k}`} aria-hidden className="combo-option"><span className="skeleton-wait washi block h-4 w-2/3 rounded-sm bg-muted" /></li>)}
-            {status === "empty" && <li role="presentation" className="combo-note">{emptyText}</li>}
-            {status === "error" && <li role="presentation" className="combo-note">{errorText}</li>}
-          </ul>
+          <div className="combo-list">
+            {(
+              <ul id={`${id}-list`} role="listbox" aria-label={label} hidden={!options.length}>
+                {options.map((o, i) => (
+                  <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={i === active}
+                    onMouseDown={(e) => { e.preventDefault(); pick(o) }} className="combo-option">
+                    {o.img !== undefined && (o.img ? <img src={o.img} alt="" className="size-8 shrink-0 rounded-sm object-cover" /> : <span aria-hidden className="size-8 shrink-0 rounded-sm bg-muted" />)}
+                    <span className="min-w-0">
+                      <span className="block truncate">{o.label}</span>
+                      {o.sub && <span className="block truncate text-xs text-muted-foreground">{o.sub}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {status === "loading" && slow && !options.length && <div aria-hidden>{[0, 1, 2].map((k) => <div key={k} className="combo-option"><span className="skeleton-wait washi block h-4 w-2/3 rounded-sm bg-muted" /></div>)}</div>}
+            {status === "empty" && <p className="combo-note">{emptyText}</p>}
+            {status === "error" && <p className="combo-note">{errorText}</p>}
+          </div>
         )}
         <p aria-live="polite" className="sr-only">{status === "loading" ? "Searching" : status === "results" ? `${options.length} results` : status === "empty" ? emptyText : ""}</p>
       </div>

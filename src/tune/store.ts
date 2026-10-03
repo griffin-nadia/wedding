@@ -10,9 +10,9 @@ export type TuneState = { overrides: Record<Scope, Record<string, string>>; note
 /** Prototype switches to try with Nadia and Griffin. The first value is what ships. */
 export const OPTIONS: { key: string; label: string; values: [string, string][] }[] = [
   { key: "preset", label: "Theme", values: [["letter", "Letter"], ["storybook", "Storybook"], ["crisp", "Crisp"]] },
-  { key: "density", label: "Density", values: [["auto", "From theme"], ["compact", "Compact"], ["comfortable", "Comfortable"], ["roomy", "Roomy"]] },
-  { key: "round", label: "Roundness", values: [["auto", "From theme"], ["sharp", "Sharp"], ["soft", "Soft"], ["round", "Round"]] },
-  { key: "scene", label: "Scene", values: [["auto", "From theme"], ["photo", "Photo"], ["paper", "Paper"], ["plate", "Painted"]] },
+  { key: "density", label: "Density", values: [["auto", "Theme"], ["compact", "Compact"], ["comfortable", "Comfortable"], ["roomy", "Roomy"]] },
+  { key: "round", label: "Roundness", values: [["auto", "Theme"], ["sharp", "Sharp"], ["soft", "Soft"], ["round", "Round"]] },
+  { key: "scene", label: "Scene", values: [["auto", "Theme"], ["photo", "Photo"], ["paper", "Paper"], ["plate", "Painted"]] },
   { key: "lantern", label: "Lantern toggle", values: [["chrome", "Top corner"], ["letter", "End of the letter"]] },
   { key: "texture", label: "Paper texture on the letter", values: [["on", "On"], ["off", "Off"]] },
   { key: "nav", label: "Nav from 768", values: [["bar", "Top bar"], ["dock", "Dock at the bottom"]] },

@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { VenueMap } from "@/components/venue-map"
+import { Segmented } from "@/components/segmented"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
@@ -90,26 +91,13 @@ function Details() {
   )
 }
 
-/** Tabs (options lab only, or if a second event is added): the active tab sits between two thin rules that slide (200 ms). */
+/** Tabs (options lab only, or if a second event is added): the same Segmented control as everywhere else. */
 function DayTabs({ panels }: { panels: { id: string; label: string; body: ReactNode }[] }) {
   const [tab, setTab] = useState(panels[0].id)
-  const list = useRef<HTMLDivElement>(null)
-  const [mark, setMark] = useState<{ x: number; w: number } | null>(null)
-  useLayoutEffect(() => {
-    const b = list.current?.querySelector<HTMLElement>('[aria-selected="true"]')
-    if (b && list.current) setMark({ x: b.offsetLeft, w: b.offsetWidth })
-  }, [tab])
   return (
     <div className="flex flex-col gap-6">
-      <div ref={list} role="tablist" className="day-tabs relative flex gap-2">
-        {mark && <span aria-hidden className="day-tab-mark" style={{ transform: `translateX(${mark.x}px)`, width: mark.w }} />}
-        {panels.map((p) => (
-          <button key={p.id} role="tab" id={`tab-${p.id}`} aria-selected={tab === p.id} aria-controls={`panel-${p.id}`} onClick={() => setTab(p.id)}
-            onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const i = panels.findIndex((x) => x.id === tab); const n = panels[(i + (e.key === "ArrowRight" ? 1 : panels.length - 1)) % panels.length]; setTab(n.id); requestAnimationFrame(() => document.getElementById(`tab-${n.id}`)?.focus()) } }}
-            tabIndex={tab === p.id ? 0 : -1} className="label-caps relative min-h-11 px-4 text-muted-foreground outline-2 outline-offset-2 outline-transparent focus-visible:outline-ring aria-selected:text-foreground">{p.label}</button>
-        ))}
-      </div>
-      {panels.map((p) => <div key={p.id} role="tabpanel" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} hidden={tab !== p.id}>{p.body}</div>)}
+      <Segmented role="tablist" idPrefix="day" label="The day" value={tab} onChange={setTab} items={panels.map((p) => ({ value: p.id, label: p.label }))} />
+      {panels.map((p) => <div key={p.id} role="tabpanel" id={`day-panel-${p.id}`} aria-labelledby={`day-tab-${p.id}`} hidden={tab !== p.id}>{p.body}</div>)}
     </div>
   )
 }

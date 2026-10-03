@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { RotateCcw } from "lucide-react"
 import { tuneEnabled } from "@/tune/launcher"
+import { Segmented } from "@/components/segmented"
+import { Button } from "@/components/ui/button"
 import { COUPLE } from "@/content/en"
 import { cn } from "@/lib/utils"
 
@@ -35,12 +37,10 @@ export function LabPage() {
       <main className="flex min-w-0 flex-col gap-4 p-4 md:p-6">
         <header className="flex flex-wrap items-center gap-3">
           <p className="font-display text-2xl text-foreground">{COUPLE.first[0]}&amp;{COUPLE.second[0]} <span className="label-caps text-muted-foreground">Options lab</span></p>
-          <nav aria-label="Preview page" className="flex flex-wrap gap-1 md:ml-auto">
-            {PAGES.map(([label, p]) => (
-              <button key={label} type="button" aria-pressed={path === p} onClick={() => { setPath(p); setN(n + 1) }} className="state min-h-11 rounded-sm px-3 text-foreground">{label}</button>
-            ))}
-            <button type="button" onClick={replayArrival} className="state inline-flex min-h-11 items-center gap-2 rounded-sm px-3 text-foreground"><RotateCcw className="size-4" aria-hidden />Replay arrival</button>
-          </nav>
+          <div className="flex flex-wrap items-center gap-2 md:ml-auto">
+            <Segmented label="Preview page" value={path} onChange={(p) => { setPath(p); setN(n + 1) }} items={PAGES.map(([label, p]) => ({ value: p, label }))} />
+            <Button variant="outline" onClick={replayArrival}><RotateCcw className="size-4" aria-hidden />Replay arrival</Button>
+          </div>
         </header>
         <div className="flex flex-wrap items-start gap-6">
           <figure className="flex flex-col gap-2">

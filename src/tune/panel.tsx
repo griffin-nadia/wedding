@@ -3,6 +3,7 @@ import { Download, MapPin, RotateCcw, X } from "lucide-react"
 import tokensCss from "@/styles/tokens.css?raw"
 import { empty, exportJson, load, OPTIONS, save, type Note, type Scope, type TuneState } from "./store"
 import { cn } from "@/lib/utils"
+import { Segmented } from "@/components/segmented"
 
 /**
  * The tuning panel: every token in tokens.css (read from the file itself, so it never drifts),
@@ -168,18 +169,14 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
           <p className="label-caps flex-1 text-foreground">Adjust · {changed} changed</p>
           {onClose && <button type="button" onClick={onClose} aria-label="Close" className="press grid size-11 place-items-center rounded-sm text-foreground"><X className="size-5" aria-hidden /></button>}
         </header>
-        <div className="flex gap-1 border-b border-border p-2" role="tablist">
-          {(["tokens", "options", "notes"] as const).map((x) => (
-            <button key={x} role="tab" aria-selected={tab === x} onClick={() => setTab(x)} className="state min-h-11 flex-1 rounded-sm text-foreground">{x === "tokens" ? "Tokens" : x === "options" ? "Options" : `Notes (${state.notes.length})`}</button>
-          ))}
+        <div className="border-b border-border p-2">
+          <Segmented role="tablist" label="Adjust" value={tab} onChange={setTab} items={[{ value: "tokens", label: "Tokens" }, { value: "options", label: "Options" }, { value: "notes", label: `Notes (${state.notes.length})` }]} />
         </div>
         {tab === "tokens" ? (
           <div className="flex-1 overflow-y-auto p-3">
             <div className="mb-3 flex items-center gap-2">
               <span className="label-caps text-muted-foreground">System colours for</span>
-              {(["autumn", "lantern"] as const).map((m) => (
-                <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)} className="state min-h-11 rounded-sm px-3 text-foreground">{m === "autumn" ? "Light" : "Lantern"}</button>
-              ))}
+              <Segmented label="System colours for" size="sm" value={mode} onChange={setMode} items={[{ value: "autumn", label: "Light" }, { value: "lantern", label: "Lantern" }]} />
             </div>
             <input className="state field mb-3" placeholder="Find a token" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Find a token" />
             {GROUPS.map(([g]) => {
@@ -197,14 +194,10 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
             <p className="text-sm">Prototype switches. The first choice in each is what ships; export keeps your picks.</p>
             {OPTIONS.map((o) => (
-              <div key={o.key} role="group" aria-label={o.label} className="flex flex-col gap-2">
+              <div key={o.key} className="flex flex-col gap-2">
                 <p className="label-caps text-foreground">{o.label}</p>
-                <div className="flex gap-2">
-                  {o.values.map(([v, label]) => (
-                    <button key={v} type="button" aria-pressed={(state.options[o.key] ?? o.values[0][0]) === v}
-                      onClick={() => update({ ...state, options: { ...state.options, [o.key]: v } })} className="state min-h-11 flex-1 rounded-sm text-foreground">{label}</button>
-                  ))}
-                </div>
+                <div className="overflow-x-auto"><Segmented label={o.label} size="sm" value={state.options[o.key] ?? o.values[0][0]}
+                  onChange={(v) => update({ ...state, options: { ...state.options, [o.key]: v } })} items={o.values.map(([v, label]) => ({ value: v, label }))} /></div>
               </div>
             ))}
           </div>

@@ -244,7 +244,9 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
       <Dialog.Portal>
         <Dialog.Overlay className="rsvp-overlay" />
         <Dialog.Content className="letter rsvp-letter" aria-describedby={undefined}
-          onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}>
+          onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}
+          // Escape inside an open combobox closes its list, not the sheet
+          onEscapeKeyDown={(e) => { const el = e.target as HTMLElement | null; if (el?.getAttribute("role") === "combobox" && el.getAttribute("aria-expanded") === "true") e.preventDefault() }}>
           <Dialog.Close className="rsvp-close press" aria-label={t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
           {done ? <div className="rsvp-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
           <header className="rsvp-head flex flex-col gap-3">

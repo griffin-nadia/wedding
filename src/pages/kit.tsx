@@ -19,6 +19,7 @@ import { InlineSubmit } from "@/components/inline-submit"
 import { FormField } from "@/components/form-field"
 import { SongPicker } from "@/components/song-picker"
 import { Combobox } from "@/components/combobox"
+import { Segmented } from "@/components/segmented"
 import { toast } from "@/components/toast"
 import { COUPLE } from "@/content/en"
 import { useLang } from "@/lib/lang"
@@ -159,6 +160,7 @@ const GROUPS: Group[] = [
     pages: [
       { id: "letter", name: "Letter and scene", tokens: "--letter-*, --scene-*", purpose: "The only UI surface. 620 wide on desktop, forest edge (honey in Lantern), paper blur within 24px.", render: () => <LetterDemo /> },
       { id: "envelope", name: "Envelope", purpose: "Arrival, first visit only. Hover lifts the flap and a corner peeks out; tap opens it (flap 300 ms, letter rises 600 ms).", render: () => <EnvelopeDemo /> },
+      { id: "segmented", name: "Tabs and segmented", purpose: "One control for every set of tabs or choices (The day tabs, modes, the lab, the tuning panel): the nav's sliding sage marker, 200 ms, arrow keys move and choose.", render: () => <SegDemo /> },
       { id: "nav", name: "Nav", purpose: "Four items, rendered once: a floating dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms).", render: () => (
         <div className="flex max-w-sm flex-col gap-3">
           <div className="relative grid h-16 grid-cols-4 rounded-3xl border bg-background p-1 shadow-paper">
@@ -215,6 +217,16 @@ function Between() {
           </div>
         </section>
       ))}
+    </div>
+  )
+}
+
+function SegDemo() {
+  const [a, setA] = useState("details"); const [b2, setB] = useState("comfortable")
+  return (
+    <div className="flex flex-col gap-4">
+      <Segmented role="tablist" label="The day" value={a} onChange={setA} items={[{ value: "details", label: "Details" }, { value: "timeline", label: "Timeline" }]} />
+      <Segmented label="Density" size="sm" value={b2} onChange={setB} items={[{ value: "compact", label: "Compact" }, { value: "comfortable", label: "Comfortable" }, { value: "roomy", label: "Roomy" }]} />
     </div>
   )
 }
@@ -432,11 +444,7 @@ export function KitPage() {
     <div className="kit min-h-svh bg-background">
       <header className="sticky top-0 z-30 flex flex-wrap items-center gap-4 border-b bg-background/95 px-4 py-3 backdrop-blur md:px-6">
         <p className="font-display text-2xl text-foreground">{COUPLE.first[0]}&amp;{COUPLE.second[0]} <span className="label-caps text-muted-foreground">Design system</span></p>
-        <div role="group" aria-label="Modes" className="ml-auto flex gap-1">
-          {(["both", "autumn", "lantern"] as const).map((m) => (
-            <button key={m} type="button" aria-pressed={modes === m} onClick={() => setModes(m)} className="state min-h-11 rounded-sm px-3 text-foreground">{m === "both" ? "Both" : m === "autumn" ? "Light" : "Lantern"}</button>
-          ))}
-        </div>
+        <Segmented label="Modes" className="ml-auto" value={modes} onChange={setModes} items={[{ value: "both", label: "Both" }, { value: "autumn", label: "Light" }, { value: "lantern", label: "Lantern" }]} />
         {tuneEnabled && <TuneLauncher />}
       </header>
       <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-6 md:px-6 lg:grid-cols-[220px_1fr]">

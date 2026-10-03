@@ -323,9 +323,6 @@
 .timeline-now { position: absolute; left: 50%; z-index: 2; translate: -50% -50%; list-style: none; }
 @media (prefers-reduced-motion: reduce) { .timeline-fill { animation: none !important; } .timeline-row { opacity: 1; transform: none; transition: none; } }
 @media print { .timeline-fill { animation: none !important; transform: none !important; } .timeline-row { opacity: 1; transform: none; } }
-/* The day tabs (lab option): the active tab sits between two thin rules that slide (200 ms) */
-.day-tab-mark { position: absolute; top: 0; bottom: 0; left: 0; border-inline: 1px solid var(--sys-ink); transition: transform 200ms var(--ease-paper), width 200ms var(--ease-paper); pointer-events: none; }
-@media (prefers-reduced-motion: reduce) { .day-tab-mark { transition: none; } }
 
 /* Seal fill on the chosen answer: a small press when it lands. */
 @keyframes seal-in { from { transform: scale(0.6); } 70% { transform: scale(1.12); } to { transform: scale(1); } }
@@ -657,3 +654,12 @@
 .chrome-lantern { position: fixed; z-index: 41; top: 12px; right: 12px; background: var(--letter-bg); box-shadow: var(--shadow-paper); }
 @media (min-width: 768px) { .chrome-lantern { position: static; width: 44px; height: 44px; background: transparent; box-shadow: none; } }
 .home-countdown .numerals { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); font-variant-numeric: lining-nums tabular-nums; }
+/* Segmented / tabs: one look everywhere, the nav's sliding sage marker (200 ms) */
+.segmented { position: relative; display: inline-flex; gap: var(--space-1); padding: var(--space-1); border-radius: var(--radius-button); background: color-mix(in oklab, var(--sys-fill) 45%, transparent); }
+.segmented-mark { position: absolute; top: var(--space-1); bottom: var(--space-1); left: 0; border-radius: calc(var(--radius-button) - 4px); background: var(--sys-surface-alt); box-shadow: 0 1px 2px rgb(var(--sys-shadow-tint) / 0.12); transition: transform 200ms var(--ease-paper), width 200ms var(--ease-paper); pointer-events: none; }
+.segmented-item { position: relative; min-height: 44px; padding: 0 var(--space-4); border-radius: calc(var(--radius-button) - 4px); font-family: var(--font-label); font-size: var(--type-ui-small-size); font-weight: 500; color: var(--sys-ink-soft); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-quick); white-space: nowrap; }
+.segmented-item[data-on="true"] { color: var(--sys-ink); }
+.segmented-item:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .segmented-item:hover { color: var(--sys-ink); } }
+.segmented-sm .segmented-item { min-height: 36px; padding: 0 var(--space-3); }
+@media (prefers-reduced-motion: reduce) { .segmented-mark { transition: none; } }
