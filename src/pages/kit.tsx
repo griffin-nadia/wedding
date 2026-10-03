@@ -249,7 +249,7 @@ function SongDemo() {
   const [songs, setSongs] = useState(["September · Earth, Wind & Fire"])
   return (
     <div className="max-w-md">
-      <SongPicker songs={songs} onChange={setSongs} token="kit" t={{ label: "A song for the dance floor?", hint: "Search by song or artist, or just type it", placeholder: "Search for a song", addTyped: "Add this song", justType: "Not on there? Just type it", searching: "Searching…", noMatch: (q) => `No match. Add "${q}" as typed`, error: "Search isn't working right now. Add what you typed", remove: (s) => `Remove ${s}`, full: (n) => `${n} songs added.`, added: "Your songs" }} />
+      <SongPicker songs={songs} onChange={setSongs} token="kit" t={{ label: "A song for the dance floor?", hint: "Search by song or artist, or just type it", placeholder: "Search for a song", addTyped: "Add this song", justType: "Not on there? Just type it", searching: "Searching…", noMatch: (q) => `No match. Add "${q}" as typed`, error: "Search isn't working right now. Add what you typed", remove: (s) => `Remove ${s}`, full: (n) => `${n} songs added.`, added: "Your songs", versions: (n) => `${n} versions`, hideVersions: "Hide versions" }} />
     </div>
   )
 }

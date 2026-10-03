@@ -242,6 +242,8 @@ export const en = {
     songHint: "Search by song or artist, or just type it",
     searching: "Searching…",
     addTyped: "Add this song",
+    versions: (n: number) => `${n} versions`,
+    hideVersions: "Hide versions",
     justType: "Not on there? Just type it",
     noMatch: (q: string) => `Nothing matched. Add "${q}" as you typed it`,
     searchError: "Search isn't working right now. Just type it in.",

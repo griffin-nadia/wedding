@@ -3,7 +3,7 @@ import { Check, X } from "lucide-react"
 import { FormField, describedBy } from "@/components/form-field"
 import { cn } from "@/lib/utils"
 
-export type Option = { key: string; label: string; sub?: string; img?: string | null; selected?: boolean }
+export type Option = { key: string; label: string; sub?: string; img?: string | null; selected?: boolean; kind?: "more" | "version" }
 export type ComboStatus = "idle" | "loading" | "results" | "empty" | "error"
 
 /**
@@ -77,7 +77,7 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
               <ul id={`${id}-list`} role="listbox" aria-label={label} aria-multiselectable={multi || undefined} hidden={!options.length}>
                 {options.map((o, i) => (
                   <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={multi ? Boolean(o.selected) : i === active} data-active={i === active || undefined}
-                    onMouseDown={(e) => { e.preventDefault(); pick(o) }} className="combo-option">
+                    onMouseDown={(e) => { e.preventDefault(); pick(o) }} className={cn("combo-option", o.kind && `combo-option-${o.kind}`)}>
                     {multi && <Check aria-hidden className={cn("size-4 shrink-0 text-primary", !o.selected && "invisible")} />}
                     {o.img !== undefined && (o.img ? <img src={o.img} alt="" className="size-8 shrink-0 rounded-sm object-cover" /> : <span aria-hidden className="size-8 shrink-0 rounded-sm bg-muted" />)}
                     <span className="min-w-0">

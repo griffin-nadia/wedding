@@ -141,7 +141,7 @@ export async function searchSongs(q: string, token: string, signal?: AbortSignal
   const term = q.trim()
   if (term.length < 2) return []
   try {
-    const res = await fetch(`https://itunes.apple.com/search?media=music&entity=song&limit=8&country=AU&term=${encodeURIComponent(term)}`, { signal })
+    const res = await fetch(`https://itunes.apple.com/search?media=music&entity=song&limit=25&country=AU&term=${encodeURIComponent(term)}`, { signal })
     if (!res.ok) throw new Error(String(res.status))
     const data = await res.json() as { results?: { trackName?: string; artistName?: string; trackViewUrl?: string; artworkUrl60?: string; artworkUrl100?: string }[] }
     return (data.results ?? []).filter((r) => r.trackName && r.artistName)

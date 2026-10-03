@@ -778,3 +778,6 @@ svg.lucide { stroke-width: 1.5; }
 .crew-blank { min-height: 100svh; background: var(--letter-bg); }
 /* v3 A: a segmented control is content width and centred on phones (choice rows keep theirs to the right) */
 @media (max-width: 767px) { .segmented:not(.choice-row .segmented) { display: flex; margin-inline: auto; } }
+/* Song versions (v3 Q3): the "N versions" row reads as a link under its song; versions sit indented under it */
+.combo-option-more { min-height: 44px; padding-left: calc(var(--space-3) + 32px + var(--space-3)); color: var(--sys-link); font-size: var(--type-small-size); text-decoration: underline; text-underline-offset: 3px; }
+.combo-option-version { padding-left: calc(var(--space-3) + 32px + var(--space-3)); }

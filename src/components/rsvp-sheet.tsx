@@ -315,7 +315,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                 )}
                 {coming.length > 0 && <>
                 <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song}
-                  t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded }} />
+                  t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded, versions: t.rsvp.versions, hideVersions: t.rsvp.hideVersions }} />
                 <div className="flex flex-col">
                   <div className="grid grid-cols-1 gap-x-3 gap-y-(--form-block-gap) min-[400px]:grid-cols-2">
                     <FormField id="arr" label={t.rsvp.arrival}>
