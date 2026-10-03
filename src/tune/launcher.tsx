@@ -52,7 +52,7 @@ export function SiteTune() {
       if (q.get("tune") === "0") sessionStorage.removeItem("ng-tune-open")
       setOpen(sessionStorage.getItem("ng-tune-open") === "1")
       const given = q.get("c")
-      if (given) void checkCrew(given).then((ok) => { if (ok) { try { localStorage.setItem("ng-crew", given) } catch { /* fine */ } setCrew(true) } })
+      if (given) void checkCrew(given).then((r) => { if (r === "yes") { try { localStorage.setItem("ng-crew", given) } catch { /* fine */ } setCrew(true) } })
       else if (localStorage.getItem("ng-crew")) setCrew(true)
     } catch { /* ignore */ }
   }, [])

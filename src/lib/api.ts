@@ -241,8 +241,8 @@ export async function saveStamps(token: string, stamps: string[]): Promise<void>
 }
 
 /** Crew links (/kit and /lab): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */
-export async function checkCrew(token: string): Promise<boolean> {
-  if (!config.apiUrl) return true
-  if (!token) return false
-  try { const d = await call(`${config.apiUrl}?action=crew&token=${encodeURIComponent(token)}`); return d.ok === true && typeof d.name === "string" && d.name.length > 0 } catch { return false }
+export async function checkCrew(token: string): Promise<"yes" | "no" | "error"> {
+  if (!config.apiUrl) return "yes"
+  if (!token) return "no"
+  try { const d = await call(`${config.apiUrl}?action=crew&token=${encodeURIComponent(token)}`); return d.ok === true && typeof d.name === "string" && d.name.length > 0 ? "yes" : "no" } catch { return "error" }
 }
