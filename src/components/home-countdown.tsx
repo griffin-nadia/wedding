@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { partsAt, sentence } from "@/components/countdown"
+import { partsAt, sentence } from "@/lib/countdown-parts"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
 
