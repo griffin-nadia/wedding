@@ -175,6 +175,7 @@
   --button-bg: var(--sys-accent);
   --button-ink: var(--sys-accent-ink);
   --button-bg-hover: color-mix(in oklab, var(--sys-accent) 92%, var(--sys-ink));
+  --button-line-hover: color-mix(in oklab, var(--sys-accent) 45%, var(--sys-ink)); /* hover: border only */
   --button-height: var(--density-field);
   --button-radius: var(--radius-button);
   --button-pad: var(--space-5);

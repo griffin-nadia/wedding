@@ -1,10 +1,13 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react"
+import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 /**
  * One tab / segmented control for the whole site and its tools (The day tabs, /kit modes, /lab pages,
  * the tuning panel's tabs and options). Same look as the nav: a sage marker slides to the chosen item
  * in 200 ms. role="tablist" (with panels) or "radiogroup" (a choice); arrow keys move and choose.
+ * A choice shows the selected state in full (v3 R): secondary fill, 2px primary line and a tick, in a
+ * slot every item reserves so nothing shifts when the tick appears.
  */
 export function Segmented<T extends string>({ items, value, onChange, label, role = "radiogroup", size = "md", className, idPrefix, id, invalid, describedBy }: {
   items: { value: T; label: ReactNode }[]; value: T | ""; onChange: (v: T) => void; label: string
@@ -42,6 +45,7 @@ export function Segmented<T extends string>({ items, value, onChange, label, rol
             id={idPrefix ? `${idPrefix}-tab-${it.value}` : undefined} aria-controls={tab && idPrefix ? `${idPrefix}-panel-${it.value}` : undefined}
             {...(tab ? { "aria-selected": on } : { "aria-checked": on })} tabIndex={reachable ? 0 : -1}
             onClick={() => onChange(it.value)} onKeyDown={(e) => move(e, i)} className="segmented-item">
+            {!tab && <Check aria-hidden className={cn("segmented-tick size-5", !on && "invisible")} />}
             {it.label}
           </button>
         )

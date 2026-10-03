@@ -47,7 +47,7 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
               {t.label}
               {onRemoveTag && (
                 <button type="button" aria-label={removeLabel(t.label)} onClick={(e) => { e.stopPropagation(); onRemoveTag(t) }} className="combo-tag-x press">
-                  <X className="size-3.5" aria-hidden />
+                  <X className="size-5" aria-hidden />
                 </button>
               )}
             </span>
@@ -78,7 +78,7 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
                 {options.map((o, i) => (
                   <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={multi ? Boolean(o.selected) : i === active} data-active={i === active || undefined}
                     onMouseDown={(e) => { e.preventDefault(); pick(o) }} className={cn("combo-option", o.kind && `combo-option-${o.kind}`)}>
-                    {multi && <Check aria-hidden className={cn("size-4 shrink-0 text-primary", !o.selected && "invisible")} />}
+                    {multi && <Check aria-hidden className={cn("size-5 shrink-0 text-primary", !o.selected && "invisible")} />}
                     {o.img !== undefined && (o.img ? <img src={o.img} alt="" className="size-8 shrink-0 rounded-sm object-cover" /> : <span aria-hidden className="size-8 shrink-0 rounded-sm bg-muted" />)}
                     <span className="min-w-0">
                       <span className="block break-words">{o.label}</span>

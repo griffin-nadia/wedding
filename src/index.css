@@ -240,8 +240,9 @@
   outline: 2px solid transparent;
   outline-offset: 2px;
   transition: background-color var(--duration-quick) var(--ease-paper), transform var(--duration-press) var(--ease-paper);
-  @media (hover: hover) { &:hover:not(:disabled) { background-color: var(--button-bg-hover); } }
-  &[data-force="hover"] { background-color: var(--button-bg-hover); }
+  /* Hover is border-only, like every control: same fill, a stronger line (v3 R) */
+  @media (hover: hover) { &:hover:not(:disabled) { border-color: var(--button-line-hover); } }
+  &[data-force="hover"] { border-color: var(--button-line-hover); }
   &:focus-visible, &[data-force="focus"] { outline-color: var(--input-focus); }
   &:active:not(:disabled), &[data-force="pressed"] { transform: scale(var(--press-scale)); }
   &:disabled { background-color: var(--input-disabled-bg); color: color-mix(in oklab, var(--sys-ink) 50%, transparent); border-color: var(--sys-line); cursor: not-allowed; }
@@ -314,8 +315,7 @@
 @supports (animation-timeline: view()) {
   .timeline-fill { animation: timeline-fill linear both; animation-timeline: view(); animation-range: entry 10% cover 60%; }
 }
-.timeline-row { position: relative; display: grid; grid-template-columns: 1fr 40px 1fr; align-items: start; column-gap: var(--space-3); opacity: 0; transform: translateY(8px); transition: opacity var(--duration-rise) var(--ease-letter), transform var(--duration-rise) var(--ease-letter); }
-.timeline-row.is-seen { opacity: 1; transform: none; }
+.timeline-row { position: relative; display: grid; grid-template-columns: 1fr 40px 1fr; align-items: start; column-gap: var(--space-3); }
 .timeline-icon { grid-column: 2; grid-row: 1; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-pill); background: var(--letter-bg); border: 1px solid var(--sys-moss); color: var(--sys-moss); position: relative; z-index: 1; }
 .timeline-time { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); }
 .is-left .timeline-time { grid-column: 1; grid-row: 1; text-align: right; }
@@ -324,8 +324,8 @@
 .is-right .timeline-text { grid-column: 1; grid-row: 1; text-align: right; }
 @media (max-width: 479px) { .timeline-time { font-size: var(--type-lead-size); line-height: var(--type-lead-leading); } }
 .timeline-now { position: absolute; left: 50%; z-index: 2; translate: -50% -50%; list-style: none; }
-@media (prefers-reduced-motion: reduce) { .timeline-fill { animation: none !important; } .timeline-row { opacity: 1; transform: none; transition: none; } }
-@media print { .timeline-fill { animation: none !important; transform: none !important; } .timeline-row { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .timeline-fill { animation: none !important; } }
+@media print { .timeline-fill { animation: none !important; transform: none !important; } }
 
 /* Seal fill on the chosen answer: a small press when it lands. */
 @keyframes seal-in { from { transform: scale(0.6); } 70% { transform: scale(1.12); } to { transform: scale(1); } }
@@ -565,9 +565,9 @@
 .rsvp-overlay[data-state="open"] { animation: fade-in var(--duration-settle) var(--ease-paper) both; }
 @keyframes letter-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-.rsvp-close { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--sys-ink); outline: 2px solid transparent; outline-offset: 2px; }
+.rsvp-close { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid transparent; border-radius: var(--radius-pill); color: var(--sys-ink); outline: 2px solid transparent; outline-offset: 2px; }
 .rsvp-close:focus-visible { outline-color: var(--input-focus); }
-@media (hover: hover) { .rsvp-close:hover { background: var(--sys-fill); } }
+@media (hover: hover) { .rsvp-close:hover { border-color: var(--sys-line-strong); } }
 .rsvp-actions { flex: none; display: flex; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--sys-line); }
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
 /* Steps slide the way you're going (300 ms); a fade only under reduced motion */
@@ -621,7 +621,7 @@
 .combo-option { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: var(--space-1) var(--space-2); border-radius: var(--radius-chip); cursor: pointer; font-family: var(--font-label); font-size: var(--type-ui-size); color: var(--sys-ink); }
 .combo-option[data-active] { background: var(--input-selected-bg); }
 [aria-multiselectable] .combo-option[aria-selected="true"] { font-weight: 500; }
-@media (hover: hover) { .combo-option:hover { background: var(--input-selected-bg); } }
+@media (hover: hover) { .combo-option:hover { box-shadow: inset 0 0 0 1px var(--sys-line-strong); } }
 .combo-note { padding: var(--space-3) var(--space-2); font-family: var(--font-label); font-size: var(--type-ui-small-size); color: var(--sys-ink-muted); }
 /* Chip: 36 tall, 44 tap area, Inter 14, wraps with 8px gaps */
 .chip { position: relative; display: inline-flex; align-items: center; gap: var(--space-1); height: 36px; padding-inline: var(--space-3); border-radius: var(--radius-chip); font-family: var(--font-label); font-size: var(--type-ui-small-size); font-weight: 500; color: var(--sys-ink); }
@@ -799,3 +799,8 @@ svg.lucide { stroke-width: 1.5; }
 .home-count-tile .numerals { font-family: var(--font-display); font-size: var(--type-lead-size); line-height: 24px; color: var(--sys-ink); }
 .home-count-unit { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-muted); }
 @media (min-width: 1024px) { .home-count { margin-left: 0; } }
+/* Segmented choice: the tick in its reserved slot (v3 R) */
+.segmented[role="radiogroup"] .segmented-item { display: inline-flex; align-items: center; gap: var(--space-1); padding-left: var(--space-3); }
+.segmented-tick { color: var(--sys-accent); flex: none; }
+/* Step 1 on phones: the name on its own line, the choice centred under it (v3 R) */
+@media (max-width: 767px) { .choice-row { flex-direction: column; align-items: stretch; } .choice-row .segmented { align-self: center; } }

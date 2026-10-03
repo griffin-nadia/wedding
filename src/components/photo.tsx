@@ -45,7 +45,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
   ) : (
     <div role="img" aria-label={words.caption || words.alt} className="photo-placeholder grid size-full place-items-center p-4 text-center">
       <span className="space-y-2">
-        <Camera aria-hidden className="mx-auto size-5 text-muted-foreground" strokeWidth={1.5} />
+        <Camera aria-hidden className="mx-auto size-5 text-muted-foreground" />
         {words.caption && <span className="block text-sm text-muted-foreground">{words.caption}</span>}
       </span>
     </div>

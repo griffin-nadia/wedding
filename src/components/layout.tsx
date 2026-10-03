@@ -57,7 +57,7 @@ function Nav() {
         {links.map((l) => (
           <li key={l.to}>
             <NavLink to={l.to} end className={({ isActive }) => cn("site-nav-link", isActive && "is-active")}>
-              <l.icon className="size-6 md:hidden" strokeWidth={1.6} aria-hidden />
+              <l.icon className="size-5 md:hidden" aria-hidden />
               <span>{t.nav[l.key]}</span>
             </NavLink>
           </li>

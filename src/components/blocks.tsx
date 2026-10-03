@@ -7,7 +7,7 @@ import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 export function Chip({ on, onClick, invalid = false, children }: { on: boolean; onClick: () => void; invalid?: boolean; children: ReactNode }) {
   return (
     <button type="button" aria-pressed={on} aria-invalid={invalid && !on ? true : undefined} onClick={onClick} className="state chip">
-      {on && <Check className="chip-tick size-4 text-primary" strokeWidth={3} aria-hidden />}
+      {on && <Check className="chip-tick size-5 text-primary" aria-hidden />}
       {children}
     </button>
   )
@@ -30,7 +30,7 @@ export function ChoiceCard({ value, id, on, children, onFocus, invalid, ...rest 
 export function Seal({ on }: { on: boolean }) {
   return (
     <span aria-hidden className={cn("grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors", on ? "seal border-primary bg-primary text-primary-foreground" : "border-muted-foreground/60")}>
-      {on && <Check className="size-4" strokeWidth={3} />}
+      {on && <Check className="size-5" />}
     </span>
   )
 }
@@ -60,7 +60,7 @@ export function ReviewRow({ label, children, edit, editLabel, block = false }: {
         <span className={cn(block && "whitespace-pre-line break-words")}>{children}</span>
         <button type="button" onClick={edit} aria-label={editLabel}
           className={cn("btn-text inline-flex min-h-11 shrink-0 items-center gap-1 self-start px-2", block ? "-ml-2" : "-mt-2")}>
-          <Pencil className="size-4" aria-hidden />Edit
+          <Pencil className="size-5" aria-hidden />Edit
         </button>
       </dd>
     </div>

@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { Link } from "react-router-dom"
-import { config } from "@/lib/config"
 import { DATES } from "@/lib/wedding-dates"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
@@ -24,38 +23,23 @@ function nowOnTheDay(real: Date, times: string[]) {
   return Math.min(1, Math.max(0, (now.getTime() - start) / (end - start)))
 }
 
-/** Each row settles in once as it scrolls into view; already there under reduced motion. */
-function useSeen<T extends HTMLElement>() {
-  const ref = useRef<T>(null)
-  const [seen, setSeen] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el || typeof IntersectionObserver === "undefined") return setSeen(true)
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen(true); io.disconnect() } }, { rootMargin: "0px 0px -15% 0px" })
-    io.observe(el)
-    return () => io.disconnect()
-  }, [])
-  return [ref, seen] as const
-}
-
 function Row({ i, time, label, where, local }: { i: number; time: string; label: string; where: string; local: string | null }) {
-  const [ref, seen] = useSeen<HTMLLIElement>()
   const Icon = ICONS[i] ?? Flower2
   const left = i % 2 === 0
   return (
-    <li ref={ref} className={cn("timeline-row", left ? "is-left" : "is-right", seen && "is-seen")}>
+    <li className={cn("timeline-row", left ? "is-left" : "is-right")}>
       <p className="timeline-time numerals text-foreground">{time}</p>
-      <span aria-hidden className="timeline-icon"><Icon className="size-5" strokeWidth={1.6} /></span>
+      <span aria-hidden className="timeline-icon"><Icon className="size-5" /></span>
       <div className="timeline-text">
         <p className="font-semibold text-foreground">{label}</p>
         <p>{where}</p>
-        {local && <p className="text-sm text-muted-foreground">{local}</p>}
+        {local && <p className="text-muted-foreground">{local}</p>}
       </div>
     </li>
   )
 }
 
-/** The timeline: one thin moss line that draws in as you scroll; time and label swap sides down it. */
+/** The timeline: one thin moss line that draws in as you scroll (the only thing that moves); time and label swap sides down it. */
 function Timeline({ now }: { now: Date }) {
   const { t } = useLang()
   const nowAt = nowOnTheDay(now, t.day.schedule.map((x) => x.time))
@@ -88,42 +72,7 @@ function Details() {
   )
 }
 
-/** The countdown (v3 A): each unit on its own paper tile, one row, seconds ticking. The cute moment of this page. */
-function CountdownTiles() {
-  const { t } = useLang()
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    let id = 0
-    const start = () => { clearInterval(id); id = window.setInterval(() => setNow(new Date()), 1000) }
-    const vis = () => (document.hidden ? clearInterval(id) : (setNow(new Date()), start()))
-    start(); document.addEventListener("visibilitychange", vis)
-    return () => { clearInterval(id); document.removeEventListener("visibilitychange", vis) }
-  }, [])
-  const ms = Math.max(0, new Date(config.weddingStart).getTime() - now.getTime())
-  const parts = [
-    [Math.floor(ms / 86_400_000), t.countdownMore.short.days],
-    [Math.floor((ms % 86_400_000) / 3_600_000), t.countdownMore.short.hours],
-    [Math.floor((ms % 3_600_000) / 60_000), t.countdownMore.short.mins],
-    [Math.floor((ms % 60_000) / 1000), t.countdownMore.short.secs],
-  ] as const
-  if (ms === 0) return <p className="font-display text-2xl text-foreground">{t.countdownMore.married}</p>
-  return (
-    <section aria-labelledby="count-h" className="flex flex-col gap-3">
-      <h2 id="count-h" className="heading">{t.day.countdownTitle}</h2>
-      <p className="sr-only">{t.home.daysToGo(parts[0][0])}</p>
-      <div aria-hidden className="count-tiles">
-        {parts.map(([v, unit], i) => (
-          <div key={unit} className={cn("count-tile", i === 3 && "count-tile-secs")}>
-            <span className="numerals"><span className="count-num">{i === 0 ? v : String(v).padStart(2, "0")}</span></span>
-            <span className="text-xs text-muted-foreground">{unit}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-/** The day: details first, then the timeline, then the countdown. No tabs (v3 A). */
+/** The day: details, then the timeline. No tabs, no countdown (Home's row is the only one, v3 R). */
 export function DayPage() {
   const { t } = useLang()
   const [now, setNow] = useState(() => new Date())
@@ -146,7 +95,6 @@ export function DayPage() {
       </header>
       <Details />
       {timeline}
-      <CountdownTiles />
       <div className="no-print flex flex-col gap-4">
         <AddToCalendar />
         <button type="button" className="btn-text min-h-11 self-start" onClick={() => window.print()}>{t.day.print}</button>

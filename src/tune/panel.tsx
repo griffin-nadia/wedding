@@ -215,22 +215,22 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
         ) : (
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
             <button type="button" aria-pressed={pinning} onClick={() => setPinning(!pinning)} className="state inline-flex min-h-11 items-center justify-center gap-2 rounded-sm text-foreground">
-              <MapPin className="size-4" aria-hidden />{pinning ? "Click anything on the page…" : "Pin a note"}
+              <MapPin className="size-5" aria-hidden />{pinning ? "Click anything on the page…" : "Pin a note"}
             </button>
             <ol className="flex flex-col gap-2">
               {state.notes.map((n, i) => (
                 <li key={n.id} className="flex gap-2 rounded-sm border border-border p-2 text-sm">
                   <span className="tune-pin !static">{i + 1}</span>
                   <span className="min-w-0 flex-1"><span className="block text-foreground">{n.text}</span><span className="block break-words text-muted-foreground">{n.path} · {n.viewport.w}×{n.viewport.h} · {n.theme}</span></span>
-                  <button type="button" aria-label={`Delete note ${i + 1}`} onClick={() => update({ ...state, notes: state.notes.filter((x) => x.id !== n.id) })} className="press grid size-11 shrink-0 place-items-center rounded-sm"><X className="size-4" aria-hidden /></button>
+                  <button type="button" aria-label={`Delete note ${i + 1}`} onClick={() => update({ ...state, notes: state.notes.filter((x) => x.id !== n.id) })} className="press grid size-11 shrink-0 place-items-center rounded-sm"><X className="size-5" aria-hidden /></button>
                 </li>
               ))}
             </ol>
           </div>
         )}
         <footer className="flex flex-wrap items-center gap-2 border-t border-border p-3">
-          <button type="button" onClick={doExport} className="btn-primary inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg"><Download className="size-4" aria-hidden />Export</button>
-          <button type="button" onClick={() => { if (confirm("Clear every change and note?")) update(empty()) }} className="state inline-flex min-h-11 items-center gap-2 rounded-sm px-3 text-foreground"><RotateCcw className="size-4" aria-hidden />Reset</button>
+          <button type="button" onClick={doExport} className="btn-primary inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg"><Download className="size-5" aria-hidden />Export</button>
+          <button type="button" onClick={() => { if (confirm("Clear every change and note?")) update(empty()) }} className="state inline-flex min-h-11 items-center gap-2 rounded-sm px-3 text-foreground"><RotateCcw className="size-5" aria-hidden />Reset</button>
           {msg && <p role="status" className="w-full text-sm text-success">{msg}</p>}
         </footer>
       </div>
@@ -268,7 +268,7 @@ function TokenRow({ t, value, host, onChange }: { t: Token; value?: string; host
           <input type="text" aria-label={t.name} value={v} onChange={(e) => onChange(e.target.value)} className="state h-8 w-40 rounded-sm px-2 font-label text-[12px] text-foreground" />
         )
       )}
-      {value !== undefined && <button type="button" aria-label={`Reset ${t.name}`} onClick={() => onChange("")} className="press grid size-8 place-items-center rounded-sm text-muted-foreground"><RotateCcw className="size-3" aria-hidden /></button>}
+      {value !== undefined && <button type="button" aria-label={`Reset ${t.name}`} onClick={() => onChange("")} className="press grid size-8 place-items-center rounded-sm text-muted-foreground"><RotateCcw className="size-5" aria-hidden /></button>}
     </div>
   )
 }

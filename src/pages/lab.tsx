@@ -39,7 +39,7 @@ export function LabPage() {
           <p className="font-display text-2xl text-foreground">{COUPLE.first[0]}&amp;{COUPLE.second[0]} <span className="label-caps text-muted-foreground">Options lab</span></p>
           <div className="flex flex-wrap items-center gap-2 md:ml-auto">
             <Segmented label="Preview page" value={path} onChange={(p) => { setPath(p); setN(n + 1) }} items={PAGES.map(([label, p]) => ({ value: p, label }))} />
-            <Button variant="outline" onClick={replayArrival}><RotateCcw className="size-4" aria-hidden />Replay arrival</Button>
+            <Button variant="outline" onClick={replayArrival}><RotateCcw className="size-5" aria-hidden />Replay arrival</Button>
           </div>
         </header>
         <div className="flex flex-wrap items-start gap-6">

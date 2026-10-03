@@ -73,7 +73,7 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="song-picker flex flex-col gap-3">
       {full ? (
         <p className="text-success">{t.full(list.length)}</p>
       ) : (
@@ -91,18 +91,19 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
                 {q.trim() ? <ArrowRight className="size-5" aria-hidden /> : <Search className="size-5" aria-hidden />}
               </button>
             } />
-          {q.trim().length > 1 && <button type="button" onClick={() => add(q)} className="btn-text min-h-11 self-start">{t.justType}</button>}
+          {/* Always there (v3 R): with nothing typed yet it takes you to the field */}
+          <button type="button" onClick={() => (q.trim() ? add(q) : document.querySelector<HTMLInputElement>(".song-picker input")?.focus())} className="btn-text min-h-11 self-start">{t.justType}</button>
         </>
       )}
       {list.length > 0 && (
         <ul aria-label={t.added} className="flex flex-col gap-2">
           {list.map((s) => (
             <li key={s} className="flex min-h-14 items-center gap-3 rounded-md border bg-card py-1 pr-1 pl-2">
-              {art[s] ? <img src={art[s]} alt="" className="size-10 rounded-sm object-cover" /> : <span aria-hidden className="grid size-10 place-items-center rounded-sm bg-muted text-muted-foreground"><Music2 className="size-4" /></span>}
+              {art[s] ? <img src={art[s]} alt="" className="size-10 rounded-sm object-cover" /> : <span aria-hidden className="grid size-10 place-items-center rounded-sm bg-muted text-muted-foreground"><Music2 className="size-5" /></span>}
               <span className="min-w-0 flex-1 break-words font-label text-(length:--type-ui-size) text-foreground">{s}</span>
               <button type="button" onClick={() => onChange(list.filter((x) => x !== s))} aria-label={t.remove(s)}
                 className="press grid size-11 shrink-0 place-items-center rounded-sm text-muted-foreground outline-2 outline-offset-2 outline-transparent hover:text-foreground focus-visible:outline-ring">
-                <X className="size-4" aria-hidden />
+                <X className="size-5" aria-hidden />
               </button>
             </li>
           ))}

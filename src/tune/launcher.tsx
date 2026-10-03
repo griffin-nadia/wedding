@@ -28,7 +28,7 @@ export function TuneLauncher() {
   return (
     <>
       <button type="button" aria-pressed={open} onClick={() => setOpen(!open)} className="state inline-flex min-h-11 items-center gap-2 rounded-sm px-3 text-foreground">
-        <SlidersHorizontal className="size-4" aria-hidden />Adjust
+        <SlidersHorizontal className="size-5" aria-hidden />Adjust
       </button>
       {open && createPortal(<Suspense><Panel onClose={() => setOpen(false)} /></Suspense>, document.body)}
     </>
