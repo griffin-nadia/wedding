@@ -98,6 +98,9 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
     body.current?.scrollTo({ top: 0 })
   }, [step])
   useEffect(() => { setDim(open) }, [open, setDim])
+  // The RSVP button in the top bar (/?rsvp=1) opens it even when the form has already loaded
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (openOnLoad && !open && household) onOpenChange(true) }, [openOnLoad])
   const sending = useRef(false)
   const [form, setForm] = useState<RsvpPayload>(() => startingForm(household))
   // Opened by an early tap (before this form loaded): count it as a started RSVP too.

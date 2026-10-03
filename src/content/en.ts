@@ -39,13 +39,16 @@ export const en = {
     eyebrow: "The Super Duper Wedding Extravaganza",
     fullTitle: `Nadia Baguley and Griffin Suddaby Super Duper Wedding Extravaganza`,
   },
-  nav: { home: "Home", day: "The day", travel: "Travel", stay: "Stay", qa: "Q&A" },
+  nav: { home: "Home", day: "The day", travel: "Travel", faqs: "FAQs", rsvp: "RSVP" },
   letter: {
     signOff: "With love, N & G",
     credit: "Website designed by Jehan Baguley",
     skip: "Skip to the letter",
     open: "Tap to open",
     openLabel: (name: string) => `Open your invitation${name ? `, ${name}` : ""}`,
+    phoneTitle: "Open on your phone",
+    phoneBody: "Scan to take this invite with you.",
+    comingSoon: "Coming soon",
   },
   // Photo captions and alt text (the moment, not the file). Captions are placeholders until the couple writes them.
   photos: {
@@ -67,6 +70,7 @@ export const en = {
     "stone-lantern-maple": { alt: "A stone lantern framed by maple leaves", caption: "" },
   } as Record<string, { alt: string; caption: string }>,
   story: {
+    soonBody: "Our story, from Brisbane to Kyoto, is on its way.",
     kyoto: "Kyoto", brisbane: "Brisbane", canada: "Canada",
     seeList: "See as a list", seeMap: "See the map", next: "Next", done: "Done",
     flyingFrom: (n: number, of: number) => `${n} of ${of} households flying in`,
@@ -107,15 +111,15 @@ export const en = {
     kyoto: "京都",
     placeLine: "Friday · The Sodoh Higashiyama · Kyoto",
     dear: (name: string) => `Dear ${name},`,
-    label: "Fri 15 Oct 2027 · Kyoto",
+    label: "Fri 15 Oct 2027, Kyoto",
     greetingLine: "We're getting married in Kyoto, where it all started, and we'd love you to be there. Everything you need is on this letter.",
     daysToGo: (n: number) => `${n} days to go`,
     kyotoLine: (time: string) => `it's ${time} in Kyoto`,
     moreLabel: "More about the day",
     links: [
       { to: "/the-day", label: "The day" },
-      { to: "/getting-there", label: "Getting there" },
-      { to: "/stay", label: "Where to stay" },
+      { to: "/travel", label: "Getting there" },
+      { to: "/travel#stay", label: "Where to stay" },
     ],
     rsvpBy: "RSVP by 15 Feb",
     changeReply: "Change my reply",
@@ -244,7 +248,7 @@ export const en = {
     mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
   },
   qa: {
-    title: "Q&A",
+    title: "FAQs",
     items: [
       { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "What should I wear?", a: "No specific dress code, wear something that makes you feel like your best self!" },

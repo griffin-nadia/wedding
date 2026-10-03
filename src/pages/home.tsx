@@ -34,7 +34,7 @@ function LiveLine() {
   }, [])
   const d = daysToGo(now)
   const lead = d > 1 ? t.home.daysToGo(d) : d === 1 ? t.countdownMore.tomorrow : d === 0 ? t.countdownMore.today : t.countdownMore.married
-  return <p><span className="text-foreground">{lead}</span> · {t.home.kyotoLine(kyotoNow(now))}</p>
+  return <p><span className="text-foreground">{lead}</span>, {t.home.kyotoLine(kyotoNow(now))}</p>
 }
 
 /**
@@ -46,6 +46,7 @@ export function HomePage() {
   const { household } = useHousehold()
   const [params] = useSearchParams()
   const [tapped, setTapped] = useState(params.get("rsvp") === "1")
+  useEffect(() => { if (params.get("rsvp") === "1") setTapped(true) }, [params])
   const done = Boolean(household?.respondedAt)
   const locked = isLocked()
   const names = household ? household.guests.filter((g) => !g.plusOne).map((g) => g.firstName).filter(Boolean) : []
@@ -53,7 +54,7 @@ export function HomePage() {
 
   const rsvpButton = done
     ? <button type="button" className="btn-text min-h-11" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.changeReply}</button>
-    : <Button size="lg" className="w-full sm:w-auto sm:min-w-64 lg:min-w-0 lg:px-8" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.rsvpBy}</Button>
+    : <Button size="lg" className="w-full sm:w-auto sm:min-w-64 lg:min-w-0" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.rsvpBy}</Button>
 
   return (
     <>
@@ -67,15 +68,14 @@ export function HomePage() {
         <span aria-hidden className="moss-rule" />
       </header>
 
-      <div className="flex flex-col gap-2">
-        {household ? <p className="text-foreground">{t.home.dear(dear)}</p> : <Skeleton className="h-7 w-40" />}
-        <p className="max-w-[34em]">{t.home.greetingLine}</p>
-      </div>
+      {household
+        ? <p className="max-w-[34em]"><span className="text-foreground">{t.home.dear(dear)}</span> {t.home.greetingLine}</p>
+        : <Skeleton className="h-21 w-full" />}
 
       <LiveLine />
 
       {/* The RSVP (one button, or the replied pill with Change my reply), then one line of links */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-5">
       {!household ? (
         <div role="status"><span className="sr-only">{t.loading}</span><Skeleton className="h-13 w-full rounded-lg sm:w-64" /></div>
       ) : locked ? (
@@ -90,10 +90,9 @@ export function HomePage() {
       )}
 
       <nav aria-label={t.home.moreLabel}>
-        <ul className="flex flex-wrap gap-x-2">
-          {t.home.links.map((l, i) => (
-            <li key={l.to} className="flex items-center gap-2">
-              {i > 0 && <span aria-hidden className="text-muted-foreground">·</span>}
+        <ul className="flex flex-wrap gap-x-3">
+          {t.home.links.map((l) => (
+            <li key={l.to}>
               <Link to={l.to} className="btn-text inline-flex min-h-11 items-center">{l.label}</Link>
             </li>
           ))}
