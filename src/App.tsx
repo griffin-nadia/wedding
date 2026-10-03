@@ -26,7 +26,7 @@ function OldTabs({ children }: { children: React.ReactNode }) {
 
 function Gate() {
   const { status } = useHousehold()
-  if (window.location.pathname.replace(/\/$/, "").endsWith("/kit")) return <Suspense><KitPage /></Suspense>
+  if (/\/kit\/?$/.test(window.location.pathname)) return <Suspense><KitPage /></Suspense>
   // While the invite loads, the pages render straight away (the hero paints first);
   // only Home's greeting and RSVP card wait for the household.
   if (status !== "ready" && status !== "loading") return <NoInvitePage reason={status} />
