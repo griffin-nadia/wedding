@@ -10,82 +10,113 @@ const indexOf = (p: string) => { const i = LETTERS.findIndex((l) => l === (p.rep
 const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
 const letter = () => document.getElementById("letter")
 
+/** True when the element (or a parent below the letter) scrolls sideways: its own drag wins over a page turn. */
+const inSideScroller = (t: Element | null) => {
+  for (let el = t; el && el.id !== "letter"; el = el.parentElement) {
+    const ox = getComputedStyle(el).overflowX
+    if ((ox === "auto" || ox === "scroll") && el.scrollWidth > el.clientWidth + 1) return true
+  }
+  return false
+}
+
+const TRACK = "transform 280ms var(--ease-letter)"
+let pending: { dir: number; at: number } | null = null
+
 /**
- * Pages mode on phones (v3 K): swipe left or right between the four letters. The letter follows the
- * finger and dips up to 2°, then the next one settles in (320 ms, interruptible). Vertical scroll stays
- * native. Taps on the dock get the same settle. The dock marker and the paper light follow the swipe.
- * Below 768 only; nothing happens while the envelope is sealed or under reduced motion (it just cuts).
+ * The leaving letter as a still copy on the same track: it slides off as the new letter slides in, both
+ * by the same distance at the same speed, so the two read as one strip of paper. Nothing else moves.
+ */
+function leave(dir: number, fromX = 0) {
+  const el = letter(); if (!el) return
+  const r = el.getBoundingClientRect()
+  const g = el.cloneNode(true) as HTMLElement
+  g.removeAttribute("id"); g.setAttribute("aria-hidden", "true"); g.inert = true
+  g.classList.add("letter-ghost")
+  Object.assign(g.style, { position: "fixed", top: `${r.top}px`, left: `${r.left - fromX}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", transition: "none", transform: `translateX(${fromX}px)` })
+  document.body.appendChild(g)
+  requestAnimationFrame(() => { g.style.transition = TRACK; g.style.transform = `translateX(${-dir * innerWidth}px)` })
+  window.setTimeout(() => g.remove(), 340)
+  pending = { dir, at: fromX }
+}
+
+/**
+ * Pages mode on phones (v3 K, Q1, Q2): swipe left or right between the letters. A turn starts only from
+ * a 24px sideways drag with under 12px of vertical drift, and never inside something that scrolls
+ * sideways. The letter follows the finger flat (no tilt); let go past 25% (or flick) and the leaving and
+ * arriving letters move together on one track; let go short and it springs back in 200 ms. The scene,
+ * the dock and everything else stay still. Dock taps use the same track. Below 768 only; nothing while
+ * the envelope is sealed; reduced motion just cuts.
  */
 export function usePageTurn(enabled: boolean) {
   const nav = useNavigate()
   const { pathname } = useLocation()
   const from = useRef(indexOf(pathname))
-  const swiped = useRef<number | null>(null)
 
-  // Settle the arriving letter in from the side it came from
+  // The arriving letter starts one screen along the track and slides in with the leaving copy
   useEffect(() => {
-    const to = indexOf(pathname), dir = swiped.current ?? Math.sign(to - from.current)
-    from.current = to; swiped.current = null
-    const el = letter(); if (!el || !dir || still()) return
+    const to = indexOf(pathname), p = pending
+    from.current = to; pending = null
+    const el = letter(); if (!el || !p || still()) return
     el.style.transition = "none"
-    el.style.transform = `translateX(${dir * 36}%) rotate(${dir * 2}deg)`
-    el.style.opacity = "0"
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      el.style.transition = "transform 320ms var(--ease-letter), opacity 240ms var(--ease-paper)"
-      el.style.transform = ""; el.style.opacity = ""
-    }))
+    el.style.transform = `translateX(${p.at + p.dir * innerWidth}px)`
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = TRACK; el.style.transform = "" }))
   }, [pathname])
 
   useEffect(() => {
     if (!enabled) return
-    const root = document.documentElement
     let start: { x: number; y: number; t: number } | null = null, dx = 0, active = false
     const wide = () => window.matchMedia("(min-width: 768px)").matches
-    const set = (v: number) => { root.style.setProperty("--paper-turn", String(v)); window.dispatchEvent(new CustomEvent("ng-swipe", { detail: v })) }
+    const here = () => indexOf(location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/")
     const down = (e: PointerEvent) => {
-      if (wide() || e.pointerType === "mouse" || (e.target as Element).closest("input, textarea, [role=slider], .combo-field, .rsvp-letter")) return
+      const t = e.target as Element
+      if (wide() || e.pointerType === "mouse" || t.closest("input, textarea, [role=slider], .combo-field, .rsvp-letter, .driver-modal") || inSideScroller(t)) return
       start = { x: e.clientX, y: e.clientY, t: performance.now() }; dx = 0; active = false
     }
     const move = (e: PointerEvent) => {
       if (!start) return
       const x = e.clientX - start.x, y = e.clientY - start.y
       if (!active) {
-        if (Math.abs(y) > 12 && Math.abs(y) > Math.abs(x)) { start = null; return } // a scroll, not a turn
-        if (Math.abs(x) < 12) return
+        if (Math.abs(y) >= 12) { start = null; return } // a scroll, not a turn
+        if (Math.abs(x) < 24) return
         active = true
       }
-      const i = indexOf(location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/")
+      const i = here()
       const edge = (x > 0 && i === 0) || (x < 0 && i === LETTERS.length - 1)
       dx = edge ? x * 0.25 : x // resist at the ends
       const el = letter(); if (!el) return
       el.style.transition = "none"
-      el.style.transform = `translateX(${dx}px) rotate(${(dx / innerWidth) * 2}deg)`
-      set(-dx / innerWidth)
+      el.style.transform = `translateX(${dx}px)`
     }
     const up = () => {
       if (!start) return
       const el = letter(), v = Math.abs(dx) / Math.max(1, performance.now() - start.t)
       start = null
       if (!active || !el) return
-      const i = indexOf(location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/")
-      const dir = dx < 0 ? 1 : -1, to = i + dir
+      const i = here(), dir = dx < 0 ? 1 : -1, to = i + dir
       const go = (Math.abs(dx) > innerWidth * 0.25 || v > 0.5) && to >= 0 && to < LETTERS.length
-      set(0)
       if (!go) {
-        el.style.transition = "transform 320ms var(--ease-letter)"; el.style.transform = ""
+        el.style.transition = "transform 200ms cubic-bezier(0.34, 1.4, 0.64, 1)"; el.style.transform = ""
         return
       }
-      el.style.transition = "transform 200ms var(--ease-out), opacity 200ms var(--ease-out)"
-      el.style.transform = `translateX(${-dir * 110}%) rotate(${-dir * 2}deg)`; el.style.opacity = "0"
-      swiped.current = dir
-      window.setTimeout(() => { nav(LETTERS[to]); window.scrollTo(0, 0) }, still() ? 0 : 180)
+      if (!still()) leave(dir, dx)
+      el.style.transition = "none"; el.style.transform = ""
+      nav(LETTERS[to]); window.scrollTo(0, 0)
+    }
+    // Dock and top bar taps: the same track, in the direction of the letter being opened
+    const tap = (e: MouseEvent) => {
+      const a = (e.target as Element).closest<HTMLAnchorElement>(".site-nav a"); if (!a || wide() || still()) return
+      const to = indexOf(new URL(a.href).pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/"), i = here()
+      if (to < 0 || i < 0 || to === i) return
+      leave(Math.sign(to - i))
     }
     window.addEventListener("pointerdown", down, { passive: true })
     window.addEventListener("pointermove", move, { passive: true })
     window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up)
+    document.addEventListener("click", tap, true)
     return () => {
       window.removeEventListener("pointerdown", down); window.removeEventListener("pointermove", move)
       window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up)
+      document.removeEventListener("click", tap, true)
     }
   }, [enabled, nav])
 }

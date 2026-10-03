@@ -37,12 +37,6 @@ function Nav() {
   const { pathname } = useLocation()
   const list = useRef<HTMLUListElement>(null)
   const [mark, setMark] = useState<{ x: number; w: number; h: number; y: number } | null>(null)
-  const [swipe, setSwipe] = useState(0)
-  useEffect(() => {
-    const on = (e: Event) => setSwipe((e as CustomEvent<number>).detail)
-    window.addEventListener("ng-swipe", on)
-    return () => window.removeEventListener("ng-swipe", on)
-  }, [])
   useLayoutEffect(() => {
     const place = () => {
       const a = list.current?.querySelector<HTMLElement>("a.is-active")
@@ -58,7 +52,7 @@ function Nav() {
   return (
     <nav aria-label="Main" className="site-nav">
       <ul ref={list}>
-        {mark && <li aria-hidden className="nav-mark" style={{ transform: `translate(${mark.x + swipe * mark.w}px, ${mark.y}px)`, width: mark.w, height: mark.h, transition: swipe ? "none" : undefined }} />}
+        {mark && <li aria-hidden className="nav-mark" style={{ transform: `translate(${mark.x}px, ${mark.y}px)`, width: mark.w, height: mark.h }} />}
         {links.map((l) => (
           <li key={l.to}>
             <NavLink to={l.to} end className={({ isActive }) => cn("site-nav-link", isActive && "is-active")}>

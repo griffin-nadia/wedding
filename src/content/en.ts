@@ -128,7 +128,6 @@ export const en = {
     howToGetThere: "How to get there",
     countdownTitle: "Counting down",
     dateLong: DAY,
-    dressNote: "No dress code. Wear what makes you feel like your best self, with shoes that grip on stone.",
     mapAlt: "A drawn map: from Kyoto Station north to Gion-Shijo, then east up the hill to The Sodoh.",
     mapStation: "Kyoto Station", mapGion: "Gion-Shijo", mapVenue: "The Sodoh",
     countdownLabel: "Counting down",

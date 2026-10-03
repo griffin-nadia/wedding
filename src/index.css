@@ -719,20 +719,34 @@ svg.lucide { stroke-width: 1.5; }
 
 /* Trail: a paper strip; on phones wider than the screen, panned with a drag */
 .trail { margin: 0; }
-.trail-plate { position: relative; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); outline: 2px solid transparent; outline-offset: 2px; }
-.trail-plate::-webkit-scrollbar { display: none; }
-.trail-plate:focus-visible { outline-color: var(--input-focus); }
-.trail-track { position: relative; width: 720px; height: 152px; }
-@media (min-width: 768px) { .trail-track { width: 100%; } }
-.trail-svg { position: absolute; left: 0; top: 16px; width: 100%; height: 72px; }
+.trail-plate { position: relative; border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); }
+.trail-track { position: relative; }
+.trail-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.trail-stop { opacity: 0; transition: opacity var(--duration-settle) var(--ease-paper); }
+.trail-stop.is-drawn, .trail-stops.is-drawn .trail-stop { opacity: 1; }
+/* Phones: stops stacked down a moss line that draws from the top */
+@media (max-width: 767px) {
+  .trail-svg { display: none; }
+  .trail-stops { position: relative; display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-4); }
+  .trail-stops::before { content: ""; position: absolute; left: calc(var(--space-4) + 17px); top: calc(var(--space-4) + 18px); bottom: calc(var(--space-4) + 18px); width: 2px; border-radius: 1px; background: var(--sys-moss); transform-origin: top; transform: scaleY(0); transition: transform 1.2s var(--ease-letter); }
+  .trail-stops.is-drawn::before { transform: none; }
+  .trail-stop { position: relative; left: auto !important; display: flex; align-items: flex-start; gap: var(--space-3); }
+  .trail-stop .trail-icon { flex: none; margin: 0; position: relative; z-index: 1; }
+  .trail-text { padding-top: 6px; }
+}
+/* From 768: left to right on the drawn path, inside the letter */
+@media (min-width: 768px) {
+  .trail-track { width: 100%; height: 168px; }
+  .trail-svg { position: absolute; left: 0; top: 16px; width: 100%; height: 72px; }
+  .trail-stops { position: absolute; inset: 0; }
+  .trail-stop { position: absolute; top: 34px; translate: -50% 0; display: flex; flex-direction: column; align-items: center; width: 30%; text-align: center; }
+  .trail-text { align-items: center; }
+}
 .trail-path { fill: none; stroke: var(--sys-moss); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.2s var(--ease-letter); }
 .trail-path.is-drawn { stroke-dashoffset: 0; }
-.trail-stops { position: absolute; inset: 0; }
-.trail-stop { position: absolute; top: 34px; translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 168px; text-align: center; opacity: 0; transition: opacity var(--duration-settle) var(--ease-paper); }
-.trail-stop.is-drawn { opacity: 1; }
 .trail-icon { display: grid; place-items: center; width: 36px; height: 36px; margin-bottom: var(--space-1); border-radius: var(--radius-pill); background: var(--sys-surface-raised); border: 1px solid var(--sys-moss); color: var(--sys-moss); }
-@media (prefers-reduced-motion: reduce) { .trail-path { transition: none; stroke-dashoffset: 0; } .trail-stop { opacity: 1; transition: none; } }
-@media print { .trail-path { stroke-dashoffset: 0; } .trail-stop { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .trail-path { transition: none; stroke-dashoffset: 0; } .trail-stop { opacity: 1; transition: none; } .trail-stops::before { transition: none; transform: none; } }
+@media print { .trail-path { stroke-dashoffset: 0; } .trail-stop { opacity: 1; } .trail-stops::before { transform: none; } }
 /* Countdown tiles (v3 A): each unit on its own paper tile, one row, seconds ticking */
 .count-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
 .count-tile { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-3) var(--space-1); border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); box-shadow: var(--letter-shadow); }

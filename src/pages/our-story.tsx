@@ -44,12 +44,11 @@ function StoryMap({ chapters }: { chapters: Chapter[] }) {
           <svg viewBox="0 0 600 72" preserveAspectRatio="none" className="trail-svg" aria-hidden>
             <path d="M84 36 C 156 8, 228 64, 300 36 S 444 8, 516 36" pathLength={1} vectorEffect="non-scaling-stroke" className="trail-path is-drawn" />
           </svg>
-          <div role="tablist" aria-label="Our story" className="trail-stops">
+          <div role="tablist" aria-label="Our story" className="trail-stops is-drawn">
             {chapters.map((ch, i) => (
               <button key={ch.key} role="tab" aria-selected={on === i} onClick={() => setOn(i)} className={cn("trail-stop is-drawn story-stop", on === i && "is-on")} style={{ left: `${xs[i]}%` }}>
                 <span className="trail-icon">{i + 1}</span>
-                <span className="font-medium text-foreground">{ch.title}</span>
-                <span className="text-sm">{ch.year}</span>
+                <span className="trail-text"><span className="font-medium text-foreground">{ch.title}</span><span className="text-sm">{ch.year}</span></span>
               </button>
             ))}
           </div>

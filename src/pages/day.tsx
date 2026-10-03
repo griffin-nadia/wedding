@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
-import { Trail } from "@/components/trail"
 import { Link } from "react-router-dom"
 import { config } from "@/lib/config"
 import { DATES } from "@/lib/wedding-dates"
@@ -74,7 +73,7 @@ function Timeline({ now }: { now: Date }) {
   )
 }
 
-/** Details: the venue as a mark, its address on two lines, the trail, a link to Travel for the rest, the dress note. */
+/** Details: the venue and its address, and a link to Travel for getting there (v3 Q1: the trail lives on Travel only). */
 function Details() {
   const { t } = useLang()
   return (
@@ -84,9 +83,7 @@ function Details() {
         <p className="font-medium text-foreground">{VENUE.name}</p>
         {t.day.addressLines.map((l) => <p key={l}>{l}</p>)}
       </div>
-      <Trail />
       <Link to="/travel" className="btn-text inline-flex min-h-11 items-center self-start">{t.day.howToGetThere}</Link>
-      <p>{t.day.dressNote}</p>
     </div>
   )
 }
