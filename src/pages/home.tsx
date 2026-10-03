@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom"
 import { Check, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useHousehold } from "@/lib/household"
+import { useOption } from "@/lib/options"
 import { COUPLE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { isLocked } from "@/lib/time"
@@ -23,7 +24,7 @@ function Names() {
   const chars = (s: string, from: number) => [...s].map((c, i) => <span key={i} className="name-char" style={{ animationDelay: `${(from + i) * 40}ms` }}>{c === " " ? " " : c}</span>)
   return (
     <h1 aria-label={`${COUPLE.first} & ${COUPLE.second}`} className={REVEAL_NAMES ? "names names-reveal" : "names"}>
-      <span aria-hidden>{chars(COUPLE.first, 0)} <span className="name-char text-primary" style={{ animationDelay: `${COUPLE.first.length * 40}ms` }}>&amp;</span></span>
+      <span aria-hidden>{chars(COUPLE.first, 0)} <span className="name-char text-primary" style={{ animationDelay: `${COUPLE.first.length * 40}ms` }}>&amp;</span>{" "}</span>
       <br aria-hidden />
       <span aria-hidden>{chars(COUPLE.second, COUPLE.first.length + 2)}</span>
     </h1>
@@ -31,7 +32,7 @@ function Names() {
 }
 
 /** What's left, quietly (v3 J): three lines with a tick or a soft dash, each opening its step. Hidden once all three are done. */
-function YourReply({ h, open }: { h: Household; open: (step: number) => void }) {
+function YourReply({ h, open, keepDone }: { h: Household; open: (step: number) => void; keepDone: boolean }) {
   const { t } = useLang()
   const coming = h.guests.filter((g) => g.attending === "yes")
   if (!coming.length) return null
@@ -40,13 +41,13 @@ function YourReply({ h, open }: { h: Household; open: (step: number) => void }) 
     { key: "food", label: t.home.todo.food, done: h.songs.length > 0 || coming.some((g) => g.dietary && g.dietary !== "None"), step: 2 },
     { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: 2, note: t.home.todo.datesLater },
   ]
-  if (rows.every((r) => r.done)) return null
+  if (rows.every((r) => r.done) && !keepDone) return null
   return (
     <section aria-label={t.home.yourReply}>
-      <ul className="flex flex-col">
+      <ul className="reply-chips">
         {rows.map((r) => (
           <li key={r.key}>
-            <button type="button" onClick={() => open(r.step)} className="reply-row">
+            <button type="button" onClick={() => open(r.step)} className="reply-chip" data-done={r.done || undefined}>
               {r.done ? <Check className="size-5 text-success" aria-hidden /> : <Minus className="size-5 text-muted-foreground" aria-hidden />}
               <span>{r.label}{!r.done && r.note ? <span className="text-muted-foreground">, {r.note}</span> : null}</span>
               <span className="sr-only">, {r.done ? t.home.todo.done : t.home.todo.toDo}</span>
@@ -76,6 +77,8 @@ export function HomePage() {
   const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : g.firstName)).filter(Boolean) : []
   const dear = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0] || household?.displayName || ""
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
+  const dateStyle = useOption("datestyle")
+  const keepDone = useOption("ticks") !== "hide"
 
   const rsvpButton = done
     ? <button type="button" className="btn-text min-h-11" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.changeReply}</button>
@@ -85,7 +88,9 @@ export function HomePage() {
     <>
       <header className="flex flex-col gap-2">
         <Names />
-        <p className="font-display text-2xl text-foreground">{t.home.dateLine}</p>
+        {dateStyle === "line"
+          ? <p className="font-display text-2xl text-foreground">{t.home.dateLine}</p>
+          : <p className="date-badge">{t.home.dateLine}</p>}
       </header>
 
       {household
@@ -97,7 +102,7 @@ export function HomePage() {
       ) : locked ? (
         <p>{t.home.rsvpClosed}</p>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               {done && <Pill tone="good">{t.home.pills.replied}</Pill>}
@@ -107,7 +112,7 @@ export function HomePage() {
             </div>
             {done && <p className="text-sm text-muted-foreground">{t.home.changeBy}</p>}
           </div>
-          {done && <YourReply h={household} open={openAt} />}
+          {done && <YourReply h={household} open={openAt} keepDone={keepDone} />}
         </div>
       )}
     </>

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react"
 import { partsAt, sentence } from "@/lib/countdown-parts"
 import { useLang } from "@/lib/lang"
+import { useOption } from "@/lib/options"
 import { cn } from "@/lib/utils"
 
 /**
- * Home's countdown (v3 Q6): a row of five paper tiles under the card, outside the letter. Oranienbaum
- * numerals, Inter labels, the seconds tile ticking; no heading, no sentence on screen (screen readers get
- * one calm line instead of a ticking number). Stops while the tab is hidden; still under reduced motion.
+ * Home's countdown, under the card and outside the letter. A (v3 S): one long narrow paper strip, numerals
+ * split by thin colons with the unit under each and a caption saying what it counts (the reference's
+ * shape). B (v3 Q6): five paper tiles. Digits sit in fixed-width boxes so nothing wiggles as they change.
+ * Screen readers get one calm line, not a ticking number. Stops while the tab is hidden.
  */
 export function HomeCountdown() {
   const { t } = useLang()
@@ -21,6 +23,23 @@ export function HomeCountdown() {
   const p = partsAt(now)
   const u = t.countdownMore.short
   const tiles: [number, string][] = [[p.months, u.months], [p.days, u.days], [p.hours, u.hours], [p.mins, u.mins], [p.secs, u.secs]]
+  if (useOption("count") !== "tiles") return (
+    <div className="home-count">
+      <p className="sr-only">{sentence(p)}</p>
+      <div aria-hidden className="count-strip">
+        <ol className="count-strip-row">
+          {tiles.map(([v, unit], i) => (
+            <li key={unit} className={cn("count-strip-unit", i === 4 && "count-tile-secs")}>
+              {i > 0 && <span className="count-strip-colon">:</span>}
+              <span className="count-strip-num numerals"><span className="count-num">{i < 2 ? v : String(v).padStart(2, "0")}</span></span>
+              <span className="count-strip-label">{unit}</span>
+            </li>
+          ))}
+        </ol>
+        <p className="count-strip-caption">{t.countdownMore.until}</p>
+      </div>
+    </div>
+  )
   return (
     <div className="home-count">
       <p className="sr-only">{sentence(p)}</p>

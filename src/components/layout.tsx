@@ -14,7 +14,7 @@ import { LanternToggle } from "@/components/lantern-toggle"
 import { HomeCountdown } from "@/components/home-countdown"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
-import { Arrival, firstPhase } from "@/components/envelope"
+import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
 import { Qr } from "@/components/qr"
 import { SiteTune } from "@/tune/launcher"
 import { useOption } from "@/lib/options"
@@ -111,6 +111,14 @@ export function Layout() {
   const stampsOn = useOption("stamps") === "on"
   usePaperGL(!sealed && kind === "paper" && glOption !== "off")
   usePaperScroll()
+  // "Put it back in the envelope" (Home): seal it again; tapping opens it as on the first visit
+  const [resealed, setResealed] = useState(0)
+  useEffect(() => {
+    const on = () => { resetArrival(); window.scrollTo(0, 0); setSealed(true); setResealed((n) => n + 1) }
+    window.addEventListener("ng-reseal", on)
+    return () => window.removeEventListener("ng-reseal", on)
+  }, [])
+  const signOffEverywhere = useOption("signoff") === "all"
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sealed", sealed)
     return () => document.documentElement.removeAttribute("data-sealed")
@@ -128,12 +136,16 @@ export function Layout() {
       </header>
 
       <main className="letter-wrap">
-        <Arrival enabled={page === "home"} onOpened={() => setSealed(false)}>
+        <Arrival key={resealed} sealedAgain={resealed > 0} enabled={page === "home"} onOpened={() => setSealed(false)}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
+            <LanternToggle className="letter-lantern" />
             <div key={pathname} className="letter-body">
               <Outlet />
             </div>
-            <SignOff />
+            {(page === "home" || signOffEverywhere) && <SignOff action={page === "home" && !sealed
+              // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
+              ? <button type="button" className="btn-text -my-3 py-3 text-sm" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
+              : null} />}
           </Letter>
         </Arrival>
         {page === "home" && !sealed && <HomeCountdown />}

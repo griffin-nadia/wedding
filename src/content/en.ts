@@ -122,6 +122,7 @@ export const en = {
     rsvpBy: `RSVP by ${fmtDay(DATES.rsvpBy)}`,
     changeReply: "Change my reply",
     changeBy: CHANGE_BY,
+    reseal: "Seal it again",
   },
   day: {
     title: "The day",

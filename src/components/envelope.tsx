@@ -26,10 +26,13 @@ export function firstPhase(enabled: boolean): Phase {
  * Tap, Enter or Space: the flap opens (300 ms), the letter rises (600 ms), the envelope sinks and fades.
  * Any key skips. Reduced motion: the letter is just there.
  */
-export function Arrival({ enabled, onOpened, children }: { enabled: boolean; onOpened?: () => void; children: ReactNode }) {
+/** Put the letter back in the envelope (v3 S): the next render shows it sealed again, even under reduced motion. */
+export function resetArrival() { try { localStorage.removeItem(KEY) } catch { /* fine */ } }
+
+export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { enabled: boolean; onOpened?: () => void; children: ReactNode; sealedAgain?: boolean }) {
   const { t } = useLang()
   const { household } = useHousehold()
-  const [phase, setPhase] = useState<Phase>(() => firstPhase(enabled))
+  const [phase, setPhase] = useState<Phase>(() => (sealedAgain && enabled ? "sealed" : firstPhase(enabled)))
   const button = useRef<HTMLButtonElement>(null)
   const stage = useRef<HTMLDivElement>(null)
   // Pull to open (v3 K): drag the flap up and it follows the finger; let go past 40% and it opens,

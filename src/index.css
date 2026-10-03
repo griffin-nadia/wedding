@@ -781,7 +781,7 @@ svg.lucide { stroke-width: 1.5; }
 .combo-option-more { min-height: 44px; padding-left: calc(var(--space-3) + 32px + var(--space-3)); color: var(--sys-link); font-size: var(--type-small-size); text-decoration: underline; text-underline-offset: 3px; }
 .combo-option-version { padding-left: calc(var(--space-3) + 32px + var(--space-3)); }
 /* Home countdown (v3 Q6): five 48px paper tiles under the card, outside the letter */
-.home-count { width: 100%; max-width: var(--letter-width, 620px); margin: var(--space-4) auto 0; }
+.home-count { width: 100%; max-width: var(--letter-width, 620px); margin: var(--space-2) auto 0; }
 .home-count-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-2); }
 .home-count-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 48px; padding: 0; border-radius: var(--radius-control); border: 1px solid var(--sys-line); background: var(--letter-bg); box-shadow: var(--letter-shadow); }
 .home-count-tile .numerals { font-family: var(--font-display); font-size: var(--type-lead-size); line-height: 24px; color: var(--sys-ink); }
@@ -807,3 +807,42 @@ svg.lucide { stroke-width: 1.5; }
   [data-sealed] .scene-photo img { object-position: 50% var(--arrival-focus-y, 40%); }
   [data-sealed][data-theme="lantern"] .scene-photo img { --arrival-focus-y: 12%; }
 }
+
+/* ─── v3 S · Home overhaul ─────────────────────────────────────────── */
+/* Countdown A: one long narrow strip under the card (numerals 28, units and caption 12) */
+.count-strip { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-4); border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--letter-bg); box-shadow: var(--letter-shadow); }
+.count-strip-row { display: flex; justify-content: center; gap: var(--space-1); }
+.count-strip-unit { position: relative; display: grid; justify-items: center; grid-template-rows: auto auto; padding-inline: var(--space-2); }
+.count-strip-num { font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 32px; color: var(--sys-ink); min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
+.count-strip-colon { position: absolute; left: -4px; top: 0; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 32px; color: var(--sys-accent); opacity: 0.7; }
+.count-strip-label, .count-strip-caption { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-muted); }
+.count-strip-caption { color: var(--sys-ink-soft); }
+/* Date as a sage paper badge under the names (A) */
+.date-badge { align-self: flex-start; padding: var(--space-1) var(--space-3); border-radius: var(--radius-control); background: var(--sys-surface-alt); color: var(--sys-ink); font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); font-weight: 500; }
+/* Evening switch inside the letter on phones (A): no gap above the letter */
+.letter-lantern { display: none; }
+@media (max-width: 767px) {
+  :root:not([data-opt-toggle="corner"]) .letter-lantern { display: inline-grid; position: absolute; top: 8px; right: 8px; z-index: 1; }
+  :root:not([data-opt-toggle="corner"]):not([data-sealed]) .chrome-lantern { display: none; }
+  :root:not([data-opt-toggle="corner"]) .letter-wrap { padding-top: 16px; }
+}
+/* Names on one line from 1024 (A): the Home letter widens to fit them at 88 */
+@media (min-width: 1024px) {
+  :root:not([data-opt-names="two"]) .names br { display: none; }
+  :root:not([data-opt-names="two"]) .names { white-space: nowrap; }
+  :root:not([data-opt-names="two"]) .letter[data-page="home"], :root:not([data-opt-names="two"]) .home-count { max-width: calc(var(--letter-width) + 120px); }
+}
+/* Accent A, green-forward: links, selected lines and text selection in forest and moss; rust stays for the button and the seal */
+:root:not([data-opt-accent="rust"]) { --sys-link: var(--brand-forest); --input-selected-line: var(--brand-forest); }
+:root:not([data-opt-accent="rust"])[data-theme="lantern"] { --sys-link: var(--brand-mitsu); --input-selected-line: var(--brand-mitsu); }
+::selection { background: color-mix(in oklab, var(--sys-moss) 35%, transparent); color: var(--sys-ink); }
+/* What's left as one compact row of chips (v3 S): ticked or a soft dash, each opens its step */
+.reply-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.reply-chip { position: relative; display: inline-flex; align-items: center; gap: var(--space-2); min-height: 36px; padding: 0 var(--space-3); border-radius: var(--radius-control); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); color: var(--sys-ink-soft); font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); outline: 2px solid transparent; outline-offset: 2px; transition: border-color var(--duration-quick) var(--ease-paper), transform var(--duration-press) var(--ease-paper); }
+.reply-chip::after { content: ""; position: absolute; inset: -4px 0; }
+.reply-chip[data-done] { background: var(--sys-surface-alt); color: var(--sys-ink); }
+.reply-chip:focus-visible { outline-color: var(--input-focus); }
+.reply-chip:active { transform: scale(var(--press-scale)); }
+@media (hover: hover) { .reply-chip:hover { border-color: var(--sys-line-strong); } }
+@media (min-width: 1024px) { :root[data-opt-names="two"] { --type-display-names-size: 88px; } }
+.count-strip .count-tile-secs { background: none; }

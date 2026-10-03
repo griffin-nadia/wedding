@@ -12,13 +12,14 @@ export function Letter({ children, className, as: Tag = "article", ...rest }: { 
 }
 
 /** End of every letter: their sign-off and nothing else (Nadia's handwriting replaces Klee One when it arrives). */
-export function SignOff() {
+export function SignOff({ action }: { action?: ReactNode }) {
   const { t } = useLang()
   return (
-    <footer className="letter-end mt-auto pt-2">
+    <footer className="letter-end mt-auto flex flex-wrap items-center justify-between gap-x-4 pt-2">
       {__SIGNOFF_ART__
         ? <img src={`${import.meta.env.BASE_URL}brand/signoff.svg`} alt={t.letter.signOff} className="h-12 w-auto" />
         : <p className="hand text-foreground">{t.letter.signOff}</p>}
+      {action}
     </footer>
   )
 }

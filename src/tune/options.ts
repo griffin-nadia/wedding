@@ -9,7 +9,15 @@ export type Option = { key: string; label: string; flow: (typeof FLOWS)[number];
  */
 export const OPTIONS: Option[] = [
   { key: "peek", label: "Envelope peek on hover", flow: "Arrival", note: "Desktop only: the flap lifts and a corner of the letter shows on hover.", values: [["on", "On"], ["off", "Off"]], },
-  { key: "story", label: "Our story", flow: "Our story", note: "How the story reads on Our story: a letter in pages, a map of stops, or a timeline.", values: [["a", "A · The letter"], ["b", "B · Map"], ["c", "C · Timeline"]] },
+  { key: "datestyle", label: "Date", flow: "Home", note: "Under the names: the date and place as a sage badge, or as a second display line.", values: [["badge", "Badge"], ["line", "Display line"]] },
+  { key: "names", label: "Names on desktop", flow: "Home", note: "From 1024: Nadia & Griffin on one line (the Home letter widens to fit), or on two.", values: [["one", "One line"], ["two", "Two lines"]] },
+  { key: "count", label: "Countdown", flow: "Home", note: "Under the card: one long strip with what it counts, or five paper tiles.", values: [["strip", "Strip"], ["tiles", "Tiles"]] },
+  { key: "ticks", label: "What's left, once done", flow: "Home", note: "After everything's ticked: keep the three ticked rows (a returning guest sees it's done), or hide them.", values: [["stay", "Keep"], ["hide", "Hide"]] },
+  { key: "signoff", label: "Sign-off", flow: "Home", note: "\u201cWith love, N & G\u201d on Home only, or at the end of every page.", values: [["home", "Home only"], ["all", "Every page"]] },
+  { key: "toggle", label: "Evening mode switch (phones)", flow: "Home", note: "Phones: in the letter's top corner (no gap at the top), or fixed in the screen corner.", values: [["card", "In the letter"], ["corner", "Screen corner"]] },
+  { key: "getthere", label: "Getting there, first action", flow: "Travel", note: "Travel's main button and The day's link: open Google Maps directions, or Show the driver first.", values: [["maps", "Google Maps"], ["driver", "Show the driver"]] },
+  { key: "accent", label: "Accent", flow: "Theme", note: "Green-forward (links, selected lines, text selection in forest and moss; rust stays for the button and the seal), or rust everywhere.", values: [["green", "Green"], ["rust", "Rust"]] },
+  { key: "story", label: "Our story", flow: "Our story", note: "How the story reads on Our story: letter pages, a map of stops, a timeline, or a stack of cards you drag through.", values: [["a", "A · The letter"], ["b", "B · Map"], ["c", "C · Timeline"], ["d", "D · Card stack"]] },
   { key: "mapmode", label: "Map", flow: "Our story", note: "B only: stops along one path, or the journey from Brisbane and Canada to Kyoto.", values: [["trail", "Stops on a path"], ["journey", "Journey to Kyoto"]], when: (o) => o.story === "b" },
   { key: "flying", label: "Flying from", flow: "Our story", note: "B only: an optional \u201cFlying from?\u201d on Travel, shown on the map as counts, never names.", values: [["off", "Off"], ["on", "On"]], when: (o) => o.story === "b" },
   { key: "storysample", label: "Sample story", flow: "Our story", note: "Preview only: fills Our story with sample chapters until theirs is in the Content tab.", values: [["off", "Off"], ["on", "On"]] },
