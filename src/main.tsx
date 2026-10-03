@@ -8,6 +8,9 @@ import { applySeason } from "./lib/seasons"
 
 applySeason()
 
+// The static envelope shell (index.html) has done its job once the app has painted
+requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("arrival-shell")?.remove()))
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />

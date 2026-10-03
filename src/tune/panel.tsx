@@ -61,6 +61,23 @@ function selectorFor(el: Element): string {
   return parts.join(" > ")
 }
 
+/** Where a note's pin sits: on this page, or inside a same-origin preview frame on the same path (/lab). */
+function pinAt(n: Note): { x: number; y: number } | null {
+  if (location.pathname + location.hash === n.path || !document.querySelector("iframe")) {
+    const r = document.querySelector(n.selector)?.getBoundingClientRect()
+    if (r) return { x: r.left, y: r.top }
+  }
+  for (const f of document.querySelectorAll("iframe")) {
+    try {
+      const w = f.contentWindow!; if (w.location.pathname + w.location.hash !== n.path || w.innerWidth !== n.viewport.w) continue
+      const r = f.contentDocument!.querySelector(n.selector)?.getBoundingClientRect(); if (!r) continue
+      const fr = f.getBoundingClientRect(), k = fr.width / f.clientWidth
+      return { x: fr.left + r.left * k, y: fr.top + r.top * k }
+    } catch { /* cross-origin: skip */ }
+  }
+  return null
+}
+
 export function TunePanel({ onClose, docked = false }: { onClose?: () => void; docked?: boolean }) {
   const tokens = useMemo(parse, [])
   const [state, setState] = useState<TuneState>(load)
@@ -68,7 +85,7 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
   const [tab, setTab] = useState<"tokens" | "options" | "notes">("tokens")
   const [q, setQ] = useState("")
   const [pinning, setPinning] = useState(false)
-  const [draft, setDraft] = useState<{ selector: string; x: number; y: number } | null>(null)
+  const [draft, setDraft] = useState<{ selector: string; x: number; y: number; where?: { path: string; w: number; h: number; theme: string } } | null>(null)
   const [msg, setMsg] = useState("")
   const host = useRef<HTMLDivElement>(null)
   const [, force] = useState(0)
@@ -84,6 +101,7 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
   }
 
   // Notes: click anything (outside the panel) to pin a note to it
+  // In /lab the page lives in preview frames (same origin), so the frames listen too.
   useEffect(() => {
     if (!pinning) return
     const onClick = (e: MouseEvent) => {
@@ -93,9 +111,22 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
       setDraft({ selector: selectorFor(el), x: e.clientX, y: e.clientY })
       setPinning(false)
     }
+    const frames = [...document.querySelectorAll("iframe")].filter((f) => { try { return Boolean(f.contentDocument) } catch { return false } })
+    const offs = frames.map((f) => {
+      const doc = f.contentDocument!
+      const on = (e: MouseEvent) => {
+        e.preventDefault(); e.stopPropagation()
+        const fr = f.getBoundingClientRect(), k = fr.width / f.clientWidth
+        const w = f.contentWindow!
+        setDraft({ selector: selectorFor(e.target as Element), x: fr.left + e.clientX * k, y: fr.top + e.clientY * k, where: { path: w.location.pathname + w.location.hash, w: w.innerWidth, h: w.innerHeight, theme: doc.documentElement.dataset.theme || "autumn" } })
+        setPinning(false)
+      }
+      doc.addEventListener("click", on, true); doc.documentElement.classList.add("tune-pinning")
+      return () => { doc.removeEventListener("click", on, true); doc.documentElement.classList.remove("tune-pinning") }
+    })
     document.addEventListener("click", onClick, true)
     document.documentElement.classList.add("tune-pinning")
-    return () => { document.removeEventListener("click", onClick, true); document.documentElement.classList.remove("tune-pinning") }
+    return () => { document.removeEventListener("click", onClick, true); document.documentElement.classList.remove("tune-pinning"); offs.forEach((o) => o()) }
   }, [pinning])
   // Keep pins in place as the page scrolls or resizes
   useEffect(() => {
@@ -106,7 +137,8 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
 
   const addNote = (text: string) => {
     if (!draft || !text.trim()) return setDraft(null)
-    const n: Note = { id: Math.random().toString(36).slice(2, 8), selector: draft.selector, text: text.trim(), viewport: { w: innerWidth, h: innerHeight }, path: location.pathname + location.hash, theme: document.documentElement.dataset.theme || "autumn", at: new Date().toISOString() }
+    const where = draft.where ?? { path: location.pathname + location.hash, w: innerWidth, h: innerHeight, theme: document.documentElement.dataset.theme || "autumn" }
+    const n: Note = { id: Math.random().toString(36).slice(2, 8), selector: draft.selector, text: text.trim(), viewport: { w: where.w, h: where.h }, path: where.path, theme: where.theme, at: new Date().toISOString() }
     update({ ...state, notes: [...state.notes, n] })
     setDraft(null)
   }
@@ -127,9 +159,8 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
   return (
     <>
       {state.notes.map((n, i) => {
-        const el = document.querySelector(n.selector)
-        const r = el?.getBoundingClientRect()
-        return r ? <span key={n.id} title={n.text} className="tune-pin" style={{ left: r.left + 4, top: r.top + 4 }}>{i + 1}</span> : null
+        const p = pinAt(n)
+        return p ? <span key={n.id} title={n.text} className="tune-pin" style={{ left: p.x + 4, top: p.y + 4 }}>{i + 1}</span> : null
       })}
       {draft && <NoteBox x={draft.x} y={draft.y} onSave={addNote} onCancel={() => setDraft(null)} />}
       <div ref={host} role={docked ? "region" : "dialog"} aria-label="Adjust" className={cn("tune-panel", docked && "tune-docked")} data-theme={document.documentElement.dataset.theme}>
@@ -203,6 +234,12 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
   )
 }
 
+const firstFamily = (chain: string) => (chain.split(",")[0] ?? "").trim().replace(/^["']|["']$/g, "")
+const withFirstFamily = (chain: string, first: string) => {
+  const rest = chain.split(",").slice(1).map((x) => x.trim())
+  return first.trim() ? [`"${first.trim().replace(/"/g, "")}"`, ...rest].join(", ") : chain
+}
+
 function TokenRow({ t, value, host, onChange }: { t: Token; value?: string; host: React.RefObject<HTMLDivElement | null>; onChange: (v: string) => void }) {
   const v = value ?? t.value
   const colour = isColour(t.value)
@@ -220,7 +257,12 @@ function TokenRow({ t, value, host, onChange }: { t: Token; value?: string; host
       ) : px || ms ? (
         <input type="number" aria-label={t.name} value={Number.isNaN(num) ? "" : num} step={px ? 1 : 10} onChange={(e) => onChange(e.target.value === "" ? "" : `${e.target.value}${unit}`)} className="state h-8 w-20 rounded-sm px-2 text-right font-label text-[12px] text-foreground" />
       ) : (
-        <input type="text" aria-label={t.name} value={v} onChange={(e) => onChange(e.target.value)} className="state h-8 w-40 rounded-sm px-2 font-label text-[12px] text-foreground" />
+        t.name.startsWith("--font-") ? (
+          // Fonts: show the first family, write back the whole chain so fallbacks stay
+          <input type="text" aria-label={t.name} value={firstFamily(v)} title={v} onChange={(e) => onChange(withFirstFamily(t.value, e.target.value))} className="state h-8 w-40 rounded-sm px-2 font-label text-[12px] text-foreground" />
+        ) : (
+          <input type="text" aria-label={t.name} value={v} onChange={(e) => onChange(e.target.value)} className="state h-8 w-40 rounded-sm px-2 font-label text-[12px] text-foreground" />
+        )
       )}
       {value !== undefined && <button type="button" aria-label={`Reset ${t.name}`} onClick={() => onChange("")} className="press grid size-8 place-items-center rounded-sm text-muted-foreground"><RotateCcw className="size-3" aria-hidden /></button>}
     </div>

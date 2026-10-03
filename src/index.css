@@ -656,3 +656,4 @@
 /* Lantern toggle in the chrome: top right of the scene on phones (44px target, 12px in), in the top bar from 768 */
 .chrome-lantern { position: fixed; z-index: 41; top: 12px; right: 12px; background: var(--letter-bg); box-shadow: var(--shadow-paper); }
 @media (min-width: 768px) { .chrome-lantern { position: static; width: 44px; height: 44px; background: transparent; box-shadow: none; } }
+.home-countdown .numerals { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); font-variant-numeric: lining-nums tabular-nums; }

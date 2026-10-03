@@ -33,6 +33,24 @@
     <title>Nadia & Griffin</title>
   </head>
   <body>
+    <!-- First visit to Home: the sealed envelope paints straight from HTML and CSS, before the app script.
+         The app takes over the same envelope on load and removes this shell. -->
+    <div id="arrival-shell" class="arrival" aria-hidden="true" hidden>
+      <span class="envelope"><span class="envelope-back"></span><span class="envelope-paper"></span><span class="envelope-front"></span><span class="envelope-flap"></span><span class="envelope-seal">N&amp;G</span></span>
+      <span class="arrival-hint label-caps">Tap to open</span>
+    </div>
+    <script>
+      (function () {
+        try {
+          var home = /\/wedding\/?$/.test(location.pathname)
+          var seen = localStorage.getItem("ng-opened")
+          var still = matchMedia("(prefers-reduced-motion: reduce)").matches
+          var rsvp = new URLSearchParams(location.search).get("rsvp") === "1"
+          var noren = /"arrival":"noren"/.test(localStorage.getItem("ng-tune") || "")
+          if (home && !seen && !still && !rsvp && !noren) document.getElementById("arrival-shell").hidden = false
+        } catch (e) {}
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

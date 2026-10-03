@@ -24,17 +24,36 @@ function daysToGo(now: Date) {
   return Math.round((day(new Date(config.weddingStart)) - day(now)) / 86_400_000)
 }
 
-/** "376 days to go, it's 9:14 pm in Kyoto", live. Tomorrow, today and after have their own words. */
-function LiveLine() {
+/**
+ * The countdown on Home: one row of display numerals, "376 days 04:12:09", rust colons, seconds ticking
+ * (paused when the tab is hidden). Screen readers get one calm sentence that never ticks. Tomorrow,
+ * today and after have their own words. Kyoto time is in the title for anyone who hovers.
+ */
+function HomeCountdown() {
   const { t } = useLang()
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 30_000)
-    return () => clearInterval(id)
+    let id = 0
+    const start = () => { clearInterval(id); id = window.setInterval(() => setNow(new Date()), 1000) }
+    const vis = () => (document.hidden ? clearInterval(id) : (setNow(new Date()), start()))
+    start(); document.addEventListener("visibilitychange", vis)
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", vis) }
   }, [])
   const d = daysToGo(now)
-  const lead = d > 1 ? t.home.daysToGo(d) : d === 1 ? t.countdownMore.tomorrow : d === 0 ? t.countdownMore.today : t.countdownMore.married
-  return <p><span className="text-foreground">{lead}</span>, {t.home.kyotoLine(kyotoNow(now))}</p>
+  const ms = Math.max(0, new Date(config.weddingStart).getTime() - now.getTime())
+  const hh = Math.floor((ms % 86_400_000) / 3_600_000), mm = Math.floor((ms % 3_600_000) / 60_000), ss = Math.floor((ms % 60_000) / 1000)
+  const two = (n: number) => String(n).padStart(2, "0")
+  const kyoto = t.home.kyotoLine(kyotoNow(now))
+  if (d <= 1) return <p className="numerals text-(length:--type-display-numerals-size) leading-(--type-display-numerals-leading) text-foreground" title={kyoto}>{d === 1 ? t.countdownMore.tomorrow : d === 0 ? t.countdownMore.today : t.countdownMore.married}</p>
+  return (
+    <p className="home-countdown" title={kyoto}>
+      <span className="sr-only">{t.home.daysToGo(d)}, {kyoto}</span>
+      <span aria-hidden className="flex items-baseline gap-2">
+        <span className="numerals text-foreground">{d}</span><span className="label-caps text-muted-foreground">{t.countdownMore.short.days}</span>
+        <span className="numerals ml-3 text-foreground">{two(hh)}<span className="text-primary">:</span>{two(mm)}<span className="text-primary">:</span>{two(ss)}</span>
+      </span>
+    </p>
+  )
 }
 
 /**
@@ -72,7 +91,7 @@ export function HomePage() {
         ? <p className="max-w-[34em]"><span className="text-foreground">{t.home.dear(dear)}</span> {t.home.greetingLine}</p>
         : <Skeleton className="h-21 w-full" />}
 
-      <LiveLine />
+      <HomeCountdown />
 
       {/* The RSVP (one button, or the replied pill with Change my reply), then one line of links */}
       <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-5">

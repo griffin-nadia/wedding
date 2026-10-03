@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
-import { Countdown } from "@/components/countdown"
 import { VenueMap } from "@/components/venue-map"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
@@ -148,10 +147,6 @@ export function DayPage() {
           {timeline}
         </>
       )}
-      <section aria-label={t.day.countdownLabel} className="flex flex-col gap-3">
-        <p className="label-caps text-muted-foreground">{t.day.countdownLabel}</p>
-        <Countdown units={t.countdownMore.short} words={t.countdownMore} kyotoLabel={t.home.kyotoTimeShort} localTime={localTime("11:00")} />
-      </section>
       <div className="no-print flex flex-col gap-4">
         <AddToCalendar />
         <button type="button" className="btn-text min-h-11 self-start" onClick={() => window.print()}>{t.day.print}</button>

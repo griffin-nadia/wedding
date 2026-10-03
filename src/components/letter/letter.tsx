@@ -19,7 +19,7 @@ export function SignOff() {
   const { t } = useLang()
   const lanternInLetter = useOption("lantern") === "letter"
   return (
-    <footer className="letter-end mt-auto flex flex-col gap-2 pt-2">
+    <footer className="letter-end mt-auto flex flex-col gap-2">
       <div className="flex items-center justify-between gap-4">
         <p className="hand text-foreground">{t.letter.signOff}</p>
         <div className="flex items-center gap-1">
