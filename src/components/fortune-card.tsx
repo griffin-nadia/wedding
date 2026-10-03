@@ -42,7 +42,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     }, still ? 0 : 900)
   }
   async function save() {
-    const words = `${t.fortune.blessing} ${t.fortune.blessingEn} · ${text}`
+    const words = `${t.fortune.blessing} ${t.fortune.blessingEn}. ${text}`
     try {
       if (navigator.share) await navigator.share({ title: t.fortune.title, text: words })
       else if (await copyText(words)) toast(t.fortune.copied)

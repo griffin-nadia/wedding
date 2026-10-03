@@ -59,7 +59,7 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
 
   const options: { key: string; label: string; hit?: SongHit }[] =
     status === "results" || (status === "loading" && hits.length)
-      ? hits.map((h, i) => ({ key: `${i}`, label: `${h.title} · ${h.artist}`, hit: h }))
+      ? hits.map((h, i) => ({ key: `${i}`, label: `${h.title}, ${h.artist}`, hit: h }))
       : status === "none" || status === "error" ? [{ key: "typed", label: q.trim() }] : []
 
   function add(label: string, hit?: SongHit) {

@@ -20,12 +20,12 @@ const arc = ([x1, y1]: [number, number], [x2, y2]: [number, number]) => {
   return `M${x1} ${y1}Q${mx} ${my} ${x2} ${y2}`
 }
 
-/** A dotted line that draws in once (a mask reveals it), already drawn under reduced motion. */
+/** A hand-drawn line that draws in once (a mask reveals it), already drawn under reduced motion. */
 function Route({ d, colour, drawn, delay, id }: { d: string; colour: string; drawn: boolean; delay: number; id: string }) {
   return (
     <g className="journey-route">
       <mask id={id}><path d={d} pathLength={1} fill="none" stroke="#fff" strokeWidth="8" strokeDasharray="1" className="journey-draw" style={{ strokeDashoffset: drawn ? 0 : 1, transitionDelay: `${delay}s` }} /></mask>
-      <path d={d} mask={`url(#${id})`} fill="none" stroke={colour} strokeWidth="2.2" strokeLinecap="round" strokeDasharray="0.1 6" />
+      <path d={d} mask={`url(#${id})`} fill="none" stroke={colour} strokeWidth="2" strokeLinecap="round" />
     </g>
   )
 }
@@ -37,7 +37,7 @@ function Route({ d, colour, drawn, delay, id }: { d: string; colour: string; dra
 export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels }) {
   const ref = useRef<SVGSVGElement>(null)
   const [drawn, setDrawn] = useState(false)
-  const [list, setList] = useState(false)
+  const [list, setList] = useState(() => document.documentElement.getAttribute("data-opt-story") === "list")
   const [open, setOpen] = useState<number | null>(null)
   const [flying, setFlyingState] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
   useEffect(() => { getFlying().then(setFlyingState) }, [])

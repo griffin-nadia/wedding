@@ -4,6 +4,7 @@ import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { playPaper } from "@/lib/sound"
 import { cn } from "@/lib/utils"
+import { useOption } from "@/lib/options"
 
 const KEY = "ng-opened"
 type Phase = "sealed" | "opening" | "open"
@@ -29,6 +30,7 @@ export function Arrival({ enabled, children }: { enabled: boolean; children: Rea
   const { household } = useHousehold()
   const [phase, setPhase] = useState<Phase>(() => firstPhase(enabled))
   const button = useRef<HTMLButtonElement>(null)
+  const noren = useOption("arrival") === "noren"
   const timer = useRef(0)
 
   const finish = () => {
@@ -63,13 +65,22 @@ export function Arrival({ enabled, children }: { enabled: boolean; children: Rea
   return (
     <>
       <div className={cn("arrival", phase === "opening" && "is-opening")}>
-        <button ref={button} type="button" onClick={open} aria-label={t.letter.openLabel(first)} className="envelope">
-          <span aria-hidden className="envelope-back" />
-          <span aria-hidden className="envelope-paper" />
-          <span aria-hidden className="envelope-front" />
-          <span aria-hidden className="envelope-flap" />
-          <span aria-hidden className="envelope-seal">{COUPLE.first[0]}&amp;{COUPLE.second[0]}</span>
-        </button>
+        {noren ? (
+          // Options lab: a noren curtain that parts instead of an envelope
+          <button ref={button} type="button" onClick={open} aria-label={t.letter.openLabel(first)} className="noren">
+            <span aria-hidden className="noren-rod" />
+            <span aria-hidden className="noren-panel noren-left"><span>{COUPLE.first[0]}</span></span>
+            <span aria-hidden className="noren-panel noren-right"><span>{COUPLE.second[0]}</span></span>
+          </button>
+        ) : (
+          <button ref={button} type="button" onClick={open} aria-label={t.letter.openLabel(first)} className="envelope">
+            <span aria-hidden className="envelope-back" />
+            <span aria-hidden className="envelope-paper" />
+            <span aria-hidden className="envelope-front" />
+            <span aria-hidden className="envelope-flap" />
+            <span aria-hidden className="envelope-seal">{COUPLE.first[0]}&amp;{COUPLE.second[0]}</span>
+          </button>
+        )}
         <span aria-hidden className="arrival-hint label-caps">{t.letter.open}</span>
       </div>
       {/* The letter is underneath, ready to rise; out of reach until opened */}

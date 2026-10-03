@@ -315,7 +315,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                 <dl className="divide-y divide-border rounded-md border bg-card">
                   {form.guests.map((g) => (
                     <ReviewRow key={g.id} label={nameOf(g)} edit={() => goTo(1)} editLabel={t.rsvp.edit(nameOf(g))}>
-                      {g.attending === "yes" ? `${t.rsvp.coming}${g.dietary && g.dietary !== "None" ? ` · ${g.dietary}` : ""}` : t.rsvp.notComing}
+                      {g.attending === "yes" ? `${t.rsvp.coming}${g.dietary && g.dietary !== "None" ? `, ${g.dietary}` : ""}` : t.rsvp.notComing}
                     </ReviewRow>
                   ))}
                   {coming.length > 0 && (

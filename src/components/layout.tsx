@@ -11,6 +11,7 @@ import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival } from "@/components/envelope"
 import { Qr } from "@/components/qr"
 import { SiteTune } from "@/tune/launcher"
+import { useOption } from "@/lib/options"
 
 const links = [
   { to: "/", key: "home", icon: Home },
@@ -91,10 +92,11 @@ export function Layout() {
   const { dim } = useSceneDim()
   const firstPath = useRef(pathname)
   const replied = Boolean(household?.respondedAt)
+  const plates = useOption("scene") === "plate"
   return (
     <>
       <a href="#letter" className="skip-link">{t.letter.skip}</a>
-      <Scene source={sceneFor(page, theme)} dim={dim} />
+      <Scene source={sceneFor(page, theme, plates)} dim={dim} />
       <header className="site-bar">
         <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
         <Nav />

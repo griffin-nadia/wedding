@@ -24,7 +24,7 @@ function daysToGo(now: Date) {
   return Math.round((day(new Date(config.weddingStart)) - day(now)) / 86_400_000)
 }
 
-/** "376 days to go · it's 9:14 pm in Kyoto", live. Tomorrow, today and after have their own words. */
+/** "376 days to go, it's 9:14 pm in Kyoto", live. Tomorrow, today and after have their own words. */
 function LiveLine() {
   const { t } = useLang()
   const [now, setNow] = useState(() => new Date())

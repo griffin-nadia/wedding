@@ -45,10 +45,10 @@ function Digit({ d }: { d: string }) {
 type Units = { months: string; days: string; hours: string; mins: string; secs: string; years: string }
 type Words = { until: string; tomorrow: string; today: string; married: string; andCounting: string; localTitle: (t: string) => string }
 
-/** One tile: tabular numerals; the seconds tile is tinted (and glows softly in Lantern mode). */
-export function CountdownTile({ value, unit, ticking = false, pad = 2 }: { value: number; unit: string; ticking?: boolean; pad?: number }) {
+/** One unit as display type: Oranienbaum numerals, label under in Inter 12. No tile, no border. */
+export function CountdownTile({ value, unit, pad = 2 }: { value: number; unit: string; ticking?: boolean; pad?: number }) {
   return (
-    <div className={cn("countdown-tile flex min-w-0 flex-col items-center gap-2 rounded-md border py-4", ticking && "countdown-secs")}>
+    <div className="countdown-unit flex min-w-0 flex-col items-center gap-1">
       <span className="numerals text-(length:--type-display-numerals-size) leading-(--type-display-numerals-leading)">
         {String(value).padStart(pad, "0").split("").map((c, i) => <Digit key={i} d={c} />)}
       </span>
@@ -56,6 +56,8 @@ export function CountdownTile({ value, unit, ticking = false, pad = 2 }: { value
     </div>
   )
 }
+/** Thin rust colon between units. */
+const Colon = () => <span aria-hidden className="numerals self-start text-(length:--type-display-numerals-size) leading-(--type-display-numerals-leading) text-primary">:</span>
 
 /**
  * Live countdown to the ceremony (Japan time), to the second, paused when the tab is hidden.
@@ -85,10 +87,10 @@ export function Countdown({ units, words, kyotoLabel, localTime }: { units: Unit
   if (now >= end) {
     const days = Math.floor((now.getTime() - end.getTime()) / 86_400_000)
     return (
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         <p className="heading">{words.married}</p>
-        <div aria-hidden className="mx-auto grid max-w-xs grid-cols-2 gap-3">
-          <CountdownTile value={Math.floor(days / 365)} unit={units.years} pad={1} />
+        <div aria-hidden className="flex items-start gap-3">
+          <CountdownTile value={Math.floor(days / 365)} unit={units.years} pad={1} /><Colon />
           <CountdownTile value={days % 365} unit={units.days} pad={1} />
         </div>
         <p className="hand">{words.andCounting}</p>
@@ -101,14 +103,13 @@ export function Countdown({ units, words, kyotoLabel, localTime }: { units: Unit
   const tiles = ([["months", p.months], ["days", p.days], ["hours", p.hours], ["mins", p.mins], ["secs", p.secs]] as const)
     .filter(([k, v]) => (k === "months" ? v > 0 && !lastDay : k === "days" ? !lastDay && (v > 0 || p.months > 0) : true))
   return (
-    <div className="space-y-4" title={localTime ? words.localTitle(localTime) : undefined}>
+    <div className="flex flex-col gap-4" title={localTime ? words.localTitle(localTime) : undefined}>
       {(today || lastDay) && <p className="heading">{today ? words.today : words.tomorrow}</p>}
       <p className="sr-only" aria-live="off">{sentence(p)}</p>
-      <div aria-hidden className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))` }}>
-        {tiles.map(([k, v]) => <CountdownTile key={k} value={v} unit={units[k]} ticking={k === "secs"} pad={k === "months" ? 1 : 2} />)}
+      <div aria-hidden className="flex items-start gap-2 sm:gap-3">
+        {tiles.map(([k, v], i) => <span key={k} className="contents">{i > 0 && <Colon />}<CountdownTile value={v} unit={units[k]} pad={k === "months" ? 1 : 2} /></span>)}
       </div>
-      <p>{words.until}</p>
-      <p className="hand">{kyotoLabel(kyoto)}</p>
+      <p>{words.until}. <span className="hand">{kyotoLabel(kyoto)}</span></p>
     </div>
   )
 }

@@ -34,7 +34,7 @@ export function DriverCard() {
     <>
       <section aria-labelledby="driver" className="flex flex-col gap-3 rounded-md bg-section-alt p-4 md:p-6">
         <h2 id="driver" className="label-caps text-muted-foreground">{t.driver.label}</h2>
-        <p className="font-semibold text-foreground">{VENUE.name} <span lang="ja" className="font-ja font-normal text-body">· {VENUE.nameJa}</span></p>
+        <p className="flex flex-col"><span className="font-semibold text-foreground">{VENUE.name}</span><span lang="ja" className="font-ja">{VENUE.nameJa}</span></p>
         <p>{t.driver.fare}</p>
         <div className="flex flex-wrap gap-3">
           <Button ref={opener} size="lg" onClick={() => setFull(true)}>{t.driver.show}<ArrowRight aria-hidden /></Button>

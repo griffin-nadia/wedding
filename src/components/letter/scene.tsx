@@ -29,7 +29,7 @@ export function Scene({ source, dim = false, className }: { source: SceneSource;
       {layers.map((l, i) => (
         <div key={l.key} className={cn("scene-layer absolute inset-0", l.ready || i === 0 ? "opacity-100" : "opacity-0")}
           onTransitionEnd={() => { if (i === layers.length - 1 && layers.length > 1) setLayers((ls) => ls.slice(-1)) }}>
-          {"photo" in l.source ? <PhotoScene name={l.source.photo} priority={i === 0} onReady={() => ready(l.key)} /> : <PlateScene name={l.source.plate} onReady={() => ready(l.key)} />}
+          {"photo" in l.source ? <PhotoScene name={l.source.photo} priority={i === 0} onReady={() => ready(l.key)} /> : <PlateScene name={l.source.plate} fallback={l.source.fallback} onReady={() => ready(l.key)} />}
         </div>
       ))}
       <div className="scene-scrim absolute inset-0" />
@@ -57,9 +57,10 @@ function PhotoScene({ name, priority, onReady }: { name: string; priority: boole
   )
 }
 
-/** Painted plate: sky and mist, hills, foreground leaves. Layers drift 2 to 6px on scroll. */
-function PlateScene({ name, onReady }: { name: string; onReady: () => void }) {
+/** Painted plate: sky and mist, hills, foreground leaves. Layers drift 2 to 6px on scroll. Until the art lands, the photo shows. */
+function PlateScene({ name, fallback, onReady }: { name: string; fallback?: string; onReady: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
+  const [missing, setMissing] = useState(false)
   useEffect(() => {
     onReady()
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -77,12 +78,13 @@ function PlateScene({ name, onReady }: { name: string; onReady: () => void }) {
     return () => { window.removeEventListener("scroll", move); cancelAnimationFrame(raf) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  if (missing && fallback) return <PhotoScene name={fallback} priority={false} onReady={onReady} />
   return (
     <div ref={ref} className="scene-plate absolute inset-0">
       {(["sky", "mid", "fore"] as const).map((layer, i) => (
         <picture key={layer} className="absolute inset-0" style={{ transform: `translateY(calc(var(--drift, 0) * ${-(i + 1) * 2}px))` }}>
           <source type="image/avif" srcSet={`${base}art/${name}/${layer}-1600.avif 1600w, ${base}art/${name}/${layer}-2400.avif 2400w`} />
-          <img src={`${base}art/${name}/${layer}-1600.webp`} alt="" className="size-full object-cover" />
+          <img src={`${base}art/${name}/${layer}-1600.webp`} alt="" className="size-full object-cover" onError={() => setMissing(true)} />
         </picture>
       ))}
     </div>

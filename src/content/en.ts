@@ -135,6 +135,12 @@ export const en = {
     date: "Fri 15 Oct 2027",
     venue: "The Sodoh Higashiyama, Kyoto",
     address: "366 Yasaka Kamimachi, Higashiyama Ward, Kyoto 605-0827, Japan",
+    addressLines: ["366 Yasaka Kamimachi, Higashiyama Ward", "Kyoto 605-0827, Japan"],
+    taxiEasiest: "A taxi from Kyoto Station is easiest: about 15 minutes, around ¥2,000.",
+    dressNote: "No dress code. Wear what makes you feel like your best self, with shoes that grip on stone.",
+    mapAlt: "A drawn map: from Kyoto Station north to Gion-Shijo, then east up the hill to The Sodoh.",
+    mapStation: "Kyoto Station", mapGion: "Gion-Shijo", mapVenue: "The Sodoh",
+    detailsTab: "Details", timelineTab: "Timeline", countdownLabel: "Counting down",
     schedule: [
       { time: "11:00", label: "Ceremony", where: "The Garden" },
       { time: "12:00", label: "Cocktail hour", where: "Until 1:00 pm" },
