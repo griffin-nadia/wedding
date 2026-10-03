@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { partsAt, sentence } from "@/lib/countdown-parts"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
+import { useContent } from "@/lib/content"
 import { cn } from "@/lib/utils"
 
 /**
@@ -20,10 +21,13 @@ export function HomeCountdown() {
     start(); document.addEventListener("visibilitychange", vis)
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", vis) }
   }, [])
+  const { mode } = useContent()
+  const style = useOption("count")
   const p = partsAt(now)
+  if (mode === "keepsake") return null
   const u = t.countdownMore.short
   const tiles: [number, string][] = [[p.months, u.months], [p.days, u.days], [p.hours, u.hours], [p.mins, u.mins], [p.secs, u.secs]]
-  if (useOption("count") !== "tiles") return (
+  if (style !== "tiles") return (
     <div className="home-count">
       <p className="sr-only">{sentence(p)}</p>
       <div aria-hidden className="count-strip">

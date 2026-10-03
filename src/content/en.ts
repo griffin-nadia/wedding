@@ -125,6 +125,8 @@ export const en = {
     changeReply: "Change my reply",
     changeBy: CHANGE_BY,
     reseal: "Seal it again",
+    week: { greeting: "it's nearly here. Everything for Friday is on The day, and the easiest way there is below. We can't wait to see you.", day: "The day", directions: "Directions in Google Maps" },
+    keepsake: { badge: "Married, Fri 15 Oct 2027, Kyoto", greeting: "thank you for coming all this way and for being part of our day. We'll add photos from the day here soon.", story: "Read our story" },
   },
   day: {
     title: "The day",

@@ -4,6 +4,9 @@ import { Check, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useHousehold } from "@/lib/household"
 import { useOption } from "@/lib/options"
+import { useContent } from "@/lib/content"
+import { Link } from "react-router-dom"
+import { directionsUrl } from "@/lib/calendar"
 import { COUPLE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { isLocked } from "@/lib/time"
@@ -78,6 +81,8 @@ export function HomePage() {
   const dear = t.home.dearNames(names) || household?.displayName || ""
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
   const dateStyle = useOption("datestyle")
+  useOption("mode") // re-render when the crew preview changes
+  const { mode, contactDay } = useContent()
   const keepDone = useOption("ticks") !== "hide"
 
   const rsvpButton = done
@@ -89,15 +94,25 @@ export function HomePage() {
       <header className="flex flex-col gap-2">
         <Names />
         {dateStyle === "line"
-          ? <p className="font-display text-2xl text-foreground">{t.home.dateLine}</p>
-          : <p className="date-badge">{t.home.dateLine}</p>}
+          ? <p className="font-display text-2xl text-foreground">{mode === "keepsake" ? t.home.keepsake.badge : t.home.dateLine}</p>
+          : <p className="date-badge">{mode === "keepsake" ? t.home.keepsake.badge : t.home.dateLine}</p>}
       </header>
 
       {household
-        ? <p className="lead max-w-[34em]"><span className="text-foreground">{t.home.dear(dear)}</span> {t.home.greetingLine}</p>
+        ? <p className="lead max-w-[34em]"><span className="text-foreground">{t.home.dear(dear)}</span> {mode === "keepsake" ? t.home.keepsake.greeting : mode === "week-of" ? t.home.week.greeting : t.home.greetingLine}</p>
         : <Skeleton className="h-21 w-full" />}
 
-      {!household ? (
+      {/* Later modes (v3 S): the week of the wedding points at the day; the keepsake is a thank-you letter */}
+      {household && mode === "week-of" && (
+        <div className="flex flex-col gap-3">
+          <Button asChild size="lg" className="w-full sm:w-auto sm:self-start"><Link to="/the-day">{t.home.week.day}</Link></Button>
+          <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{t.home.week.directions}</a>
+          {contactDay && <p className="text-sm">{t.qa.onTheDay} {contactDay}</p>}
+        </div>
+      )}
+      {household && mode === "keepsake" && <Link to="/our-story" className="btn-text inline-flex min-h-11 items-center self-start">{t.home.keepsake.story}</Link>}
+
+      {mode !== "invite" ? null : !household ? (
         <div role="status"><span className="sr-only">{t.loading}</span><Skeleton className="h-13 w-full rounded-lg sm:w-64" /></div>
       ) : locked ? (
         <p>{t.home.rsvpClosed}</p>

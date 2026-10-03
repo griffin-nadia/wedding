@@ -9,6 +9,7 @@ export type Option = { key: string; label: string; flow: (typeof FLOWS)[number];
  */
 export const OPTIONS: Option[] = [
   { key: "peek", label: "Envelope peek on hover", flow: "Arrival", note: "Desktop only: the flap lifts and a corner of the letter shows on hover.", values: [["on", "On"], ["off", "Off"]], },
+  { key: "mode", label: "Site mode (preview)", flow: "Home", note: "What the site becomes later: the invite now, the week of the wedding (The day first), or the keepsake after it. The Content tab sets it for real; this previews it.", values: [["sheet", "From the sheet"], ["invite", "Invite"], ["week-of", "Week of"], ["keepsake", "Keepsake"]] },
   { key: "datestyle", label: "Date", flow: "Home", note: "Under the names: the date and place as a sage badge, or as a second display line.", values: [["badge", "Badge"], ["line", "Display line"]] },
   { key: "names", label: "Names on desktop", flow: "Home", note: "From 1024: Nadia & Griffin on one line (the Home letter widens to fit), or on two.", values: [["one", "One line"], ["two", "Two lines"]] },
   { key: "count", label: "Countdown", flow: "Home", note: "Under the card: one long strip with what it counts, or five paper tiles.", values: [["strip", "Strip"], ["tiles", "Tiles"]] },
