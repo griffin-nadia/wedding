@@ -51,24 +51,24 @@ export function FortuneCard({ token, className }: { token: string; className?: s
 
   if (state !== "open") {
     return (
-      <section aria-labelledby="fortune" className={cn("flex items-center gap-4 rounded-[1.25rem] bg-card p-4 ring-1 ring-border", className)}>
-        <span aria-hidden className={cn("omikuji-box grid h-14 w-10 shrink-0 place-items-center rounded-md bg-primary font-ja text-sm text-primary-foreground", state === "drawing" && "omikuji-shake")}>籤</span>
-        <div className="flex-1 space-y-2">
-          <h3 id="fortune" className="font-display text-xl">{t.fortune.title}</h3>
-          <Button size="sm" variant="outline" className="min-h-11 rounded-full px-4" onClick={draw} disabled={state === "drawing"} aria-busy={state === "drawing"}>{t.fortune.draw}</Button>
+      <section aria-labelledby="fortune" className={cn("flex items-center gap-4 rounded-md border bg-card p-4", className)}>
+        <span aria-hidden className={cn("omikuji-box grid h-14 w-10 shrink-0 place-items-center rounded-sm bg-primary font-ja text-primary-foreground", state === "drawing" && "omikuji-shake")}>籤</span>
+        <div className="flex flex-1 flex-col items-start gap-2">
+          <h3 id="fortune" className="font-sans text-base font-semibold text-foreground">{t.fortune.title}</h3>
+          <Button variant="outline" onClick={draw} disabled={state === "drawing"} aria-busy={state === "drawing"}>{t.fortune.draw}</Button>
         </div>
       </section>
     )
   }
   return (
     <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head"
-      className={cn("omikuji-slip space-y-2 rounded-[4px] bg-[#fffdf8] p-5 text-[#421a05] shadow-paper ring-1 ring-[#e5d0a8] outline-none focus-visible:ring-3 focus-visible:ring-ring/50", className)}>
+      className={cn("omikuji-slip flex flex-col gap-2 rounded-sm border border-[#e5d0a8] bg-[#fffdf8] p-4 text-[#421a05] shadow-paper outline-2 outline-offset-2 outline-transparent focus-visible:outline-ring", className)}>
       <p id="fortune-head" className="flex items-baseline justify-between gap-3">
         <span><span lang="ja" className="font-ja text-2xl text-[#a43108]">{t.fortune.blessing}</span> <span className="label-caps text-[#754b38]">{t.fortune.blessingEn}</span></span>
-        <span className="font-label text-[13px] text-[#754b38]">{t.fortune.number(i + 1, tips.length)}</span>
+        <span className="label-caps text-[#754b38]">{t.fortune.number(i + 1, tips.length)}</span>
       </p>
-      <p className="hand text-base">{text}</p>
-      <button type="button" onClick={save} className="min-h-11 text-sm text-[#a43108] underline underline-offset-4">{t.fortune.save}</button>
+      <p className="hand">{text}</p>
+      <button type="button" onClick={save} className="min-h-11 self-start text-[#a43108] underline underline-offset-4 outline-2 outline-offset-2 outline-transparent focus-visible:outline-[#a43108]">{t.fortune.save}</button>
     </div>
   )
 }

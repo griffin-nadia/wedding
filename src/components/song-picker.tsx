@@ -72,15 +72,15 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       {list.length > 0 && (
-        <ul aria-label={t.added} className="space-y-2">
+        <ul aria-label={t.added} className="flex flex-col gap-2">
           {list.map((s) => (
-            <li key={s} className="flex min-h-13 items-center gap-3 rounded-xl bg-card py-1 pr-1 pl-2 ring-1 ring-border">
+            <li key={s} className="flex min-h-14 items-center gap-3 rounded-md border bg-card py-1 pr-1 pl-2">
               {art[s] ? <img src={art[s]} alt="" className="size-10 rounded-md object-cover" /> : <span aria-hidden className="grid size-10 place-items-center rounded-md bg-muted text-muted-foreground"><Music2 className="size-4" /></span>}
-              <span className="min-w-0 flex-1 truncate text-sm">{s}</span>
+              <span className="min-w-0 flex-1 truncate text-foreground">{s}</span>
               <button type="button" onClick={() => onChange(list.filter((x) => x !== s))} aria-label={t.remove(s)}
-                className="grid size-11 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+                className="press grid size-11 shrink-0 place-items-center rounded-sm text-muted-foreground outline-2 outline-offset-2 outline-transparent hover:text-foreground focus-visible:outline-ring">
                 <X className="size-4" aria-hidden />
               </button>
             </li>
@@ -88,7 +88,7 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
         </ul>
       )}
       {full ? (
-        <p className="text-sm text-success">{t.full(list.length)}</p>
+        <p className="text-success">{t.full(list.length)}</p>
       ) : (
         <div className="relative">
           <InlineSubmit ref={input} id={`${id}-in`} label={t.label} helper={t.hint} submitLabel={t.addTyped}
@@ -114,21 +114,21 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
           <p aria-live="polite" className="sr-only">{status === "loading" ? t.searching : status === "results" ? `${hits.length} results` : status === "none" ? t.noMatch(q.trim()) : ""}</p>
           {open && options.length > 0 && (
             <ul id={`${id}-list`} role="listbox" aria-label={t.label}
-              className={cn("absolute inset-x-0 top-[5.5rem] z-20 mt-2 max-h-96 overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-paper", status === "loading" && "opacity-60")}>
+              className={cn("absolute inset-x-0 top-[calc(56px+var(--input-height)+var(--space-3))] z-20 max-h-96 overflow-y-auto rounded-md border bg-card p-1 shadow-paper", status === "loading" && "opacity-60")}>
               {options.map((o, i) => (
                 <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={i === active}
                   onMouseDown={(e) => { e.preventDefault(); add(o.label, o.hit) }}
-                  className={cn("flex min-h-13 cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-secondary", i === active && "bg-secondary")}>
+                  className={cn("flex min-h-14 cursor-pointer items-center gap-3 rounded-sm px-2 py-1 text-foreground hover:bg-secondary", i === active && "bg-secondary")}>
                   {o.hit ? (
                     <>
                       {o.hit.artwork ? <img src={o.hit.artwork} alt="" className="size-10 shrink-0 rounded-md object-cover" /> : <span aria-hidden className="size-10 shrink-0 rounded-md bg-muted" />}
                       <span className="min-w-0">
-                        <span className="block truncate text-[17px]"><Mark text={o.hit.title} q={q} /></span>
-                        <span className="block truncate font-label text-[13px] text-muted-foreground"><Mark text={o.hit.artist} q={q} /></span>
+                        <span className="block truncate"><Mark text={o.hit.title} q={q} /></span>
+                        <span className="block truncate text-sm text-muted-foreground"><Mark text={o.hit.artist} q={q} /></span>
                       </span>
                     </>
                   ) : (
-                    <span className="px-2 text-sm">{status === "error" ? t.error : t.noMatch(o.label)}</span>
+                    <span className="px-2">{status === "error" ? t.error : t.noMatch(o.label)}</span>
                   )}
                 </li>
               ))}

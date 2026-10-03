@@ -5,7 +5,7 @@ import { Slot } from "radix-ui"
 
 const buttonVariants = cva(
   // One state system (index.css: state, btn-primary, btn-text). Buttons: radius 12, 52 tall on phones, 48 from 768.
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg font-label text-[15px] font-medium whitespace-nowrap select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg font-sans text-base font-semibold whitespace-nowrap select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {

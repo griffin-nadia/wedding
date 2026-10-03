@@ -48,11 +48,11 @@ type Words = { until: string; tomorrow: string; today: string; married: string; 
 /** One tile: tabular numerals; the seconds tile is tinted (and glows softly in Lantern mode). */
 export function CountdownTile({ value, unit, ticking = false, pad = 2 }: { value: number; unit: string; ticking?: boolean; pad?: number }) {
   return (
-    <div className={cn("flex min-w-0 flex-col items-center gap-2 rounded-[1.25rem] py-4 shadow-paper ring-1 ring-border", ticking ? "countdown-secs bg-secondary" : "bg-card")}>
-      <span className="numerals text-[clamp(2rem,1.4rem+3vw,3.25rem)] leading-none">
+    <div className={cn("countdown-tile flex min-w-0 flex-col items-center gap-2 rounded-md border py-4", ticking && "countdown-secs")}>
+      <span className="numerals text-(length:--type-display-numerals-size) leading-(--type-display-numerals-leading)">
         {String(value).padStart(pad, "0").split("").map((c, i) => <Digit key={i} d={c} />)}
       </span>
-      <span className={cn("label-caps", ticking ? "text-body" : "text-muted-foreground")}>{unit}</span>
+      <span className="label-caps text-muted-foreground">{unit}</span>
     </div>
   )
 }
@@ -91,7 +91,7 @@ export function Countdown({ units, words, kyotoLabel, localTime }: { units: Unit
           <CountdownTile value={Math.floor(days / 365)} unit={units.years} pad={1} />
           <CountdownTile value={days % 365} unit={units.days} pad={1} />
         </div>
-        <p className="hand text-sm text-body">{words.andCounting}</p>
+        <p className="hand">{words.andCounting}</p>
       </div>
     )
   }
@@ -107,8 +107,8 @@ export function Countdown({ units, words, kyotoLabel, localTime }: { units: Unit
       <div aria-hidden className="grid gap-2 sm:gap-3" style={{ gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))` }}>
         {tiles.map(([k, v]) => <CountdownTile key={k} value={v} unit={units[k]} ticking={k === "secs"} pad={k === "months" ? 1 : 2} />)}
       </div>
-      <p className="text-sm text-body">{words.until}</p>
-      <p className="hand text-sm text-body">{kyotoLabel(kyoto)}</p>
+      <p>{words.until}</p>
+      <p className="hand">{kyotoLabel(kyoto)}</p>
     </div>
   )
 }

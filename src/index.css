@@ -197,8 +197,9 @@
   @media (hover: hover) {
     &:hover:not(:disabled, [aria-disabled="true"], [aria-invalid="true"]) { border-color: var(--input-line-hover); }
   }
-  &:focus-visible, &:has(:focus-visible) { outline-color: var(--input-focus); }
-  &:active:not(:disabled, input, textarea, [aria-disabled="true"]) { background-color: var(--input-pressed-bg); transform: scale(var(--press-scale)); }
+  &:focus-visible, &:has(:focus-visible), &[data-force="focus"] { outline-color: var(--input-focus); }
+  &[data-force="hover"] { border-color: var(--input-line-hover); }
+  &:active:not(:disabled, input, textarea, [aria-disabled="true"]), &[data-force="pressed"] { background-color: var(--input-pressed-bg); transform: scale(var(--press-scale)); }
   &[aria-pressed="true"], &[aria-selected="true"], &[data-state="active"], &:has([data-state="checked"]), &[data-selected="true"] {
     background-color: var(--input-selected-bg);
     border-color: var(--input-selected-line);
@@ -234,8 +235,9 @@
   outline-offset: 2px;
   transition: background-color var(--duration-quick) var(--ease-paper), transform var(--duration-press) var(--ease-paper);
   @media (hover: hover) { &:hover:not(:disabled) { background-color: var(--button-bg-hover); } }
-  &:focus-visible { outline-color: var(--input-focus); }
-  &:active:not(:disabled) { transform: scale(var(--press-scale)); }
+  &[data-force="hover"] { background-color: var(--button-bg-hover); }
+  &:focus-visible, &[data-force="focus"] { outline-color: var(--input-focus); }
+  &:active:not(:disabled), &[data-force="pressed"] { transform: scale(var(--press-scale)); }
   &:disabled { background-color: var(--input-disabled-bg); color: color-mix(in oklab, var(--sys-ink) 50%, transparent); border-color: var(--sys-line); cursor: not-allowed; }
 }
 /* Quiet text action (Change my reply, Edit): underline on hover, same focus ring */
@@ -249,7 +251,8 @@
   border-radius: var(--radius-chip);
   transition: text-decoration-thickness var(--duration-quick);
   @media (hover: hover) { &:hover { text-decoration-thickness: 2px; } }
-  &:focus-visible { outline-color: var(--input-focus); }
+  &:focus-visible, &[data-force="focus"] { outline-color: var(--input-focus); }
+  &[data-force="hover"] { text-decoration-thickness: 2px; }
 }
 
 /* Press feedback for anything else tappable: instant and small */
@@ -470,7 +473,7 @@
   .site-bar { height: 64px; padding: 0 24px; background: color-mix(in oklab, var(--letter-bg) 90%, transparent); border-bottom: 1px solid color-mix(in oklab, var(--sys-line) 60%, transparent); pointer-events: auto; }
   .site-nav { position: static; background: none; border: 0; padding: 0; backdrop-filter: none; -webkit-backdrop-filter: none; margin-right: var(--space-4); }
   .site-nav ul { display: flex; gap: var(--space-1); height: auto; }
-  .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-3); font-size: 15px; letter-spacing: 0; outline-offset: 2px; }
+  .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-3); text-transform: uppercase; letter-spacing: var(--type-label-tracking); outline-offset: 2px; }
   .site-nav-link.is-active { background: var(--sys-fill); }
   .theme-toggle { box-shadow: none; background: transparent; }
 }
@@ -518,3 +521,12 @@
 @keyframes tick-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
 /* Accordions open and close in 300 ms on the paper ease */
 .accordion-content[data-state] { animation-duration: var(--duration-settle) !important; animation-timing-function: var(--ease-paper) !important; }
+.countdown-tile { background: var(--countdown-bg); color: var(--countdown-ink); border-color: var(--countdown-line); }
+.countdown-tile.countdown-secs { background: var(--sys-fill); }
+
+/* ─── Tuning panel (dev and VITE_TUNE builds only) ─────────────────────────── */
+.tune-panel { position: fixed; z-index: 90; top: 0; right: 0; bottom: 0; width: min(380px, 100vw); display: flex; flex-direction: column; background: var(--sys-surface-raised); color: var(--sys-ink-soft); border-left: 1px solid var(--sys-line); box-shadow: -16px 0 48px -24px rgb(0 0 0 / 0.4); font-size: 15px; }
+.tune-changed { background: color-mix(in oklab, var(--sys-highlight) 18%, transparent); border-radius: var(--radius-chip); padding-inline: var(--space-1); }
+.tune-pin { position: fixed; z-index: 89; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 999px; background: var(--brand-forest); color: var(--brand-kinari); font: 600 12px/1 var(--font-label); pointer-events: none; }
+.tune-note { position: fixed; z-index: 91; width: 280px; padding: var(--space-3); border-radius: var(--radius-card); background: var(--sys-surface-raised); border: 1px solid var(--sys-line); box-shadow: var(--shadow-paper); }
+.tune-pinning, .tune-pinning * { cursor: crosshair !important; }

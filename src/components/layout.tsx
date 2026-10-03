@@ -8,6 +8,7 @@ import { pageOf, sceneFor } from "@/lib/scenes"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival } from "@/components/envelope"
+import { SiteTune } from "@/tune/launcher"
 
 const links = [
   { to: "/", key: "home", icon: Home },
@@ -65,6 +66,7 @@ export function Layout() {
           </Letter>
         </Arrival>
       </main>
+      <SiteTune />
     </>
   )
 }

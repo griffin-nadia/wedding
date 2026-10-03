@@ -15,7 +15,7 @@ export function Toaster() {
   }, [])
   return (
     <div aria-live="polite" role="status" className="pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-[60] flex justify-center px-4 md:bottom-8">
-      {msg && <p className="toast-in rounded-full bg-foreground px-5 py-3 text-sm text-background shadow-paper">{msg}</p>}
+      {msg && <p className="toast-in rounded-full bg-foreground px-6 py-3 text-background shadow-paper">{msg}</p>}
     </div>
   )
 }
