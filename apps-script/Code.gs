@@ -1125,7 +1125,6 @@ function sendConfirmation_(h, changes) {
   }
 
   const mail = buildEmail_({
-    eyebrow: changes ? "Reply updated" : "Reply received",
     heading: heading,
     paragraphs: ["Hi " + h.displayName + ","],
     list: changes && changes[0] !== "No changes" ? { title: "What changed", items: changes } : null,
@@ -1497,12 +1496,15 @@ function makeToken_() {
  */
 function buildEmail_(m) {
   const c = { ink: "#421a05", body: "#754b38", muted: "#8b5a3c", line: "#e5d0a8", link: "#a43108", button: "#a84f32", onButton: "#fbf5ea" }
-  const font = "Georgia, 'Times New Roman', serif"
-  const p = (s, size, colour) => '<p style="margin:0 0 14px;font:' + (size || 17) + "px/1.55 " + font + ";color:" + (colour || c.body) + '">' + esc_(s).replace(/\n/g, "<br>") + "</p>"
+  // The site's type in email terms: a serif for the heading (Oranienbaum can't load in mail), the system sans
+  // for everything else (Inter's job on the site)
+  const serif = "Georgia, 'Times New Roman', serif"
+  const font = "Inter, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
+  const p = (s, size, colour) => '<p style="margin:0 0 14px;font:' + (size || 16) + "px/1.55 " + font + ";color:" + (colour || c.body) + '">' + esc_(s).replace(/\n/g, "<br>") + "</p>"
   let html = '<div style="max-width:520px;margin:0 auto;padding:24px 16px">'
   let text = ""
   if (m.eyebrow) { html += p(m.eyebrow, 14, c.link); text += m.eyebrow + "\n\n" }
-  html += '<h1 style="margin:0 0 18px;font:400 26px/1.25 ' + font + ";color:" + c.ink + '">' + esc_(m.heading) + "</h1>"
+  html += '<h1 style="margin:0 0 18px;font:400 28px/1.25 ' + serif + ";color:" + c.ink + '">' + esc_(m.heading) + "</h1>"
   text += m.heading + "\n\n"
   ;(m.paragraphs || []).forEach((x) => { html += p(x); text += x + "\n\n" })
   if (m.list) {
@@ -1511,12 +1513,12 @@ function buildEmail_(m) {
   }
   if (m.rows && m.rows.length) {
     html += '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 20px;border-top:1px solid ' + c.line + '">' +
-      m.rows.map((r) => '<tr><td style="padding:8px 12px 8px 0;border-bottom:1px solid ' + c.line + ";font:600 16px/1.4 " + font + ";color:" + c.ink + ';vertical-align:top">' + esc_(r[0]) + '</td><td style="padding:8px 0;border-bottom:1px solid ' + c.line + ";font:16px/1.4 " + font + ";color:" + c.body + '">' + esc_(r[1]) + "</td></tr>").join("") +
+      m.rows.map((r) => '<tr><td style="padding:8px 12px 8px 0;border-bottom:1px solid ' + c.line + ";font:500 16px/1.4 " + font + ";color:" + c.ink + ';vertical-align:top">' + esc_(r[0]) + '</td><td style="padding:8px 0;border-bottom:1px solid ' + c.line + ";font:16px/1.4 " + font + ";color:" + c.body + '">' + esc_(r[1]) + "</td></tr>").join("") +
       "</table>"
     text += m.rows.map((r) => r[0] + ": " + r[1]).join("\n") + "\n\n"
   }
   if (m.button) {
-    html += '<p style="margin:4px 0 22px"><a href="' + esc_(m.button.url) + '" style="display:inline-block;background:' + c.button + ";color:" + c.onButton + ";text-decoration:none;font:600 17px/1 " + font + ';padding:14px 24px;border-radius:999px">' + esc_(m.button.label) + "</a></p>"
+    html += '<p style="margin:4px 0 22px"><a href="' + esc_(m.button.url) + '" style="display:inline-block;background:' + c.button + ";color:" + c.onButton + ";text-decoration:none;font:500 16px/1 " + font + ';padding:14px 24px;border-radius:8px">' + esc_(m.button.label) + "</a></p>"
     text += m.button.label + ":\n" + m.button.url + "\n\n"
   }
   ;(m.notes || []).forEach((n) => { html += p(n, 14, c.muted); text += n + "\n" })
