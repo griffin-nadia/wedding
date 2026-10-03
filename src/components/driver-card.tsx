@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { Copy } from "lucide-react"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
@@ -7,8 +8,10 @@ import { copyText } from "@/lib/copy"
 import { Button } from "@/components/ui/button"
 
 /**
- * Show the driver. Compact in the page; full screen on tap: the brightest paper, big Japanese,
- * screen kept awake where the browser allows, Esc or Done closes and focus goes back.
+ * Show the driver. Compact in the page; on tap a modal above everything (v3 Q4): the brightest paper,
+ * big Japanese, Done in the card's footer. The dock, mode toggle and the rest of the page are hidden and
+ * inert while it's open; the screen stays awake where the browser allows; Esc or Done closes and focus
+ * goes back to "Show the driver".
  */
 export function DriverCard() {
   const { t } = useLang()
@@ -22,10 +25,20 @@ export function DriverCard() {
     const nav = navigator as unknown as { wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> } }
     nav.wakeLock?.request("screen").then((l) => (lock = l)).catch(() => {})
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setFull(false) }
-    window.addEventListener("keydown", esc)
+    // Done is the only control, so Tab stays on it
+    const trap = (e: KeyboardEvent) => { if (e.key === "Tab") { e.preventDefault(); done.current?.focus() } }
+    window.addEventListener("keydown", esc); window.addEventListener("keydown", trap)
+    const root = document.getElementById("root"), html = document.documentElement
+    if (root) root.inert = true
+    html.toggleAttribute("data-modal", true)
     done.current?.focus()
     document.body.style.overflow = "hidden"
-    return () => { window.removeEventListener("keydown", esc); lock?.release().catch(() => {}); document.body.style.overflow = ""; back?.focus() }
+    return () => {
+      window.removeEventListener("keydown", esc); window.removeEventListener("keydown", trap)
+      if (root) root.inert = false
+      html.removeAttribute("data-modal")
+      lock?.release().catch(() => {}); document.body.style.overflow = ""; back?.focus()
+    }
   }, [full])
   const copy = async () => {
     if (await copyText(`${VENUE.nameJa}\n${VENUE.addressJa}`)) toast(t.driver.copied)
@@ -41,16 +54,21 @@ export function DriverCard() {
           <Button size="lg" variant="outline" onClick={copy}><Copy aria-hidden />{t.driver.copy}</Button>
         </div>
       </section>
-      {full && (
-        <div role="dialog" aria-modal="true" aria-labelledby="driver-full" className="driver-full fixed inset-0 z-[70] flex flex-col bg-(--brand-paper-bright) p-6 text-(--brand-ink-deep)">
-          <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center" lang="ja">
-            <p id="driver-full" className="font-ja text-[clamp(1.75rem,6vw,3rem)] text-(--brand-doro)">{VENUE.please}</p>
-            <p className="font-ja text-[clamp(2.25rem,9vw,5rem)] leading-tight">{VENUE.nameJa}</p>
-            <p className="font-ja text-[clamp(1.5rem,5vw,3rem)] leading-snug">{VENUE.addressJa}</p>
-            <p lang="en" className="text-lg text-(--brand-kuri)">{t.driver.english}</p>
+      {full && createPortal(
+        <div className="driver-modal" role="dialog" aria-modal="true" aria-labelledby="driver-full">
+          <div className="driver-card">
+            <div className="driver-body" lang="ja">
+              <p id="driver-full" className="driver-please font-ja">{VENUE.please}</p>
+              <p className="driver-name font-ja">{VENUE.nameJa}</p>
+              <p className="driver-address font-ja">{VENUE.addressJa}</p>
+              <p lang="en" className="text-(--brand-kuri)">{t.driver.english}</p>
+            </div>
+            <footer className="driver-foot">
+              <Button ref={done} size="lg" className="w-full" onClick={() => setFull(false)}>{t.driver.done}</Button>
+            </footer>
           </div>
-          <Button ref={done} size="lg" className="mx-auto w-full max-w-sm" onClick={() => setFull(false)}>{t.driver.done}</Button>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

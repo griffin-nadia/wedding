@@ -423,7 +423,17 @@
   .omikuji-slip { animation: toast-in 200ms linear both; transform: none; }
 }
 /* Driver card full screen: bigger in landscape */
-@media (orientation: landscape) and (max-height: 500px) { .driver-full p { line-height: 1.15; } }
+/* Show the driver (v3 Q4): a modal above everything; the brightest paper, Done in the footer */
+.driver-modal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: var(--space-4); background: color-mix(in oklab, var(--brand-ink-deep) 60%, transparent); }
+.driver-card { display: flex; flex-direction: column; width: min(640px, 100%); max-height: 100%; overflow: auto; border-radius: var(--radius-letter); background: var(--brand-paper-bright); color: var(--brand-ink-deep); box-shadow: var(--sheet-shadow); }
+.driver-body { display: flex; flex-direction: column; align-items: center; gap: var(--space-5); padding: var(--space-8) var(--space-5); text-align: center; }
+.driver-please { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); color: var(--brand-doro); }
+.driver-name { font-size: var(--type-display-names-size); line-height: 1.15; word-break: keep-all; overflow-wrap: anywhere; }
+.driver-address { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); }
+.driver-foot { padding: var(--space-4) var(--space-5) var(--space-5); border-top: 1px solid var(--brand-wara); }
+@media (max-width: 767px) { .driver-modal { padding: 0; } .driver-card { height: 100%; border-radius: 0; } .driver-body { flex: 1; justify-content: center; } .driver-foot { padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom)); } }
+@media (orientation: landscape) and (max-height: 500px) { .driver-body { gap: var(--space-2); padding-block: var(--space-4); } .driver-name { font-size: var(--type-heading-size); } }
+[data-modal] .site-bar, [data-modal] .site-nav, [data-modal] .chrome-lantern, [data-modal] .credit-mark, [data-modal] .phone-qr { visibility: hidden; }
 
 
 /* Names settle in once per visit (after the envelope on a first visit). */
