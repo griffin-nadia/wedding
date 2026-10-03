@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
-import { pageOf, sceneFor, sceneKind } from "@/lib/scenes"
+import { arrivalScene, pageOf, sceneFor, sceneKind } from "@/lib/scenes"
+import { CreditMark } from "@/components/credit-mark"
 import { LanternToggle } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
-import { Arrival } from "@/components/envelope"
+import { Arrival, firstPhase } from "@/components/envelope"
 import { Qr } from "@/components/qr"
 import { SiteTune } from "@/tune/launcher"
 import { useOption } from "@/lib/options"
@@ -94,20 +95,25 @@ export function Layout() {
   const firstPath = useRef(pathname)
   const replied = Boolean(household?.respondedAt)
   const kind = sceneKind(useOption("scene"), useOption("preset"))
-  const lanternInLetter = useOption("lantern") === "letter"
+  // Sealed envelope on a first visit: their photo behind it, the dock and top bar hidden until it opens
+  const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-sealed", sealed)
+    return () => document.documentElement.removeAttribute("data-sealed")
+  }, [sealed])
   return (
     <>
       <a href="#letter" className="skip-link">{t.letter.skip}</a>
-      <Scene source={sceneFor(page, theme, kind)} dim={dim} />
+      <Scene source={sealed ? arrivalScene(theme) : sceneFor(page, theme, kind)} dim={dim} />
       <header className="site-bar">
         <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
         <Nav />
         {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-(length:--type-ui-size) font-medium md:inline-flex">{t.nav.rsvp}</Link>}
-        {!lanternInLetter && <LanternToggle className="chrome-lantern" />}
+        <LanternToggle className="chrome-lantern" />
       </header>
 
       <main className="letter-wrap">
-        <Arrival enabled={page === "home"}>
+        <Arrival enabled={page === "home"} onOpened={() => setSealed(false)}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
             <div key={pathname} className={cn("letter-body", pathname !== firstPath.current && "page-in")}>
               <Outlet />
@@ -117,6 +123,7 @@ export function Layout() {
         </Arrival>
       </main>
       <PhoneQr />
+      <CreditMark />
       <SiteTune />
     </>
   )

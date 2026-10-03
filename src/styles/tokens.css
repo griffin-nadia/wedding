@@ -274,13 +274,13 @@
   --density-gap: var(--space-5);   /* between blocks on the letter */
   --density-form: var(--space-5);  /* between form blocks */
   --density-letter-pad: var(--space-5);
-  --theme-texture: 0.05;
+  --theme-texture: 0.06;
   --font-heading: var(--font-display);
 }
 @media (min-width: 768px) {
   :root {
     --density-field: 48px;
     --density-gap: var(--space-6);
-    --density-letter-pad: 56px;
+    --density-letter-pad: 40px;
   }
 }

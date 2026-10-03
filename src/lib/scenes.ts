@@ -8,7 +8,7 @@ import type { Theme } from "@/lib/theme"
  * night lane only behind the arrival and Lantern home.
  */
 export type SceneName = keyof typeof meta
-export type SceneSource = { photo: SceneName } | { plate: string; fallback?: SceneName } | { paper: true }
+export type SceneSource = { photo: SceneName } | { plate: string; fallback?: SceneName } | { paper: true } | { walk: true }
 export const SCENES = meta as Record<SceneName, { w: number; h: number; lqip: string }>
 
 const LIGHT: Record<string, SceneName> = { home: "kyoto-view", day: "castle", travel: "cedar-forest", stay: "cedar-forest", qa: "stone-lantern" }
@@ -17,16 +17,21 @@ const NIGHT: Record<string, SceneName> = { home: "night-lane", day: "pontocho", 
 // The four painted plates (from Nadia, Jehan or commissioned), named now so dropping art in changes nothing else
 const PLATES: Record<string, string> = { home: "morning-hills", day: "the-garden", travel: "the-road", qa: "morning-hills" }
 
-export type SceneKind = "photo" | "paper" | "plate"
+export type SceneKind = "photo" | "paper" | "plate" | "walk"
 /** The scene kind: the lab's Scene option if set, otherwise the theme's (Letter: photo, Storybook: painted, Crisp: paper). */
 export function sceneKind(option: string | null, preset: string | null): SceneKind {
-  if (option === "photo" || option === "paper" || option === "plate") return option
-  return preset === "storybook" ? "plate" : preset === "crisp" ? "paper" : "photo"
+  if (option === "photo" || option === "paper" || option === "plate" || option === "walk") return option as SceneKind
+  // v3: paper everywhere for launch; photos only behind the envelope (and in the lab)
+  return preset === "storybook" ? "plate" : "paper"
 }
+/** Behind the sealed envelope only: the photo with their faces (the one photo on the launch site). */
+export const arrivalScene = (theme: Theme): SceneSource => ({ photo: theme === "lantern" ? "night-lane" : "kyoto-view" })
+
 export function sceneFor(page: string, theme: Theme, kind: SceneKind = "photo"): SceneSource {
   const map = theme === "lantern" ? NIGHT : LIGHT
   const photo = map[page] ?? map.home
   if (kind === "paper") return { paper: true }
+  if (kind === "walk") return { walk: true }
   if (kind === "plate") return { plate: theme === "lantern" ? "lantern-night" : PLATES[page] ?? PLATES.home, fallback: photo }
   return { photo }
 }

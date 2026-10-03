@@ -9,7 +9,7 @@ import { useOption } from "@/lib/options"
 const KEY = "ng-opened"
 type Phase = "sealed" | "opening" | "open"
 
-function firstPhase(enabled: boolean): Phase {
+export function firstPhase(enabled: boolean): Phase {
   if (!enabled) return "open"
   try {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return "open"
@@ -25,7 +25,7 @@ function firstPhase(enabled: boolean): Phase {
  * Tap, Enter or Space: the flap opens (300 ms), the letter rises (600 ms), the envelope sinks and fades.
  * Any key skips. Reduced motion: the letter is just there.
  */
-export function Arrival({ enabled, children }: { enabled: boolean; children: ReactNode }) {
+export function Arrival({ enabled, onOpened, children }: { enabled: boolean; onOpened?: () => void; children: ReactNode }) {
   const { t } = useLang()
   const { household } = useHousehold()
   const [phase, setPhase] = useState<Phase>(() => firstPhase(enabled))
@@ -37,6 +37,7 @@ export function Arrival({ enabled, children }: { enabled: boolean; children: Rea
     window.clearTimeout(timer.current)
     try { localStorage.setItem(KEY, "1") } catch { /* private mode */ }
     setPhase("open")
+    onOpened?.()
     requestAnimationFrame(() => document.getElementById("letter")?.focus({ preventScroll: true }))
   }
   const open = () => {

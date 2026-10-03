@@ -14,7 +14,6 @@ import { ChoiceCard, FieldError, ReviewRow, StepProgress } from "@/components/bl
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
-import { playFurin } from "@/lib/sound"
 import { answerOf, ApiError, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
@@ -105,7 +104,7 @@ const formFrom = (h: Household | null): RsvpPayload => ({
  * One household, three short steps (direction-aware slide), then the success letter.
  * Next never greys out: pressing it with something missing says what, under the field, and moves there.
  */
-export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNode; openOnLoad?: boolean }) {
+export function RsvpSheet({ children, openOnLoad = false, request }: { children: ReactNode; openOnLoad?: boolean; request?: { at: number; step: number } }) {
   const { t } = useLang()
   const { household, setHousehold } = useHousehold()
   const { setDim } = useSceneDim()
@@ -132,6 +131,9 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
   // The RSVP button in the top bar (/?rsvp=1) opens it even when the form has already loaded
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (openOnLoad && !open && household) onOpenChange(true) }, [openOnLoad])
+  // "Your reply" lines on Home open the sheet straight at their step
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (request && household) { onOpenChange(true); setStep(request.step) } }, [request?.at])
   const sending = useRef(false)
   const [form, setForm] = useState<RsvpPayload>(() => startingForm(household))
   // Opened by an early tap (before this form loaded): count it as a started RSVP too.
@@ -367,7 +369,6 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
   const answer = answerOf(h)
   useEffect(() => {
     titleRef.current?.focus()
-    if (answer !== "none") playFurin()
   }, [answer, titleRef])
   return (
     <div className="flex flex-col gap-6">

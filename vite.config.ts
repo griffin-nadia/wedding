@@ -45,6 +45,11 @@ function copyPhotos(): Plugin {
 export default defineConfig({
   base: "/wedding/",
   plugins: [react(), tailwindcss(), preloadFonts(), copyPhotos()],
-  define: { __PUBLIC_PHOTOS__: JSON.stringify(PUBLIC_PHOTOS) },
+  define: {
+    __PUBLIC_PHOTOS__: JSON.stringify(PUBLIC_PHOTOS),
+    // Art drops in with no other change: Nadia's paper wash and her handwritten sign-off
+    __PAPER_ART__: JSON.stringify(["avif", "webp", "png"].find((x) => fs.existsSync(path.resolve(__dirname, `public/art/paper/base.${x}`))) ?? null),
+    __SIGNOFF_ART__: JSON.stringify(fs.existsSync(path.resolve(__dirname, "public/brand/signoff.svg"))),
+  },
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
 })

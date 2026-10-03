@@ -12,7 +12,7 @@ const set = (name: string, fmt: string) => [800, 1200, 1600].map((w) => `${base}
  * Graded with --scene-filter. Changes cross-fade (600 ms); nothing moves under reduced motion.
  */
 export function Scene({ source, dim = false, className }: { source: SceneSource; dim?: boolean; className?: string }) {
-  const key = "photo" in source ? source.photo : "plate" in source ? source.plate : "paper"
+  const key = "photo" in source ? source.photo : "plate" in source ? source.plate : "walk" in source ? "walk" : "paper"
   // Keep the previous scene underneath until the next one has loaded, so changes cross-fade
   const [layers, setLayers] = useState<{ key: string; source: SceneSource; ready: boolean }[]>([{ key, source, ready: false }])
   useEffect(() => {
@@ -31,6 +31,7 @@ export function Scene({ source, dim = false, className }: { source: SceneSource;
           onTransitionEnd={() => { if (i === layers.length - 1 && layers.length > 1) setLayers((ls) => ls.slice(-1)) }}>
           {"photo" in l.source ? <PhotoScene name={l.source.photo} priority={i === 0} onReady={() => ready(l.key)} />
             : "plate" in l.source ? <PlateScene name={l.source.plate} fallback={l.source.fallback} onReady={() => ready(l.key)} />
+            : "walk" in l.source ? <WalkScene onReady={() => ready(l.key)} />
             : <PaperScene onReady={() => ready(l.key)} />}
         </div>
       ))}
@@ -59,11 +60,34 @@ function PhotoScene({ name, priority, onReady }: { name: string; priority: boole
   )
 }
 
-/** Paper: no photo at all. A soft two-tone gradient, the paper grain and a faint warm glow top left. */
+/**
+ * Paper (v3 H): the only background after the envelope. Warm paper gradient (or Nadia's wash at
+ * public/art/paper/base.*, which replaces it with no other change), the grain, a slow drift of light
+ * (40s, 2%) and a mist band that breathes (12s). Still under reduced motion.
+ */
 function PaperScene({ onReady }: { onReady: () => void }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { onReady() }, [])
-  return <div className="scene-paper absolute inset-0" />
+  return (
+    <div className="scene-paper absolute inset-0" style={__PAPER_ART__ ? { backgroundImage: `url(${base}art/paper/base.${__PAPER_ART__})` } : undefined} data-art={__PAPER_ART__ ? "" : undefined}>
+      <span className="paper-light" /><span className="paper-mist" />
+    </div>
+  )
+}
+
+/** Concept B hook (December): the walk to the Sodoh. A flat sage plate with the path until Nadia's painting exists. */
+function WalkScene({ onReady }: { onReady: () => void }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { onReady() }, [])
+  return (
+    <div className="scene-walk absolute inset-0">
+      <svg viewBox="0 0 2400 800" preserveAspectRatio="xMidYMid slice" className="size-full" aria-hidden>
+        <rect width="2400" height="800" fill="var(--brand-sage-paper)" />
+        <path d="M0 640 C 400 600, 600 520, 900 540 S 1500 460, 1800 420 S 2200 360, 2400 340" fill="none" stroke="var(--brand-wara)" strokeWidth="36" strokeLinecap="round" />
+      </svg>
+      <span className="paper-light" />
+    </div>
+  )
 }
 
 /** Painted plate: sky and mist, hills, foreground leaves. Layers drift 2 to 6px on scroll. Until the art lands, the photo shows. */

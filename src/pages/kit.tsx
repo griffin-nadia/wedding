@@ -12,7 +12,6 @@ import { Hanko } from "@/components/hanko"
 import { CountdownTile } from "@/components/countdown"
 import { FortuneCard } from "@/components/fortune-card"
 import { DriverCard } from "@/components/driver-card"
-import { SoundToggle } from "@/components/sound-toggle"
 import { LanternToggle } from "@/components/lantern-toggle"
 import { VenueMap } from "@/components/venue-map"
 import { InlineSubmit } from "@/components/inline-submit"
@@ -150,7 +149,7 @@ const GROUPS: Group[] = [
       { id: "venue", name: "Venue map", purpose: "Our own drawn map: station, Gion-Shijo, the venue as the hanko. No map service.", render: () => <div className="max-w-md"><VenueMap /></div> },
       { id: "fortune", name: "Fortune card", purpose: "After a yes: one fortune per household, the same on every device.", render: () => <div className="flex max-w-md flex-col gap-4"><FortuneCard token="kit-closed" /><FortuneCard token="kit-open" /></div> },
       { id: "driver", name: "Driver card", purpose: "Sage paper, the second surface. Full screen for the taxi driver.", render: () => <div className="max-w-md"><DriverCard /></div> },
-      { id: "sound", name: "Sound and Lantern", purpose: "Two quiet icons at the end of the letter, next to the sign-off. Pressed sits on sage.", render: () => <div className="flex gap-2"><SoundToggle /><LanternToggle /></div> },
+      { id: "sound", name: "Mode toggle", purpose: "Sun or moon, top right, outside the letter. The only switch on the site.", render: () => <LanternToggle /> },
       { id: "toast", name: "Toast", purpose: "One line, bottom of the screen, 2.4 s.", render: () => <Button variant="outline" onClick={() => toast("Address copied")}><Copy aria-hidden />Show a toast</Button> },
       { id: "skeleton", name: "Skeleton", purpose: "Washi breathing; only appears after 300 ms so fast loads never flash it.", render: () => <div className="flex max-w-xs flex-col gap-3"><Skeleton className="h-7 w-40" /><Skeleton className="h-13 w-full rounded-lg" /></div> },
     ],

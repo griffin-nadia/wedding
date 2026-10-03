@@ -457,6 +457,8 @@
 @media (min-width: 768px) { .letter-wrap { padding: var(--letter-top) 24px var(--space-8); } }
 @media (min-width: 1024px) { .letter-wrap { padding-left: var(--letter-left); } }
 
+/* The letter is the card (v3 H): cream, grain 6%, a 1px line at 60%, a warm glow top left and a cool shade
+   bottom right, one shadow (with a 1px light inset at the top). No top colour bar, no blur ring. */
 .letter {
   position: relative;
   display: flex;
@@ -465,29 +467,21 @@
   max-width: var(--letter-width);
   margin-inline: auto;
   padding: var(--letter-pad);
-  border-top: var(--letter-edge) solid var(--letter-edge-color);
+  border: 1px solid color-mix(in oklab, var(--sys-line) 60%, transparent);
   border-radius: var(--letter-radius);
-  background: var(--letter-bg);
+  background:
+    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
+    var(--letter-bg);
   color: var(--letter-ink);
   box-shadow: var(--letter-shadow);
   outline: none;
 }
+[data-theme="lantern"] .letter { background:
+    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 8%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, #0b1a2a 30%, transparent), transparent 55%),
+    var(--letter-bg); }
 @media (min-width: 1024px) { .letter { margin-inline: 0; } }
-/* A soft blur of the scene within 24px of the paper edge */
-.letter::after {
-  content: "";
-  position: absolute;
-  inset: -24px;
-  z-index: -1;
-  border-radius: calc(var(--letter-radius) + 24px);
-  backdrop-filter: blur(var(--letter-blur));
-  -webkit-backdrop-filter: blur(var(--letter-blur));
-  mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent),
-    linear-gradient(to bottom, transparent, #000 24px, #000 calc(100% - 24px), transparent);
-  mask-composite: intersect;
-  -webkit-mask-composite: source-in;
-  pointer-events: none;
-}
 .letter-body { display: flex; flex-direction: column; gap: var(--letter-gap); }
 /* Paper grain on the letter only, under the words, moving with the letter */
 .letter { isolation: isolate; }
@@ -547,7 +541,6 @@
   max-width: none; margin: 0; padding: 0; gap: 0;
   display: flex; flex-direction: column; overflow: hidden;
 }
-.rsvp-letter::after { display: none; }
 @media (min-width: 768px) {
   .rsvp-letter { --sheet-pad: var(--space-6); top: var(--letter-top); left: 50%; right: auto; translate: -50% 0; width: min(var(--letter-width), calc(100vw - 48px)); max-height: min(80vh, calc(100svh - var(--letter-top) - 24px)); }
 }
@@ -642,14 +635,22 @@
 :root[data-opt-preset][data-opt-round="sharp"], :root[data-opt-round="sharp"] { --radius-scale: 0.5; }
 :root[data-opt-preset][data-opt-round="soft"], :root[data-opt-round="soft"] { --radius-scale: 1; }
 :root[data-opt-preset][data-opt-round="round"], :root[data-opt-round="round"] { --radius-scale: 1.5; }
-/* Paper scene: kinari to sage paper (yoru to yoru-raised in Lantern), a 6% grain, a faint warm glow top left */
+/* Paper scene (v3 H): warm paper gradient (or Nadia's wash), grain, a light that drifts (one radial, 40s, 2%)
+   and a mist band that breathes (opacity .06 to .10, 12s). Static under reduced motion. Nothing else moves. */
 .scene-paper { background:
-  radial-gradient(60rem 40rem at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 28%, transparent), transparent 70%),
-  linear-gradient(160deg, var(--brand-kinari), var(--brand-sage-paper)); }
-[data-theme="lantern"] .scene-paper { background:
-  radial-gradient(60rem 40rem at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 12%, transparent), transparent 70%),
-  linear-gradient(160deg, var(--brand-yoru), var(--brand-yoru-raised)); }
-.scene-paper::after { content: ""; position: absolute; inset: 0; background-image: var(--texture-paper); background-size: 256px; opacity: 0.06; mix-blend-mode: var(--texture-blend); }
+  linear-gradient(160deg, var(--brand-kinari), color-mix(in oklab, var(--brand-sage-paper) 80%, var(--brand-kinari)));
+  background-size: cover; background-position: center; }
+[data-theme="lantern"] .scene-paper { background: linear-gradient(160deg, var(--brand-yoru), var(--brand-yoru-raised)); }
+.scene-paper[data-art] { background-size: cover; background-position: center; }
+.scene-paper::after, .scene-walk::after { content: ""; position: absolute; inset: 0; background-image: var(--texture-paper); background-size: 256px; opacity: 0.06; mix-blend-mode: var(--texture-blend); pointer-events: none; }
+.paper-light { position: absolute; inset: -10%; background: radial-gradient(50% 45% at 22% 18%, color-mix(in oklab, var(--brand-mitsu) 34%, transparent), transparent 70%); animation: paper-drift 40s ease-in-out infinite alternate; pointer-events: none; }
+[data-theme="lantern"] .paper-light { background: radial-gradient(50% 45% at 22% 18%, color-mix(in oklab, var(--brand-hachimitsu) 14%, transparent), transparent 70%); }
+.paper-mist { position: absolute; left: 0; right: 0; top: 52%; height: 28%; background: linear-gradient(to bottom, transparent, color-mix(in oklab, #ffffff 100%, transparent), transparent); opacity: 0.06; animation: paper-mist 12s ease-in-out infinite alternate; pointer-events: none; }
+[data-theme="lantern"] .paper-mist { background: linear-gradient(to bottom, transparent, #c9b9a3, transparent); }
+@keyframes paper-drift { from { transform: translate(0, 0); } to { transform: translate(2%, 1.5%); } }
+@keyframes paper-mist { from { opacity: 0.06; } to { opacity: 0.1; } }
+@media (prefers-reduced-motion: reduce) { .paper-light, .paper-mist { animation: none; } }
+
 /* Arched photo at the top of a section (paper scene only) */
 .arch-photo { overflow: hidden; border-radius: 999px 999px var(--radius-card) var(--radius-card); aspect-ratio: 4 / 3; }
 .arch-photo img { width: 100%; height: 100%; object-fit: cover; filter: var(--scene-filter); }
@@ -666,3 +667,30 @@
 @media (hover: hover) { .segmented-item:hover { color: var(--sys-ink); } }
 .segmented-sm .segmented-item { min-height: 36px; padding: 0 var(--space-3); }
 @media (prefers-reduced-motion: reduce) { .segmented-mark { transition: none; } }
+
+/* Sealed envelope: only the photo, the envelope and the mode toggle. The dock and top bar wait. */
+[data-sealed] .site-nav, [data-sealed] .site-mark, [data-sealed] .site-rsvp, [data-sealed] .phone-qr, [data-sealed] .credit-mark { display: none !important; }
+[data-sealed] .site-bar { background: none; border: 0; }
+.arrival { align-content: end; gap: var(--space-4); padding-top: 0; padding-bottom: max(5svh, 24px); }
+@media (max-width: 767px) { .arrival .envelope { width: 240px; height: 156px; } .arrival .envelope-seal { width: 48px !important; height: 48px !important; font-size: 17px; } }
+@media (min-width: 1024px) { .arrival { align-content: end; padding-bottom: 14svh; } }
+/* Icons: Lucide everywhere at 1.5 stroke (v3 A) */
+svg.lucide { stroke-width: 1.5; }
+/* Credit mark (v3 A): 24px seal, bottom left of the scene, 18% until hovered or focused. Not on phones. */
+.credit-mark { display: none; }
+@media (min-width: 1024px) {
+  .credit-mark { position: fixed; z-index: 20; left: 24px; bottom: 24px; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-pill); opacity: 0.18; transition: opacity var(--duration-quick) var(--ease-paper); outline: 2px solid transparent; outline-offset: 2px; }
+  .credit-mark:hover, .credit-mark:focus-visible { opacity: 1; }
+  .credit-mark:focus-visible { outline-color: var(--input-focus); }
+  .credit-tip { position: absolute; left: 48px; white-space: nowrap; padding: var(--space-1) var(--space-3); border-radius: var(--radius-control); background: var(--sys-ink); color: var(--sys-surface); font-size: var(--type-small-size); line-height: var(--type-small-leading); opacity: 0; transform: translateX(-4px); transition: opacity var(--duration-quick), transform var(--duration-quick); pointer-events: none; }
+  .credit-mark:hover .credit-tip, .credit-mark:focus-visible .credit-tip { opacity: 1; transform: none; }
+}
+/* Names reveal once, letter by letter, the first time the letter opens (v3 L). Nothing else animates text. */
+.names-reveal .name-char { display: inline-block; animation: name-in 520ms var(--ease-letter) both; }
+@keyframes name-in { from { opacity: 0; transform: translateY(0.12em); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
+@media (prefers-reduced-motion: reduce) { .names-reveal .name-char { animation: none; } }
+/* "Your reply" rows: the whole row is the target */
+.reply-row { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: 44px; padding: var(--space-2) 0; text-align: left; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; color: var(--sys-ink-soft); }
+.reply-row:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .reply-row:hover { color: var(--sys-ink); text-decoration: underline; text-underline-offset: 4px; } }
+[data-sealed] .names-reveal .name-char { animation-play-state: paused; }
