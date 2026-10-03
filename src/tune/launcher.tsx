@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 import { SlidersHorizontal } from "lucide-react"
 import { apply, load } from "./store"
+import { checkCrew } from "@/lib/api"
 
 /**
  * The tuning panel only exists in dev, or in a build made with VITE_TUNE=1. Anywhere else this is a
@@ -35,18 +36,36 @@ export function TuneLauncher() {
   )
 }
 
-/** On the site itself: ?tune=1 opens the panel (and keeps it for this visit). */
+/**
+ * On the site itself, for crew only (v3 S): once a crew link has been opened on this device (or ?c=<crew
+ * token> on any page), a small Options button appears in the corner and opens the panel on its Options tab,
+ * over the real page. ?tune=1 still opens it for this visit. Guests never have a crew token, so never see it.
+ */
 export function SiteTune() {
+  const [crew, setCrew] = useState(false)
   const [open, setOpen] = useState(false)
   useEffect(() => {
     if (!tuneEnabled) return
     try {
-      const q = new URLSearchParams(location.search).get("tune")
-      if (q === "1") sessionStorage.setItem("ng-tune-open", "1")
-      if (q === "0") sessionStorage.removeItem("ng-tune-open")
+      const q = new URLSearchParams(location.search)
+      if (q.get("tune") === "1") sessionStorage.setItem("ng-tune-open", "1")
+      if (q.get("tune") === "0") sessionStorage.removeItem("ng-tune-open")
       setOpen(sessionStorage.getItem("ng-tune-open") === "1")
+      const given = q.get("c")
+      if (given) void checkCrew(given).then((ok) => { if (ok) { try { localStorage.setItem("ng-crew", given) } catch { /* fine */ } setCrew(true) } })
+      else if (localStorage.getItem("ng-crew")) setCrew(true)
     } catch { /* ignore */ }
   }, [])
-  if (!Panel || !open) return null
-  return createPortal(<Suspense><Panel onClose={() => { setOpen(false); try { sessionStorage.removeItem("ng-tune-open") } catch { /* ignore */ } }} /></Suspense>, document.body)
+  if (!Panel) return null
+  const close = () => { setOpen(false); try { sessionStorage.removeItem("ng-tune-open") } catch { /* ignore */ } }
+  return (
+    <>
+      {crew && !open && (
+        <button type="button" onClick={() => setOpen(true)} aria-label="Options (crew only)" title="Options (crew only)" className="crew-options press">
+          <SlidersHorizontal className="size-5" aria-hidden />
+        </button>
+      )}
+      {open && createPortal(<Suspense><Panel onClose={close} startTab="options" /></Suspense>, document.body)}
+    </>
+  )
 }

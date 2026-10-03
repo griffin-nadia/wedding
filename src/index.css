@@ -792,3 +792,18 @@ svg.lucide { stroke-width: 1.5; }
 .segmented-tick { color: var(--sys-accent); flex: none; }
 /* Step 1 on phones: the name on its own line, the choice centred under it (v3 R) */
 @media (max-width: 767px) { .choice-row { flex-direction: column; align-items: stretch; } .choice-row .segmented { align-self: center; } }
+/* Crew-only Options button (v3 S): bottom left, above the dock on phones and above the credit on desktop */
+.crew-options { position: fixed; z-index: 45; left: 12px; bottom: calc(66px + 12px + env(safe-area-inset-bottom) + 12px); display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); border: 1px solid var(--sys-line); background: var(--letter-bg); color: var(--sys-ink); box-shadow: var(--letter-shadow); outline: 2px solid transparent; outline-offset: 2px; }
+.crew-options:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .crew-options:hover { border-color: var(--sys-line-strong); } }
+@media (min-width: 768px) { .crew-options { bottom: 24px; } }
+@media (min-width: 1024px) { .crew-options { bottom: 76px; left: 22px; } }
+[data-sealed] .crew-options, [data-sheet] .crew-options, [data-modal] .crew-options { display: none; }
+/* Arrival on desktop (v3 S): warm paper on the left where the envelope sits (no blurred copy of the photo),
+   the sharp photo as a full-height panel on the right, cropped per photo so their faces sit in view */
+@media (min-width: 1024px) {
+  [data-sealed] .scene-fill { background-image: none !important; background-color: var(--letter-bg); }
+  [data-sealed] .scene-photo { mask-image: linear-gradient(to right, transparent, #000 96px); }
+  [data-sealed] .scene-photo img { object-position: 50% var(--arrival-focus-y, 40%); }
+  [data-sealed][data-theme="lantern"] .scene-photo img { --arrival-focus-y: 12%; }
+}

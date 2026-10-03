@@ -80,11 +80,11 @@ function pinAt(n: Note): { x: number; y: number } | null {
   return null
 }
 
-export function TunePanel({ onClose, docked = false }: { onClose?: () => void; docked?: boolean }) {
+export function TunePanel({ onClose, docked = false, startTab = "tokens" }: { onClose?: () => void; docked?: boolean; startTab?: "tokens" | "options" | "notes" }) {
   const tokens = useMemo(parse, [])
   const [state, setState] = useState<TuneState>(load)
   const [mode, setMode] = useState<"autumn" | "lantern">(() => (document.documentElement.dataset.theme === "lantern" ? "lantern" : "autumn"))
-  const [tab, setTab] = useState<"tokens" | "options" | "notes">("tokens")
+  const [tab, setTab] = useState<"tokens" | "options" | "notes">(startTab)
   const [q, setQ] = useState("")
   const [pinning, setPinning] = useState(false)
   const [draft, setDraft] = useState<{ selector: string; x: number; y: number; where?: { path: string; w: number; h: number; theme: string } } | null>(null)

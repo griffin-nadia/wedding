@@ -15,10 +15,10 @@ export function CrewGate({ page }: { page: "kit" | "lab" }) {
   useEffect(() => {
     const given = new URLSearchParams(location.search).get("c") ?? ""
     let kept = ""
-    try { kept = sessionStorage.getItem(KEY) ?? "" } catch { /* private window */ }
+    try { kept = localStorage.getItem(KEY) ?? sessionStorage.getItem(KEY) ?? "" } catch { /* private window */ }
     const token = given || kept
     checkCrew(token).then((yes) => {
-      if (yes && token) { try { sessionStorage.setItem(KEY, token) } catch { /* fine */ } }
+      if (yes && token) { try { localStorage.setItem(KEY, token) } catch { /* fine */ } }
       setOk(yes)
     })
   }, [])
