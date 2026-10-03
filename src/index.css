@@ -445,6 +445,7 @@
 .letter-wrap {
   position: relative;
   min-height: 100svh;
+  overflow-x: clip; /* the paper blur ring may reach past the screen edge on phones */
   padding: 72px 12px calc(64px + 12px + env(safe-area-inset-bottom) + 16px);
 }
 @media (min-width: 768px) { .letter-wrap { padding: var(--letter-top) 24px var(--space-8); } }
