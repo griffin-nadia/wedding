@@ -52,7 +52,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   if (state !== "open") {
     return (
       <section aria-labelledby="fortune" className={cn("flex items-center gap-4 rounded-md border bg-card p-4", className)}>
-        <span aria-hidden className={cn("omikuji-box grid h-14 w-10 shrink-0 place-items-center rounded-sm bg-primary font-ja text-primary-foreground", state === "drawing" && "omikuji-shake")}>籤</span>
+        <span aria-hidden className={cn("omikuji-box grid size-12 shrink-0 place-items-center rounded-md bg-primary font-ja text-lg text-primary-foreground", state === "drawing" && "omikuji-shake")}>籤</span>
         <div className="flex flex-1 flex-col items-start gap-2">
           <h3 id="fortune" className="font-sans text-base font-semibold text-foreground">{t.fortune.title}</h3>
           <Button variant="outline" onClick={draw} disabled={state === "drawing"} aria-busy={state === "drawing"}>{t.fortune.draw}</Button>

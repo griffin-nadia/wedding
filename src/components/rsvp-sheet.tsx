@@ -4,13 +4,13 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { RadioGroup } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { FormField } from "@/components/form-field"
 import { Combobox } from "@/components/combobox"
+import { Segmented } from "@/components/segmented"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
-import { ChoiceCard, FieldError, ReviewRow, StepProgress } from "@/components/blocks"
+import { FieldError, ReviewRow, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
@@ -61,14 +61,16 @@ function DietField({ g, name, error, onChange }: { g: Guest; name: string; error
   const options = t.rsvp.dietaryOptions
   const d = parseDiet(g.dietary, options)
   const [q, setQ] = useState("")
-  const left = options.filter((o) => !d.picked.includes(o) && o.toLowerCase().includes(q.trim().toLowerCase()))
+  // Picked items stay in the list with a tick, so nothing moves under the finger (v3 A)
+  const shown = options.filter((o) => o.toLowerCase().includes(q.trim().toLowerCase()))
   const set = (next: Diet) => onChange(dietString(next))
   return (
     <div className="flex flex-col gap-(--form-block-gap)">
-      <Combobox id={`diet-${g.id}`} label={`${t.rsvp.dietary} (${name})`} help={t.rsvp.dietaryHelp} placeholder={t.rsvp.dietaryPlaceholder} openOnFocus
+      <Combobox id={`diet-${g.id}`} label={name} placeholder={t.rsvp.dietaryPlaceholder} openOnFocus multi
         tags={d.picked.map((x) => ({ key: x, label: x }))} onRemoveTag={(o) => set({ ...d, picked: d.picked.filter((x) => x !== o.key), other: o.key === OTHER ? "" : d.other })}
-        query={q} onQuery={setQ} options={left.map((x) => ({ key: x, label: x }))} onPick={(o) => { set({ ...d, picked: [...d.picked, o.key] }); setQ("") }}
-        status={left.length ? "results" : "empty"} emptyText={t.rsvp.dietaryEmpty} removeLabel={t.rsvp.removeSong} />
+        query={q} onQuery={setQ} options={shown.map((x) => ({ key: x, label: x, selected: d.picked.includes(x) }))}
+        onPick={(o) => { set(d.picked.includes(o.key) ? { ...d, picked: d.picked.filter((x) => x !== o.key), other: o.key === OTHER ? "" : d.other } : { ...d, picked: [...d.picked, o.key] }); setQ("") }}
+        status={shown.length ? "results" : "empty"} emptyText={t.rsvp.dietaryEmpty} removeLabel={t.rsvp.removeSong} />
       {d.picked.includes(OTHER) && (
         <FormField id={`diet-other-${g.id}`} label={t.rsvp.dietaryOther(name)} error={error}>
           <Input id={`diet-other-${g.id}`} value={d.other} maxLength={60} data-filled={Boolean(d.other.trim())} aria-invalid={Boolean(error) || undefined}
@@ -117,7 +119,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   const [confirm, setConfirm] = useState<"saving" | "saved" | "offline" | null>(null)
   const [offline, setOffline] = useState(false)
   const replyId = useRef("")
-  const arrowKey = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
   const body = useRef<HTMLDivElement>(null)
   // Each new step moves focus to its heading, so screen readers hear where they are
@@ -171,7 +172,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   /** What's missing on this step, keyed by the id of the field to move to. */
   function check(): Record<string, string> {
     const m: Record<string, string> = {}
-    if (step === 1) for (const g of form.guests) if (!g.attending) m[`answer-${g.id}`] = t.rsvp.answerMissing(nameOf(g))
+    if (step === 1) for (const g of form.guests) if (!g.plusOne && !g.attending) m[`answer-${g.id}`] = t.rsvp.answerMissing(nameOf(g))
     if (step === 2) {
       for (const g of coming) {
         const d = parseDiet(g.dietary, t.rsvp.dietaryOptions)
@@ -214,6 +215,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     if (sending.current) return // no double submits, even on a fast double tap
     setError("")
     const before = household!
+    // An unticked "Bringing someone?" is a no
+    if (form.guests.some((g) => g.plusOne && !g.attending)) form.guests = form.guests.map((g) => (g.plusOne && !g.attending ? { ...g, attending: "no" } : g))
     replyId.current ||= crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
     const optimistic = applyLocal(before, form)
     setDone({ household: optimistic, updated: Boolean(before.respondedAt), changes: [] })
@@ -247,6 +250,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
         <Dialog.Overlay className="rsvp-overlay" />
         <Dialog.Content className="letter rsvp-letter" aria-describedby={undefined}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}
+          // Only X, Esc or "Back to your invite" close the sheet; a tap outside never does (v3 A)
+          onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}
           // Escape inside an open combobox closes its list, not the sheet
           onEscapeKeyDown={(e) => { const el = e.target as HTMLElement | null; if (el?.getAttribute("role") === "combobox" && el.getAttribute("aria-expanded") === "true") e.preventDefault() }}>
           <Dialog.Close className="rsvp-close press" aria-label={t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
@@ -261,38 +266,52 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
 
           <div ref={body} className="rsvp-body">
           <div key={step} className={cn("rsvp-step flex flex-col gap-(--form-group-gap)", dir === "fwd" ? "step-fwd" : "step-back")}>
-            {step === 1 && form.guests.map((g) => (
-              <fieldset key={g.id} className="flex flex-col gap-3">
-                <legend className="sr-only">{nameOf(g)}</legend>
-                {g.plusOne ? (
-                  <FormField id={`name-${g.id}`} label={t.rsvp.plusOne} help={t.rsvp.plusOneHint}>
-                    <Input id={`name-${g.id}`} value={g.firstName} maxLength={MAX.name} autoComplete="off" data-filled={Boolean(g.firstName.trim())}
-                      aria-describedby={`name-${g.id}-help`} onChange={(e) => setGuest(g.id, { firstName: e.target.value })} />
-                  </FormField>
-                ) : (
-                  <p className="font-semibold text-foreground">{g.firstName}</p>
-                )}
-                <RadioGroup id={`answer-${g.id}`} tabIndex={-1} aria-label={nameOf(g)} value={g.attending ?? ""} aria-invalid={Boolean(missing[`answer-${g.id}`])}
-                  aria-describedby={missing[`answer-${g.id}`] ? `answer-${g.id}-err` : undefined}
-                  onValueChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })} className="grid grid-cols-1 gap-3 outline-none min-[480px]:grid-cols-2"
-                  onKeyDown={(e) => { if (e.key.startsWith("Arrow")) arrowKey.current = true }}>
-                  {(["yes", "no"] as const).map((v) => (
-                    <ChoiceCard key={v} id={`${g.id}-${v}`} value={v} on={g.attending === v} invalid={Boolean(missing[`answer-${g.id}`])}
-                      // Arrow keys always select (Radix can skip the first press after the letter focuses it)
-                      onFocus={() => { if (arrowKey.current) { arrowKey.current = false; if (g.attending !== v) setGuest(g.id, { attending: v }) } }}>
-                      {v === "yes" ? t.rsvp.coming : t.rsvp.notComing}
-                    </ChoiceCard>
-                  ))}
-                </RadioGroup>
-                <FieldError id={`answer-${g.id}-err`}>{missing[`answer-${g.id}`]}</FieldError>
-              </fieldset>
-            ))}
+            {step === 1 && (
+              <div className="flex flex-col">
+                {form.guests.filter((g) => !g.plusOne).map((g) => (
+                  <div key={g.id} className="flex flex-col">
+                    <div className="choice-row">
+                      <span className="font-medium text-foreground">{g.firstName}</span>
+                      <Segmented id={`answer-${g.id}`} label={g.firstName} value={g.attending ?? ""} invalid={Boolean(missing[`answer-${g.id}`])}
+                        describedBy={missing[`answer-${g.id}`] ? `answer-${g.id}-err` : undefined}
+                        onChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })}
+                        items={[{ value: "yes", label: t.rsvp.coming }, { value: "no", label: t.rsvp.notComing }]} />
+                    </div>
+                    <FieldError id={`answer-${g.id}-err`} className="pb-2">{missing[`answer-${g.id}`]}</FieldError>
+                  </div>
+                ))}
+                {/* A +1 only exists if Nadia and Griffin put one on this household (v3 A) */}
+                {form.guests.filter((g) => g.plusOne).map((g) => (
+                  <div key={g.id} className="flex flex-col gap-2 pt-4">
+                    <label htmlFor={`bring-${g.id}`} className="check-row">
+                      <Checkbox id={`bring-${g.id}`} className="mt-0.5 shrink-0" checked={g.attending === "yes"}
+                        onCheckedChange={(v) => setGuest(g.id, { attending: v === true ? "yes" : "no" })} />
+                      <span className="font-medium text-foreground">{t.rsvp.bringing}</span>
+                    </label>
+                    {g.attending === "yes" && (
+                      <FormField id={`name-${g.id}`} label={t.rsvp.plusOne} help={t.rsvp.plusOneHint}>
+                        <Input id={`name-${g.id}`} value={g.firstName} maxLength={MAX.name} autoComplete="off" data-filled={Boolean(g.firstName.trim())}
+                          aria-describedby={`name-${g.id}-help`} onChange={(e) => setGuest(g.id, { firstName: e.target.value })} />
+                      </FormField>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {step === 2 && (
               <>
-                {coming.map((g) => (
-                  <DietField key={g.id} g={g} name={nameOf(g)} error={missing[`diet-other-${g.id}`]} onChange={(dietary) => setGuest(g.id, { dietary })} />
-                ))}
+                {coming.length > 0 && (
+                  <section aria-labelledby="diet-q" className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1">
+                      <h3 id="diet-q" className="font-medium text-foreground">{t.rsvp.dietary}</h3>
+                      <p className="text-sm text-muted-foreground">{t.rsvp.dietaryHelp}</p>
+                    </div>
+                    {coming.map((g) => (
+                      <DietField key={g.id} g={g} name={nameOf(g)} error={missing[`diet-other-${g.id}`]} onChange={(dietary) => setGuest(g.id, { dietary })} />
+                    ))}
+                  </section>
+                )}
                 {coming.length > 0 && <>
                 <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song}
                   t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded }} />
@@ -374,16 +393,13 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
     <div className="flex flex-col gap-6">
       <header className="flex items-center gap-5 pr-10">
         {answer !== "none" && <Hanko stamp />}
-        <div className="flex flex-col gap-2">
-          <p className="label-caps text-muted-foreground">{result.updated ? t.rsvp.updatedEyebrow : t.rsvp.savedEyebrow}</p>
-          <Dialog.Title ref={titleRef} tabIndex={-1} className="heading outline-none">{t.rsvp.doneTitle[answer]}</Dialog.Title>
-        </div>
+        <Dialog.Title ref={titleRef} tabIndex={-1} className="heading outline-none">{t.rsvp.doneTitle[answer]}</Dialog.Title>
       </header>
-      <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${t.rsvp.savedLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
+      <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
       {answer !== "none" && <FortuneCard token={h.token} />}
       {answer !== "none" && <AddToCalendar />}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <Button size="lg" className="flex-1 sm:flex-none" onClick={onClose}>{t.rsvp.backHome}</Button>
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
+        <Button size="lg" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
         <button type="button" className="btn-text min-h-11" onClick={onChange}>{t.rsvp.changeReply}</button>
       </div>
     </div>

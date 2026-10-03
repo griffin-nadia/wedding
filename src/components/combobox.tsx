@@ -1,9 +1,9 @@
 import { useEffect, useId, useState, type ReactNode } from "react"
-import { X } from "lucide-react"
+import { Check, X } from "lucide-react"
 import { FormField, describedBy } from "@/components/form-field"
 import { cn } from "@/lib/utils"
 
-export type Option = { key: string; label: string; sub?: string; img?: string | null }
+export type Option = { key: string; label: string; sub?: string; img?: string | null; selected?: boolean }
 export type ComboStatus = "idle" | "loading" | "results" | "empty" | "error"
 
 /**
@@ -13,13 +13,13 @@ export type ComboStatus = "idle" | "loading" | "results" | "empty" | "error"
  * empty and error rows say what to do ("just type it"). WAI-ARIA combobox with listbox.
  */
 export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag, query, onQuery, options, onPick, status, emptyText, errorText,
-  placeholder, action, maxLength = 200, removeLabel = (s) => `Remove ${s}`, openOnFocus = false, forceOpen = false, className }: {
+  placeholder, action, maxLength = 200, removeLabel = (s) => `Remove ${s}`, openOnFocus = false, forceOpen = false, multi = false, className }: {
   id?: string; label: string; help?: ReactNode; error?: string
   tags?: Option[]; onRemoveTag?: (o: Option) => void
   query: string; onQuery: (q: string) => void
   options: Option[]; onPick: (o: Option) => void
   status: ComboStatus; emptyText?: string; errorText?: string
-  placeholder?: string; action?: ReactNode; maxLength?: number; removeLabel?: (s: string) => string; openOnFocus?: boolean; forceOpen?: boolean; className?: string
+  placeholder?: string; action?: ReactNode; maxLength?: number; removeLabel?: (s: string) => string; openOnFocus?: boolean; forceOpen?: boolean; multi?: boolean; className?: string
 }) {
   const auto = useId()
   const id = given ?? `cb-${auto}`
@@ -74,10 +74,11 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
         {showList && (
           <div className="combo-list">
             {(
-              <ul id={`${id}-list`} role="listbox" aria-label={label} hidden={!options.length}>
+              <ul id={`${id}-list`} role="listbox" aria-label={label} aria-multiselectable={multi || undefined} hidden={!options.length}>
                 {options.map((o, i) => (
-                  <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={i === active}
+                  <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={multi ? Boolean(o.selected) : i === active} data-active={i === active || undefined}
                     onMouseDown={(e) => { e.preventDefault(); pick(o) }} className="combo-option">
+                    {multi && <Check aria-hidden className={cn("size-4 shrink-0 text-primary", !o.selected && "invisible")} />}
                     {o.img !== undefined && (o.img ? <img src={o.img} alt="" className="size-8 shrink-0 rounded-sm object-cover" /> : <span aria-hidden className="size-8 shrink-0 rounded-sm bg-muted" />)}
                     <span className="min-w-0">
                       <span className="block truncate">{o.label}</span>
