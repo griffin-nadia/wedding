@@ -857,3 +857,10 @@ svg.lucide { stroke-width: 1.5; }
 .story-card:active { cursor: grabbing; }
 .story-card:focus-visible { outline-color: var(--input-focus); }
 @media (prefers-reduced-motion: reduce) { .story-card { transition: none; } }
+/* Mouse-only hints (v3 S): the stay row's chevron nudges toward where it goes; the top story card lifts to invite a drag */
+@media (hover: hover) {
+  .stay-row > svg { transition: transform var(--duration-quick) var(--ease-paper); }
+  .stay-row:hover > svg { transform: translateX(4px); }
+  .story-card[tabindex="0"]:hover { box-shadow: var(--sheet-shadow); }
+}
+@media (prefers-reduced-motion: reduce) { .stay-row:hover > svg { transform: none; } }
