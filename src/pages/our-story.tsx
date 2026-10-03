@@ -99,7 +99,7 @@ export function StoryPage() {
   return (
     <div className="grid min-h-64 place-items-center text-center">
       <div className="flex flex-col items-center gap-4">
-        <h1 className="font-display text-2xl text-foreground">{t.letter.comingSoon}</h1>
+        <h1 className="heading">{t.letter.comingSoon}</h1>
         <p>{t.story.soonBody}</p>
       </div>
     </div>

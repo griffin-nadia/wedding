@@ -34,7 +34,7 @@ export function ReviewRow({ label, children, edit, editLabel, block = false }: {
   return (
     // dl > div > dt + dd only (the Edit button lives inside the dd)
     <div className={cn("flex gap-3 px-4 py-3", block ? "flex-col" : "items-start justify-between")}>
-      <dt className="font-semibold text-foreground">{label}</dt>
+      <dt className="font-medium text-foreground">{label}</dt>
       <dd className={cn("flex min-w-0 gap-2", block ? "flex-col" : "flex-1 items-start justify-end text-right")}>
         <span className={cn(block && "whitespace-pre-line break-words")}>{children}</span>
         <button type="button" onClick={edit} aria-label={editLabel}

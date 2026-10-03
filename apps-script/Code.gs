@@ -1071,19 +1071,19 @@ function sendConfirmation_(h, changes) {
   }
 
   const mail = buildEmail_({
-    eyebrow: changes ? "RSVP updated" : "RSVP received",
+    eyebrow: changes ? "Reply updated" : "Reply received",
     heading: heading,
     paragraphs: ["Hi " + h.displayName + ","],
     list: changes && changes[0] !== "No changes" ? { title: "What changed", items: changes } : null,
     rows: rows,
-    button: { label: "See or change your RSVP", url: linkFor_(h.token) },
+    button: { label: "See or change your reply", url: linkFor_(h.token) },
     notes: ["You can change your reply until " + longDate_(prop_("CHANGES_LOCK")) + ".", "This link is just for your household, so please don't share it."],
   })
   MailApp.sendEmail({
     to: emails.join(","),
     replyTo: prop_("REPLY_TO"),
     name: COUPLE,
-    subject: (changes ? "Updated: your" : "Your") + " RSVP for " + COUPLE + "'s wedding",
+    subject: (changes ? "Updated: your" : "Your") + " reply for " + COUPLE + "'s wedding",
     body: mail.text,
     htmlBody: mail.html,
   })
@@ -1103,7 +1103,7 @@ function notifyDropped_(household, names) {
   const list = names.join(", ")
   MailApp.sendEmail({
     to: prop_("REPLY_TO"),
-    subject: "RSVP change: " + list + " can't make it now",
+    subject: "Reply change: " + list + " can't make it now",
     body: household + " changed their RSVP.\n\n" + list + ": coming → can't make it\n\nSee the Log tab for details.",
   })
 }

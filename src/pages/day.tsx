@@ -31,7 +31,7 @@ function Row({ i, time, label, where, local }: { i: number; time: string; label:
       <p className="timeline-time numerals text-foreground">{time}</p>
       <span aria-hidden className="timeline-icon"><Icon className="size-5" /></span>
       <div className="timeline-text">
-        <p className="font-semibold text-foreground">{label}</p>
+        <p className="font-medium text-foreground">{label}</p>
         <p>{where}</p>
         {local && <p className="text-muted-foreground">{local}</p>}
       </div>

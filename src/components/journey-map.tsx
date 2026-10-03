@@ -60,7 +60,7 @@ export function JourneyMap({ stops, labels, showFlying = false }: { stops: Stop[
       {stops.map((s, i) => (
         <li key={s.title} className="grid grid-cols-[2rem_1fr] gap-3">
           <span className="numerals text-2xl text-primary">{i + 1}</span>
-          <span><span className="block font-semibold">{s.title}</span><span className="block text-body">{s.body}</span></span>
+          <span><span className="block font-medium">{s.title}</span><span className="block text-body">{s.body}</span></span>
         </li>
       ))}
     </ol>
