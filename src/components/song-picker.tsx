@@ -94,27 +94,10 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
           <InlineSubmit ref={input} id={`${id}-in`} label={t.label} helper={t.hint} submitLabel={t.addTyped}
             leading={<Search className="size-4" />} onSubmit={() => q.trim() && add(q)}
             fallback={q.trim().length > 1 ? { label: t.justType, onClick: () => add(q) } : undefined}
-            trailing={status === "loading" ? <Loader2 aria-hidden className="absolute top-1/2 right-16 size-4 -translate-y-1/2 animate-spin text-muted-foreground" /> : undefined}
-            role="combobox" aria-autocomplete="list" aria-expanded={open && options.length > 0}
-            aria-controls={`${id}-list`} aria-busy={status === "loading"}
-            aria-activedescendant={open && active >= 0 ? `${id}-o${active}` : undefined}
-            value={q} maxLength={maxLength} autoComplete="off" placeholder={t.placeholder}
-            onChange={(e) => setQ(e.target.value)}
-            onFocus={() => q.trim().length > 1 && setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 150)}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, options.length - 1)) }
-              else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)) }
-              else if (e.key === "Enter") {
-                e.preventDefault()
-                const o = active >= 0 ? options[active] : undefined
-                if (o) add(o.label, o.hit); else if (q.trim()) add(q)
-              } else if (e.key === "Escape") setOpen(false)
-            }} />
-          <p aria-live="polite" className="sr-only">{status === "loading" ? t.searching : status === "results" ? `${hits.length} results` : status === "none" ? t.noMatch(q.trim()) : ""}</p>
-          {open && options.length > 0 && (
+            trailing={status === "loading" ? <Loader2 aria-hidden className="absolute top-1/2 right-14 size-4 -translate-y-1/2 animate-spin text-muted-foreground" /> : undefined}
+            popup={open && options.length > 0 && (
             <ul id={`${id}-list`} role="listbox" aria-label={t.label}
-              className={cn("absolute inset-x-0 top-[calc(56px+var(--input-height)+var(--space-3))] z-20 max-h-96 overflow-y-auto rounded-md border bg-card p-1 shadow-paper", status === "loading" && "opacity-60")}>
+              className="absolute inset-x-0 top-full z-20 mt-1 max-h-96 overflow-y-auto rounded-md border bg-card p-1 shadow-paper">
               {options.map((o, i) => (
                 <li key={o.key} id={`${id}-o${i}`} role="option" aria-selected={i === active}
                   onMouseDown={(e) => { e.preventDefault(); add(o.label, o.hit) }}
@@ -134,6 +117,23 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
               ))}
             </ul>
           )}
+            role="combobox" aria-autocomplete="list" aria-expanded={open && options.length > 0}
+            aria-controls={`${id}-list`} aria-busy={status === "loading"}
+            aria-activedescendant={open && active >= 0 ? `${id}-o${active}` : undefined}
+            value={q} maxLength={maxLength} autoComplete="off" placeholder={t.placeholder}
+            onChange={(e) => setQ(e.target.value)}
+            onFocus={() => q.trim().length > 1 && setOpen(true)}
+            onBlur={() => setTimeout(() => setOpen(false), 150)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, options.length - 1)) }
+              else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)) }
+              else if (e.key === "Enter") {
+                e.preventDefault()
+                const o = active >= 0 ? options[active] : undefined
+                if (o) add(o.label, o.hit); else if (q.trim()) add(q)
+              } else if (e.key === "Escape") setOpen(false)
+            }} />
+          <p aria-live="polite" className="sr-only">{status === "loading" ? t.searching : status === "results" ? `${hits.length} results` : status === "none" ? t.noMatch(q.trim()) : ""}</p>
         </div>
       )}
     </div>

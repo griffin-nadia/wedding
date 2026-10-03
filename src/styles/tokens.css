@@ -159,6 +159,14 @@
   --input-height: 52px;
   --input-radius: var(--radius-chip);
   --input-pad: var(--space-4);
+  --input-font-size: var(--type-ui-size);          /* Inter 16: iOS never zooms */
+  --input-textarea-min: 96px;                      /* 3 lines */
+  --input-textarea-max: 168px;                     /* grows to 6, then scrolls */
+  /* One spacing scale for every input family: label, 4, field, 8, helper; blocks 24, groups 32 */
+  --field-label-gap: var(--space-1);
+  --field-helper-gap: var(--space-2);
+  --form-block-gap: var(--space-5);
+  --form-group-gap: var(--space-6);
   /* Buttons */
   --button-bg: var(--sys-accent);
   --button-ink: var(--sys-accent-ink);
@@ -166,6 +174,8 @@
   --button-height: 52px;
   --button-radius: var(--radius-button);
   --button-pad: var(--space-5);
+  --button-font-size: var(--type-ui-size);
+  --button-min-width: 120px;
   /* Countdown */
   --countdown-ink: var(--sys-ink);
   --countdown-bg: var(--sys-surface-raised);
@@ -225,6 +235,9 @@
   --type-label-size: 12px;
   --type-label-leading: 16px;
   --type-label-tracking: 0.08em;
+  --type-ui-size: 16px;                                                /* Inter: buttons, inputs, anything that behaves like UI */
+  --type-ui-leading: 24px;
+  --type-ui-small-size: 14px;                                          /* chips */
 
   --rule-width: 40px;
   --tap-min: 44px;

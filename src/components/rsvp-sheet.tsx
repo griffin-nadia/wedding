@@ -4,9 +4,9 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { FormField } from "@/components/form-field"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
 import { Chip, FieldError, ReviewRow, Seal, StepProgress } from "@/components/blocks"
@@ -225,17 +225,15 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
             <StepProgress step={step} of={3} label={t.rsvp.step(step)} />
           </header>
 
-          <div ref={body} key={step} className={cn("rsvp-step flex flex-col gap-6", dir === "fwd" ? "step-fwd" : "step-back")}>
+          <div ref={body} key={step} className={cn("rsvp-step flex flex-col gap-(--form-group-gap)", dir === "fwd" ? "step-fwd" : "step-back")}>
             {step === 1 && form.guests.map((g) => (
               <fieldset key={g.id} className="flex flex-col gap-3">
                 <legend className="sr-only">{nameOf(g)}</legend>
                 {g.plusOne ? (
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor={`name-${g.id}`}>{t.rsvp.plusOne}</Label>
+                  <FormField id={`name-${g.id}`} label={t.rsvp.plusOne} help={t.rsvp.plusOneHint}>
                     <Input id={`name-${g.id}`} value={g.firstName} maxLength={MAX.name} autoComplete="off" data-filled={Boolean(g.firstName.trim())}
-                      aria-describedby={`name-hint-${g.id}`} onChange={(e) => setGuest(g.id, { firstName: e.target.value })} />
-                    <p id={`name-hint-${g.id}`} className="text-sm text-muted-foreground">{t.rsvp.plusOneHint}</p>
-                  </div>
+                      aria-describedby={`name-${g.id}-help`} onChange={(e) => setGuest(g.id, { firstName: e.target.value })} />
+                  </FormField>
                 ) : (
                   <p className="font-semibold text-foreground">{g.firstName}</p>
                 )}
@@ -245,7 +243,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                   onKeyDown={(e) => { if (e.key.startsWith("Arrow")) arrowKey.current = true }}>
                   {(["yes", "no"] as const).map((v) => (
                     <label key={v} htmlFor={`${g.id}-${v}`} aria-invalid={Boolean(missing[`answer-${g.id}`]) || undefined}
-                      className="state choice flex min-h-16 cursor-pointer items-center gap-3 rounded-md px-3 py-2 leading-tight text-foreground">
+                      className="state choice-card cursor-pointer">
                       <RadioGroupItem id={`${g.id}-${v}`} value={v} className="sr-only"
                         // Arrow keys always select (Radix can skip the first press after the letter focuses it)
                         onFocus={() => { if (arrowKey.current) { arrowKey.current = false; if (g.attending !== v) setGuest(g.id, { attending: v }) } }} />
@@ -282,11 +280,10 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                               return <Chip key={a} on={on} onClick={() => setDiet(g, { ...d, allergens: on ? d.allergens.filter((x) => x !== a) : [...d.allergens, a] })}>{a}</Chip>
                             })}
                           </div>
-                          <div className="flex flex-col gap-2">
-                            <Label htmlFor={`allergy-other-${g.id}`}>{t.rsvp.allergyOther}</Label>
+                          <FormField id={`allergy-other-${g.id}`} label={t.rsvp.allergyOther}>
                             <Input id={`allergy-other-${g.id}`} value={d.other} maxLength={60} data-filled={Boolean(d.other.trim())} aria-invalid={Boolean(err) || undefined}
                               onChange={(e) => setDiet(g, { ...d, other: e.target.value })} />
-                          </div>
+                          </FormField>
                           <FieldError id={`allergy-${g.id}-err`}>{err}</FieldError>
                         </div>
                       )}
@@ -296,17 +293,23 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                 {coming.length > 0 && <>
                 <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song}
                   t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded }} />
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-2"><Label htmlFor="arr">{t.rsvp.arrival}</Label><Input id="arr" type="date" min={TRIP.from} max={TRIP.to} value={form.arrival} data-filled={Boolean(form.arrival)}
-                    aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, arrival: e.target.value })} /></div>
-                  <div className="flex flex-col gap-2"><Label htmlFor="dep">{t.rsvp.departure}</Label><Input id="dep" type="date" min={form.arrival || TRIP.from} max={TRIP.to} value={form.departure} data-filled={Boolean(form.departure)}
-                    aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, departure: e.target.value })} /></div>
+                <div className="flex flex-col">
+                  <div className="grid grid-cols-1 gap-x-3 gap-y-(--form-block-gap) min-[400px]:grid-cols-2">
+                    <FormField id="arr" label={t.rsvp.arrival}>
+                      <Input id="arr" type="date" min={TRIP.from} max={TRIP.to} value={form.arrival} data-filled={Boolean(form.arrival)} className="min-w-40"
+                        aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, arrival: e.target.value })} />
+                    </FormField>
+                    <FormField id="dep" label={t.rsvp.departure}>
+                      <Input id="dep" type="date" min={form.arrival || TRIP.from} max={TRIP.to} value={form.departure} data-filled={Boolean(form.departure)} className="min-w-40"
+                        aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, departure: e.target.value })} />
+                    </FormField>
+                  </div>
                   {dateError
-                    ? <FieldError id="date-error" className="col-span-2">{dateError}</FieldError>
-                    : <p id="date-hint" className="col-span-2 text-sm text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</p>}
+                    ? <FieldError id="date-error" className="mt-(--field-helper-gap)">{dateError}</FieldError>
+                    : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-xs text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</p>}
                 </div>
                 </>}
-                <div className="flex flex-col gap-2"><Label htmlFor="msg">{t.rsvp.message}</Label><Textarea id="msg" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></div>
+                <FormField id="msg" label={t.rsvp.message}><Textarea id="msg" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></FormField>
               </>
             )}
 

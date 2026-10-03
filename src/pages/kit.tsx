@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Chip, FieldError, ReviewRow, Seal, Skeleton, StepProgress } from "@/components/blocks"
+import { Chip, ReviewRow, Seal, Skeleton, StepProgress } from "@/components/blocks"
 import { Pill } from "@/components/pill"
 import { Hanko } from "@/components/hanko"
 import { CountdownTile } from "@/components/countdown"
@@ -15,6 +15,7 @@ import { SoundToggle } from "@/components/sound-toggle"
 import { LanternToggle } from "@/components/lantern-toggle"
 import { VenueMap } from "@/components/venue-map"
 import { InlineSubmit } from "@/components/inline-submit"
+import { FormField } from "@/components/form-field"
 import { SongPicker } from "@/components/song-picker"
 import { toast } from "@/components/toast"
 import { COUPLE } from "@/content/en"
@@ -74,15 +75,13 @@ const GROUPS: Group[] = [
         <>
           {(["default", "hover", "focus", "filled", "disabled", "error"] as const).map((s) => (
             <Row key={s} label={s}>
-              <div className="flex w-full max-w-sm flex-col gap-2">
-                <label className="label-caps text-foreground" htmlFor={`f-${s}`}>Bringing someone? Their name</label>
-                <Input id={`f-${s}`} defaultValue={s === "filled" || s === "error" ? "Robin" : ""} placeholder={s === "default" ? "" : undefined} data-filled={s === "filled"}
-                  disabled={s === "disabled"} aria-invalid={s === "error" || undefined} {...force(s)} />
-                <FieldError id={`f-${s}-err`}>{s === "error" ? "Pick or type what Sam is allergic to." : undefined}</FieldError>
-              </div>
+              <FormField id={`f-${s}`} className="w-full max-w-sm" label="Bringing someone? Their name" help={s === "error" ? undefined : "Leave it blank if you're not sure yet."} error={s === "error" ? "Type a name, or leave it blank." : undefined}>
+                <Input id={`f-${s}`} defaultValue={s === "filled" || s === "error" ? "Robin" : ""} data-filled={s === "filled"}
+                  disabled={s === "disabled"} aria-invalid={s === "error" || undefined} aria-describedby={s === "error" ? `f-${s}-err` : `f-${s}-help`} {...force(s)} />
+              </FormField>
             </Row>
           ))}
-          <Row label="textarea"><Textarea className="max-w-sm" placeholder="Anything else? (optional)" /></Row>
+          <Row label="textarea"><FormField id="k-ta" className="w-full max-w-sm" label="Anything else? (optional)" help="3 lines, grows to 6, then scrolls"><Textarea id="k-ta" aria-describedby="k-ta-help" /></FormField></Row>
         </>
       ) },
       { id: "choice", name: "Choice card", tokens: "--input-selected-*", purpose: "Coming or can't make it. Shares focus and selected with every input; the seal fills when chosen.", render: () => (
@@ -90,8 +89,8 @@ const GROUPS: Group[] = [
           {(["default", "hover", "focus", "pressed", "selected", "error"] as const).map((s) => (
             <Row key={s} label={s}>
               <div className="grid w-full max-w-sm grid-cols-2 gap-3">
-                <span data-selected={s === "selected"} aria-invalid={s === "error" || undefined} {...force(s)} className="state flex min-h-16 items-center gap-3 rounded-md px-3 leading-tight text-foreground"><Seal on={s === "selected"} />Coming</span>
-                <span aria-invalid={s === "error" || undefined} className="state flex min-h-16 items-center gap-3 rounded-md px-3 leading-tight text-foreground"><Seal on={false} />Can't make it</span>
+                <span data-selected={s === "selected"} aria-invalid={s === "error" || undefined} {...force(s)} className="state choice-card"><Seal on={s === "selected"} />Coming</span>
+                <span aria-invalid={s === "error" || undefined} className="state choice-card"><Seal on={false} />Can't make it</span>
               </div>
             </Row>
           ))}

@@ -5,21 +5,21 @@ import { Slot } from "radix-ui"
 
 const buttonVariants = cva(
   // One state system (index.css: state, btn-primary, btn-text). Buttons: radius 12, 52 tall on phones, 48 from 768.
-  "group/button inline-flex shrink-0 items-center justify-center rounded-(--button-radius) font-sans text-base font-semibold whitespace-nowrap select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-(--button-radius) font-label text-(length:--button-font-size) leading-6 font-medium whitespace-nowrap select-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "btn-primary",
-        outline: "state text-foreground",
-        secondary: "state text-foreground",
+        default: "btn-primary min-w-(--button-min-width)",
+        outline: "state min-w-(--button-min-width) text-foreground",
+        secondary: "state min-w-(--button-min-width) text-foreground",
         ghost: "state border-transparent bg-transparent text-foreground",
         destructive: "state text-destructive",
         link: "btn-text",
       },
       size: {
-        default: "h-12 gap-2 px-4",
+        default: "h-(--button-height) gap-2 px-(--button-pad)",
         xs: "h-8 gap-1 px-2 text-xs",
-        sm: "h-11 gap-2 px-3",
+        sm: "h-11 gap-2 px-4",
         lg: "h-(--button-height) gap-2 px-(--button-pad)",
         icon: "size-11",
         "icon-xs": "size-8",

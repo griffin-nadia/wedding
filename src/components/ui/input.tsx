@@ -7,7 +7,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       className={cn(
-        "state field min-w-0 py-2 disabled:pointer-events-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
+        "state field min-w-0 disabled:pointer-events-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
         className
       )}
       {...props}

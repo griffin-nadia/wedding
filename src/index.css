@@ -220,8 +220,11 @@
   height: var(--input-height);
   width: 100%;
   border-radius: var(--input-radius);
+  padding-block: 0;
   padding-inline: var(--input-pad);
-  font-size: var(--type-body-size);
+  font-family: var(--font-label);
+  font-size: var(--input-font-size);
+  line-height: var(--type-ui-leading);
   color: var(--input-ink);
   caret-color: var(--input-caret);
   &::placeholder { color: var(--sys-ink-muted); }
@@ -242,13 +245,16 @@
 }
 /* Quiet text action (Change my reply, Edit): underline on hover, same focus ring */
 @utility btn-text {
+  font-family: var(--font-label);
+  font-size: var(--button-font-size);
+  font-weight: 500;
   color: var(--link);
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
   outline: 2px solid transparent;
   outline-offset: 2px;
-  border-radius: var(--radius-chip);
+  border-radius: var(--button-radius);
   transition: text-decoration-thickness var(--duration-quick);
   @media (hover: hover) { &:hover { text-decoration-thickness: 2px; } }
   &:focus-visible, &[data-force="focus"] { outline-color: var(--input-focus); }
@@ -581,3 +587,12 @@
 .lab-frame { border: 1px solid var(--sys-line); border-radius: var(--radius-letter); background: var(--sys-surface); }
 .lab-desktop { width: 100%; max-width: 1080px; aspect-ratio: 1440 / 900; overflow: hidden; border-radius: var(--radius-letter); }
 .lab-desktop .lab-frame { width: 1440px; height: 900px; transform-origin: top left; }
+
+/* Textarea: 3 lines, grows to 6, then scrolls; no resize handle */
+.field-textarea { height: auto; min-height: var(--input-textarea-min); max-height: var(--input-textarea-max); padding-block: var(--space-3); field-sizing: content; resize: none; overflow-y: auto; }
+/* Input family spacing: label, 4, field, 8, helper */
+.form-field { display: flex; flex-direction: column; }
+.form-field > .form-label { margin-bottom: var(--field-label-gap); }
+.form-field > .form-help { margin-top: var(--field-helper-gap); font-size: var(--type-small-size); line-height: var(--type-small-leading); }
+/* Choice card: one-of-few with a consequence. 64 tall, UI face, card radius */
+.choice-card { display: flex; align-items: center; gap: var(--space-3); min-height: 64px; padding-inline: var(--space-4); border-radius: var(--radius-card); font-family: var(--font-label); font-size: var(--type-ui-size); line-height: var(--type-ui-leading); font-weight: 500; color: var(--sys-ink); }
