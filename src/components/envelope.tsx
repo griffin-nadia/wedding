@@ -1,3 +1,4 @@
+import { BrandSeal } from "@/components/brand-seal"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { COUPLE } from "@/content/en"
 import { useHousehold } from "@/lib/household"
@@ -100,7 +101,7 @@ export function Arrival({ enabled, onOpened, children }: { enabled: boolean; onO
             <span aria-hidden className="envelope-paper" />
             <span aria-hidden className="envelope-front" />
             <span aria-hidden className="envelope-flap" />
-            <span aria-hidden className="envelope-seal">{COUPLE.first[0]}&amp;{COUPLE.second[0]}</span>
+            <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
           </button>
         )}
         <span aria-hidden className="arrival-hint label-caps">{t.letter.open}</span>

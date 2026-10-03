@@ -1,13 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { Trail } from "@/components/trail"
 import { Link } from "react-router-dom"
 import { config } from "@/lib/config"
-import { Segmented } from "@/components/segmented"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
-import { useOption } from "@/lib/options"
 import { jstLabel, kyotoNow, localTime } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
@@ -127,21 +125,9 @@ function CountdownTiles() {
   )
 }
 
-/** Tabs (options lab only, or if a second event is added): the same Segmented control as everywhere else. */
-function DayTabs({ panels }: { panels: { id: string; label: string; body: ReactNode }[] }) {
-  const [tab, setTab] = useState(panels[0].id)
-  return (
-    <div className="flex flex-col gap-6">
-      <Segmented role="tablist" idPrefix="day" label="The day" value={tab} onChange={setTab} items={panels.map((p) => ({ value: p.id, label: p.label }))} />
-      {panels.map((p) => <div key={p.id} role="tabpanel" id={`day-panel-${p.id}`} aria-labelledby={`day-tab-${p.id}`} hidden={tab !== p.id}>{p.body}</div>)}
-    </div>
-  )
-}
-
-/** The day: details first, then the timeline. No tabs unless a second event is added (or the lab turns them on). */
+/** The day: details first, then the timeline, then the countdown. No tabs (v3 A). */
 export function DayPage() {
   const { t } = useLang()
-  const tabs = useOption("daytabs") === "on"
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000)
@@ -160,14 +146,8 @@ export function DayPage() {
         <h1 className="heading">{t.day.title}</h1>
         <p className="lead">{t.day.dateLong}</p>
       </header>
-      {tabs ? (
-        <DayTabs panels={[{ id: "details", label: t.day.detailsTab, body: <Details /> }, { id: "timeline", label: t.day.timelineTab, body: timeline }]} />
-      ) : (
-        <>
-          <Details />
-          {timeline}
-        </>
-      )}
+      <Details />
+      {timeline}
       <CountdownTiles />
       <div className="no-print flex flex-col gap-4">
         <AddToCalendar />

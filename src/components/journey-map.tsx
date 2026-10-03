@@ -34,13 +34,13 @@ function Route({ d, colour, drawn, delay, id }: { d: string; colour: string; dra
  * Option E journey map: Brisbane and Canada drawing in to Kyoto, three story stops (bottom sheet on
  * phones, cards beside the map on desktop), "See as a list", and anonymous "Flying from" lines.
  */
-export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels }) {
+export function JourneyMap({ stops, labels, showFlying = false }: { stops: Stop[]; labels: Labels; showFlying?: boolean }) {
   const ref = useRef<SVGSVGElement>(null)
   const [drawn, setDrawn] = useState(false)
-  const [list, setList] = useState(() => document.documentElement.getAttribute("data-opt-story") === "list")
+  const [list, setList] = useState(false)
   const [open, setOpen] = useState<number | null>(null)
   const [flying, setFlyingState] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
-  useEffect(() => { getFlying().then(setFlyingState) }, [])
+  useEffect(() => { if (showFlying) getFlying().then(setFlyingState) }, [showFlying])
   useEffect(() => {
     const el = ref.current
     if (!el) return
@@ -71,7 +71,7 @@ export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels })
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
-        {flying && flying.told > 0 ? <p className="label-caps text-muted-foreground">{labels.flyingFrom(flying.told, flying.households)}</p> : <span />}
+        {flying && flying.told > 0 ? <p className="text-sm text-muted-foreground">{labels.flyingFrom(flying.told, flying.households)}</p> : <span />}
         {toggle}
       </div>
       <div className="grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:items-start">
@@ -97,10 +97,10 @@ export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels })
 
         {/* Desktop: the stops beside the map */}
         <ol className="hidden space-y-3 md:block">
-          {stops.map((s, i) => (
+          {stops.map((s) => (
             <li key={s.title} className="space-y-2 rounded-md bg-card p-4 ring-1 ring-border">
               {s.photo && <Photo name={s.photo} treatment="split" sizes="320px" />}
-              <p className="label-caps text-eyebrow">{i + 1} · {s.title}</p>
+              <p className="font-medium text-foreground">{s.title}</p>
               <p className="text-sm text-body">{s.body}</p>
             </li>
           ))}
@@ -117,12 +117,12 @@ export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels })
         </ol>
       </div>
       <Sheet open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
-        <SheetContent side="bottom" className="gap-4 rounded-t-3xl bg-background p-6">
+        <SheetContent side="bottom" className="gap-4 rounded-t-(--radius-section) bg-background p-6">
           {open !== null && (
             <>
               {stops[open].photo && <Photo name={stops[open].photo!} treatment="arch" sizes="240px" className="mx-auto w-48" />}
-              <p className="label-caps text-eyebrow">{open + 1} of {stops.length}</p>
-              <SheetTitle className="font-display text-3xl font-normal">{stops[open].title}</SheetTitle>
+              <p className="text-sm text-muted-foreground">{open + 1} of {stops.length}</p>
+              <SheetTitle className="font-display text-2xl font-normal">{stops[open].title}</SheetTitle>
               <SheetDescription className="text-base text-body">{stops[open].body}</SheetDescription>
               <Button size="lg" className={cn("w-full")} onClick={() => setOpen(open + 1 < stops.length ? open + 1 : null)}>
                 {open + 1 < stops.length ? labels.next : labels.done}

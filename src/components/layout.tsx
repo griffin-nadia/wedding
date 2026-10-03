@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
 import { BookOpen, CalendarDays, CircleHelp, Home, TrainFront } from "lucide-react"
 import { useContent } from "@/lib/content"
@@ -8,7 +8,6 @@ import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { arrivalScene, pageOf, sceneFor, sceneKind } from "@/lib/scenes"
 import { CreditMark } from "@/components/credit-mark"
-import { StampBook } from "@/components/stamp-book"
 import { setStoryLetter, usePageTurn, usePaperScroll } from "@/lib/page-turn"
 import { usePaperGL } from "@/components/letter/use-paper-gl"
 import { LanternToggle } from "@/components/lantern-toggle"
@@ -25,6 +24,8 @@ const baseLinks = [
   { to: "/travel", key: "travel", icon: TrainFront },
   { to: "/faqs", key: "faqs", icon: CircleHelp },
 ] as const
+// The stamp book (December, walk scene only) loads only when the lab turns it on
+const StampBook = lazy(() => import("@/components/stamp-book").then((m) => ({ default: m.StampBook })))
 const storyLink = { to: "/our-story", key: "story", icon: BookOpen } as const
 
 /** Four items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
@@ -127,7 +128,7 @@ export function Layout() {
         <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
         <Nav />
         {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-(length:--type-ui-size) font-medium md:inline-flex">{t.nav.rsvp}</Link>}
-        {stampsOn && <StampBook />}
+        {stampsOn && <Suspense><StampBook /></Suspense>}
         <LanternToggle className="chrome-lantern" />
       </header>
 

@@ -239,3 +239,10 @@ export async function saveStamps(token: string, stamps: string[]): Promise<void>
     await fetch(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "stamps", token, stamps }) })
   } catch { /* the device keeps them anyway */ }
 }
+
+/** Crew links (/kit and /lab): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */
+export async function checkCrew(token: string): Promise<boolean> {
+  if (!config.apiUrl) return true
+  if (!token) return false
+  try { const d = await call(`${config.apiUrl}?action=crew&token=${encodeURIComponent(token)}`); return d.ok === true && typeof d.name === "string" && d.name.length > 0 } catch { return false }
+}

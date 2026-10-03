@@ -91,7 +91,5 @@ export function TimelineRow({ icon, time, title, where, local }: { icon: ReactNo
   )
 }
 
-/** Washi skeleton: appears after 300ms, breathes slowly, no shimmer. */
-export function Skeleton({ className }: { className?: string }) {
-  return <span aria-hidden className={cn("skeleton-wait washi block rounded-sm bg-muted", className)} />
-}
+// Skeleton lives in its own file so Home doesn't pull Radix in with the RSVP blocks
+export { Skeleton } from "@/components/skeleton"

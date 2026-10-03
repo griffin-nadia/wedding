@@ -162,8 +162,8 @@ const GROUPS: Group[] = [
       { id: "segmented", name: "Tabs and segmented", purpose: "One control for every set of tabs or choices (The day tabs, modes, the lab, the tuning panel): the nav's sliding sage marker, 200 ms, arrow keys move and choose.", render: () => <SegDemo /> },
       { id: "nav", name: "Nav", purpose: "Four items, rendered once: a floating dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms).", render: () => (
         <div className="flex max-w-sm flex-col gap-3">
-          <div className="relative grid h-16 grid-cols-4 rounded-3xl border bg-background p-1 shadow-paper">
-            <span aria-hidden className="absolute top-1 bottom-1 left-1 w-[calc(25%-2px)] rounded-[20px] bg-section-alt" />
+          <div className="relative grid h-16 grid-cols-4 rounded-[calc(var(--radius-control)+4px)] border bg-background p-1 shadow-paper">
+            <span aria-hidden className="absolute top-1 bottom-1 left-1 w-[calc(25%-2px)] rounded-(--radius-control) bg-section-alt" />
             {["Home", "The day", "Travel", "FAQs"].map((x, i) => <span key={x} className={cn("relative grid place-items-center font-label text-[12px] font-medium", i === 0 ? "text-foreground" : "text-muted-foreground")}>{x}</span>)}
           </div>
         </div>

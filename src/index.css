@@ -357,7 +357,7 @@
 .envelope-paper { inset: 12px 16px 24px !important; background: var(--sys-surface); border-top: 4px solid var(--letter-edge-color); transition: transform var(--duration-settle) var(--ease-paper); }
 .envelope-front { background: var(--sys-surface-raised); clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%); }
 .envelope-flap { background: color-mix(in oklab, var(--sys-fill) 80%, var(--sys-ink)); clip-path: polygon(0 0, 100% 0, 50% 60%); transform-origin: top; transition: transform var(--duration-settle) var(--ease-paper); backface-visibility: hidden; }
-.envelope-seal { inset: auto !important; left: 50% !important; top: 58% !important; width: 56px; height: 56px; translate: -50% -50%; display: grid; place-items: center; border-radius: var(--radius-pill) !important; background: var(--sys-accent); color: var(--sys-accent-ink); font-family: var(--font-display); font-size: 20px; line-height: 1; box-shadow: inset 0 0 0 3px color-mix(in oklab, var(--sys-accent) 70%, var(--sys-ink)); transition: opacity var(--duration-quick); }
+.envelope-seal { inset: auto !important; left: 50% !important; top: 58% !important; width: 56px; height: 56px; translate: -50% -50%; display: grid; border-radius: var(--radius-pill) !important; transition: opacity var(--duration-quick); }
 .arrival-hint { padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); background: var(--letter-bg); color: var(--sys-ink); }
 .is-opening .envelope-flap { transform: rotateX(180deg) !important; }
 .is-opening .envelope-seal { opacity: 0; }
@@ -386,8 +386,8 @@
 /* Photo frames */
 @utility photo-print {
   padding: 6px 6px 10px;
-  background: #fffdf8;
-  border-radius: 4px;
+  background: var(--brand-paper-bright);
+  border-radius: calc(var(--radius-control) / 2);
   box-shadow: var(--letter-shadow);
   transform: rotate(-2.5deg);
 }
@@ -493,12 +493,12 @@
 .site-bar > * { pointer-events: auto; }
 .site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--sys-ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
-.site-nav { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); border-radius: var(--radius-letter); background: color-mix(in oklab, var(--letter-bg) 94%, transparent); border: 1px solid var(--sys-line); box-shadow: var(--letter-shadow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.site-nav { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); border-radius: calc(var(--radius-control) + 4px); background: color-mix(in oklab, var(--letter-bg) 94%, transparent); border: 1px solid var(--sys-line); box-shadow: var(--letter-shadow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px; }
 .site-nav li { display: flex; position: relative; }
-.nav-mark { position: absolute !important; left: 0; top: 0; border-radius: 20px; background: var(--sys-surface-alt); transition: transform 200ms var(--ease-paper), width 200ms var(--ease-paper); pointer-events: none; }
+.nav-mark { position: absolute !important; left: 0; top: 0; border-radius: var(--radius-control); background: var(--sys-surface-alt); transition: transform 200ms var(--ease-paper), width 200ms var(--ease-paper); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .nav-mark { transition: none; } }
-.site-nav-link { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: var(--font-label); font-size: var(--type-label-size); line-height: var(--type-label-leading); font-weight: 500; color: var(--sys-ink-muted); outline: 2px solid transparent; outline-offset: -2px; border-radius: 20px; transition: color var(--duration-quick); }
+.site-nav-link { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: var(--font-label); font-size: var(--type-label-size); line-height: var(--type-label-leading); font-weight: 500; color: var(--sys-ink-muted); outline: 2px solid transparent; outline-offset: -2px; border-radius: var(--radius-control); transition: color var(--duration-quick); }
 .site-nav-link.is-active { color: var(--sys-ink); }
 .site-nav-link:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .site-nav-link:hover { color: var(--sys-ink); } }
@@ -507,7 +507,6 @@
   .site-nav { position: static; background: none; border: 0; border-radius: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .site-nav ul { display: flex; gap: var(--space-1); height: auto; padding: 0; }
   .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-4); font-size: var(--type-small-size); line-height: var(--type-small-leading); border-radius: var(--radius-control); outline-offset: 2px; }
-  .nav-mark { border-radius: var(--radius-button); }
 }
 @media (min-width: 1024px) { .site-bar { padding-left: var(--letter-left); } .site-mark { position: absolute; left: 24px; } }
 /* Options lab: the dock on desktop too */
@@ -675,7 +674,7 @@
 [data-sealed] .site-nav, [data-sealed] .site-mark, [data-sealed] .site-rsvp, [data-sealed] .phone-qr, [data-sealed] .credit-mark { display: none !important; }
 [data-sealed] .site-bar { background: none; border: 0; }
 .arrival { align-content: end; gap: var(--space-4); padding-top: 0; padding-bottom: max(5svh, 24px); }
-@media (max-width: 767px) { .arrival .envelope { width: 240px; height: 156px; } .arrival .envelope-seal { width: 48px !important; height: 48px !important; font-size: 17px; } }
+@media (max-width: 767px) { .arrival .envelope { width: 240px; height: 156px; } .arrival .envelope-seal { width: 48px !important; height: 48px !important; } }
 @media (min-width: 1024px) { .arrival { align-content: end; padding-bottom: 14svh; } }
 /* Icons: Lucide everywhere at 1.5 stroke (v3 A) */
 svg.lucide { stroke-width: 1.5; }
@@ -760,3 +759,7 @@ svg.lucide { stroke-width: 1.5; }
 .stamp-ink { display: grid; place-items: center; width: 72px; height: 72px; border-radius: var(--radius-pill); border: 1px dashed var(--sys-line-strong); }
 .stamp-ink svg path:first-child { fill: var(--stamp, var(--brand-sabi)); }
 .is-got .stamp-ink { border-color: transparent; }
+/* Crew gate (v2-fixes §8): blank paper until a crew link checks out */
+.crew-blank { min-height: 100svh; background: var(--letter-bg); }
+/* v3 A: a segmented control is content width and centred on phones (choice rows keep theirs to the right) */
+@media (max-width: 767px) { .segmented:not(.choice-row .segmented) { display: flex; margin-inline: auto; } }

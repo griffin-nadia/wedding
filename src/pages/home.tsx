@@ -7,7 +7,7 @@ import { COUPLE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { isLocked } from "@/lib/time"
 import { Pill } from "@/components/pill"
-import { Skeleton } from "@/components/blocks"
+import { Skeleton } from "@/components/skeleton"
 import type { Household } from "@/lib/api"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap

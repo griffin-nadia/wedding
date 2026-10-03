@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Download, MapPin, RotateCcw, X } from "lucide-react"
 import tokensCss from "@/styles/tokens.css?raw"
-import { empty, exportJson, load, OPTIONS, save, type Note, type Scope, type TuneState } from "./store"
+import { empty, exportJson, FLOWS, load, OPTIONS, save, type Note, type Scope, type TuneState } from "./store"
 import { cn } from "@/lib/utils"
 import { Segmented } from "@/components/segmented"
 
@@ -192,14 +192,24 @@ export function TunePanel({ onClose, docked = false }: { onClose?: () => void; d
           </div>
         ) : tab === "options" ? (
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
-            <p className="text-sm">Prototype switches. The first choice in each is what ships; export keeps your picks.</p>
-            {OPTIONS.map((o) => (
-              <div key={o.key} className="flex flex-col gap-2">
-                <p className="label-caps text-foreground">{o.label}</p>
-                <div className="overflow-x-auto"><Segmented label={o.label} size="sm" value={state.options[o.key] ?? o.values[0][0]}
-                  onChange={(v) => update({ ...state, options: { ...state.options, [o.key]: v } })} items={o.values.map(([v, label]) => ({ value: v, label }))} /></div>
-              </div>
-            ))}
+            <p className="text-sm">Prototype switches, grouped by the part of the site they change. The first choice in each is what ships; export keeps your picks.</p>
+            {FLOWS.map((flow) => {
+              const list = OPTIONS.filter((o) => o.flow === flow && (!o.when || o.when(state.options)))
+              if (!list.length) return null
+              return (
+                <section key={flow} aria-label={flow} className="flex flex-col gap-4 border-b border-border pb-4">
+                  <h3 className="font-display text-xl text-foreground">{flow}</h3>
+                  {list.map((o) => (
+                    <div key={o.key} className="flex flex-col gap-2">
+                      <p className="label-caps text-foreground">{o.label}</p>
+                      <p className="text-sm text-muted-foreground">{o.note}</p>
+                      <div className="overflow-x-auto"><Segmented label={o.label} size="sm" value={state.options[o.key] ?? o.values[0][0]}
+                        onChange={(v) => update({ ...state, options: { ...state.options, [o.key]: v } })} items={o.values.map(([v, label]) => ({ value: v, label }))} /></div>
+                    </div>
+                  ))}
+                </section>
+              )
+            })}
           </div>
         ) : (
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-3">

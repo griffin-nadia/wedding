@@ -7,6 +7,7 @@ import { FlyingFrom } from "@/components/flying-from"
 import { Trail } from "@/components/trail"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
+import { useOption } from "@/lib/options"
 
 function Ext({ href, children }: { href: string; children: React.ReactNode }) {
   return <a href={href} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{children}</a>
@@ -36,6 +37,9 @@ export function TravelPage() {
   const g = t.getting
   const { household } = useHousehold()
   const coming = household?.guests.some((x) => x.attending === "yes")
+  // v3 P: "Flying from" exists only when the story map (Our story B) and its Flying from option are on
+  const storyOpt = useOption("story"), flyingOpt = useOption("flying")
+  const flyingOn = storyOpt === "b" && flyingOpt === "on"
   // /travel#stay and #before scroll to their section once the page is in
   useEffect(() => {
     const id = location.hash.slice(1)
@@ -46,7 +50,7 @@ export function TravelPage() {
     ["flights", g.rows.flights, <>
       <p>{t.travel.items[1].body}</p><p>{g.flyingBody}</p><p>{g.tokyoBody}</p>
       <div className="flex flex-wrap gap-x-4"><Ext href={g.links.haruka.href}>{g.links.haruka.label}</Ext><Ext href={g.links.flights.href}>{g.links.flights.label}</Ext><Ext href={g.links.trains.href}>{g.links.trains.label}</Ext></div>
-      {household && coming && <FlyingFrom token={household.token} />}
+      {household && coming && flyingOn && <FlyingFrom token={household.token} />}
     </>],
     ["booking", g.rows.booking, <p>{t.travel.items[2].body}</p>],
     ["phones", g.rows.phones, <>

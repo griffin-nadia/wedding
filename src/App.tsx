@@ -8,15 +8,13 @@ import { SceneDimProvider } from "@/components/letter/letter"
 import { Toaster } from "@/components/toast"
 import { HomePage } from "@/pages/home"
 import { NoInvitePage } from "@/pages/no-invite"
+import { CrewGate } from "@/components/crew-gate"
 
 // Pages beyond Home load when first visited, so the greeting paints sooner.
 const DayPage = lazy(() => import("@/pages/day").then((m) => ({ default: m.DayPage })))
 const TravelPage = lazy(() => import("@/pages/travel").then((m) => ({ default: m.TravelPage })))
 const FaqsPage = lazy(() => import("@/pages/faqs").then((m) => ({ default: m.FaqsPage })))
 const StoryPage = lazy(() => import("@/pages/our-story").then((m) => ({ default: m.StoryPage })))
-// Hidden: the design system (/kit) and the options lab (/lab). Not linked anywhere.
-const KitPage = lazy(() => import("@/pages/kit").then((m) => ({ default: m.KitPage })))
-const LabPage = lazy(() => import("@/pages/lab").then((m) => ({ default: m.LabPage })))
 
 // Old links to The day's tabs (#getting-there, #stay, #faq) now go to their own pages.
 function OldTabs({ children }: { children: React.ReactNode }) {
@@ -27,8 +25,9 @@ function OldTabs({ children }: { children: React.ReactNode }) {
 
 function Gate() {
   const { status } = useHousehold()
-  if (/\/kit\/?$/.test(window.location.pathname)) return <Suspense><KitPage /></Suspense>
-  if (/\/lab\/?$/.test(window.location.pathname)) return <Suspense><LabPage /></Suspense>
+  // Hidden: the design system (/kit) and the options lab (/lab), crew links only
+  if (/\/kit\/?$/.test(window.location.pathname)) return <CrewGate page="kit" />
+  if (/\/lab\/?$/.test(window.location.pathname)) return <CrewGate page="lab" />
   // While the invite loads, the pages render straight away (the hero paints first);
   // only Home's greeting and RSVP card wait for the household.
   if (status !== "ready" && status !== "loading") return <NoInvitePage reason={status} />

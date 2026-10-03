@@ -27,7 +27,7 @@ export function sceneKind(option: string | null, preset: string | null): SceneKi
 /** Behind the sealed envelope only: the photo with their faces (the one photo on the launch site). */
 export const arrivalScene = (theme: Theme): SceneSource => ({ photo: theme === "lantern" ? "night-lane" : "kyoto-view" })
 
-export function sceneFor(page: string, theme: Theme, kind: SceneKind = "photo"): SceneSource {
+export function sceneFor(page: string, theme: Theme, kind: SceneKind = "paper"): SceneSource {
   const map = theme === "lantern" ? NIGHT : LIGHT
   const photo = map[page] ?? map.home
   if (kind === "paper") return { paper: true }
