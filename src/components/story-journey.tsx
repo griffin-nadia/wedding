@@ -54,6 +54,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false }: { c
     <div className="journey" onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
       <svg ref={svg} viewBox="0 0 400 320" className="journey-map" role="group" aria-label={t.story.title} style={drag ? { touchAction: "none" } : undefined}>
         {/* land: Australia, Japan, a corner of Canada (soft, painted feel) */}
+        <defs><pattern id="journey-dots" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" className="journey-dot-grain" /></pattern></defs>
         <path className="journey-land" d="M60 236c26-30 82-40 118-30 30-14 60-2 74 22 12 24 0 50-24 64-34 18-90 20-128 8-36-12-60-34-40-64z" />
         <path className="journey-land journey-land-green" d="M120 150c8-20 22-34 30-52 8-16 20-30 34-38 8 8 0 22-8 32-12 16-22 32-34 48-8 12-18 18-22 10z" />
         <path className="journey-land" d="M300 6c30-10 70-6 96 6v70c-22 8-50 0-68-12-18-14-40-50-28-64z" />

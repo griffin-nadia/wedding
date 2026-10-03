@@ -31,6 +31,7 @@ const baseLinks = [
 // The stamp book (December, walk scene only) loads only when the lab turns it on
 const StampBook = lazy(() => import("@/components/stamp-book").then((m) => ({ default: m.StampBook })))
 const storyLink = { to: "/our-story", key: "story", icon: BookOpen } as const
+const MECHANICS = ["glow", "inkset", "countin", "thread", "hoverprint", "haptics"]
 
 /** Four items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
 function Nav() {
@@ -100,6 +101,12 @@ export function Layout() {
     return () => window.removeEventListener("ng-reseal", on)
   }, [])
   const signOffEverywhere = useOption("signoff") === "all"
+  // Kit mechanics (v3 U): their code loads only once one of their Options switches is on
+  useEffect(() => {
+    const check = () => { if (MECHANICS.some((k) => document.documentElement.hasAttribute(`data-opt-${k}`))) void import("@/mechanics").then((m) => m.install()) }
+    check(); addEventListener("ng-tune", check)
+    return () => removeEventListener("ng-tune", check)
+  }, [])
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sealed", sealed)
     return () => document.documentElement.removeAttribute("data-sealed")

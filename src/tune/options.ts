@@ -1,5 +1,5 @@
 /** The flows the lab's options are grouped by (v3 P), in this order. */
-export const FLOWS = ["Arrival", "Home", "RSVP", "The day", "Travel", "Our story", "Scene", "Theme"] as const
+export const FLOWS = ["Arrival", "Home", "RSVP", "The day", "Travel", "FAQs", "Our story", "Scene", "Theme"] as const
 export type Option = { key: string; label: string; flow: (typeof FLOWS)[number]; note: string; values: [string, string][]; when?: (o: Record<string, string>) => boolean }
 
 /**
@@ -9,9 +9,13 @@ export type Option = { key: string; label: string; flow: (typeof FLOWS)[number];
  */
 export const OPTIONS: Option[] = [
   { key: "arrivalhint", label: "Envelope hint", flow: "Arrival", note: "A handwritten \u201copen your invite\u201d with an arrow, placed clear of their faces, or the small \u201cTap to open\u201d pill.", values: [["note", "Handwritten arrow"], ["pill", "Pill"]] },
+  { key: "glow", label: "Lantern light", flow: "Arrival", note: "Laptop: a warm pool of light follows the mouse over the photo, and the seal catches it. Nothing else moves.", values: [["off", "Off"], ["on", "On"]] },
   { key: "tilt", label: "Envelope tilt", flow: "Arrival", note: "Laptop: the envelope tilts a few degrees toward the mouse, like a card on a table.", values: [["off", "Still"], ["on", "Tilts"]] },
   { key: "peek", label: "Envelope peek on hover", flow: "Arrival", note: "Desktop only: the flap lifts and a corner of the letter shows on hover.", values: [["on", "On"], ["off", "Off"]], },
   { key: "mode", label: "Site mode (preview)", flow: "Home", note: "What the site becomes later: the invite now, the week of the wedding (The day first), or the keepsake after it. The Content tab sets it for real; this previews it.", values: [["sheet", "From the sheet"], ["invite", "Invite"], ["week-of", "Week of"], ["keepsake", "Keepsake"]] },
+  { key: "inkset", label: "Ink drying", flow: "Home", note: "The first time the letter opens each visit, its lines settle from a soft blur, 40 ms apart, like ink drying.", values: [["off", "Off"], ["on", "On"]] },
+  { key: "countin", label: "Days count in", flow: "Home", note: "On open, the days box counts down from three more to today\u2019s number, once a visit.", values: [["off", "Off"], ["on", "On"]] },
+  { key: "underline", label: "RSVP underline", flow: "Home", note: "Before they reply: a sage line draws in under \u201cRSVP by\u201d once the letter has settled.", values: [["off", "Off"], ["on", "On"]] },
   { key: "leaves", label: "Catch a leaf", flow: "Home", note: "Now and then a maple leaf drifts past, green now and red by the wedding; tap one and it lands pressed in the letter's corner.", values: [["off", "Off"], ["on", "On"]] },
   { key: "send", label: "Sending the reply", flow: "RSVP", note: "Tap to send, or press and hold until the ink fills, like pressing the hanko. Enter always sends.", values: [["tap", "Tap"], ["hold", "Hold to stamp"]] },
   { key: "sheetdrag", label: "Closing the sheet (phones)", flow: "RSVP", note: "X, Esc and Back to your invite always work; this adds a grab bar to drag the sheet down.", values: [["buttons", "Buttons only"], ["drag", "Drag down too"]] },
@@ -21,13 +25,20 @@ export const OPTIONS: Option[] = [
   { key: "ticks", label: "What's left, once done", flow: "Home", note: "After everything's ticked: keep the three ticked rows (a returning guest sees it's done), or hide them.", values: [["stay", "Keep"], ["hide", "Hide"]] },
   { key: "signoff", label: "Sign-off", flow: "Home", note: "\u201cWith love, N & G\u201d on Home only, or at the end of every page.", values: [["home", "Home only"], ["all", "Every page"]] },
   { key: "toggle", label: "Evening mode switch (phones)", flow: "Home", note: "Phones: in the letter's top corner (no gap at the top), or fixed in the screen corner.", values: [["card", "In the letter"], ["corner", "Screen corner"]] },
+  { key: "daytick", label: "Times tick in", flow: "The day", note: "Each time on the timeline darkens and settles as the line reaches it.", values: [["off", "Off"], ["on", "On"]] },
+  { key: "thread", label: "Line as a thread", flow: "The day", note: "The line trails you a little as you scroll, like a thread being pulled, and still finishes at the bottom.", values: [["off", "Scroll-linked"], ["on", "Thread"]] },
+  { key: "focus", label: "Focus the stay you point at", flow: "Travel", note: "Laptop: hover one stay and the others soften to 70%. Nothing grows or moves.", values: [["off", "Off"], ["on", "On"]] },
+  { key: "faq", label: "FAQ answers", flow: "FAQs", note: "Laptop: any number open, or one at a time like phones. Opening is quick (150 ms) either way.", values: [["many", "Any open"], ["one", "One at a time"]] },
   { key: "getthere", label: "Getting there, first action", flow: "Travel", note: "Travel's main button and The day's link: open Google Maps directions, or Show the driver first.", values: [["maps", "Google Maps"], ["driver", "Show the driver"]] },
   { key: "modeswitch", label: "Light and Lantern switch", flow: "Theme", note: "How the page changes mode: a circle growing from the sun or moon, or a soft cross-fade of the whole page. Either way the new photo is ready first.", values: [["circle", "Circle"], ["fade", "Cross-fade"]] },
+  { key: "haptics", label: "Haptic ticks", flow: "Theme", note: "Android phones: a tiny tick when the envelope opens and when the hanko lands. iPhones don\u2019t allow it, so nothing happens there.", values: [["off", "Off"], ["on", "On"]] },
   { key: "lang", label: "Language (draft)", flow: "Theme", note: "Preview the Japanese draft. Lines not translated yet stay in English; a native speaker checks it before guests can switch.", values: [["en", "English"], ["ja", "日本語"]] },
   { key: "accent", label: "Accent", flow: "Theme", note: "Green-forward (links, selected lines, text selection in forest and moss; rust stays for the button and the seal), or rust everywhere.", values: [["green", "Green"], ["rust", "Rust"]] },
   { key: "story", label: "Our story", flow: "Our story", note: "How the story reads on Our story: letter pages, a map of stops, a timeline, or a stack of cards you drag through.", values: [["b", "Map"], ["d", "Card stack"], ["a", "Letter pages"], ["c", "Timeline"]] },
   { key: "mapmode", label: "Map", flow: "Our story", note: "Map only: the journey from Brisbane and Canada to Kyoto (Figma D1), or stops along one path.", values: [["journey", "Journey to Kyoto (the Figma plan)"], ["trail", "Stops on a path"]], when: (o) => (o.story ?? "b") === "b" },
   { key: "mapdrag", label: "Map interaction", flow: "Our story", note: "Map only: tap the stops, or also drag the seal across the map and the chapters open as it passes.", values: [["tap", "Tap stops"], ["drag", "Drag the seal"]], when: (o) => (o.story ?? "b") === "b" },
+  { key: "dotmap", label: "Map paper", flow: "Our story", note: "Map only: land as soft washes, or as sage dots.", values: [["off", "Washes"], ["on", "Sage dots"]], when: (o) => (o.story ?? "b") === "b" },
+  { key: "hoverprint", label: "Hover prints", flow: "Our story", note: "Laptop, map only: hover a stop and a small print rises beside it, tilted, from the side you came from. Photos go on the prints once we have them.", values: [["off", "Off"], ["on", "On"]], when: (o) => (o.story ?? "b") === "b" },
   { key: "flying", label: "Flying from", flow: "Our story", note: "Map only: an optional \u201cFlying from?\u201d on Travel, shown on the map as counts, never names.", values: [["off", "Off"], ["on", "On"]], when: (o) => (o.story ?? "b") === "b" },
   { key: "storysample", label: "Sample story", flow: "Our story", note: "Fills Our story with sample chapters until theirs is in the Content tab. Crew devices see it anyway; guests never do.", values: [["off", "Off"], ["on", "On"]] },
   { key: "scene", label: "Scene", flow: "Scene", note: "Behind the letter on every page: their photo (for now), the moving paper, Nadia's painted plates once they exist, or the December walk.", values: [["photo", "Their photo"], ["auto", "Paper"], ["plate", "Painted"], ["walk", "Walk (December)"]] },

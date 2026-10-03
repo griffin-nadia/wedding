@@ -91,7 +91,7 @@ export function HomePage() {
 
   const rsvpButton = done
     ? <button type="button" className="btn-text min-h-11" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.changeReply}</button>
-    : <Button size="lg" className="w-full sm:w-auto" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.rsvpButton}</Button>
+    : <Button size="lg" className="home-rsvp w-full sm:w-auto" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.rsvpButton}</Button>
 
   return (
     <>
