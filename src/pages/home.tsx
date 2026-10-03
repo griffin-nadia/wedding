@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useHousehold } from "@/lib/household"
 import { useOption } from "@/lib/options"
 import { useContent } from "@/lib/content"
+import { HomeCountdown } from "@/components/home-countdown"
 import { Link } from "react-router-dom"
 import { directionsUrl } from "@/lib/calendar"
 import { COUPLE } from "@/content/en"
@@ -130,6 +131,7 @@ export function HomePage() {
           {done && <YourReply h={household} open={openAt} keepDone={keepDone} />}
         </div>
       )}
+      <HomeCountdown placement="inside" />
     </>
   )
 }

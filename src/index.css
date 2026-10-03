@@ -864,3 +864,11 @@ svg.lucide { stroke-width: 1.5; }
   .story-card[tabindex="0"]:hover { box-shadow: var(--sheet-shadow); }
 }
 @media (prefers-reduced-motion: reduce) { .stay-row:hover > svg { transform: none; } }
+/* Countdown boxes inside the letter (v3 S): days, hrs, mins in paper boxes; a box flips only when its number changes */
+.count-boxes { display: flex; flex-direction: column; gap: var(--space-2); }
+.count-boxes-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.count-box { display: grid; justify-items: center; align-content: center; min-width: 64px; height: 56px; padding: 0 var(--space-3); border-radius: var(--radius-control); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); perspective: 400px; }
+.count-box-num { display: block; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 32px; color: var(--sys-ink); font-variant-numeric: tabular-nums; transform-origin: 50% 50%; backface-visibility: hidden; }
+.count-box-unit, .count-boxes-caption { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-muted); }
+@keyframes count-flip { from { transform: rotateX(-90deg); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) { .count-flip { animation: count-flip var(--duration-settle) var(--ease-letter) both; } }
