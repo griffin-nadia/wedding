@@ -140,6 +140,7 @@ export const en = {
     dressNote: "No dress code. Wear what makes you feel like your best self, with shoes that grip on stone.",
     mapAlt: "A drawn map: from Kyoto Station north to Gion-Shijo, then east up the hill to The Sodoh.",
     mapStation: "Kyoto Station", mapGion: "Gion-Shijo", mapVenue: "The Sodoh",
+    archAlt: "Nadia and Griffin in front of Osaka Castle, smiling",
     detailsTab: "Details", timelineTab: "Timeline", countdownLabel: "Counting down",
     schedule: [
       { time: "11:00", label: "Ceremony", where: "The Garden" },

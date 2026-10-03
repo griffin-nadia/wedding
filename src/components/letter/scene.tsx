@@ -12,7 +12,7 @@ const set = (name: string, fmt: string) => [900, 1600].map((w) => `${base}scenes
  * Graded with --scene-filter. Changes cross-fade (600 ms); nothing moves under reduced motion.
  */
 export function Scene({ source, dim = false, className }: { source: SceneSource; dim?: boolean; className?: string }) {
-  const key = "photo" in source ? source.photo : source.plate
+  const key = "photo" in source ? source.photo : "plate" in source ? source.plate : "paper"
   // Keep the previous scene underneath until the next one has loaded, so changes cross-fade
   const [layers, setLayers] = useState<{ key: string; source: SceneSource; ready: boolean }[]>([{ key, source, ready: false }])
   useEffect(() => {
@@ -29,7 +29,9 @@ export function Scene({ source, dim = false, className }: { source: SceneSource;
       {layers.map((l, i) => (
         <div key={l.key} className={cn("scene-layer absolute inset-0", l.ready || i === 0 ? "opacity-100" : "opacity-0")}
           onTransitionEnd={() => { if (i === layers.length - 1 && layers.length > 1) setLayers((ls) => ls.slice(-1)) }}>
-          {"photo" in l.source ? <PhotoScene name={l.source.photo} priority={i === 0} onReady={() => ready(l.key)} /> : <PlateScene name={l.source.plate} fallback={l.source.fallback} onReady={() => ready(l.key)} />}
+          {"photo" in l.source ? <PhotoScene name={l.source.photo} priority={i === 0} onReady={() => ready(l.key)} />
+            : "plate" in l.source ? <PlateScene name={l.source.plate} fallback={l.source.fallback} onReady={() => ready(l.key)} />
+            : <PaperScene onReady={() => ready(l.key)} />}
         </div>
       ))}
       <div className="scene-scrim absolute inset-0" />
@@ -55,6 +57,13 @@ function PhotoScene({ name, priority, onReady }: { name: string; priority: boole
       </picture>
     </>
   )
+}
+
+/** Paper: no photo at all. A soft two-tone gradient, the paper grain and a faint warm glow top left. */
+function PaperScene({ onReady }: { onReady: () => void }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { onReady() }, [])
+  return <div className="scene-paper absolute inset-0" />
 }
 
 /** Painted plate: sky and mist, hills, foreground leaves. Layers drift 2 to 6px on scroll. Until the art lands, the photo shows. */

@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
-import { pageOf, sceneFor } from "@/lib/scenes"
+import { pageOf, sceneFor, sceneKind } from "@/lib/scenes"
+import { LanternToggle } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival } from "@/components/envelope"
@@ -92,15 +93,17 @@ export function Layout() {
   const { dim } = useSceneDim()
   const firstPath = useRef(pathname)
   const replied = Boolean(household?.respondedAt)
-  const plates = useOption("scene") === "plate"
+  const kind = sceneKind(useOption("scene"), useOption("preset"))
+  const lanternInLetter = useOption("lantern") === "letter"
   return (
     <>
       <a href="#letter" className="skip-link">{t.letter.skip}</a>
-      <Scene source={sceneFor(page, theme, plates)} dim={dim} />
+      <Scene source={sceneFor(page, theme, kind)} dim={dim} />
       <header className="site-bar">
         <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
         <Nav />
-        {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-semibold md:inline-flex">{t.nav.rsvp}</Link>}
+        {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-(length:--type-ui-size) font-medium md:inline-flex">{t.nav.rsvp}</Link>}
+        {!lanternInLetter && <LanternToggle className="chrome-lantern" />}
       </header>
 
       <main className="letter-wrap">

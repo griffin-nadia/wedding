@@ -2,6 +2,7 @@ import { createContext, useContext, useState, type ReactNode } from "react"
 import { useLang } from "@/lib/lang"
 import { SoundToggle } from "@/components/sound-toggle"
 import { LanternToggle } from "@/components/lantern-toggle"
+import { useOption } from "@/lib/options"
 import { cn } from "@/lib/utils"
 
 /**
@@ -16,13 +17,14 @@ export function Letter({ children, className, as: Tag = "article", ...rest }: { 
 /** End of every letter: their note, then the two quiet switches (sound, Lantern), then the one credit line. */
 export function SignOff() {
   const { t } = useLang()
+  const lanternInLetter = useOption("lantern") === "letter"
   return (
     <footer className="letter-end mt-auto flex flex-col gap-2 pt-2">
       <div className="flex items-center justify-between gap-4">
         <p className="hand text-foreground">{t.letter.signOff}</p>
         <div className="flex items-center gap-1">
           <SoundToggle />
-          <LanternToggle />
+          {lanternInLetter && <LanternToggle />}
         </div>
       </div>
       <p className="label-caps text-muted-foreground">{t.letter.credit}</p>

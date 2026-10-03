@@ -146,7 +146,7 @@
 
 /* Title: Oranienbaum, sentence case, a 40px moss rule under it. Green as a material, not an overlay. */
 @utility heading {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: var(--type-heading-size);
   line-height: var(--type-heading-leading);
   letter-spacing: var(--type-heading-tracking);
@@ -622,3 +622,37 @@
 .chip::after { content: ""; position: absolute; inset: -4px 0; }
 /* Checkbox rows: the whole 44px row is the target */
 .check-row { display: flex; align-items: flex-start; gap: var(--space-3); min-height: 44px; padding-block: 10px; cursor: pointer; }
+
+/* ─── Themes (Letter is the default), density and roundness: switchable in /lab → Options ───
+   Light / Lantern is separate (data-theme) and combines with any of these. */
+:root[data-opt-preset="storybook"] { --density-field: 56px; --density-form: var(--space-6); --density-gap: var(--space-6); --radius-chip: 8px; --radius-card: 12px; --radius-button: 16px; --radius-letter: 28px; --type-display-names-tracking: -0.03em; --theme-texture: 0.08; }
+:root[data-opt-preset="crisp"] { --density-field: 48px; --density-form: var(--space-4); --density-gap: var(--space-4); --radius-chip: 2px; --radius-card: 4px; --radius-button: 8px; --radius-letter: 16px; --font-heading: var(--font-label); --theme-texture: 0; }
+@media (min-width: 768px) {
+  :root[data-opt-preset="storybook"] { --density-field: 52px; --density-gap: var(--space-7); }
+  :root[data-opt-preset="crisp"] { --density-field: 44px; --density-gap: var(--space-5); }
+}
+:root[data-opt-preset][data-opt-density="compact"], :root[data-opt-density="compact"] { --density-field: 48px; --density-form: var(--space-4); --density-gap: var(--space-4); }
+:root[data-opt-preset][data-opt-density="comfortable"], :root[data-opt-density="comfortable"] { --density-field: 52px; --density-form: var(--space-5); --density-gap: var(--space-5); }
+:root[data-opt-preset][data-opt-density="roomy"], :root[data-opt-density="roomy"] { --density-field: 56px; --density-form: var(--space-6); --density-gap: var(--space-6); }
+@media (min-width: 768px) {
+  :root[data-opt-preset][data-opt-density="compact"], :root[data-opt-density="compact"] { --density-field: 44px; --density-gap: var(--space-5); }
+  :root[data-opt-preset][data-opt-density="comfortable"], :root[data-opt-density="comfortable"] { --density-field: 48px; --density-gap: var(--space-6); }
+  :root[data-opt-preset][data-opt-density="roomy"], :root[data-opt-density="roomy"] { --density-field: 52px; --density-gap: var(--space-7); }
+}
+:root[data-opt-preset][data-opt-round="sharp"], :root[data-opt-round="sharp"] { --radius-chip: 2px; --radius-card: 4px; --radius-button: 8px; --radius-letter: 16px; }
+:root[data-opt-preset][data-opt-round="soft"], :root[data-opt-round="soft"] { --radius-chip: 4px; --radius-card: 8px; --radius-button: 12px; --radius-letter: 24px; }
+:root[data-opt-preset][data-opt-round="round"], :root[data-opt-round="round"] { --radius-chip: 8px; --radius-card: 12px; --radius-button: 16px; --radius-letter: 28px; }
+/* Paper scene: kinari to sage paper (yoru to yoru-raised in Lantern), a 6% grain, a faint warm glow top left */
+.scene-paper { background:
+  radial-gradient(60rem 40rem at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 28%, transparent), transparent 70%),
+  linear-gradient(160deg, var(--brand-kinari), var(--brand-sage-paper)); }
+[data-theme="lantern"] .scene-paper { background:
+  radial-gradient(60rem 40rem at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 12%, transparent), transparent 70%),
+  linear-gradient(160deg, var(--brand-yoru), var(--brand-yoru-raised)); }
+.scene-paper::after { content: ""; position: absolute; inset: 0; background-image: var(--texture-paper); background-size: 256px; opacity: 0.06; mix-blend-mode: var(--texture-blend); }
+/* Arched photo at the top of a section (paper scene only) */
+.arch-photo { overflow: hidden; border-radius: 999px 999px var(--radius-card) var(--radius-card); aspect-ratio: 4 / 3; }
+.arch-photo img { width: 100%; height: 100%; object-fit: cover; filter: var(--scene-filter); }
+/* Lantern toggle in the chrome: top right of the scene on phones (44px target, 12px in), in the top bar from 768 */
+.chrome-lantern { position: fixed; z-index: 41; top: 12px; right: 12px; background: var(--letter-bg); box-shadow: var(--shadow-paper); }
+@media (min-width: 768px) { .chrome-lantern { position: static; width: 44px; height: 44px; background: transparent; box-shadow: none; } }

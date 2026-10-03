@@ -6,6 +6,7 @@ import { VenueMap } from "@/components/venue-map"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
+import { sceneKind } from "@/lib/scenes"
 import { jstLabel, kyotoNow, localTime } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
@@ -118,6 +119,8 @@ function DayTabs({ panels }: { panels: { id: string; label: string; body: ReactN
 export function DayPage() {
   const { t } = useLang()
   const tabs = useOption("daytabs") === "on"
+  // On the Paper scene, photos live inside sections instead: an arched photo at the top of The day
+  const paper = sceneKind(useOption("scene"), useOption("preset")) === "paper"
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000)
@@ -132,6 +135,7 @@ export function DayPage() {
   )
   return (
     <>
+      {paper && <div className="arch-photo"><img src={`${import.meta.env.BASE_URL}scenes/castle-900.webp`} alt={t.day.archAlt} /></div>}
       <header className="flex flex-col gap-4">
         <p className="label-caps text-muted-foreground">{t.day.date}</p>
         <h1 className="heading">{t.day.title}</h1>

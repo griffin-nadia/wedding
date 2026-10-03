@@ -139,8 +139,8 @@
   --letter-width: 620px;
   --letter-left: 180px;
   --letter-top: 120px;
-  --letter-pad: var(--space-5);
-  --letter-gap: var(--space-5);
+  --letter-pad: var(--density-letter-pad);
+  --letter-gap: var(--density-gap);
   --letter-blur: 12px;
   --letter-shadow: 0 2px 4px rgb(var(--sys-shadow-tint) / 0.1), 0 32px 64px -24px rgb(var(--sys-shadow-tint) / 0.45);
   /* Inputs: fields, combobox, chips and choice cards share these */
@@ -156,7 +156,7 @@
   --input-disabled-bg: var(--sys-surface);
   --input-error: var(--sys-danger);
   --input-tick: var(--sys-moss);
-  --input-height: 52px;
+  --input-height: var(--density-field);
   --input-radius: var(--radius-chip);
   --input-pad: var(--space-4);
   --input-font-size: var(--type-ui-size);          /* Inter 16: iOS never zooms */
@@ -165,13 +165,13 @@
   /* One spacing scale for every input family: label, 4, field, 8, helper; blocks 24, groups 32 */
   --field-label-gap: var(--space-1);
   --field-helper-gap: var(--space-2);
-  --form-block-gap: var(--space-5);
+  --form-block-gap: var(--density-form);
   --form-group-gap: var(--space-6);
   /* Buttons */
   --button-bg: var(--sys-accent);
   --button-ink: var(--sys-accent-ink);
   --button-bg-hover: color-mix(in oklab, var(--sys-accent) 92%, var(--sys-ink));
-  --button-height: 52px;
+  --button-height: var(--density-field);
   --button-radius: var(--radius-button);
   --button-pad: var(--space-5);
   --button-font-size: var(--type-ui-size);
@@ -182,7 +182,7 @@
   --countdown-line: var(--sys-line);
   /* Paper texture on the letter only: our own fine grain (feTurbulence), 256px tile, multiply */
   --texture-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85 0.6' numOctaves='3' seed='15' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
-  --texture-opacity: 0.05;
+  --texture-opacity: var(--theme-texture);
   --texture-blend: var(--sys-texture-blend);
   /* Scene grade: saturate .92, contrast .95, warm tint 4% */
   --scene-filter: saturate(0.92) contrast(0.95) sepia(0.04);
@@ -256,14 +256,20 @@
   --season-green: 100%;
   --shadow-paper: 0 1px 2px rgb(var(--sys-shadow-tint) / 0.08), 0 6px 18px -6px rgb(var(--sys-shadow-tint) / 0.18);
 }
+/* Density (phone first; 768 and up below). Themes and the lab's density slider move these. */
+:root {
+  --density-field: 52px;       /* buttons and inputs */
+  --density-gap: var(--space-5);   /* between blocks on the letter */
+  --density-form: var(--space-5);  /* between form blocks */
+  --density-letter-pad: var(--space-5);
+  --theme-texture: 0.05;
+  --font-heading: var(--font-display);
+}
 @media (min-width: 768px) {
-  :root,
-  [data-theme="autumn"],
-  [data-theme="lantern"] {
-    --letter-pad: 56px;
-    --letter-gap: var(--space-6);
-    --input-height: 48px;
-    --button-height: 48px;
+  :root {
+    --density-field: 48px;
+    --density-gap: var(--space-6);
+    --density-letter-pad: 56px;
     --type-heading-leading: 40px;
   }
 }
