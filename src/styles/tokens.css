@@ -35,6 +35,8 @@
   --brand-sage-paper: #e6e2cc;    /* sage paper: the second surface */
   --brand-forest: #3e4a26;        /* forest: the letter's top edge */
   --brand-danger: #a1260c;
+  --brand-paper-bright: #fffdf8;  /* the fortune slip and the driver card: always bright paper */
+  --brand-ink-deep: #2a1206;
   /* Lantern (evening) */
   --brand-yoru: #22160e;
   --brand-yoru-raised: #2f2016;
@@ -142,7 +144,9 @@
   --letter-pad: var(--density-letter-pad);
   --letter-gap: var(--density-gap);
   --letter-blur: 12px;
-  --letter-shadow: 0 2px 4px rgb(var(--sys-shadow-tint) / 0.1), 0 32px 64px -24px rgb(var(--sys-shadow-tint) / 0.45);
+  /* One shadow on the site (v3 H): the letter's. The sheet uses it at 1.5×. Nothing else casts a shadow. */
+  --letter-shadow: 0 24px 48px -24px rgb(var(--sys-shadow-tint) / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.6);
+  --sheet-shadow: 0 36px 72px -36px rgb(var(--sys-shadow-tint) / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.6);
   /* Inputs: fields, combobox, chips and choice cards share these */
   --input-bg: var(--sys-surface-raised);
   --input-ink: var(--sys-ink);
@@ -191,12 +195,17 @@
 
 /* ─── Scales (same in every mode) ───────────────────────────────────────────── */
 :root {
-  /* Radius: 4 chips and inputs · 8 cards in the letter · 12 buttons · 24 the letter · pill for status and seal only */
-  --radius-chip: 4px;
-  --radius-card: 8px;
-  --radius-button: 12px;
-  --radius-letter: 24px;
+  /* Radius (v3 H): one family. Controls 8 (inputs, buttons, chips, choice rows, combobox list, nav items,
+     segmented), sections 16, the letter 24: outer = inner + the padding between. Pills and the seal are round.
+     The lab's Roundness scales --radius-scale so the nesting rule always holds. */
+  --radius-scale: 1;
+  --radius-control: calc(8px * var(--radius-scale));
+  --radius-section: calc(16px * var(--radius-scale));
+  --radius-letter: calc(24px * var(--radius-scale));
   --radius-pill: 999px;
+  --radius-chip: var(--radius-control);
+  --radius-card: var(--radius-section);
+  --radius-button: var(--radius-control);
   --radius: var(--radius-button);
 
   /* Space: 4 8 12 16 24 32 48 64 96 */
@@ -210,34 +219,37 @@
   --space-8: 64px;
   --space-9: 96px;
 
-  /* Type. Display (names, numerals), heading (titles on the letter) and body are separate scales so one
-     can move without the others. Fluid between the 390 and 1440 artboards; line heights land on 4. */
+  /* Type: two faces plus the hand, one scale of six steps (v3 A). Oranienbaum for display and headings,
+     Inter for everything else, Klee One only for the sign-off and the fortune slip. Each component uses
+     at most two steps: 12 label · 14 small · 16 body · 20 lead · 28 heading · 56/88 names. */
   --font-display: "Oranienbaum", "Zen Old Mincho", Georgia, serif;
   --font-label: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-body: "EB Garamond", "Zen Old Mincho", "Hiragino Mincho ProN", Georgia, serif;
-  --font-hand: "Klee One", "EB Garamond", cursive;
+  --font-body: var(--font-label);
+  --font-hand: "Klee One", "Inter", cursive;
   --font-ja: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
 
-  --type-display-names-size: clamp(56px, 44.11px + 3.048vw, 88px);
+  --type-display-names-size: clamp(56px, 44.11px + 3.048vw, 88px);   /* 56 → 88 */
   --type-display-names-leading: 1;
   --type-display-names-tracking: -0.02em;
-  --type-display-numerals-size: 32px;
-  --type-display-numerals-leading: 40px;
-  --type-heading-size: clamp(28px, 25.77px + 0.571vw, 34px);
+  --type-display-numerals-size: 28px;                                  /* countdown tiles: the heading step */
+  --type-display-numerals-leading: 36px;
+  --type-heading-size: 28px;
   --type-heading-leading: 36px;
   --type-heading-tracking: -0.01em;
-  --type-body-size: clamp(18px, 17.63px + 0.095vw, 19px);
-  --type-body-leading: 28px;
-  --type-note-size: clamp(15px, 14.63px + 0.095vw, 16px);
+  --type-lead-size: 20px;
+  --type-lead-leading: 28px;
+  --type-body-size: 16px;
+  --type-body-leading: 24px;
+  --type-note-size: 16px;                                              /* Klee One sign-off and fortune: body step */
   --type-note-leading: 24px;
   --type-small-size: 14px;
   --type-small-leading: 20px;
   --type-label-size: 12px;
   --type-label-leading: 16px;
-  --type-label-tracking: 0.08em;
-  --type-ui-size: 16px;                                                /* Inter: buttons, inputs, anything that behaves like UI */
+  --type-label-tracking: 0.04em;                                       /* status pill only (caps) */
+  --type-ui-size: 16px;
   --type-ui-leading: 24px;
-  --type-ui-small-size: 14px;                                          /* chips */
+  --type-ui-small-size: 14px;
 
   --rule-width: 40px;
   --tap-min: 44px;
@@ -254,7 +266,7 @@
   --press-scale: 0.98;
 
   --season-green: 100%;
-  --shadow-paper: 0 1px 2px rgb(var(--sys-shadow-tint) / 0.08), 0 6px 18px -6px rgb(var(--sys-shadow-tint) / 0.18);
+  --shadow-paper: var(--letter-shadow);
 }
 /* Density (phone first; 768 and up below). Themes and the lab's density slider move these. */
 :root {
@@ -270,6 +282,5 @@
     --density-field: 48px;
     --density-gap: var(--space-6);
     --density-letter-pad: 56px;
-    --type-heading-leading: 40px;
   }
 }

@@ -25,7 +25,7 @@ export function OurStory() {
       {s.map?.show && <JourneyMap labels={t.story} stops={(s.stops ?? []).filter((x) => x.body) as Stop[]} />}
       {(s.photos as Img[]).length > 0 && (
         <div className="grid grid-cols-2 gap-3">
-          {(s.photos as Img[]).map((p) => <img key={p.src} src={url(p.src)} alt={p.alt} loading="lazy" className="aspect-square w-full rounded-[1.25rem] object-cover" />)}
+          {(s.photos as Img[]).map((p) => <img key={p.src} src={url(p.src)} alt={p.alt} loading="lazy" className="aspect-square w-full rounded-md object-cover" />)}
         </div>
       )}
     </section>
@@ -39,7 +39,7 @@ export function Paintings() {
     <section aria-labelledby="paintings" className="space-y-4">
       <h2 id="paintings" className="leaf-rule text-3xl">{s.title}</h2>
       <div className="grid gap-3 sm:grid-cols-2">
-        {(s.images as Img[]).map((p) => <img key={p.src} src={url(p.src)} alt={p.alt} loading="lazy" className="w-full rounded-[1.25rem]" />)}
+        {(s.images as Img[]).map((p) => <img key={p.src} src={url(p.src)} alt={p.alt} loading="lazy" className="w-full rounded-md" />)}
       </div>
     </section>
   )
@@ -49,7 +49,7 @@ export function TravelDates() {
   const s = slots.travelDates
   if (!s.show || !s.body) return null
   return (
-    <section className="rounded-[1.25rem] bg-card p-6 shadow-paper ring-1 ring-border">
+    <section className="rounded-md bg-card p-6 ring-1 ring-border">
       <h2 className="mb-2 font-sans text-base font-bold">{s.title}</h2>
       <p className="whitespace-pre-line text-sm text-body">{s.body}</p>
     </section>

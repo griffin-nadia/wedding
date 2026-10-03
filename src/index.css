@@ -47,19 +47,18 @@
   --ease-paper: var(--ease-paper);
 }
 
-/* Three sizes per screen. Tailwind's text steps collapse onto the scale: xs = small print (14),
-   sm = note (15/16), base to xl = body (18/19), 2xl and up = title (28/34). Names use the names utility. */
+/* Six steps, nothing else: xs 12 label · sm 14 small · base 16 body · lg/xl 20 lead · 2xl+ 28 heading. Names use the names utility. */
 @theme inline {
-  --text-xs: var(--type-small-size);
-  --text-xs--line-height: var(--type-small-leading);
-  --text-sm: var(--type-note-size);
-  --text-sm--line-height: var(--type-note-leading);
+  --text-xs: var(--type-label-size);
+  --text-xs--line-height: var(--type-label-leading);
+  --text-sm: var(--type-small-size);
+  --text-sm--line-height: var(--type-small-leading);
   --text-base: var(--type-body-size);
   --text-base--line-height: var(--type-body-leading);
-  --text-lg: var(--type-body-size);
-  --text-lg--line-height: var(--type-body-leading);
-  --text-xl: var(--type-body-size);
-  --text-xl--line-height: var(--type-body-leading);
+  --text-lg: var(--type-lead-size);
+  --text-lg--line-height: var(--type-lead-leading);
+  --text-xl: var(--type-lead-size);
+  --text-xl--line-height: var(--type-lead-leading);
   --text-2xl: var(--type-heading-size);
   --text-2xl--line-height: var(--type-heading-leading);
   --text-3xl: var(--type-heading-size);
@@ -80,9 +79,11 @@
   body {
     @apply bg-background text-base font-sans antialiased;
     color: var(--body);
-    font-feature-settings: "kern", "liga", "onum";
+    font-feature-settings: "kern", "liga";
   }
-  h1, h2, h3 {
+  /* Display face for page and section headings only; h3 and below are Inter (accordion questions, rows) */
+  h3, h4 { font-family: var(--font-label); }
+  h1, h2 {
     @apply font-display font-normal;
     color: var(--foreground);
     letter-spacing: var(--type-heading-tracking);
@@ -101,22 +102,24 @@
 }
 
 /* Type roles (see docs/system.md). Label: Inter 12 caps, at most one per card. */
+/* Labels: sentence case, Inter 14 medium, no tracking (v3 I). Caps live only on the status pill. */
 @utility label-caps {
   font-family: var(--font-label);
-  font-size: var(--type-label-size);
-  line-height: var(--type-label-leading);
+  font-size: var(--type-small-size);
+  line-height: var(--type-small-leading);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
 }
 @utility eyebrow {
   font-family: var(--font-label);
-  font-size: var(--type-label-size);
-  line-height: var(--type-label-leading);
+  font-size: var(--type-small-size);
+  line-height: var(--type-small-leading);
   font-weight: 500;
-  letter-spacing: var(--type-label-tracking);
-  text-transform: uppercase;
   color: var(--eyebrow);
+}
+/* Lead: the one larger body step (greeting, intros) */
+@utility lead {
+  font-size: var(--type-lead-size);
+  line-height: var(--type-lead-leading);
 }
 /* Hanko: the red seal stamped on "all set". Lands once; no motion when reduced motion is on. */
 @utility hanko {
@@ -339,7 +342,7 @@
 /* Arrival: the sealed envelope on the scene. Flap 300 ms, then the letter rises 600 ms as the envelope sinks. */
 .arrival { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; align-content: center; gap: var(--space-5); padding-top: 18svh; }
 @media (min-width: 1024px) { .arrival { justify-items: start; padding-left: calc(var(--letter-left) + var(--letter-width) / 2 - 190px); padding-top: 0; } .arrival-hint { margin-left: 128px; } }
-.envelope { position: relative; width: 300px; height: 196px; border-radius: var(--radius-card); perspective: 800px; outline: 2px solid transparent; outline-offset: 6px; cursor: pointer; filter: drop-shadow(0 24px 32px rgb(var(--sys-shadow-tint) / 0.35)); transition: transform var(--duration-quick) var(--ease-paper); }
+.envelope { position: relative; width: 300px; height: 196px; border-radius: var(--radius-card); perspective: 800px; outline: 2px solid transparent; outline-offset: 6px; cursor: pointer; filter: drop-shadow(0 24px 24px rgb(var(--sys-shadow-tint) / 0.28)); transition: transform var(--duration-quick) var(--ease-paper); }
 @media (min-width: 768px) { .envelope { width: 380px; height: 248px; } }
 /* Desktop hover: the flap lifts a little and a corner of the letter peeks out. Touch: nothing until tap. */
 @media (hover: hover) {
@@ -365,7 +368,7 @@
 .noren { position: relative; width: 300px; height: 260px; display: flex; gap: 6px; padding-top: 12px; outline: 2px solid transparent; outline-offset: 6px; border-radius: var(--radius-card); cursor: pointer; }
 .noren:focus-visible { outline-color: var(--input-focus); }
 .noren-rod { position: absolute; top: 0; left: -12px; right: -12px; height: 12px; border-radius: 6px; background: var(--sys-ink); }
-.noren-panel { flex: 1; display: grid; place-items: center; background: var(--brand-forest); color: var(--brand-kinari); font-family: var(--font-display); font-size: 56px; border-radius: 0 0 var(--radius-chip) var(--radius-chip); box-shadow: inset 0 -12px 24px -12px rgb(0 0 0 / 0.3); transition: transform var(--duration-rise) var(--ease-letter); }
+.noren-panel { flex: 1; display: grid; place-items: center; background: var(--brand-forest); color: var(--brand-kinari); font-family: var(--font-display); font-size: 56px; border-radius: 0 0 var(--radius-chip) var(--radius-chip);  transition: transform var(--duration-rise) var(--ease-letter); }
 [data-theme="lantern"] .noren-panel { background: var(--brand-sabi); }
 @media (hover: hover) { .noren:hover .noren-left { transform: translateX(-6px) rotate(-1deg); } .noren:hover .noren-right { transform: translateX(6px) rotate(1deg); } }
 .is-opening .noren-left { transform: translateX(-120%) !important; }
@@ -385,7 +388,7 @@
   padding: 6px 6px 10px;
   background: #fffdf8;
   border-radius: 4px;
-  box-shadow: 0 1px 2px rgb(66 26 5 / 0.08), 0 14px 30px -14px rgb(66 26 5 / 0.35);
+  box-shadow: var(--letter-shadow);
   transform: rotate(-2.5deg);
 }
 .photo-placeholder { background-color: var(--muted); }
@@ -509,7 +512,7 @@
   .site-bar { height: 64px; padding: 0 24px; background: color-mix(in oklab, var(--letter-bg) 90%, transparent); border-bottom: 1px solid color-mix(in oklab, var(--sys-line) 60%, transparent); pointer-events: auto; }
   .site-nav { position: static; background: none; border: 0; border-radius: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .site-nav ul { display: flex; gap: var(--space-1); height: auto; padding: 0; }
-  .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-4); text-transform: uppercase; letter-spacing: var(--type-label-tracking); border-radius: var(--radius-button); outline-offset: 2px; }
+  .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-4); font-size: var(--type-small-size); line-height: var(--type-small-leading); border-radius: var(--radius-control); outline-offset: 2px; }
   .nav-mark { border-radius: var(--radius-button); }
 }
 @media (min-width: 1024px) { .site-bar { padding-left: var(--letter-left); } .site-mark { position: absolute; left: 24px; } }
@@ -579,7 +582,7 @@
 .countdown-unit { color: var(--countdown-ink); }
 
 /* ─── Tuning panel (dev and VITE_TUNE builds only) ─────────────────────────── */
-.tune-panel { position: fixed; z-index: 90; top: 0; right: 0; bottom: 0; width: min(380px, 100vw); display: flex; flex-direction: column; background: var(--sys-surface-raised); color: var(--sys-ink-soft); border-left: 1px solid var(--sys-line); box-shadow: -16px 0 48px -24px rgb(0 0 0 / 0.4); font-size: 15px; }
+.tune-panel { position: fixed; z-index: 90; top: 0; right: 0; bottom: 0; width: min(380px, 100vw); display: flex; flex-direction: column; background: var(--sys-surface-raised); color: var(--sys-ink-soft); border-left: 1px solid var(--sys-line); box-shadow: var(--sheet-shadow); font-size: 15px; }
 .tune-changed { background: color-mix(in oklab, var(--sys-highlight) 18%, transparent); border-radius: var(--radius-chip); padding-inline: var(--space-1); }
 .tune-pin { position: fixed; z-index: 89; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 999px; background: var(--brand-forest); color: var(--brand-kinari); font: 600 12px/1 var(--font-label); pointer-events: none; }
 .tune-note { position: fixed; z-index: 91; width: 280px; padding: var(--space-3); border-radius: var(--radius-card); background: var(--sys-surface-raised); border: 1px solid var(--sys-line); box-shadow: var(--shadow-paper); }
@@ -622,8 +625,8 @@
 
 /* ─── Themes (Letter is the default), density and roundness: switchable in /lab → Options ───
    Light / Lantern is separate (data-theme) and combines with any of these. */
-:root[data-opt-preset="storybook"] { --density-field: 56px; --density-form: var(--space-6); --density-gap: var(--space-6); --radius-chip: 8px; --radius-card: 12px; --radius-button: 16px; --radius-letter: 28px; --type-display-names-tracking: -0.03em; --theme-texture: 0.08; }
-:root[data-opt-preset="crisp"] { --density-field: 48px; --density-form: var(--space-4); --density-gap: var(--space-4); --radius-chip: 2px; --radius-card: 4px; --radius-button: 8px; --radius-letter: 16px; --font-heading: var(--font-label); --theme-texture: 0; }
+:root[data-opt-preset="storybook"] { --density-field: 56px; --density-form: var(--space-6); --density-gap: var(--space-6); --radius-scale: 1.25; --type-display-names-tracking: -0.03em; --theme-texture: 0.08; }
+:root[data-opt-preset="crisp"] { --density-field: 48px; --density-form: var(--space-4); --density-gap: var(--space-4); --radius-scale: 0.5; --font-heading: var(--font-label); --theme-texture: 0; }
 @media (min-width: 768px) {
   :root[data-opt-preset="storybook"] { --density-field: 52px; --density-gap: var(--space-7); }
   :root[data-opt-preset="crisp"] { --density-field: 44px; --density-gap: var(--space-5); }
@@ -636,9 +639,9 @@
   :root[data-opt-preset][data-opt-density="comfortable"], :root[data-opt-density="comfortable"] { --density-field: 48px; --density-gap: var(--space-6); }
   :root[data-opt-preset][data-opt-density="roomy"], :root[data-opt-density="roomy"] { --density-field: 52px; --density-gap: var(--space-7); }
 }
-:root[data-opt-preset][data-opt-round="sharp"], :root[data-opt-round="sharp"] { --radius-chip: 2px; --radius-card: 4px; --radius-button: 8px; --radius-letter: 16px; }
-:root[data-opt-preset][data-opt-round="soft"], :root[data-opt-round="soft"] { --radius-chip: 4px; --radius-card: 8px; --radius-button: 12px; --radius-letter: 24px; }
-:root[data-opt-preset][data-opt-round="round"], :root[data-opt-round="round"] { --radius-chip: 8px; --radius-card: 12px; --radius-button: 16px; --radius-letter: 28px; }
+:root[data-opt-preset][data-opt-round="sharp"], :root[data-opt-round="sharp"] { --radius-scale: 0.5; }
+:root[data-opt-preset][data-opt-round="soft"], :root[data-opt-round="soft"] { --radius-scale: 1; }
+:root[data-opt-preset][data-opt-round="round"], :root[data-opt-round="round"] { --radius-scale: 1.5; }
 /* Paper scene: kinari to sage paper (yoru to yoru-raised in Lantern), a 6% grain, a faint warm glow top left */
 .scene-paper { background:
   radial-gradient(60rem 40rem at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 28%, transparent), transparent 70%),
@@ -656,7 +659,7 @@
 .home-countdown .numerals { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); font-variant-numeric: lining-nums tabular-nums; }
 /* Segmented / tabs: one look everywhere, the nav's sliding sage marker (200 ms) */
 .segmented { position: relative; display: inline-flex; gap: var(--space-1); padding: var(--space-1); border-radius: var(--radius-button); background: color-mix(in oklab, var(--sys-fill) 45%, transparent); }
-.segmented-mark { position: absolute; top: var(--space-1); bottom: var(--space-1); left: 0; border-radius: calc(var(--radius-button) - 4px); background: var(--sys-surface-alt); box-shadow: 0 1px 2px rgb(var(--sys-shadow-tint) / 0.12); transition: transform 200ms var(--ease-paper), width 200ms var(--ease-paper); pointer-events: none; }
+.segmented-mark { position: absolute; top: var(--space-1); bottom: var(--space-1); left: 0; border-radius: calc(var(--radius-button) - 4px); background: var(--sys-surface-alt); transition: transform 200ms var(--ease-paper), width 200ms var(--ease-paper); pointer-events: none; }
 .segmented-item { position: relative; min-height: 44px; padding: 0 var(--space-4); border-radius: calc(var(--radius-button) - 4px); font-family: var(--font-label); font-size: var(--type-ui-small-size); font-weight: 500; color: var(--sys-ink-soft); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-quick); white-space: nowrap; }
 .segmented-item[data-on="true"] { color: var(--sys-ink); }
 .segmented-item:focus-visible { outline-color: var(--input-focus); }

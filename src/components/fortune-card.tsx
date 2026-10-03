@@ -62,13 +62,13 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   }
   return (
     <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head"
-      className={cn("omikuji-slip flex flex-col gap-2 rounded-sm border border-[#e5d0a8] bg-[#fffdf8] p-4 text-[#421a05] shadow-paper outline-2 outline-offset-2 outline-transparent focus-visible:outline-ring", className)}>
+      className={cn("omikuji-slip flex flex-col gap-2 rounded-sm border border-(--brand-wara) bg-(--brand-paper-bright) p-4 text-(--brand-kogecha) outline-2 outline-offset-2 outline-transparent focus-visible:outline-ring", className)}>
       <p id="fortune-head" className="flex items-baseline justify-between gap-3">
-        <span><span lang="ja" className="font-ja text-2xl text-[#a43108]">{t.fortune.blessing}</span> <span className="label-caps text-[#754b38]">{t.fortune.blessingEn}</span></span>
-        <span className="label-caps text-[#754b38]">{t.fortune.number(i + 1, tips.length)}</span>
+        <span><span lang="ja" className="font-ja text-2xl text-(--brand-doro)">{t.fortune.blessing}</span> <span className="label-caps text-(--brand-kuri)">{t.fortune.blessingEn}</span></span>
+        <span className="label-caps text-(--brand-kuri)">{t.fortune.number(i + 1, tips.length)}</span>
       </p>
       <p className="hand">{text}</p>
-      <button type="button" onClick={save} className="min-h-11 self-start text-[#a43108] underline underline-offset-4 outline-2 outline-offset-2 outline-transparent focus-visible:outline-[#a43108]">{t.fortune.save}</button>
+      <button type="button" onClick={save} className="min-h-11 self-start text-(--brand-doro) underline underline-offset-4 outline-2 outline-offset-2 outline-transparent focus-visible:outline-(--brand-doro)">{t.fortune.save}</button>
     </div>
   )
 }

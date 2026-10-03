@@ -15,7 +15,7 @@ export function Toaster() {
   }, [])
   return (
     <div role="status" aria-live="polite" className="toast-region">
-      {msg && <p className="toast-in rounded-full bg-foreground px-6 py-3 font-label text-(length:--type-ui-size) text-background shadow-paper">{msg}</p>}
+      {msg && <p className="toast-in rounded-full bg-foreground px-6 py-3 font-label text-(length:--type-ui-size) text-background">{msg}</p>}
     </div>
   )
 }

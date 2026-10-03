@@ -21,7 +21,7 @@ export function FaqsPage() {
           </AccordionItem>
         ))}
       </Disclosure>
-      <p className="hand">{t.qa.contact}</p>
+      <p className="text-sm">{t.qa.contact}</p>
     </>
   )
 }

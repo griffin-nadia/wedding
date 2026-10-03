@@ -93,7 +93,7 @@ export function Countdown({ units, words, kyotoLabel, localTime }: { units: Unit
           <CountdownTile value={Math.floor(days / 365)} unit={units.years} pad={1} /><Colon />
           <CountdownTile value={days % 365} unit={units.days} pad={1} />
         </div>
-        <p className="hand">{words.andCounting}</p>
+        <p className="text-sm">{words.andCounting}</p>
       </div>
     )
   }
@@ -109,7 +109,7 @@ export function Countdown({ units, words, kyotoLabel, localTime }: { units: Unit
       <div aria-hidden className="flex items-start gap-2 sm:gap-3">
         {tiles.map(([k, v], i) => <span key={k} className="contents">{i > 0 && <Colon />}<CountdownTile value={v} unit={units[k]} pad={k === "months" ? 1 : 2} /></span>)}
       </div>
-      <p>{words.until}. <span className="hand">{kyotoLabel(kyoto)}</span></p>
+      <p>{words.until}. <span className="text-sm">{kyotoLabel(kyoto)}</span></p>
     </div>
   )
 }

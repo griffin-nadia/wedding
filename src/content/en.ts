@@ -80,7 +80,7 @@ export const en = {
   fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes." },
   driver: { label: "Taxi from Kyoto Station", fare: "Around ¥2,000, 15 to 20 minutes.", show: "Show the driver", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
   countdownMore: {
-    until: "until we see you in Kyoto", tomorrow: "Tomorrow!", today: "Today's the day", married: "Married",
+    until: "until we see you in Kyoto", tomorrow: "Tomorrow", today: "Today's the day", married: "Married",
     andCounting: "and counting", localTitle: (t: string) => `That's ${t} where you are`,
     short: { months: "months", days: "days", hours: "hrs", mins: "mins", secs: "secs", years: "years" },
   },

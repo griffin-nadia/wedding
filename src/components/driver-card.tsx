@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { ArrowRight, Copy } from "lucide-react"
+import { Copy } from "lucide-react"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { toast } from "@/components/toast"
@@ -37,17 +37,17 @@ export function DriverCard() {
         <p className="flex flex-col"><span className="font-semibold text-foreground">{VENUE.name}</span><span lang="ja" className="font-ja">{VENUE.nameJa}</span></p>
         <p>{t.driver.fare}</p>
         <div className="flex flex-wrap gap-3">
-          <Button ref={opener} size="lg" onClick={() => setFull(true)}>{t.driver.show}<ArrowRight aria-hidden /></Button>
+          <Button ref={opener} size="lg" onClick={() => setFull(true)}>{t.driver.show}</Button>
           <Button size="lg" variant="outline" onClick={copy}><Copy aria-hidden />{t.driver.copy}</Button>
         </div>
       </section>
       {full && (
-        <div role="dialog" aria-modal="true" aria-labelledby="driver-full" className="driver-full fixed inset-0 z-[70] flex flex-col bg-[#fffdf8] p-6 text-[#2a1206]">
+        <div role="dialog" aria-modal="true" aria-labelledby="driver-full" className="driver-full fixed inset-0 z-[70] flex flex-col bg-(--brand-paper-bright) p-6 text-(--brand-ink-deep)">
           <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center" lang="ja">
-            <p id="driver-full" className="font-ja text-[clamp(1.75rem,6vw,3rem)] text-[#a43108]">{VENUE.please}</p>
+            <p id="driver-full" className="font-ja text-[clamp(1.75rem,6vw,3rem)] text-(--brand-doro)">{VENUE.please}</p>
             <p className="font-ja text-[clamp(2.25rem,9vw,5rem)] leading-tight">{VENUE.nameJa}</p>
             <p className="font-ja text-[clamp(1.5rem,5vw,3rem)] leading-snug">{VENUE.addressJa}</p>
-            <p lang="en" className="text-lg text-[#754b38]">{t.driver.english}</p>
+            <p lang="en" className="text-lg text-(--brand-kuri)">{t.driver.english}</p>
           </div>
           <Button ref={done} size="lg" className="mx-auto w-full max-w-sm" onClick={() => setFull(false)}>{t.driver.done}</Button>
         </div>

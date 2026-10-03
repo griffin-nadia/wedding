@@ -75,7 +75,7 @@ export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels })
         {toggle}
       </div>
       <div className="grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:items-start">
-        <svg ref={ref} aria-hidden viewBox="0 0 400 300" className="w-full rounded-[1.25rem] bg-card ring-1 ring-border">
+        <svg ref={ref} aria-hidden viewBox="0 0 400 300" className="w-full rounded-md bg-card ring-1 ring-border">
           {/* land: Australia, Japan, a corner of Canada (soft blobs) */}
           <path d="M40 232c18-26 60-34 92-30 26-16 52-6 66 12 14 18 6 42-12 56-26 16-70 18-104 8-30-8-56-24-42-46z" fill="var(--secondary)" />
           <path d="M226 132c10-14 22-26 34-40 10-12 22-26 36-30 6 8-2 18-10 26-12 12-22 26-34 38-8 8-18 14-26 6z" fill="var(--secondary)" />
@@ -98,7 +98,7 @@ export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels })
         {/* Desktop: the stops beside the map */}
         <ol className="hidden space-y-3 md:block">
           {stops.map((s, i) => (
-            <li key={s.title} className="space-y-2 rounded-[1.25rem] bg-card p-4 shadow-paper ring-1 ring-border">
+            <li key={s.title} className="space-y-2 rounded-md bg-card p-4 ring-1 ring-border">
               {s.photo && <Photo name={s.photo} treatment="split" sizes="320px" />}
               <p className="label-caps text-eyebrow">{i + 1} · {s.title}</p>
               <p className="text-sm text-body">{s.body}</p>
@@ -109,7 +109,7 @@ export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels })
         <ol className="flex gap-2 md:hidden">
           {stops.map((s, i) => (
             <li key={s.title} className="flex-1">
-              <button type="button" onClick={() => setOpen(i)} className="min-h-13 w-full rounded-xl bg-card px-2 text-sm ring-1 ring-border">
+              <button type="button" onClick={() => setOpen(i)} className="min-h-13 w-full rounded-lg bg-card px-2 text-sm ring-1 ring-border">
                 <span className="numerals mr-1 text-primary">{i + 1}</span>{s.title}
               </button>
             </li>
@@ -117,7 +117,7 @@ export function JourneyMap({ stops, labels }: { stops: Stop[]; labels: Labels })
         </ol>
       </div>
       <Sheet open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
-        <SheetContent side="bottom" className="gap-4 rounded-t-[1.5rem] bg-background p-6">
+        <SheetContent side="bottom" className="gap-4 rounded-t-3xl bg-background p-6">
           {open !== null && (
             <>
               {stops[open].photo && <Photo name={stops[open].photo!} treatment="arch" sizes="240px" className="mx-auto w-48" />}

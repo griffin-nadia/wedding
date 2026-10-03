@@ -46,7 +46,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
     <div role="img" aria-label={words.caption || words.alt} className="photo-placeholder grid size-full place-items-center p-4 text-center">
       <span className="space-y-2">
         <Camera aria-hidden className="mx-auto size-5 text-muted-foreground" strokeWidth={1.5} />
-        {words.caption && <span className="hand block text-sm text-muted-foreground">{words.caption}</span>}
+        {words.caption && <span className="block text-sm text-muted-foreground">{words.caption}</span>}
       </span>
     </div>
   )
@@ -64,7 +64,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
   }
   const frame = (
     <div className={cn("relative overflow-hidden bg-muted bg-cover bg-center",
-      treatment === "arch" && "rounded-t-[999px] rounded-b-2xl", treatment === "split" && "rounded-[1.25rem]", treatment === "print" && "rounded-[2px]")}
+      treatment === "arch" && "rounded-t-[999px] rounded-b-md", treatment === "split" && "rounded-md", treatment === "print" && "rounded-sm")}
       style={{ aspectRatio: ratio, ...blur }}>
       {image}
     </div>
@@ -73,7 +73,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
     return (
       <figure className={cn("photo-print", className)}>
         {frame}
-        {words.caption && <figcaption className="hand mt-2 text-sm text-[#8b5a3c]">{words.caption}</figcaption>}
+        {words.caption && <figcaption className="mt-2 text-sm text-muted-foreground">{words.caption}</figcaption>}
       </figure>
     )
   }
@@ -82,7 +82,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
       <figure className={cn("space-y-3 text-center", className)}>
         {frame}
         {children}
-        {words.caption && __PUBLIC_PHOTOS__ && <figcaption className="hand text-sm text-muted-foreground">{words.caption}</figcaption>}
+        {words.caption && __PUBLIC_PHOTOS__ && <figcaption className="text-sm text-muted-foreground">{words.caption}</figcaption>}
       </figure>
     )
   }

@@ -88,7 +88,7 @@ export function TravelPage() {
 
       <section id="before" aria-labelledby="before-title" className="flex scroll-mt-24 flex-col gap-4">
         <h2 id="before-title" className="heading">{g.beforeTitle}</h2>
-        <p className="hand">{t.travel.tickHint}</p>
+        <p className="text-sm">{t.travel.tickHint}</p>
         <ul className="flex flex-col gap-4">
           {t.travel.items.slice(0, 4).map((item, i) => {
             const id = `tick-${i}`
