@@ -9,7 +9,7 @@ export type TuneState = { overrides: Record<Scope, Record<string, string>>; note
 
 /** Each lab option's shipped value (the first choice). The labels and notes live in options.ts, loaded with the panel only. */
 export const OPTION_DEFAULTS: Record<string, string> = {
-  peek: "on", datestyle: "badge", names: "one", count: "strip", ticks: "stay", signoff: "home", toggle: "card", getthere: "maps", accent: "green", story: "d", mapmode: "trail", flying: "off", storysample: "off", scene: "auto",
+  peek: "on", datestyle: "badge", names: "one", count: "strip", ticks: "stay", signoff: "home", toggle: "card", getthere: "maps", accent: "green", lang: "en", story: "d", mapmode: "trail", flying: "off", storysample: "off", scene: "auto",
   stamps: "off", density: "auto", round: "auto", navigation: "pages",
 }
 

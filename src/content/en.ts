@@ -104,6 +104,8 @@ export const en = {
     pills: { replied: "Replied" },
     rsvpClosed: `Replies are closed now. If something's changed, message ${A} or ${B}.`,
     dear: (name: string) => `Dear ${name},`,
+    /** The greeting's names in this language: "Sam, Alex and your plus one" */
+    dearNames: (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0] ?? ""),
     yourPlusOne: "your plus one",
     label: `${DAY}, Kyoto`,
     dateLine: `${DAY}, Kyoto`,
@@ -141,6 +143,7 @@ export const en = {
       { time: "13:00", label: "Reception", where: "The Terrace, until 3:30 pm" },
     ],
     japanTime: "All times are Japan time.",
+    localLine: (time: string, day: string, city: string) => `${time} ${day} ${city ? `in your time (${city})` : "your time"}`,
     timelineLabel: "The day, in order",
     kyotoNow: (time: string) => `It's ${time} in Kyoto right now.`,
     addToCalendar: "Add to calendar",

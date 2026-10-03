@@ -75,7 +75,7 @@ export function HomePage() {
   const locked = isLocked()
   // v3 P: first names in the sheet's order; a plus one without a name yet is "your plus one"
   const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : g.firstName)).filter(Boolean) : []
-  const dear = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0] || household?.displayName || ""
+  const dear = t.home.dearNames(names) || household?.displayName || ""
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
   const dateStyle = useOption("datestyle")
   const keepDone = useOption("ticks") !== "hide"

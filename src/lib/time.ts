@@ -9,26 +9,35 @@ export function countdown(now = new Date()) {
   return { days, hours, mins }
 }
 
-/** "13:00" (Japan time on the day) → "1:00 pm". */
-export function jstLabel(hhmm: string) {
+/** "13:00" (Japan time on the day) → "1:00 pm" (Japanese keeps the 24-hour "13:00"). */
+export function jstLabel(hhmm: string, lang: "en" | "ja" = "en") {
+  if (lang === "ja") return hhmm
   const [h, m] = hhmm.split(":").map(Number)
   return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`
 }
 
 /**
- * The same moment on the guest's own clock, e.g. "7:00 pm Thu in your time (Vancouver)".
- * Null when their device is already on Japan time, so the line can be hidden.
+ * The same moment on the guest's own clock: { time, day, city } for the words to format ("7:00 pm Thu in
+ * your time (Vancouver)", or 「19:00（木）、現地時間（Vancouver）」). Null when the device is already on Japan
+ * time, so the line can be hidden. The city comes from the device's own zone, never the sheet; zones with
+ * no city (UTC, Etc/GMT+5) give city "".
  */
-export function localTime(hhmm: string, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
+export function localTimeParts(hhmm: string, lang: "en" | "ja" = "en", timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
   const d = new Date(`${DATES.ceremonyDay}T${hhmm}:00+09:00`)
   const fmt = (tz: string) => d.toLocaleString("en-AU", { weekday: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz })
   if (!timeZone || fmt(timeZone) === fmt("Asia/Tokyo")) return null
-  const time = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone }).toLowerCase()
-  const day = d.toLocaleDateString("en-AU", { weekday: "short", timeZone })
-  // The city comes from the device's own zone, never the sheet: "in your time (Melbourne)", or just
-  // "your time" for zones with no city (UTC, Etc/GMT+5)
+  const time = lang === "ja"
+    ? d.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone })
+    : d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone }).toLowerCase()
+  const day = d.toLocaleDateString(lang === "ja" ? "ja-JP" : "en-AU", { weekday: "short", timeZone })
   const city = timeZone.includes("/") && !timeZone.startsWith("Etc/") ? timeZone.split("/").pop()!.replace(/_/g, " ") : ""
-  return `${time} ${day} ${city ? `in your time (${city})` : "your time"}`
+  return { time, day, city }
+}
+
+/** English line, kept for anything that doesn't go through the words file. */
+export function localTime(hhmm: string, timeZone?: string) {
+  const p = localTimeParts(hhmm, "en", timeZone)
+  return p && `${p.time} ${p.day} ${p.city ? `in your time (${p.city})` : "your time"}`
 }
 
 export function isLocked(now = new Date()) {
