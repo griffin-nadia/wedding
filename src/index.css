@@ -470,7 +470,7 @@
   border: 1px solid color-mix(in oklab, var(--sys-line) 60%, transparent);
   border-radius: var(--letter-radius);
   background:
-    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
+    radial-gradient(120% 80% at calc(var(--paper-turn, 0) * -20%) calc(var(--paper-scroll, 0) * 20%), color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
     radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
     var(--letter-bg);
   color: var(--letter-ink);
@@ -643,7 +643,7 @@
 [data-theme="lantern"] .scene-paper { background: linear-gradient(160deg, var(--brand-yoru), var(--brand-yoru-raised)); }
 .scene-paper[data-art] { background-size: cover; background-position: center; }
 .scene-paper::after, .scene-walk::after { content: ""; position: absolute; inset: 0; background-image: var(--texture-paper); background-size: 256px; opacity: 0.06; mix-blend-mode: var(--texture-blend); pointer-events: none; }
-.paper-light { position: absolute; inset: -10%; background: radial-gradient(50% 45% at 22% 18%, color-mix(in oklab, var(--brand-mitsu) 34%, transparent), transparent 70%); animation: paper-drift 40s ease-in-out infinite alternate; pointer-events: none; }
+.paper-light { position: absolute; inset: -10%; translate: calc(var(--paper-turn, 0) * -2%) calc(var(--paper-scroll, 0) * -2%); background: radial-gradient(50% 45% at 22% 18%, color-mix(in oklab, var(--brand-mitsu) 34%, transparent), transparent 70%); animation: paper-drift 40s ease-in-out infinite alternate; pointer-events: none; }
 [data-theme="lantern"] .paper-light { background: radial-gradient(50% 45% at 22% 18%, color-mix(in oklab, var(--brand-hachimitsu) 14%, transparent), transparent 70%); }
 .paper-mist { position: absolute; left: 0; right: 0; top: 52%; height: 28%; background: linear-gradient(to bottom, transparent, color-mix(in oklab, #ffffff 100%, transparent), transparent); opacity: 0.06; animation: paper-mist 12s ease-in-out infinite alternate; pointer-events: none; }
 [data-theme="lantern"] .paper-mist { background: linear-gradient(to bottom, transparent, #c9b9a3, transparent); }
@@ -694,3 +694,15 @@ svg.lucide { stroke-width: 1.5; }
 .reply-row:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .reply-row:hover { color: var(--sys-ink); text-decoration: underline; text-underline-offset: 4px; } }
 [data-sealed] .names-reveal .name-char { animation-play-state: paused; }
+
+/* Pull to open: the flap follows the finger (--pull 0..1); letting go springs (stiffness 120, damping 18 feel) */
+.arrival { touch-action: none; }
+.arrival .envelope-flap { transform: rotateX(calc(var(--pull, 0) * 180deg)); transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.arrival.is-pulling .envelope-flap { transition: none; }
+.arrival .envelope-paper { transform: translateY(calc(var(--pull, 0) * -30%)); }
+.arrival.is-pulling .envelope-paper { transition: none; }
+/* Page turn: vertical scroll stays native; horizontal moves are the turn */
+@media (max-width: 767px) { .letter-wrap { touch-action: pan-y; } }
+/* The paper shader draws over the CSS paper (its fallback) once it's running */
+.paper-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; animation: fade-in var(--duration-rise) var(--ease-paper) both; }
+.paper-gl .paper-light, .paper-gl .paper-mist { display: none; }

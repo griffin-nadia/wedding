@@ -7,6 +7,8 @@ import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { arrivalScene, pageOf, sceneFor, sceneKind } from "@/lib/scenes"
 import { CreditMark } from "@/components/credit-mark"
+import { usePageTurn, usePaperScroll } from "@/lib/page-turn"
+import { usePaperGL } from "@/components/letter/use-paper-gl"
 import { LanternToggle } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
@@ -28,6 +30,12 @@ function Nav() {
   const { pathname } = useLocation()
   const list = useRef<HTMLUListElement>(null)
   const [mark, setMark] = useState<{ x: number; w: number; h: number; y: number } | null>(null)
+  const [swipe, setSwipe] = useState(0)
+  useEffect(() => {
+    const on = (e: Event) => setSwipe((e as CustomEvent<number>).detail)
+    window.addEventListener("ng-swipe", on)
+    return () => window.removeEventListener("ng-swipe", on)
+  }, [])
   useLayoutEffect(() => {
     const place = () => {
       const a = list.current?.querySelector<HTMLElement>("a.is-active")
@@ -43,7 +51,7 @@ function Nav() {
   return (
     <nav aria-label="Main" className="site-nav">
       <ul ref={list}>
-        {mark && <li aria-hidden className="nav-mark" style={{ transform: `translate(${mark.x}px, ${mark.y}px)`, width: mark.w, height: mark.h }} />}
+        {mark && <li aria-hidden className="nav-mark" style={{ transform: `translate(${mark.x + swipe * mark.w}px, ${mark.y}px)`, width: mark.w, height: mark.h, transition: swipe ? "none" : undefined }} />}
         {links.map((l) => (
           <li key={l.to}>
             <NavLink to={l.to} end className={({ isActive }) => cn("site-nav-link", isActive && "is-active")}>
@@ -92,11 +100,14 @@ export function Layout() {
   const { pathname } = useLocation()
   const page = pageOf(pathname)
   const { dim } = useSceneDim()
-  const firstPath = useRef(pathname)
   const replied = Boolean(household?.respondedAt)
   const kind = sceneKind(useOption("scene"), useOption("preset"))
   // Sealed envelope on a first visit: their photo behind it, the dock and top bar hidden until it opens
   const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
+  usePageTurn(!sealed)
+  const glOption = useOption("gl")
+  usePaperGL(!sealed && kind === "paper" && glOption !== "off")
+  usePaperScroll()
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sealed", sealed)
     return () => document.documentElement.removeAttribute("data-sealed")
@@ -115,7 +126,7 @@ export function Layout() {
       <main className="letter-wrap">
         <Arrival enabled={page === "home"} onOpened={() => setSealed(false)}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
-            <div key={pathname} className={cn("letter-body", pathname !== firstPath.current && "page-in")}>
+            <div key={pathname} className="letter-body">
               <Outlet />
             </div>
             <SignOff />

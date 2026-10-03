@@ -30,6 +30,27 @@ export function Arrival({ enabled, onOpened, children }: { enabled: boolean; onO
   const { household } = useHousehold()
   const [phase, setPhase] = useState<Phase>(() => firstPhase(enabled))
   const button = useRef<HTMLButtonElement>(null)
+  const stage = useRef<HTMLDivElement>(null)
+  // Pull to open (v3 K): drag the flap up and it follows the finger; let go past 40% and it opens,
+  // otherwise it springs back. A tap still opens it.
+  const drag = useRef<{ y: number; moved: boolean } | null>(null)
+  const suppressClick = useRef(false)
+  const setPull = (v: number) => stage.current?.style.setProperty("--pull", String(v))
+  const onDown = (e: React.PointerEvent) => { if (phase !== "sealed") return; drag.current = { y: e.clientY, moved: false }; stage.current?.classList.add("is-pulling") }
+  const onMove = (e: React.PointerEvent) => {
+    const d = drag.current; if (!d) return
+    const dy = d.y - e.clientY
+    if (Math.abs(dy) > 6) { d.moved = true; (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId) }
+    setPull(Math.max(0, Math.min(1, dy / 140)))
+  }
+  const onUp = () => {
+    const d = drag.current; drag.current = null
+    stage.current?.classList.remove("is-pulling")
+    if (!d?.moved) return
+    suppressClick.current = true // the click that follows a drag isn't a tap
+    const p = Number(stage.current?.style.getPropertyValue("--pull") || 0)
+    if (p > 0.4) open(); else setPull(0)
+  }
   const noren = useOption("arrival") === "noren"
   const timer = useRef(0)
 
@@ -65,7 +86,7 @@ export function Arrival({ enabled, onOpened, children }: { enabled: boolean; onO
   const first = household?.guests.filter((g) => !g.plusOne).map((g) => g.firstName).join(" & ") ?? ""
   return (
     <>
-      <div className={cn("arrival", phase === "opening" && "is-opening")}>
+      <div ref={stage} className={cn("arrival", phase === "opening" && "is-opening")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
         {noren ? (
           // Options lab: a noren curtain that parts instead of an envelope
           <button ref={button} type="button" onClick={open} aria-label={t.letter.openLabel(first)} className="noren">
@@ -74,7 +95,7 @@ export function Arrival({ enabled, onOpened, children }: { enabled: boolean; onO
             <span aria-hidden className="noren-panel noren-right"><span>{COUPLE.second[0]}</span></span>
           </button>
         ) : (
-          <button ref={button} type="button" onClick={open} aria-label={t.letter.openLabel(first)} className="envelope">
+          <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope">
             <span aria-hidden className="envelope-back" />
             <span aria-hidden className="envelope-paper" />
             <span aria-hidden className="envelope-front" />
