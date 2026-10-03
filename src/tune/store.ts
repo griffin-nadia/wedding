@@ -31,6 +31,8 @@ export function save(s: TuneState) {
 }
 
 export function apply(s: TuneState) {
+  // Drop saved choices for options that no longer exist or values that were removed (e.g. Scene: Photo)
+  for (const k of Object.keys(s.options)) if (!(k in OPTION_DEFAULTS) || (k === "scene" && s.options[k] === "photo")) delete s.options[k]
   for (const [key, first] of Object.entries(OPTION_DEFAULTS)) {
     const v = s.options[key]
     if (v && v !== first) document.documentElement.setAttribute(`data-opt-${key}`, v)

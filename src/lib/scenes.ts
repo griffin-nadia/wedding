@@ -20,7 +20,8 @@ const PLATES: Record<string, string> = { home: "morning-hills", day: "the-garden
 export type SceneKind = "photo" | "paper" | "plate" | "walk"
 /** The scene kind: the lab's Scene option if set, otherwise the theme's (Letter: photo, Storybook: painted, Crisp: paper). */
 export function sceneKind(option: string | null, preset: string | null): SceneKind {
-  if (option === "photo" || option === "paper" || option === "plate" || option === "walk") return option as SceneKind
+  // Photos only ever sit behind the envelope (v3); an old "photo" choice saved in a browser is ignored
+  if (option === "paper" || option === "plate" || option === "walk") return option as SceneKind
   // v3: paper everywhere for launch; photos only behind the envelope (and in the lab)
   return preset === "storybook" ? "plate" : "paper"
 }
