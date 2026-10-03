@@ -328,9 +328,6 @@
 @media print { .timeline-fill { animation: none !important; transform: none !important; } }
 
 /* Seal fill on the chosen answer: a small press when it lands. */
-@keyframes seal-in { from { transform: scale(0.6); } 70% { transform: scale(1.12); } to { transform: scale(1); } }
-.seal { animation: seal-in var(--duration-settle) var(--ease-paper) both; }
-@media (prefers-reduced-motion: reduce) { .seal { animation: none; } }
 
 /* Skeleton: appears only after 300ms (fast loads never flash it), then breathes slowly. */
 @keyframes skeleton-in { from { opacity: 0; } to { opacity: 1; } }
@@ -404,11 +401,6 @@
 @media print { .settle { opacity: 1 !important; transform: none !important; filter: none !important; } }
 
 /* Countdown digits: only the one that changes rolls (--duration-quick). Swaps without motion under reduced motion. */
-@keyframes digit-out { to { transform: translateY(-8px); opacity: 0; } }
-@keyframes digit-in { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
-.digit-out { animation: digit-out var(--duration-quick) var(--ease-letter) both; }
-.digit-in { animation: digit-in var(--duration-quick) var(--ease-letter) both; }
-@media (prefers-reduced-motion: reduce) { .digit-out { display: none; } .digit-in { animation: none; } }
 
 /* Toast */
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -605,7 +597,6 @@
 .form-field > .form-label { margin-bottom: var(--field-label-gap); }
 .form-field > .form-help { margin-top: var(--field-helper-gap); font-size: var(--type-small-size); line-height: var(--type-small-leading); }
 /* Choice card: one-of-few with a consequence. 64 tall, UI face, card radius */
-.choice-card { display: flex; align-items: center; gap: var(--space-3); min-height: 64px; padding-inline: var(--space-4); border-radius: var(--radius-card); font-family: var(--font-label); font-size: var(--type-ui-size); line-height: var(--type-ui-leading); font-weight: 500; color: var(--sys-ink); }
 .toast-region { position: fixed; z-index: 60; left: 16px; right: 16px; bottom: calc(64px + 24px + 12px + env(safe-area-inset-bottom)); display: flex; justify-content: center; pointer-events: none; }
 @media (min-width: 768px) { .toast-region { left: auto; right: 24px; top: 88px; bottom: auto; justify-content: flex-end; } }
 /* Combobox: the text field's states; tags sit inside the field, results open straight under it */
@@ -759,9 +750,6 @@ svg.lucide { stroke-width: 1.5; }
 @media (prefers-reduced-motion: reduce) { .trail-path { transition: none; stroke-dashoffset: 0; } .trail-stop { opacity: 1; transition: none; } .trail-stops::before { transition: none; transform: none; } }
 @media print { .trail-path { stroke-dashoffset: 0; } .trail-stop { opacity: 1; } .trail-stops::before { transform: none; } }
 /* Countdown tiles (v3 A): each unit on its own paper tile, one row, seconds ticking */
-.count-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
-.count-tile { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-3) var(--space-1); border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); box-shadow: var(--letter-shadow); }
-.count-tile .numerals { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); color: var(--sys-ink); }
 .count-tile-secs { background: color-mix(in oklab, var(--sys-surface-alt) 70%, var(--sys-surface-raised)); }
 .count-tile-secs .count-num { display: inline-block; }
 @media (prefers-reduced-motion: no-preference) { .count-tile-secs .count-num { animation: tile-tick 1s steps(1) infinite; } }

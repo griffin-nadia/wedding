@@ -5,13 +5,12 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Chip, ChoiceCard, ReviewRow, Skeleton, StepProgress } from "@/components/blocks"
-import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
+import { Chip, ReviewRow, Skeleton, StepProgress } from "@/components/blocks"
 import { Pill } from "@/components/pill"
 import { DATES } from "@/lib/wedding-dates"
 import { fmtShort } from "@/lib/dates"
 import { Hanko } from "@/components/hanko"
-import { CountdownTile } from "@/components/countdown"
+import { HomeCountdown } from "@/components/home-countdown"
 import { FortuneCard } from "@/components/fortune-card"
 import { DriverCard } from "@/components/driver-card"
 import { LanternToggle } from "@/components/lantern-toggle"
@@ -53,12 +52,12 @@ const GROUPS: Group[] = [
   {
     group: "Foundations",
     pages: [
-      { id: "overview", name: "Overview", purpose: "Scene behind, letter in front. One surface, three type sizes, one state system, paper motion.", render: () => <Overview /> },
+      { id: "overview", name: "Overview", purpose: "Scene behind, letter in front. One surface, two faces plus the hand, six sizes, one state system, paper motion.", render: () => <Overview /> },
       { id: "colour", name: "Colour", purpose: "Brand tokens are Nadia's palette. System tokens say what each colour is for, per mode. Components only use system tokens.", render: () => <Colour /> },
-      { id: "type", name: "Type", purpose: "Display (names, numerals), heading and body are separate scales. Content from the sheet is always body.", render: () => <Type /> },
-      { id: "space", name: "Space and radius", purpose: "4px grid, 8px vertical rhythm. Radius 4 chips and inputs, 8 cards, 12 buttons, 24 the letter.", render: () => <Space /> },
+      { id: "type", name: "Type", purpose: "Oranienbaum for display and headings, Inter for everything else (inputs at 16), Klee One only for the sign-off and fortune. Six sizes: 12, 14, 16, 20, 28, 56/88. At most two per component.", render: () => <Type /> },
+      { id: "space", name: "Space and radius", purpose: "4px grid, 8px vertical rhythm: related 8, unrelated 24, sections 32. Radius: control 8 (inputs, buttons, chips, rows, nav items, segmented), section 16, letter 24; only pills and the seal are round.", render: () => <Space /> },
       { id: "between", name: "In-between states", purpose: "Every component, five states: idle, loading (after 150 ms, previous content stays, no layout shift), success (settles in 300 ms), error (inline, says what to do), empty (says what to do instead).", render: () => <Between /> },
-      { id: "motion", name: "Motion and delight", purpose: "Paper rises and settles. One signature moment per screen, always with a still version.", render: () => <Motion /> },
+      { id: "motion", name: "Motion and delight", purpose: "Paper rises and settles; every duration and easing is a motion token. One chosen moment per screen, always with a still version. Nothing fades up on scroll.", render: () => <Motion /> },
     ],
   },
   {
@@ -76,7 +75,7 @@ const GROUPS: Group[] = [
           <Row label="loading"><Button size="lg" aria-busy>Sending…</Button></Row>
         </>
       ) },
-      { id: "field", name: "Text field", tokens: "--input-*", purpose: "Label above, 52 tall on phones and 48 from 768, 4px radius, moss tick when filled, caret in the accent.", render: () => (
+      { id: "field", name: "Text field", tokens: "--input-*", purpose: "Label above, 52 tall on phones and 48 from 768, control radius, Inter 16, a moss tick when filled.", render: () => (
         <>
           {(["default", "hover", "focus", "filled", "disabled", "error"] as const).map((s) => (
             <Row key={s} label={s}>
@@ -89,20 +88,21 @@ const GROUPS: Group[] = [
           <Row label="textarea"><FormField id="k-ta" className="w-full max-w-sm" label="Anything else? (optional)" help="3 lines, grows to 6, then scrolls"><Textarea id="k-ta" aria-describedby="k-ta-help" /></FormField></Row>
         </>
       ) },
-      { id: "choice", name: "Choice card", tokens: "--input-selected-*", purpose: "Coming or can't make it. Shares focus and selected with every input; the seal fills when chosen.", render: () => (
+      { id: "choice", name: "Choice row", tokens: "--input-selected-*", purpose: "One row per person: the name, then Coming or Can't make it as a segmented choice (content width; centred under the name on phones). Selected is the secondary fill, a 2px primary line and a tick.", render: () => (
         <>
-          {(["default", "hover", "focus", "pressed", "selected", "error"] as const).map((s) => (
+          {(["none", "coming", "error"] as const).map((s) => (
             <Row key={s} label={s}>
-              <RadioGroupPrimitive.Root aria-label={`Sam, ${s}`} defaultValue={s === "selected" ? "yes" : undefined} className="grid w-full max-w-sm grid-cols-1 gap-3 min-[480px]:grid-cols-2">
-                <ChoiceCard value="yes" on={s === "selected"} invalid={s === "error"} {...force(s)}>Coming</ChoiceCard>
-                <ChoiceCard value="no" on={false} invalid={s === "error"}>Can't make it</ChoiceCard>
-              </RadioGroupPrimitive.Root>
+              <div className="choice-row w-full max-w-md">
+                <span className="font-medium text-foreground">Sam</span>
+                <Segmented id={`k-choice-${s}`} label={`Sam, ${s}`} value={s === "coming" ? "yes" : ""} invalid={s === "error"} onChange={() => {}}
+                  items={[{ value: "yes", label: "Coming" }, { value: "no", label: "Can't make it" }]} />
+              </div>
             </Row>
           ))}
         </>
       ) },
-      { id: "chip", name: "Chip", tokens: "--input-*", purpose: "Many-of-many with no consequence (flying from). 36 tall with a 44 tap area, Inter 14, 4px radius, 8px gaps, wraps. A tick, never colour alone.", render: () => <ChipDemo /> },
-      { id: "checkbox", name: "Checkbox", purpose: "A single yes or no with a sentence (photo consent, the travel checklist). 24px box, the whole 44px row is the target.", render: () => (
+      { id: "chip", name: "Chip", tokens: "--input-*", purpose: "Many-of-many with no consequence (flying from). 36 tall with a 44 tap area, Inter 14, control radius, 8px gaps, wraps. A tick, never colour alone.", render: () => <ChipDemo /> },
+      { id: "checkbox", name: "Checkbox", purpose: "A single yes or no with a sentence (photo consent, bringing someone). 24px box, the whole 44px row is the target.", render: () => (
         <>
           <Row label="off"><Checkbox aria-label="off" /></Row>
           <Row label="on"><Checkbox aria-label="on" defaultChecked /></Row>
@@ -123,7 +123,7 @@ const GROUPS: Group[] = [
   {
     group: "Content",
     pages: [
-      { id: "accordion", name: "Accordion", purpose: "Getting there and Q&A. Opens in 300 ms; answers are body.", render: () => (
+      { id: "accordion", name: "Accordion", purpose: "Before you fly and the FAQs: numbered rows, one accordion. Opens in 300 ms; answers are body.", render: () => (
         <Accordion type="single" collapsible defaultValue="a" className="max-w-md">
           <AccordionItem value="a"><AccordionTrigger>Flying in</AccordionTrigger><AccordionContent><p>Osaka (Kansai, KIX) is the easiest way in.</p></AccordionContent></AccordionItem>
           <AccordionItem value="b"><AccordionTrigger>Walking in</AccordionTrigger><AccordionContent><p>10 minutes from Gion-Shijo.</p></AccordionContent></AccordionItem>
@@ -141,28 +141,26 @@ const GROUPS: Group[] = [
       { id: "pill", name: "Status pill", purpose: "The only other round thing besides the seal.", render: () => (
         <div className="flex flex-wrap gap-3"><Pill tone="good">Replied</Pill><Pill tone="warn">Not yet</Pill><Pill>{`Changes lock ${fmtShort(DATES.changesLock)}`}</Pill><Pill tone="accent">New</Pill></div>
       ) },
-      { id: "hanko", name: "Hanko", purpose: "The success stamp, the one thing that lands with a little weight (420 ms).", render: () => <HankoDemo /> },
-      { id: "countdown", name: "Countdown", tokens: "--countdown-*, --type-display-numerals-*", purpose: "Display type, one row: Oranienbaum numerals, thin rust colons, labels under. Never tiles.", render: () => (
-        <div className="flex items-start gap-3"><CountdownTile value={12} unit="months" /><span className="numerals text-[32px] leading-10 text-primary">:</span><CountdownTile value={3} unit="days" /><span className="numerals text-[32px] leading-10 text-primary">:</span><CountdownTile value={14} unit="hrs" /><span className="numerals text-[32px] leading-10 text-primary">:</span><CountdownTile value={42} unit="secs" /></div>
+      { id: "hanko", name: "Hanko", purpose: "The success stamp, 京, the one thing that lands with a little weight (--duration-stamp).", render: () => <HankoDemo /> },
+      { id: "countdown", name: "Countdown", tokens: "--countdown-*", purpose: "Home only: five 48px paper tiles under the card, outside the letter. Oranienbaum numerals, Inter labels, the seconds tile ticking. No heading, no sentence.", render: () => <div className="max-w-md"><HomeCountdown /></div> },
+      { id: "timeline", name: "Timeline", purpose: "The day: one thin moss line that draws in as you scroll (the only thing that moves); times and labels swap sides; a Now marker on the day.", render: () => (
+        <p>See it live on <a className="btn-text" href={`${import.meta.env.BASE_URL}the-day`}>The day</a>; the moss line draws in as you scroll.</p>
       ) },
-      { id: "timeline", name: "Timeline", purpose: "The day: one thin moss line that draws in, times and labels swapping sides, moss line icons.", render: () => (
-        <p>See it live on <a className="btn-text" href={`${import.meta.env.BASE_URL}the-day`}>The day</a>; rows settle in once as they scroll into view.</p>
-      ) },
-      { id: "venue", name: "Trail", purpose: "Station, taxi, venue on a paper strip. Draws in once; on phones it's wider than the screen and pans. Shared by The day and Travel.", render: () => <div className="max-w-xl"><Trail /></div> },
+      { id: "venue", name: "Trail", purpose: "Station, taxi, venue: Travel only. Stacked down a moss line on phones, left to right on the drawn path from 768. Never scrolls sideways; labels wrap.", render: () => <div className="max-w-xl"><Trail /></div> },
       { id: "fortune", name: "Fortune card", purpose: "After a yes: one fortune per household, the same on every device.", render: () => <div className="flex max-w-md flex-col gap-4"><FortuneCard token="kit-closed" /><FortuneCard token="kit-open" /></div> },
-      { id: "driver", name: "Driver card", purpose: "Sage paper, the second surface. Full screen for the taxi driver.", render: () => <div className="max-w-md"><DriverCard /></div> },
+      { id: "driver", name: "Driver card", purpose: "Sage paper in the page; Show the driver opens a modal above everything (dock and toggle hidden), Japanese on the type scale, Done in the footer, Esc closes.", render: () => <div className="max-w-md"><DriverCard /></div> },
       { id: "sound", name: "Mode toggle", purpose: "Sun or moon, top right, outside the letter. The only switch on the site.", render: () => <LanternToggle /> },
-      { id: "toast", name: "Toast", purpose: "One line, bottom of the screen, 2.4 s.", render: () => <Button variant="outline" onClick={() => toast("Address copied")}><Copy aria-hidden />Show a toast</Button> },
+      { id: "toast", name: "Toast", purpose: "One line, bottom of the screen, 2.4 s (copy confirmations only).", render: () => <Button variant="outline" onClick={() => toast("Address copied")}><Copy aria-hidden />Show a toast</Button> },
       { id: "skeleton", name: "Skeleton", purpose: "Washi breathing; only appears after 300 ms so fast loads never flash it.", render: () => <div className="flex max-w-xs flex-col gap-3"><Skeleton className="h-7 w-40" /><Skeleton className="h-13 w-full rounded-lg" /></div> },
     ],
   },
   {
     group: "Surfaces",
     pages: [
-      { id: "letter", name: "Letter and scene", tokens: "--letter-*, --scene-*", purpose: "The only UI surface. 620 wide on desktop, forest edge (honey in Lantern), paper blur within 24px.", render: () => <LetterDemo /> },
-      { id: "envelope", name: "Envelope", purpose: "Arrival, first visit only. Hover lifts the flap and a corner peeks out; tap opens it (flap 300 ms, letter rises 600 ms).", render: () => <EnvelopeDemo /> },
-      { id: "segmented", name: "Tabs and segmented", purpose: "One control for every set of tabs or choices (The day tabs, modes, the lab, the tuning panel): the nav's sliding sage marker, 200 ms, arrow keys move and choose.", render: () => <SegDemo /> },
-      { id: "nav", name: "Nav", purpose: "Four items, rendered once: a floating dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms).", render: () => (
+      { id: "letter", name: "Letter and scene", tokens: "--letter-*, --scene-*", purpose: "The only UI surface. 620 wide on desktop, texture on the card, one shadow, a 1px line, no top bar, no blur ring. The RSVP sheet is the same surface at 1.5× shadow.", render: () => <LetterDemo /> },
+      { id: "envelope", name: "Envelope", purpose: "Arrival, first visit only, their photo behind it. Hover lifts the flap; pull or tap opens it (flap --duration-flap, letter rises --duration-rise); the paper sound plays on that tap only.", render: () => <EnvelopeDemo /> },
+      { id: "segmented", name: "Tabs and segmented", purpose: "One control for every set of choices (Coming / Can't make it, /kit modes, the lab): content width, centred on phones, the sliding marker (--duration-slide), a tick on a selected choice, arrow keys move and choose.", render: () => <SegDemo /> },
+      { id: "nav", name: "Nav", purpose: "Four items, rendered once: a floating dock on phones, a thin top bar from 768 with RSVP as a button. A sage marker slides to the current page (--duration-slide).", render: () => (
         <div className="flex max-w-sm flex-col gap-3">
           <div className="relative grid h-16 grid-cols-4 rounded-[calc(var(--radius-control)+4px)] border bg-background p-1 shadow-paper">
             <span aria-hidden className="absolute top-1 bottom-1 left-1 w-[calc(25%-2px)] rounded-(--radius-control) bg-section-alt" />

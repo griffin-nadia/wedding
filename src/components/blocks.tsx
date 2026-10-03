@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 import { Check, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 
 /** Chip: many-of-many with no consequence (flying from, tags). 36 tall (44 tap area), Inter 14, 4px radius; selected = fill + 2px accent + tick. */
 export function Chip({ on, onClick, invalid = false, children }: { on: boolean; onClick: () => void; invalid?: boolean; children: ReactNode }) {
@@ -13,27 +12,7 @@ export function Chip({ on, onClick, invalid = false, children }: { on: boolean; 
   )
 }
 
-/**
- * Choice card: one-of-few with a consequence (Coming / Can't make it). It is the radio itself
- * (Radix role="radio" inside a radiogroup), 64 tall, stacked on phones and side by side from 480.
- */
-export function ChoiceCard({ value, id, on, children, onFocus, invalid, ...rest }: { value: string; id?: string; on: boolean; children: ReactNode; onFocus?: () => void; invalid?: boolean; "data-force"?: string }) {
-  return (
-    <RadioGroupPrimitive.Item {...rest} value={value} id={id} onFocus={onFocus} aria-invalid={invalid || undefined} className="state choice-card w-full cursor-pointer text-left">
-      <Seal on={on} />
-      {children}
-    </RadioGroupPrimitive.Item>
-  )
-}
 
-/** The seal that fills a chosen choice card. */
-export function Seal({ on }: { on: boolean }) {
-  return (
-    <span aria-hidden className={cn("grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors", on ? "seal border-primary bg-primary text-primary-foreground" : "border-muted-foreground/60")}>
-      {on && <Check className="size-5" />}
-    </span>
-  )
-}
 
 /** Error under a field: 14px, danger, announced. Renders nothing when there's no message. */
 export function FieldError({ id, children, className }: { id: string; children?: ReactNode; className?: string }) {
@@ -67,29 +46,7 @@ export function ReviewRow({ label, children, edit, editLabel, block = false }: {
   )
 }
 
-/** Short labelled block with at most one action (Veley / Ross style). */
-export function InfoBlock({ label, children, action, media, as: H = "h2" }: { label: string; children: ReactNode; action?: { label: string; href: string }; media?: ReactNode; as?: "h2" | "h3" | "h4" }) {
-  return (
-    <section className="flex flex-col gap-2 rounded-md border bg-card p-4">
-      {media}
-      <H className="label-caps text-muted-foreground">{label}</H>
-      <div>{children}</div>
-      {action && <a href={action.href} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{action.label}</a>}
-    </section>
-  )
-}
 
-/** One row of the day's timeline: icon on the line, time in the display face. */
-export function TimelineRow({ icon, time, title, where, local }: { icon: ReactNode; time: string; title: string; where: string; local?: string | null }) {
-  return (
-    <li className="relative">
-      <span aria-hidden className="absolute top-0 -left-12 grid size-10 place-items-center rounded-full border bg-card text-primary">{icon}</span>
-      <p className="font-semibold text-foreground">{time} · {title}</p>
-      <p>{where}</p>
-      {local && <p className="text-sm text-muted-foreground">{local}</p>}
-    </li>
-  )
-}
 
 // Skeleton lives in its own file so Home doesn't pull Radix in with the RSVP blocks
 export { Skeleton } from "@/components/skeleton"
