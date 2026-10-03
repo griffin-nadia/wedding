@@ -13,7 +13,7 @@ import { CountdownTile } from "@/components/countdown"
 import { FortuneCard } from "@/components/fortune-card"
 import { DriverCard } from "@/components/driver-card"
 import { LanternToggle } from "@/components/lantern-toggle"
-import { VenueMap } from "@/components/venue-map"
+import { Trail } from "@/components/trail"
 import { InlineSubmit } from "@/components/inline-submit"
 import { FormField } from "@/components/form-field"
 import { SongPicker } from "@/components/song-picker"
@@ -146,7 +146,7 @@ const GROUPS: Group[] = [
       { id: "timeline", name: "Timeline", purpose: "The day: one thin moss line that draws in, times and labels swapping sides, moss line icons.", render: () => (
         <p>See it live on <a className="btn-text" href={`${import.meta.env.BASE_URL}the-day`}>The day</a>; rows settle in once as they scroll into view.</p>
       ) },
-      { id: "venue", name: "Venue map", purpose: "Our own drawn map: station, Gion-Shijo, the venue as the hanko. No map service.", render: () => <div className="max-w-md"><VenueMap /></div> },
+      { id: "venue", name: "Trail", purpose: "Station, taxi, venue on a paper strip. Draws in once; on phones it's wider than the screen and pans. Shared by The day and Travel.", render: () => <div className="max-w-xl"><Trail /></div> },
       { id: "fortune", name: "Fortune card", purpose: "After a yes: one fortune per household, the same on every device.", render: () => <div className="flex max-w-md flex-col gap-4"><FortuneCard token="kit-closed" /><FortuneCard token="kit-open" /></div> },
       { id: "driver", name: "Driver card", purpose: "Sage paper, the second surface. Full screen for the taxi driver.", render: () => <div className="max-w-md"><DriverCard /></div> },
       { id: "sound", name: "Mode toggle", purpose: "Sun or moon, top right, outside the letter. The only switch on the site.", render: () => <LanternToggle /> },

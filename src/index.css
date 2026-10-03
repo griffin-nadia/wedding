@@ -716,3 +716,32 @@ svg.lucide { stroke-width: 1.5; }
 .choice-row:last-of-type { border-bottom: 0; }
 /* With tags, the typing space shrinks to a caret's width so the field hugs its tags (v3 A) */
 .combo-field:has(.combo-tag) .combo-input:placeholder-shown { flex-basis: 2ch; }
+
+/* Trail: a paper strip; on phones wider than the screen, panned with a drag */
+.trail { margin: 0; }
+.trail-plate { position: relative; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); outline: 2px solid transparent; outline-offset: 2px; }
+.trail-plate::-webkit-scrollbar { display: none; }
+.trail-plate:focus-visible { outline-color: var(--input-focus); }
+.trail-track { position: relative; width: 720px; height: 152px; }
+@media (min-width: 768px) { .trail-track { width: 100%; } }
+.trail-svg { position: absolute; left: 0; top: 16px; width: 100%; height: 72px; }
+.trail-path { fill: none; stroke: var(--sys-moss); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.2s var(--ease-letter); }
+.trail-path.is-drawn { stroke-dashoffset: 0; }
+.trail-stops { position: absolute; inset: 0; }
+.trail-stop { position: absolute; top: 34px; translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 168px; text-align: center; opacity: 0; transition: opacity var(--duration-settle) var(--ease-paper); }
+.trail-stop.is-drawn { opacity: 1; }
+.trail-icon { display: grid; place-items: center; width: 36px; height: 36px; margin-bottom: var(--space-1); border-radius: var(--radius-pill); background: var(--sys-surface-raised); border: 1px solid var(--sys-moss); color: var(--sys-moss); }
+@media (prefers-reduced-motion: reduce) { .trail-path { transition: none; stroke-dashoffset: 0; } .trail-stop { opacity: 1; transition: none; } }
+@media print { .trail-path { stroke-dashoffset: 0; } .trail-stop { opacity: 1; } }
+/* Countdown tiles (v3 A): each unit on its own paper tile, one row, seconds ticking */
+.count-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+.count-tile { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-3) var(--space-1); border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); box-shadow: var(--letter-shadow); }
+.count-tile .numerals { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); color: var(--sys-ink); }
+.count-tile-secs { background: color-mix(in oklab, var(--sys-surface-alt) 70%, var(--sys-surface-raised)); }
+.count-tile-secs .count-num { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) { .count-tile-secs .count-num { animation: tile-tick 1s steps(1) infinite; } }
+@keyframes tile-tick { 0% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+/* Stay rows (v3 A, M): the whole row is the link */
+.stay-row { display: flex; align-items: center; gap: var(--space-4); min-height: 56px; padding: var(--space-3) 0; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; color: var(--sys-ink-soft); }
+.stay-row:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .stay-row:hover .font-medium { text-decoration: underline; text-underline-offset: 4px; } }

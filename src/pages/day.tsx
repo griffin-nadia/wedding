@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
-import { VenueMap } from "@/components/venue-map"
+import { Trail } from "@/components/trail"
+import { Link } from "react-router-dom"
+import { config } from "@/lib/config"
 import { Segmented } from "@/components/segmented"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
-import { sceneKind } from "@/lib/scenes"
 import { jstLabel, kyotoNow, localTime } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
@@ -74,20 +75,55 @@ function Timeline({ now }: { now: Date }) {
   )
 }
 
-/** Details: the date, the venue as a mark, its address on two lines, the drawn map, one practical line, the dress note. */
+/** Details: the venue as a mark, its address on two lines, the trail, a link to Travel for the rest, the dress note. */
 function Details() {
   const { t } = useLang()
   return (
     <div className="flex flex-col gap-4">
       <p>{t.day.venueFacts}</p>
-      <div className="flex flex-col gap-1">
-        <p className="font-semibold text-foreground">{VENUE.name}</p>
+      <div className="flex flex-col">
+        <p className="font-medium text-foreground">{VENUE.name}</p>
         {t.day.addressLines.map((l) => <p key={l}>{l}</p>)}
       </div>
-      <VenueMap />
-      <p>{t.day.taxiEasiest}</p>
+      <Trail />
+      <Link to="/travel" className="btn-text inline-flex min-h-11 items-center self-start">{t.day.howToGetThere}</Link>
       <p>{t.day.dressNote}</p>
     </div>
+  )
+}
+
+/** The countdown (v3 A): each unit on its own paper tile, one row, seconds ticking. The cute moment of this page. */
+function CountdownTiles() {
+  const { t } = useLang()
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    let id = 0
+    const start = () => { clearInterval(id); id = window.setInterval(() => setNow(new Date()), 1000) }
+    const vis = () => (document.hidden ? clearInterval(id) : (setNow(new Date()), start()))
+    start(); document.addEventListener("visibilitychange", vis)
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", vis) }
+  }, [])
+  const ms = Math.max(0, new Date(config.weddingStart).getTime() - now.getTime())
+  const parts = [
+    [Math.floor(ms / 86_400_000), t.countdownMore.short.days],
+    [Math.floor((ms % 86_400_000) / 3_600_000), t.countdownMore.short.hours],
+    [Math.floor((ms % 3_600_000) / 60_000), t.countdownMore.short.mins],
+    [Math.floor((ms % 60_000) / 1000), t.countdownMore.short.secs],
+  ] as const
+  if (ms === 0) return <p className="font-display text-2xl text-foreground">{t.countdownMore.married}</p>
+  return (
+    <section aria-labelledby="count-h" className="flex flex-col gap-3">
+      <h2 id="count-h" className="heading">{t.day.countdownTitle}</h2>
+      <p className="sr-only">{t.home.daysToGo(parts[0][0])}</p>
+      <div aria-hidden className="count-tiles">
+        {parts.map(([v, unit], i) => (
+          <div key={unit} className={cn("count-tile", i === 3 && "count-tile-secs")}>
+            <span className="numerals"><span className="count-num">{i === 0 ? v : String(v).padStart(2, "0")}</span></span>
+            <span className="text-xs text-muted-foreground">{unit}</span>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -106,8 +142,6 @@ function DayTabs({ panels }: { panels: { id: string; label: string; body: ReactN
 export function DayPage() {
   const { t } = useLang()
   const tabs = useOption("daytabs") === "on"
-  // On the Paper scene, photos live inside sections instead: an arched photo at the top of The day
-  const paper = sceneKind(useOption("scene"), useOption("preset")) === "paper"
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000)
@@ -122,10 +156,9 @@ export function DayPage() {
   )
   return (
     <>
-      {paper && <div className="arch-photo"><img src={`${import.meta.env.BASE_URL}scenes/castle-1200.webp`} alt={t.day.archAlt} /></div>}
       <header className="flex flex-col gap-4">
-        <p className="label-caps text-muted-foreground">{t.day.date}</p>
         <h1 className="heading">{t.day.title}</h1>
+        <p className="lead">{t.day.dateLong}</p>
       </header>
       {tabs ? (
         <DayTabs panels={[{ id: "details", label: t.day.detailsTab, body: <Details /> }, { id: "timeline", label: t.day.timelineTab, body: timeline }]} />
@@ -135,6 +168,7 @@ export function DayPage() {
           {timeline}
         </>
       )}
+      <CountdownTiles />
       <div className="no-print flex flex-col gap-4">
         <AddToCalendar />
         <button type="button" className="btn-text min-h-11 self-start" onClick={() => window.print()}>{t.day.print}</button>

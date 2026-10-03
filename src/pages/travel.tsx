@@ -1,114 +1,99 @@
-import { useEffect, useState } from "react"
-import { Disclosure } from "@/components/disclosure"
+import { useEffect } from "react"
+import { ChevronRight } from "lucide-react"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Disclosure } from "@/components/disclosure"
 import { DriverCard } from "@/components/driver-card"
 import { FlyingFrom } from "@/components/flying-from"
+import { Trail } from "@/components/trail"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 
-// Ticks live on this device only (localStorage), never sent anywhere.
-const KEY = "ng-trip-ticks"
-const readTicks = (): string[] => {
-  try { return JSON.parse(localStorage.getItem(KEY) ?? "[]") } catch { return [] }
+function Ext({ href, children }: { href: string; children: React.ReactNode }) {
+  return <a href={href} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{children}</a>
 }
 
-function Ext({ href, children }: { href: string; children: React.ReactNode }) {
-  return <a href={href} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center">{children}</a>
+/** A numbered row with a one-line reveal (v3 M). */
+function Row({ n, value, title, children }: { n: number; value: string; title: string; children: React.ReactNode }) {
+  return (
+    <AccordionItem value={value}>
+      <AccordionTrigger>
+        <span className="flex items-baseline gap-4">
+          <span aria-hidden className="numerals w-6 shrink-0 text-primary">{String(n).padStart(2, "0")}</span>
+          <span><span className="sr-only">{n}. </span>{title}</span>
+        </span>
+      </AccordionTrigger>
+      <AccordionContent><div className="flex flex-col gap-3 pl-10">{children}</div></AccordionContent>
+    </AccordionItem>
+  )
 }
 
 /**
- * Travel, three parts with anchors: Getting there (paragraph, driver card, one accordion),
- * Where to stay (three areas, one map link), Before you fly (the tickable checklist).
+ * Travel (v3 A): Getting there (one paragraph, the driver card, the trail), Where to stay (three rows,
+ * the whole row opens Maps), Before you fly (numbered rows). No checklist, no tiles.
  */
 export function TravelPage() {
   const { t } = useLang()
   const g = t.getting
   const { household } = useHousehold()
   const coming = household?.guests.some((x) => x.attending === "yes")
-  const [ticks, setTicks] = useState(readTicks)
   // /travel#stay and #before scroll to their section once the page is in
   useEffect(() => {
     const id = location.hash.slice(1)
     if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView())
   }, [])
-  const toggle = (title: string, on: boolean) => {
-    const next = on ? [...ticks, title] : ticks.filter((x) => x !== title)
-    setTicks(next)
-    try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* private mode */ }
-  }
+  const rows: [string, string, React.ReactNode][] = [
+    ["passport", g.rows.passport, <p>{t.travel.items[0].body}</p>],
+    ["flights", g.rows.flights, <>
+      <p>{t.travel.items[1].body}</p><p>{g.flyingBody}</p><p>{g.tokyoBody}</p>
+      <div className="flex flex-wrap gap-x-4"><Ext href={g.links.haruka.href}>{g.links.haruka.label}</Ext><Ext href={g.links.flights.href}>{g.links.flights.label}</Ext><Ext href={g.links.trains.href}>{g.links.trains.label}</Ext></div>
+      {household && coming && <FlyingFrom token={household.token} />}
+    </>],
+    ["booking", g.rows.booking, <p>{t.travel.items[2].body}</p>],
+    ["phones", g.rows.phones, <>
+      <p>{t.travel.items[3].body}</p><p>{g.tips[1]}</p>
+      <div className="flex flex-wrap gap-x-4">{("links" in t.travel.items[3] ? t.travel.items[3].links ?? [] : []).map((l) => <Ext key={l.href} href={l.href}>{l.label}</Ext>)}</div>
+    </>],
+    ["weather", g.rows.weather, <p>{g.tips[0]}</p>],
+    ["medicines", g.rows.medicines, <><p>{g.tips[2]}</p><Ext href={g.links.smartraveller.href}>{g.links.smartraveller.label}</Ext></>],
+    ["day", g.rows.onTheDay, <><p>{g.walkingBody}</p><Ext href={g.links.walk.href}>{g.links.walk.label}</Ext><p>{g.shuttleBody}</p><p>{g.earlyBody}</p></>],
+  ]
   return (
     <>
       <h1 className="heading">{t.nav.travel}</h1>
-      <section id="getting-there" aria-labelledby="getting-title" className="flex scroll-mt-24 flex-col gap-(--letter-gap)">
-      <header className="flex flex-col gap-4">
-        <h2 id="getting-title" className="font-sans text-base font-semibold text-foreground">{g.title}</h2>
+
+      <section id="getting-there" aria-labelledby="getting-title" className="flex scroll-mt-24 flex-col gap-4">
+        <h2 id="getting-title" className="font-display text-2xl text-foreground">{g.title}</h2>
         <p>{g.intro}</p>
-      </header>
-      <DriverCard />
-      <Disclosure label={g.rowsLabel}>
-        <AccordionItem value="flying">
-          <AccordionTrigger>{g.flyingTitle}</AccordionTrigger>
-          <AccordionContent>
-            <p>{g.flyingBody}</p>
-            <p>{g.tokyoBody}</p>
-            <div className="flex flex-wrap gap-x-4"><Ext {...g.links.haruka}>{g.links.haruka.label}</Ext><Ext {...g.links.flights}>{g.links.flights.label}</Ext><Ext {...g.links.trains}>{g.links.trains.label}</Ext></div>
-            {household && coming && <FlyingFrom token={household.token} />}
-          </AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="walking">
-          <AccordionTrigger>{g.walkingTitle}</AccordionTrigger>
-          <AccordionContent><p>{g.walkingBody}</p><Ext {...g.links.walk}>{g.links.walk.label}</Ext></AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="shuttle">
-          <AccordionTrigger>{g.shuttleTitle}</AccordionTrigger>
-          <AccordionContent><p>{g.shuttleBody}</p></AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="early">
-          <AccordionTrigger>{g.earlyTitle}</AccordionTrigger>
-          <AccordionContent><p>{g.earlyBody}</p></AccordionContent>
-        </AccordionItem>
-      </Disclosure>
+        <DriverCard />
+        <Trail />
       </section>
 
       <section id="stay" aria-labelledby="stay-title" className="flex scroll-mt-24 flex-col gap-4">
-        <h2 id="stay-title" className="heading">{t.stay.title}</h2>
+        <h2 id="stay-title" className="font-display text-2xl text-foreground">{t.stay.title}</h2>
         <p>{t.stay.intro}</p>
-        <ul className="flex flex-col divide-y divide-border border-y">
-          {t.day.stay.map((a) => (
-            <li key={a.label} className="flex flex-col gap-2 py-4">
-              <h3 className="font-sans text-base font-semibold text-foreground">{a.label}</h3>
-              <p><span className="label-caps mr-2 text-success">{t.day.stayGood}</span>{a.good}</p>
-              <p><span className="label-caps mr-2 text-muted-foreground">{t.day.stayWatch}</span>{a.watch}</p>
+        <ol className="flex flex-col border-y border-border">
+          {t.day.stay.map((a, i) => (
+            <li key={a.label} className="border-b border-border last:border-b-0">
+              <a href={a.maps} target="_blank" rel="noreferrer" className="stay-row">
+                <span aria-hidden className="numerals w-6 shrink-0 text-primary">{String(i + 1).padStart(2, "0")}</span>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="font-medium text-foreground">{a.label}</span>
+                  <span className="text-sm">{t.day.stayGood}: {a.good}</span>
+                  <span className="text-sm text-muted-foreground">{t.day.stayWatch}: {a.watch}</span>
+                </span>
+                <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+                <span className="sr-only">, {g.stayOpens}</span>
+              </a>
             </li>
           ))}
-        </ul>
-        <Ext href={t.stay.mapHref}>{t.stay.mapLink}</Ext>
+        </ol>
       </section>
 
       <section id="before" aria-labelledby="before-title" className="flex scroll-mt-24 flex-col gap-4">
-        <h2 id="before-title" className="heading">{g.beforeTitle}</h2>
-        <p className="text-sm">{t.travel.tickHint}</p>
-        <ul className="flex flex-col gap-4">
-          {t.travel.items.slice(0, 4).map((item, i) => {
-            const id = `tick-${i}`
-            const done = ticks.includes(item.title)
-            return (
-              <li key={item.title} className="flex items-start gap-3">
-                <Checkbox id={id} checked={done} onCheckedChange={(v) => toggle(item.title, v === true)} className="mt-0.5 shrink-0" aria-describedby={`${id}-body`} />
-                <div className="flex flex-col gap-1">
-                  <label htmlFor={id} className="cursor-pointer font-semibold text-foreground">{item.title}{done && <span className="ml-2 font-normal text-muted-foreground">{t.travel.ticked}</span>}</label>
-                  <p id={`${id}-body`}>{item.body}</p>
-                  {"links" in item && item.links && (
-                    <ul className="flex flex-wrap gap-x-4">{item.links.map((l) => <li key={l.href}><Ext href={l.href}>{l.label}</Ext></li>)}</ul>
-                  )}
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-        {g.tips.map((tip) => <p key={tip}>{tip}</p>)}
-        <Ext href={g.links.smartraveller.href}>{g.links.smartraveller.label}</Ext>
+        <h2 id="before-title" className="font-display text-2xl text-foreground">{g.beforeTitle}</h2>
+        <Disclosure label={g.beforeTitle}>
+          {rows.map(([value, title, body], i) => <Row key={value} n={i + 1} value={value} title={title}>{body}</Row>)}
+        </Disclosure>
       </section>
     </>
   )
