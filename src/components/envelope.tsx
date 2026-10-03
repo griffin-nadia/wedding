@@ -1,5 +1,5 @@
 import { BrandSeal } from "@/components/brand-seal"
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
 import { COUPLE } from "@/content/en"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 import { useOption } from "@/lib/options"
 
 const KEY = "ng-opened"
+// The handwritten "open your invite" (only on a first visit, so it loads beside the envelope, not with the site)
+const ArrivalNote = lazy(() => import("@/components/arrival-note"))
 type Phase = "sealed" | "opening" | "open"
 
 export function firstPhase(enabled: boolean): Phase {
@@ -34,6 +36,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const { household } = useHousehold()
   const [phase, setPhase] = useState<Phase>(() => (sealedAgain && enabled ? "sealed" : firstPhase(enabled)))
   const button = useRef<HTMLButtonElement>(null)
+  const hint = useOption("arrivalhint")
   const stage = useRef<HTMLDivElement>(null)
   // Pull to open (v3 K): drag the flap up and it follows the finger; let go past 40% and it opens,
   // otherwise it springs back. A tap still opens it.
@@ -109,7 +112,9 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
             <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
           </button>
         )}
-        <span aria-hidden className="arrival-hint label-caps">{t.letter.open}</span>
+        {hint === "pill" || noren
+          ? <span aria-hidden className="arrival-hint label-caps">{t.letter.open}</span>
+          : phase === "sealed" && <Suspense><ArrivalNote envelope={button} /></Suspense>}
       </div>
       {/* The letter is underneath, ready to rise; out of reach until opened */}
       <div className={cn("letter-sealed", phase === "opening" && "letter-rise")} inert>{children}</div>

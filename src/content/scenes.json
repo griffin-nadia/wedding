@@ -2,11 +2,23 @@
  "kyoto-view": {
   "w": 1600,
   "h": 2133,
-  "lqip": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAABQBQCdASoYACAAPu1mq08ppaOiKA1RMB2JYgCsM2c20JALe49aM+wqgpaJNrS45VIKWEwA/pF0ghk+N93SnC5tHnj390mrcWzlkKPkIy6ts0I9oT9XkeigHgCZ1yJtz+PzBXb3jckwOKx0XICtZbqD/c/pYLw05SOBhngGVV0TL924Ilzy/6CF+wAAAA=="
+  "lqip": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAABQBQCdASoYACAAPu1mq08ppaOiKA1RMB2JYgCsM2c20JALe49aM+wqgpaJNrS45VIKWEwA/pF0ghk+N93SnC5tHnj390mrcWzlkKPkIy6ts0I9oT9XkeigHgCZ1yJtz+PzBXb3jckwOKx0XICtZbqD/c/pYLw05SOBhngGVV0TL924Ilzy/6CF+wAAAA==",
+  "face": [
+   0.43,
+   0.43,
+   0.73,
+   0.67
+  ]
  },
  "night-lane": {
   "w": 1600,
   "h": 2000,
-  "lqip": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAACQBQCdASoYAB4APu1gq02ppSQiMBgMATAdiWIAtRr1QXAkytnlYjojKIitdW3i99IB2e99AAD+7pDtATm1CFmss1GKbOSiRRUF30HI9x9Cluwxg36Fl3OoGzMN6+SKK/ZTDdTc2tTdQkJi4TiJhvCIMwOkVy6JMifirPt5GgQ2ZCqFE14pKS8gawAAAA=="
+  "lqip": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAACQBQCdASoYAB4APu1gq02ppSQiMBgMATAdiWIAtRr1QXAkytnlYjojKIitdW3i99IB2e99AAD+7pDtATm1CFmss1GKbOSiRRUF30HI9x9Cluwxg36Fl3OoGzMN6+SKK/ZTDdTc2tTdQkJi4TiJhvCIMwOkVy6JMifirPt5GgQ2ZCqFE14pKS8gawAAAA==",
+  "face": [
+   0.2,
+   0.07,
+   0.86,
+   0.56
+  ]
  }
 }

@@ -8,6 +8,7 @@ export type Option = { key: string; label: string; flow: (typeof FLOWS)[number];
  * v3 section A is gone from here, not hidden.
  */
 export const OPTIONS: Option[] = [
+  { key: "arrivalhint", label: "Envelope hint", flow: "Arrival", note: "A handwritten \u201copen your invite\u201d with an arrow, placed clear of their faces, or the small \u201cTap to open\u201d pill.", values: [["note", "Handwritten arrow"], ["pill", "Pill"]] },
   { key: "tilt", label: "Envelope tilt", flow: "Arrival", note: "Laptop: the envelope tilts a few degrees toward the mouse, like a card on a table.", values: [["off", "Still"], ["on", "Tilts"]] },
   { key: "peek", label: "Envelope peek on hover", flow: "Arrival", note: "Desktop only: the flap lifts and a corner of the letter shows on hover.", values: [["on", "On"], ["off", "Off"]], },
   { key: "mode", label: "Site mode (preview)", flow: "Home", note: "What the site becomes later: the invite now, the week of the wedding (The day first), or the keepsake after it. The Content tab sets it for real; this previews it.", values: [["sheet", "From the sheet"], ["invite", "Invite"], ["week-of", "Week of"], ["keepsake", "Keepsake"]] },

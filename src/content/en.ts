@@ -53,6 +53,7 @@ export const en = {
     credit: "Site by Jehan Baguley",
     skip: "Skip to the letter",
     open: "Tap to open",
+    note: "open your invite",
     openLabel: (name: string) => `Open your invitation${name ? `, ${name}` : ""}`,
     phoneTitle: "Open on your phone",
     phoneBody: "Scan to take this invite with you.",

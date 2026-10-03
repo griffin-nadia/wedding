@@ -13,7 +13,7 @@ const CHANGE_BY = `${LOCK}まで、お返事は変更できます。`
 export const ja: DeepPartial<Content> = {
   meta: { title: "ナディア & グリフィン" },
   nav: { home: "ホーム", day: "当日", travel: "アクセス", faqs: "よくある質問", story: "ふたりのこと", rsvp: "出欠のお返事" },
-  letter: { signOff: "愛をこめて、N & G", skip: "本文へ移動", open: "タップしてひらく", phoneTitle: "スマホでひらく", phoneBody: "読み取ると、この招待状をスマホで見られます。", comingSoon: "近日公開" },
+  letter: { signOff: "愛をこめて、N & G", skip: "本文へ移動", open: "タップしてひらく", note: "招待状をひらいてね", phoneTitle: "スマホでひらく", phoneBody: "読み取ると、この招待状をスマホで見られます。", comingSoon: "近日公開" },
   theme: { label: "夜のモード" },
   countdownMore: { until: "京都でお会いできる日まで", tomorrow: "いよいよ明日", today: "今日がその日です", married: "結婚しました", short: { months: "か月", days: "日", hours: "時間", mins: "分", secs: "秒", years: "年" } },
   home: {

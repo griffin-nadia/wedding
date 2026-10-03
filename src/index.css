@@ -345,7 +345,7 @@
 
 /* Arrival: the sealed envelope on the scene. Flap 300 ms, then the letter rises 600 ms as the envelope sinks. */
 .arrival { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; align-content: center; gap: var(--space-5); padding-top: 18svh; }
-@media (min-width: 1024px) { .arrival { justify-items: start; padding-left: calc(var(--letter-left) + var(--letter-width) / 2 - 190px); padding-top: 0; } .arrival-hint { margin-left: 128px; } }
+@media (min-width: 1024px) { .arrival { justify-items: start; padding-left: calc(var(--letter-left) + var(--letter-width) / 2 - 205px); padding-top: 0; } .arrival-hint { margin-left: 128px; } }
 .envelope { position: relative; width: 300px; height: 196px; border-radius: var(--radius-card); perspective: 800px; outline: 2px solid transparent; outline-offset: 6px; cursor: pointer; filter: drop-shadow(0 24px 24px rgb(var(--sys-shadow-tint) / 0.28)); transition: transform var(--duration-quick) var(--ease-paper); }
 @media (min-width: 768px) { .envelope { width: 380px; height: 248px; } }
 /* Desktop hover: the flap lifts a little and a corner of the letter peeks out. Touch: nothing until tap. */
@@ -977,3 +977,27 @@ svg.lucide { stroke-width: 1.5; }
 .journey-handle { cursor: grab; }
 .journey-handle:active { cursor: grabbing; }
 .journey-handle-dot { fill: var(--brand-sabi); stroke: var(--brand-shiro-kinari); stroke-width: 2; filter: drop-shadow(0 2px 3px rgb(var(--sys-shadow-tint) / 0.3)); }
+
+/* Arrival (v3 U, Jehan 6 Oct): the envelope 8% larger; a handwritten "open your invite" and arrow in one white
+   1.5px line, placed clear of their faces; pulling the flap lifts the letter out as the envelope sinks. */
+.envelope { width: 324px; height: 212px; }
+@media (min-width: 768px) { .envelope { width: 410px; height: 268px; } }
+@media (max-width: 767px) { .arrival .envelope { width: 260px; height: 168px; } .arrival .envelope-seal { width: 52px !important; height: 52px !important; } }
+.arrival-note { position: fixed; left: 0; top: 0; width: 168px; height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; pointer-events: none; color: #fff; filter: drop-shadow(0 1px 6px rgb(0 0 0 / 0.35)); }
+.arrival-note[data-side="left"] { align-items: flex-start; }
+.arrival-note[data-row] { flex-direction: row; align-items: flex-start; justify-content: flex-start; gap: 2px; }
+.arrival-note[data-row] .arrival-note-arrow { height: 48px; margin-top: 2px; }
+.arrival-note[data-side="right"] { align-items: flex-end; }
+.arrival-note[data-side="right"] .arrival-note-arrow { scale: -1 1; }
+.arrival-note-words { font-family: var(--font-hand); font-size: 20px; line-height: 1.2; white-space: nowrap; clip-path: inset(0 100% 0 0); animation: note-write var(--duration-rise) var(--ease-paper) 500ms forwards; }
+.arrival-note-arrow { width: 72px; height: 48px; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.arrival-note-arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: note-draw var(--duration-rise) var(--ease-paper) 900ms forwards; }
+@keyframes note-write { to { clip-path: inset(0 0 0 0); } }
+@keyframes note-draw { to { stroke-dashoffset: 0; } }
+.is-opening .arrival-note, .arrival.is-pulling .arrival-note { opacity: 0; transition: opacity var(--duration-quick); }
+@media (prefers-reduced-motion: reduce) { .arrival-note-words { animation: none; clip-path: none; } .arrival-note-arrow path { animation: none; stroke-dashoffset: 0; } }
+.arrival .envelope { translate: 0 calc(var(--pull, 0) * 20px); opacity: calc(1 - var(--pull, 0) * 0.25); }
+.arrival .envelope-paper { transform: translateY(calc(var(--pull, 0) * -62%)); }
+.arrival:not(.is-pulling) .envelope { transition: translate var(--duration-flap) var(--ease-spring), opacity var(--duration-flap) var(--ease-paper), transform var(--duration-quick) var(--ease-paper); }
+/* From 1024 the envelope sits on warm paper, not the photo: the note is ink there, not white */
+@media (min-width: 1024px) { .arrival-note { color: var(--sys-ink-soft); filter: none; } }
