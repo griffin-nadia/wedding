@@ -98,11 +98,14 @@ export function HomePage() {
         <p>{t.home.rsvpClosed}</p>
       ) : (
         <div className="flex flex-col gap-6">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {done && <Pill tone="good">{t.home.pills.replied}</Pill>}
-            <Suspense fallback={rsvpButton}>
-              <RsvpSheet openOnLoad={tapped} request={request}>{rsvpButton}</RsvpSheet>
-            </Suspense>
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              {done && <Pill tone="good">{t.home.pills.replied}</Pill>}
+              <Suspense fallback={rsvpButton}>
+                <RsvpSheet openOnLoad={tapped} request={request}>{rsvpButton}</RsvpSheet>
+              </Suspense>
+            </div>
+            {done && <p className="text-sm text-muted-foreground">{t.home.changeBy}</p>}
           </div>
           {done && <YourReply h={household} open={openAt} />}
         </div>

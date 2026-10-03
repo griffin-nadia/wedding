@@ -357,7 +357,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                     onCheckedChange={(v) => setForm((f) => ({ ...f, photos: v === true }))} />
                   {t.rsvp.photos}
                 </label>
-                <p className="text-sm">{t.rsvp.editUntil}</p>
               </>
             )}
             {error && <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>}

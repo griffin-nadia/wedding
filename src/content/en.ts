@@ -7,6 +7,8 @@ import { fmtDay, fmtShort } from "@/lib/dates"
 
 const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
 const LOCK = fmtDay(DATES.changesLock)
+// The one change-by line (v3 Q7): Home under the Replied pill, the success screen and the confirmation email
+const CHANGE_BY = `You can change your reply until ${LOCK}.`
 
 // The couple's names live here once. Swapping the order is this one line.
 export const COUPLE = { first: "Nadia", second: "Griffin" }
@@ -119,6 +121,7 @@ export const en = {
     ],
     rsvpBy: `RSVP by ${fmtShort(DATES.rsvpBy)}`,
     changeReply: "Change my reply",
+    changeBy: CHANGE_BY,
   },
   day: {
     title: "The day",
@@ -263,7 +266,6 @@ export const en = {
     send: "Send our reply",
     next: "Next",
     back: "Back",
-    editUntil: `You can change this until ${LOCK}.`,
     bringing: "Bringing someone?",
     plusOne: "Their name",
     plusOneName: "Your plus one",
@@ -274,8 +276,8 @@ export const en = {
     noSongs: "None yet",
     doneTitle: { all: "You're all set", none: "Thanks for letting us know", mixed: "Thanks, got it" },
     backHome: "Back to your invite",
-    sentLine: `Sent. You can change it until ${LOCK}.`,
-    updatedLine: `Updated. You can change it until ${LOCK}.`,
+    sentLine: `Sent. ${CHANGE_BY}`,
+    updatedLine: `Updated. ${CHANGE_BY}`,
     savingQuiet: "Sending…",
     savedOffline: "Saved on this phone. It'll send when you're back online.",
     changeReply: "Change my reply",

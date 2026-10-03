@@ -1069,7 +1069,7 @@ function sendConfirmation_(h, changes) {
     list: changes && changes[0] !== "No changes" ? { title: "What changed", items: changes } : null,
     rows: rows,
     button: { label: "See or change your RSVP", url: linkFor_(h.token) },
-    notes: ["You can change this until " + longDate_(prop_("CHANGES_LOCK")) + ".", "This link is just for your household, so please don't share it."],
+    notes: ["You can change your reply until " + longDate_(prop_("CHANGES_LOCK")) + ".", "This link is just for your household, so please don't share it."],
   })
   MailApp.sendEmail({
     to: emails.join(","),
