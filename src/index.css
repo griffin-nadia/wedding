@@ -538,28 +538,33 @@
 /* ─── RSVP on the letter ────────────────────────────────────────────────────── */
 .rsvp-overlay { position: fixed; inset: 0; z-index: 50; background: rgb(var(--sys-shadow-tint) / 0.35); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 [data-theme="lantern"] .rsvp-overlay { background: rgb(0 0 0 / 0.5); }
+/* The RSVP sheet is the letter: fixed header and footer, only the content scrolls. Height follows the content. */
 .rsvp-letter {
+  --sheet-pad: var(--space-5);
   position: fixed; z-index: 50;
-  inset: 12px 12px calc(12px + env(safe-area-inset-bottom));
-  max-width: none; margin: 0;
-  overflow-y: auto; overscroll-behavior: contain;
-  padding-bottom: 0;
+  top: 12px; left: 12px; right: 12px;
+  max-height: calc(100svh - 24px - env(safe-area-inset-bottom));
+  max-width: none; margin: 0; padding: 0; gap: 0;
+  display: flex; flex-direction: column; overflow: hidden;
 }
 .rsvp-letter::after { display: none; }
 @media (min-width: 768px) {
-  .rsvp-letter { inset: var(--letter-top) auto auto 50%; translate: -50% 0; width: min(var(--letter-width), calc(100vw - 48px)); max-height: calc(100svh - var(--letter-top) - 24px); }
+  .rsvp-letter { --sheet-pad: var(--space-6); top: var(--letter-top); left: 50%; right: auto; translate: -50% 0; width: min(var(--letter-width), calc(100vw - 48px)); max-height: min(80vh, calc(100svh - var(--letter-top) - 24px)); }
 }
 @media (min-width: 1024px) { .rsvp-letter { left: var(--letter-left); translate: none; } }
+.rsvp-head { flex: none; padding: var(--sheet-pad) calc(var(--sheet-pad) + 44px) var(--space-4) var(--sheet-pad); }
+.rsvp-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: var(--space-2) var(--sheet-pad) var(--sheet-pad); scrollbar-width: thin; scrollbar-color: var(--sys-line-strong) transparent; }
+.rsvp-done { padding-top: var(--sheet-pad); }
+@media (pointer: coarse) { .rsvp-body { scrollbar-width: none; } .rsvp-body::-webkit-scrollbar { display: none; } }
 .rsvp-letter[data-state="open"] { animation: letter-in var(--duration-settle) var(--ease-paper) both; }
 .rsvp-overlay[data-state="open"] { animation: fade-in var(--duration-settle) var(--ease-paper) both; }
 @keyframes letter-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-.rsvp-close { position: absolute; top: 16px; right: 16px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--sys-ink); outline: 2px solid transparent; outline-offset: 2px; }
-@media (min-width: 768px) { .rsvp-close { top: 24px; right: 24px; } }
+.rsvp-close { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--sys-ink); outline: 2px solid transparent; outline-offset: 2px; }
 .rsvp-close:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .rsvp-close:hover { background: var(--sys-fill); } }
-.rsvp-actions { position: sticky; bottom: 0; z-index: 1; display: flex; gap: var(--space-3); margin-inline: calc(-1 * var(--letter-pad)); margin-top: auto; padding: var(--space-4) var(--letter-pad) calc(var(--space-4) + env(safe-area-inset-bottom)); background: var(--letter-bg); border-top: 1px solid var(--sys-line); }
-.rsvp-letter > :last-child:not(.rsvp-actions) { padding-bottom: var(--letter-pad); }
+.rsvp-actions { flex: none; display: flex; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--sys-line); }
+@media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
 /* Steps slide the way you're going (300 ms); a fade only under reduced motion */
 .step-fwd { animation: step-fwd var(--duration-settle) var(--ease-paper) both; }
 .step-back { animation: step-back var(--duration-settle) var(--ease-paper) both; }
@@ -598,3 +603,22 @@
 .choice-card { display: flex; align-items: center; gap: var(--space-3); min-height: 64px; padding-inline: var(--space-4); border-radius: var(--radius-card); font-family: var(--font-label); font-size: var(--type-ui-size); line-height: var(--type-ui-leading); font-weight: 500; color: var(--sys-ink); }
 .toast-region { position: fixed; z-index: 60; left: 16px; right: 16px; bottom: calc(64px + 24px + 12px + env(safe-area-inset-bottom)); display: flex; justify-content: center; pointer-events: none; }
 @media (min-width: 768px) { .toast-region { left: auto; right: 24px; top: 88px; bottom: auto; justify-content: flex-end; } }
+/* Combobox: the text field's states; tags sit inside the field, results open straight under it */
+.combo-field { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-height: var(--input-height); padding: 6px var(--input-pad); border-radius: var(--input-radius); cursor: text; }
+.combo-input { flex: 1 1 96px; min-width: 96px; height: 36px; border: 0; outline: 0; background: transparent; font-family: var(--font-label); font-size: var(--input-font-size); color: var(--input-ink); caret-color: var(--input-caret); }
+.combo-input::placeholder { color: var(--sys-ink-muted); }
+.combo-tag { display: inline-flex; align-items: center; gap: var(--space-1); height: 32px; padding-left: var(--space-3); padding-right: var(--space-1); border-radius: var(--radius-chip); background: var(--input-selected-bg); color: var(--sys-ink); font-family: var(--font-label); font-size: var(--type-ui-small-size); font-weight: 500; }
+.combo-tag-x { display: grid; place-items: center; width: 24px; height: 24px; border-radius: var(--radius-chip); color: var(--sys-ink-muted); position: relative; outline: 2px solid transparent; }
+.combo-tag-x::after { content: ""; position: absolute; inset: -10px; }
+.combo-tag-x:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .combo-tag-x:hover { color: var(--sys-ink); } }
+.combo-list { position: absolute; z-index: 20; left: 0; right: 0; top: 100%; margin-top: var(--space-1); max-height: 320px; overflow-y: auto; padding: var(--space-1); border: 1px solid var(--sys-line); border-radius: var(--radius-card); background: var(--sys-surface-raised); box-shadow: var(--shadow-paper); }
+.combo-option { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: var(--space-1) var(--space-2); border-radius: var(--radius-chip); cursor: pointer; font-family: var(--font-label); font-size: var(--type-ui-size); color: var(--sys-ink); }
+.combo-option[aria-selected="true"] { background: var(--input-selected-bg); }
+@media (hover: hover) { .combo-option:hover { background: var(--input-selected-bg); } }
+.combo-note { padding: var(--space-3) var(--space-2); font-family: var(--font-label); font-size: var(--type-ui-small-size); color: var(--sys-ink-muted); }
+/* Chip: 36 tall, 44 tap area, Inter 14, wraps with 8px gaps */
+.chip { position: relative; display: inline-flex; align-items: center; gap: var(--space-1); height: 36px; padding-inline: var(--space-3); border-radius: var(--radius-chip); font-family: var(--font-label); font-size: var(--type-ui-small-size); font-weight: 500; color: var(--sys-ink); }
+.chip::after { content: ""; position: absolute; inset: -4px 0; }
+/* Checkbox rows: the whole 44px row is the target */
+.check-row { display: flex; align-items: flex-start; gap: var(--space-3); min-height: 44px; padding-block: 10px; cursor: pointer; }

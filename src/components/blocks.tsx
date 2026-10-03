@@ -3,11 +3,10 @@ import { Check, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 
-/** Selectable chip with a visible tick (dietary, allergens, flying from). Same states as every input. */
+/** Chip: many-of-many with no consequence (flying from, tags). 36 tall (44 tap area), Inter 14, 4px radius; selected = fill + 2px accent + tick. */
 export function Chip({ on, onClick, invalid = false, children }: { on: boolean; onClick: () => void; invalid?: boolean; children: ReactNode }) {
   return (
-    <button type="button" aria-pressed={on} aria-invalid={invalid && !on ? true : undefined} onClick={onClick}
-      className={cn("state inline-flex min-h-11 items-center gap-2 rounded-sm text-foreground", on ? "pr-4 pl-3" : "px-4")}>
+    <button type="button" aria-pressed={on} aria-invalid={invalid && !on ? true : undefined} onClick={onClick} className="state chip">
       {on && <Check className="chip-tick size-4 text-primary" strokeWidth={3} aria-hidden />}
       {children}
     </button>

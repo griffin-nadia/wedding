@@ -1,4 +1,5 @@
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Disclosure } from "@/components/disclosure"
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useLang } from "@/lib/lang"
 
 /** FAQs: one numbered accordion (numbers help guests point to a question when they message). Answers are body. */
@@ -7,7 +8,7 @@ export function FaqsPage() {
   return (
     <>
       <h1 className="heading">{t.qa.title}</h1>
-      <Accordion type="single" collapsible>
+      <Disclosure label={t.qa.title}>
         {t.qa.items.map((item, i) => (
           <AccordionItem key={item.q} value={`q${i}`}>
             <AccordionTrigger>
@@ -19,7 +20,7 @@ export function FaqsPage() {
             <AccordionContent><p className="pl-10">{item.a}</p></AccordionContent>
           </AccordionItem>
         ))}
-      </Accordion>
+      </Disclosure>
       <p className="hand">{t.qa.contact}</p>
     </>
   )

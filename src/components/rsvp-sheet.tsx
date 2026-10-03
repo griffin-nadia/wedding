@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input"
 import { RadioGroup } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { FormField } from "@/components/form-field"
+import { Combobox } from "@/components/combobox"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
-import { Chip, ChoiceCard, FieldError, ReviewRow, StepProgress } from "@/components/blocks"
+import { ChoiceCard, FieldError, ReviewRow, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
@@ -27,26 +28,56 @@ const MAX = { name: 40, song: 200, message: 2000 }
 const TRIP = { from: "2027-09-01", to: "2027-11-30" }
 
 /**
- * Dietary is saved as words: "Vegetarian, Gluten free, Allergy: Peanuts / Sesame / kiwi".
- * Inside the allergy part, items are split by " / " (commas already separate the needs).
+ * Dietary is saved as words: "Vegetarian, Nut allergy, Other: kiwi". Older answers ("Allergy: Peanuts / Sesame")
+ * map onto the new options, anything unknown becomes Other.
  */
-const ALLERGY = "Allergy" // same word as t.rsvp.allergy
-type Diet = { set: string[]; allergens: string[]; other: string }
-export function parseDiet(v: string, known: readonly string[]): Diet {
-  const parts = (v || "").split(",").map((x) => x.trim()).filter((x) => x && x !== "None")
-  const allergyPart = parts.find((x) => x.startsWith(ALLERGY))
-  const items = allergyPart?.includes(":") ? allergyPart.slice(allergyPart.indexOf(":") + 1).split("/").map((x) => x.trim()).filter(Boolean) : []
-  const isKnown = (x: string) => known.find((k) => k.toLowerCase() === x.toLowerCase())
-  return {
-    set: parts.map((x) => (x.startsWith(ALLERGY) ? ALLERGY : x)),
-    allergens: items.map(isKnown).filter(Boolean) as string[],
-    other: items.filter((x) => !isKnown(x)).join(", "),
+const OTHER = "Other"
+type Diet = { picked: string[]; other: string }
+export function parseDiet(v: string, options: readonly string[]): Diet {
+  const picked: string[] = [], other: string[] = []
+  const add = (x: string) => { if (!picked.includes(x)) picked.push(x) }
+  for (const part of (v || "").split(",").map((x) => x.trim()).filter((x) => x && x !== "None")) {
+    const known = options.find((o) => o.toLowerCase() === part.toLowerCase())
+    if (known) add(known)
+    else if (/^other:/i.test(part)) { add(OTHER); other.push(part.slice(part.indexOf(":") + 1).trim()) }
+    else if (/^allergy/i.test(part)) {
+      for (const item of part.slice(part.indexOf(":") + 1).split("/").map((x) => x.trim()).filter(Boolean)) {
+        if (/nut|peanut/i.test(item)) add("Nut allergy")
+        else if (/shellfish/i.test(item)) add("Shellfish allergy")
+        else if (/egg/i.test(item)) add("Egg allergy")
+        else { add(OTHER); other.push(item) }
+      }
+    } else { add(OTHER); other.push(part) }
   }
+  return { picked, other: other.filter(Boolean).join(" ") }
 }
 export function dietString(d: Diet) {
-  const items = [...d.allergens, ...(d.other.trim() ? [d.other.replace(/[,/]/g, " ").replace(/\s+/g, " ").trim()] : [])]
-  const out = d.set.map((x) => (x === ALLERGY ? `${ALLERGY}: ${items.join(" / ")}`.trimEnd() : x))
+  const out = d.picked.map((x) => (x === OTHER ? `${OTHER}: ${d.other.replace(/[,]/g, " ").replace(/\s+/g, " ").trim()}`.trim() : x))
   return out.length ? out.join(", ") : "None"
+}
+
+/** "Any dietary needs?" for one person: the shared combobox, many picks as tags, Other asks for a word. */
+function DietField({ g, name, error, onChange }: { g: Guest; name: string; error?: string; onChange: (dietary: string) => void }) {
+  const { t } = useLang()
+  const options = t.rsvp.dietaryOptions
+  const d = parseDiet(g.dietary, options)
+  const [q, setQ] = useState("")
+  const left = options.filter((o) => !d.picked.includes(o) && o.toLowerCase().includes(q.trim().toLowerCase()))
+  const set = (next: Diet) => onChange(dietString(next))
+  return (
+    <div className="flex flex-col gap-(--form-block-gap)">
+      <Combobox id={`diet-${g.id}`} label={`${t.rsvp.dietary} (${name})`} help={t.rsvp.dietaryHelp} placeholder={t.rsvp.dietaryPlaceholder} openOnFocus
+        tags={d.picked.map((x) => ({ key: x, label: x }))} onRemoveTag={(o) => set({ ...d, picked: d.picked.filter((x) => x !== o.key), other: o.key === OTHER ? "" : d.other })}
+        query={q} onQuery={setQ} options={left.map((x) => ({ key: x, label: x }))} onPick={(o) => { set({ ...d, picked: [...d.picked, o.key] }); setQ("") }}
+        status={left.length ? "results" : "empty"} emptyText={t.rsvp.dietaryEmpty} removeLabel={t.rsvp.removeSong} />
+      {d.picked.includes(OTHER) && (
+        <FormField id={`diet-other-${g.id}`} label={t.rsvp.dietaryOther(name)} error={error}>
+          <Input id={`diet-other-${g.id}`} value={d.other} maxLength={60} data-filled={Boolean(d.other.trim())} aria-invalid={Boolean(error) || undefined}
+            aria-describedby={error ? `diet-other-${g.id}-err` : undefined} onChange={(e) => set({ ...d, other: e.target.value })} />
+        </FormField>
+      )}
+    </div>
+  )
 }
 
 /** A plus one still called "Guest" in the sheet shows as a blank name box. */
@@ -122,14 +153,12 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
 
   if (!household) return null
   const locked = isLocked()
-  const known = t.rsvp.allergens
 
   const nameOf = (g: Guest) => g.firstName || t.rsvp.plusOneName
   const setGuest = (id: string, patch: Partial<Guest>) => {
     setForm((f) => ({ ...f, guests: f.guests.map((g) => (g.id === id ? { ...g, ...patch } : g)) }))
-    setMissing((m) => { const n = { ...m }; delete n[`answer-${id}`]; delete n[`allergy-${id}`]; return n })
+    setMissing((m) => { const n = { ...m }; delete n[`answer-${id}`]; delete n[`diet-other-${id}`]; return n })
   }
-  const setDiet = (g: Guest, d: Diet) => setGuest(g.id, { dietary: dietString(d) })
   const coming = form.guests.filter((g) => g.attending === "yes")
   const songsFilled = form.songs.map((x) => x.trim()).filter(Boolean)
   const outside = (d: string) => Boolean(d) && (d < TRIP.from || d > TRIP.to)
@@ -143,8 +172,8 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
     if (step === 1) for (const g of form.guests) if (!g.attending) m[`answer-${g.id}`] = t.rsvp.answerMissing(nameOf(g))
     if (step === 2) {
       for (const g of coming) {
-        const d = parseDiet(g.dietary, known)
-        if (d.set.includes(ALLERGY) && !d.allergens.length && !d.other.trim()) m[`allergy-${g.id}`] = t.rsvp.allergyMissing(nameOf(g))
+        const d = parseDiet(g.dietary, t.rsvp.dietaryOptions)
+        if (d.picked.includes(OTHER) && !d.other.trim()) m[`diet-other-${g.id}`] = t.rsvp.dietaryOtherMissing
       }
       if (dateError) m.arr = dateError
     }
@@ -216,8 +245,8 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
         <Dialog.Content className="letter rsvp-letter" aria-describedby={undefined}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}>
           <Dialog.Close className="rsvp-close press" aria-label={t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
-          {done ? <Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /> : <>
-          <header className="flex flex-col gap-3 pr-12">
+          {done ? <div className="rsvp-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
+          <header className="rsvp-head flex flex-col gap-3">
             <p className="label-caps text-muted-foreground">{t.rsvp.step(step)}</p>
             <Dialog.Title ref={heading} tabIndex={-1} className="heading outline-none">
               {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : t.rsvp.checkTitle}
@@ -225,7 +254,8 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
             <StepProgress step={step} of={3} label={t.rsvp.step(step)} />
           </header>
 
-          <div ref={body} key={step} className={cn("rsvp-step flex flex-col gap-(--form-group-gap)", dir === "fwd" ? "step-fwd" : "step-back")}>
+          <div ref={body} className="rsvp-body">
+          <div key={step} className={cn("rsvp-step flex flex-col gap-(--form-group-gap)", dir === "fwd" ? "step-fwd" : "step-back")}>
             {step === 1 && form.guests.map((g) => (
               <fieldset key={g.id} className="flex flex-col gap-3">
                 <legend className="sr-only">{nameOf(g)}</legend>
@@ -255,38 +285,9 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
 
             {step === 2 && (
               <>
-                {coming.map((g) => {
-                  const d = parseDiet(g.dietary, known)
-                  const err = missing[`allergy-${g.id}`]
-                  return (
-                    <div key={g.id} className="flex flex-col gap-3" role="group" aria-labelledby={`diet-${g.id}`}>
-                      <p id={`diet-${g.id}`} className="font-semibold text-foreground">{t.rsvp.dietary} <span className="font-normal text-body">({nameOf(g)})</span></p>
-                      <div className="flex flex-wrap gap-2">
-                        {t.rsvp.dietaryOptions.map((o) => {
-                          const on = d.set.includes(o)
-                          return <Chip key={o} on={on} onClick={() => setDiet(g, { ...d, set: on ? d.set.filter((x) => x !== o) : [...d.set, o] })}>{o}</Chip>
-                        })}
-                      </div>
-                      {d.set.includes(ALLERGY) && (
-                        <div id={`allergy-${g.id}`} tabIndex={-1} role="group" aria-labelledby={`allergy-label-${g.id}`} aria-describedby={err ? `allergy-${g.id}-err` : undefined}
-                          className="allergy-panel flex flex-col gap-3 rounded-md bg-section-alt p-4 outline-none">
-                          <p id={`allergy-label-${g.id}`} className="text-foreground">{t.rsvp.allergyLabel(nameOf(g))}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {known.map((a) => {
-                              const on = d.allergens.includes(a)
-                              return <Chip key={a} on={on} onClick={() => setDiet(g, { ...d, allergens: on ? d.allergens.filter((x) => x !== a) : [...d.allergens, a] })}>{a}</Chip>
-                            })}
-                          </div>
-                          <FormField id={`allergy-other-${g.id}`} label={t.rsvp.allergyOther}>
-                            <Input id={`allergy-other-${g.id}`} value={d.other} maxLength={60} data-filled={Boolean(d.other.trim())} aria-invalid={Boolean(err) || undefined}
-                              onChange={(e) => setDiet(g, { ...d, other: e.target.value })} />
-                          </FormField>
-                          <FieldError id={`allergy-${g.id}-err`}>{err}</FieldError>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
+                {coming.map((g) => (
+                  <DietField key={g.id} g={g} name={nameOf(g)} error={missing[`diet-other-${g.id}`]} onChange={(dietary) => setGuest(g.id, { dietary })} />
+                ))}
                 {coming.length > 0 && <>
                 <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song}
                   t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded }} />
@@ -326,8 +327,8 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                   )}
                   <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
                 </dl>
-                <label htmlFor="photos" className="state flex min-h-11 cursor-pointer items-start gap-3 rounded-md p-4">
-                  <Checkbox id="photos" className="mt-1 size-5 shrink-0" checked={form.photos === true}
+                <label htmlFor="photos" className="check-row">
+                  <Checkbox id="photos" className="mt-0.5 shrink-0" checked={form.photos === true}
                     onCheckedChange={(v) => setForm((f) => ({ ...f, photos: v === true }))} />
                   {t.rsvp.photos}
                 </label>
@@ -336,6 +337,8 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
             )}
             {error && <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
+            {step === 3 && <p className="text-sm text-muted-foreground">{t.rsvp.privacy}</p>}
+          </div>
           </div>
 
           <footer className="rsvp-actions">
@@ -344,7 +347,6 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
               ? <Button size="lg" className="flex-1" onClick={next}>{t.rsvp.next}</Button>
               : <Button size="lg" className="flex-1" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
           </footer>
-          {step === 3 && <p className="text-sm text-muted-foreground">{t.rsvp.privacy}</p>}
           </>}
         </Dialog.Content>
       </Dialog.Portal>
@@ -366,7 +368,7 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
   }, [answer, titleRef])
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex items-center gap-5 pr-12">
+      <header className="flex items-center gap-5 pr-10">
         {answer !== "none" && <Hanko stamp />}
         <div className="flex flex-col gap-2">
           <p className="label-caps text-muted-foreground">{result.updated ? t.rsvp.updatedEyebrow : t.rsvp.savedEyebrow}</p>

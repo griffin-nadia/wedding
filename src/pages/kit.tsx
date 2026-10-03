@@ -18,6 +18,7 @@ import { VenueMap } from "@/components/venue-map"
 import { InlineSubmit } from "@/components/inline-submit"
 import { FormField } from "@/components/form-field"
 import { SongPicker } from "@/components/song-picker"
+import { Combobox } from "@/components/combobox"
 import { toast } from "@/components/toast"
 import { COUPLE } from "@/content/en"
 import { useLang } from "@/lib/lang"
@@ -97,16 +98,16 @@ const GROUPS: Group[] = [
           ))}
         </>
       ) },
-      { id: "chip", name: "Chip", tokens: "--input-*", purpose: "Dietary needs, allergens, flying from. A tick, never colour alone.", render: () => <ChipDemo /> },
-      { id: "checkbox", name: "Checkbox", purpose: "Photos consent and the travel checklist.", render: () => (
+      { id: "chip", name: "Chip", tokens: "--input-*", purpose: "Many-of-many with no consequence (flying from). 36 tall with a 44 tap area, Inter 14, 4px radius, 8px gaps, wraps. A tick, never colour alone.", render: () => <ChipDemo /> },
+      { id: "checkbox", name: "Checkbox", purpose: "A single yes or no with a sentence (photo consent, the travel checklist). 24px box, the whole 44px row is the target.", render: () => (
         <>
           <Row label="off"><Checkbox aria-label="off" /></Row>
           <Row label="on"><Checkbox aria-label="on" defaultChecked /></Row>
           <Row label="disabled"><Checkbox aria-label="disabled" disabled /></Row>
-          <Row label="in a card"><label className="state flex max-w-sm cursor-pointer items-start gap-3 rounded-md p-4"><Checkbox className="mt-1" defaultChecked />Happy for photos with you in them to be shared with other guests</label></Row>
+          <Row label="row"><label className="check-row max-w-sm"><Checkbox className="mt-0.5" defaultChecked />Happy for photos with you in them to be shared with other guests</label></Row>
         </>
       ) },
-      { id: "combobox", name: "Song search", tokens: "--input-*", purpose: "A combobox with the text field's states exactly. Results: card, line, 8px radius, active row on the fill.", render: () => <SongDemo /> },
+      { id: "combobox", name: "Combobox", tokens: "--input-*", purpose: "One component for dietary needs and songs: the text field's states exactly, picked items as tags inside the field, results straight under it in 44px rows, skeleton rows after 150 ms.", render: () => <><DietDemo /><SongDemo /></> },
       { id: "inline", name: "Inline submit", purpose: "Can't find your invite: email in, link out.", render: () => (
         <>
           <Row label="default"><InlineSubmit id="k-in" className="w-full max-w-sm" label="Your email" helper="The one your invite went to." submitLabel="Send my link" onSubmit={() => {}} /></Row>
@@ -177,9 +178,22 @@ function ChipDemo() {
     <>
       <Row label="live">{["Vegetarian", "Vegan", "Gluten free", "Allergy"].map((x) => <Chip key={x} on={on.includes(x)} onClick={() => t(x)}>{x}</Chip>)}</Row>
       {(["hover", "focus", "pressed"] as const).map((s) => (
-        <Row key={s} label={s}><span {...force(s)} className="state inline-flex min-h-11 items-center rounded-sm px-4 text-foreground">Peanuts</span></Row>
+        <Row key={s} label={s}><span {...force(s)} className="state chip">Vegetarian</span></Row>
       ))}
     </>
+  )
+}
+
+function DietDemo() {
+  const all = ["Vegetarian", "Vegan", "Gluten free", "Dairy free", "Halal", "Kosher", "Nut allergy", "Shellfish allergy", "Egg allergy", "Other"]
+  const [picked, setPicked] = useState(["Vegetarian"])
+  const [q, setQ] = useState("")
+  const left = all.filter((o) => !picked.includes(o) && o.toLowerCase().includes(q.toLowerCase()))
+  return (
+    <Combobox id={`kit-diet-${Math.random().toString(36).slice(2, 6)}`} className="max-w-md" label="Any dietary needs? (Sam)" help="Pick as many as you need." placeholder="Start typing, or pick from the list" openOnFocus
+      tags={picked.map((x) => ({ key: x, label: x }))} onRemoveTag={(o) => setPicked(picked.filter((x) => x !== o.key))}
+      query={q} onQuery={setQ} options={left.map((x) => ({ key: x, label: x }))} onPick={(o) => { setPicked([...picked, o.key]); setQ("") }}
+      status={left.length ? "results" : "empty"} emptyText="Nothing matches. Pick Other and tell us in a word." />
   )
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Disclosure } from "@/components/disclosure"
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DriverCard } from "@/components/driver-card"
 import { FlyingFrom } from "@/components/flying-from"
@@ -45,7 +46,7 @@ export function TravelPage() {
         <p>{g.intro}</p>
       </header>
       <DriverCard />
-      <Accordion type="multiple" aria-label={g.rowsLabel}>
+      <Disclosure label={g.rowsLabel}>
         <AccordionItem value="flying">
           <AccordionTrigger>{g.flyingTitle}</AccordionTrigger>
           <AccordionContent>
@@ -67,7 +68,7 @@ export function TravelPage() {
           <AccordionTrigger>{g.earlyTitle}</AccordionTrigger>
           <AccordionContent><p>{g.earlyBody}</p></AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Disclosure>
       </section>
 
       <section id="stay" aria-labelledby="stay-title" className="flex scroll-mt-24 flex-col gap-4">
@@ -94,7 +95,7 @@ export function TravelPage() {
             const done = ticks.includes(item.title)
             return (
               <li key={item.title} className="flex items-start gap-3">
-                <Checkbox id={id} checked={done} onCheckedChange={(v) => toggle(item.title, v === true)} className="mt-1 size-5 shrink-0" aria-describedby={`${id}-body`} />
+                <Checkbox id={id} checked={done} onCheckedChange={(v) => toggle(item.title, v === true)} className="mt-0.5 shrink-0" aria-describedby={`${id}-body`} />
                 <div className="flex flex-col gap-1">
                   <label htmlFor={id} className="cursor-pointer font-semibold text-foreground">{item.title}{done && <span className="ml-2 font-normal text-muted-foreground">{t.travel.ticked}</span>}</label>
                   <p id={`${id}-body`}>{item.body}</p>
