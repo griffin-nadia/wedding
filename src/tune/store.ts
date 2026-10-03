@@ -12,7 +12,10 @@ export const OPTIONS: { key: string; label: string; values: [string, string][] }
   { key: "texture", label: "Paper texture on the letter", values: [["on", "On"], ["off", "Off"]] },
   { key: "nav", label: "Nav from 768", values: [["bar", "Top bar"], ["dock", "Dock at the bottom"]] },
   { key: "peek", label: "Envelope peek on hover", values: [["on", "On"], ["off", "Off"]] },
-  { key: "green", label: "How much green", values: [["more", "More"], ["less", "Less"]] },
+  { key: "arrival", label: "Arrival", values: [["envelope", "Envelope"], ["noren", "Noren curtain"]] },
+  { key: "scene", label: "Scenes", values: [["photo", "Photos"], ["plate", "Painted plates"]] },
+  { key: "daytabs", label: "The day", values: [["off", "No tabs"], ["on", "Tabs"]] },
+  { key: "story", label: "Our story", values: [["map", "Map"], ["list", "List"]] },
 ]
 
 const KEY = "ng-tune"

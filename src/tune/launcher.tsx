@@ -10,8 +10,16 @@ import { apply, load } from "./store"
 export const tuneEnabled = import.meta.env.DEV || import.meta.env.VITE_TUNE === "1"
 const Panel = tuneEnabled ? lazy(() => import("./panel").then((m) => ({ default: m.TunePanel }))) : null
 
-// Saved overrides apply on every page load (only where tuning is enabled)
-if (tuneEnabled && typeof window !== "undefined") apply(load())
+// Saved overrides apply on every page load (only where tuning is enabled), and follow changes made
+// in another tab or in the lab's side panel (the lab previews the real site in frames).
+if (tuneEnabled && typeof window !== "undefined") {
+  apply(load())
+  window.addEventListener("storage", (e) => {
+    if (e.key !== "ng-tune") return
+    apply(load())
+    window.dispatchEvent(new Event("ng-tune"))
+  })
+}
 
 /** "Adjust" button (used on /kit). */
 export function TuneLauncher() {

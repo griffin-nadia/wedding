@@ -61,7 +61,7 @@ function selectorFor(el: Element): string {
   return parts.join(" > ")
 }
 
-export function TunePanel({ onClose }: { onClose: () => void }) {
+export function TunePanel({ onClose, docked = false }: { onClose?: () => void; docked?: boolean }) {
   const tokens = useMemo(parse, [])
   const [state, setState] = useState<TuneState>(load)
   const [mode, setMode] = useState<"autumn" | "lantern">(() => (document.documentElement.dataset.theme === "lantern" ? "lantern" : "autumn"))
@@ -132,10 +132,10 @@ export function TunePanel({ onClose }: { onClose: () => void }) {
         return r ? <span key={n.id} title={n.text} className="tune-pin" style={{ left: r.left + 4, top: r.top + 4 }}>{i + 1}</span> : null
       })}
       {draft && <NoteBox x={draft.x} y={draft.y} onSave={addNote} onCancel={() => setDraft(null)} />}
-      <div ref={host} role="dialog" aria-label="Adjust" className="tune-panel" data-theme={document.documentElement.dataset.theme}>
+      <div ref={host} role={docked ? "region" : "dialog"} aria-label="Adjust" className={cn("tune-panel", docked && "tune-docked")} data-theme={document.documentElement.dataset.theme}>
         <header className="flex items-center gap-2 border-b border-border p-3">
           <p className="label-caps flex-1 text-foreground">Adjust · {changed} changed</p>
-          <button type="button" onClick={onClose} aria-label="Close" className="press grid size-11 place-items-center rounded-sm text-foreground"><X className="size-5" aria-hidden /></button>
+          {onClose && <button type="button" onClick={onClose} aria-label="Close" className="press grid size-11 place-items-center rounded-sm text-foreground"><X className="size-5" aria-hidden /></button>}
         </header>
         <div className="flex gap-1 border-b border-border p-2" role="tablist">
           {(["tokens", "options", "notes"] as const).map((x) => (
