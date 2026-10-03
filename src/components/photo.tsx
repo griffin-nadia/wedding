@@ -8,10 +8,10 @@ type Entry = { formats: Record<string, number[]>; wide: Record<string, number[]>
 const PHOTOS = manifest as Record<string, Entry>
 const src = (f: string) => `${import.meta.env.BASE_URL}photos/${f}`
 
-export type Treatment = "full" | "print" | "arch" | "split"
+export type Treatment = "full" | "print" | "split"
 
 /**
- * One photo in one of four frames (A full-bleed, B print on paper, C arched window, D editorial split).
+ * One photo in one of three frames (full-bleed, print on paper, editorial split). The arched window went with v3.
  * Until Nadia says photos can be public (PUBLIC_PHOTOS), the same frame shows a paper placeholder with
  * the caption, so nothing jumps when real photos arrive.
  */
@@ -64,7 +64,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
   }
   const frame = (
     <div className={cn("relative overflow-hidden bg-muted bg-cover bg-center",
-      treatment === "arch" && "rounded-t-[999px] rounded-b-md", treatment === "split" && "rounded-md", treatment === "print" && "rounded-sm")}
+      treatment === "split" && "rounded-md", treatment === "print" && "rounded-sm")}
       style={{ aspectRatio: ratio, ...blur }}>
       {image}
     </div>
@@ -74,15 +74,6 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
       <figure className={cn("photo-print", className)}>
         {frame}
         {words.caption && <figcaption className="mt-2 text-sm text-muted-foreground">{words.caption}</figcaption>}
-      </figure>
-    )
-  }
-  if (treatment === "arch") {
-    return (
-      <figure className={cn("space-y-3 text-center", className)}>
-        {frame}
-        {children}
-        {words.caption && __PUBLIC_PHOTOS__ && <figcaption className="text-sm text-muted-foreground">{words.caption}</figcaption>}
       </figure>
     )
   }

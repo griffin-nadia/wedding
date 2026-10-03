@@ -120,7 +120,7 @@ export function JourneyMap({ stops, labels, showFlying = false }: { stops: Stop[
         <SheetContent side="bottom" className="gap-4 rounded-t-(--radius-section) bg-background p-6">
           {open !== null && (
             <>
-              {stops[open].photo && <Photo name={stops[open].photo!} treatment="arch" sizes="240px" className="mx-auto w-48" />}
+              {stops[open].photo && <Photo name={stops[open].photo!} treatment="split" sizes="240px" className="mx-auto w-48" />}
               <p className="text-sm text-muted-foreground">{open + 1} of {stops.length}</p>
               <SheetTitle className="font-display text-2xl font-normal">{stops[open].title}</SheetTitle>
               <SheetDescription className="text-base text-body">{stops[open].body}</SheetDescription>
