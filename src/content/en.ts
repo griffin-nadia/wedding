@@ -147,7 +147,7 @@ export const en = {
     appleCalendar: "Apple or Outlook (.ics)",
     print: "Print the day",
     now: "Now",
-    rainPlan: "If it rains, we'll move the ceremony indoors. The venue will confirm the room.",
+    rainPlan: "If it rains, the ceremony moves inside to one of the venue's chapels.",
     venueFacts: "The Sodoh was the home of the painter Takeuchi Seihō. Its 1.4-acre garden changes colour with the seasons.",
     gettingTitleJa: "行き方",
     stay: [
@@ -162,7 +162,7 @@ export const en = {
     tickHint: "Tick things off as you go. Your ticks stay on this device.",
     ticked: "Done",
     items: [
-      { title: "Passport", body: "Your passport needs at least 6 months left on it after you fly home, so renew it soon if it's close. Aussies don't need a visa for a short trip to Japan. We'll tell you if the entry rules change before the trip." },
+      { title: "Passport", body: "Check your passport has at least 6 months left after the date you fly home. If you need to renew it, do it soon, it can take a while. Aussies don't need a visa for a short trip to Japan. We'll tell you if the entry rules change before the trip." },
       { title: "Flights", body: "Book flights as early as you can. The date's locked in, so there's no chance of missing it. Stay a few days either side if you can: we'll share ideas for things to do before and after the wedding." },
       { title: "Where to stay", body: "Book somewhere once your flights are sorted. We'll share a few hotels and Airbnbs near the venue. Japanese hotel rooms are small and simple, so plan for that. Happy to share with other guests? Go for it." },
       { title: "SIM or pocket wifi", body: "Sort out a SIM, eSIM or pocket wifi before you go. Here are a few we've heard good things about.", links: [
