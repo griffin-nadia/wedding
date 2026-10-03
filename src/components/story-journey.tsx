@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getFlying, type Flying } from "@/lib/api"
 import type { Chapter } from "@/lib/content"
@@ -30,12 +30,14 @@ function placeOf(c: Chapter, i: number, n: number): [number, number] {
  * the same words plainly. Guests' Flying from lines (counts only, never names) join as faint dotted lines when on.
  * Phones: the map on top, one stop card under it with dots and Next stop. Still under reduced motion.
  */
-export function StoryJourney({ chapters, showFlying = false }: { chapters: Chapter[]; showFlying?: boolean }) {
+export function StoryJourney({ chapters, showFlying = false, drag = false }: { chapters: Chapter[]; showFlying?: boolean; drag?: boolean }) {
   const { t } = useLang()
   const [on, setOn] = useState(0)
   const [list, setList] = useState(false)
   const [flying, setFlying] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
   useEffect(() => { if (showFlying) void getFlying().then(setFlying) }, [showFlying])
+  const svg = useRef<SVGSVGElement>(null)
+  const [held, setHeld] = useState<[number, number] | null>(null)
   const n = chapters.length
   const go = (i: number) => setOn((i + n) % n)
   const pts = chapters.map((c, i) => placeOf(c, i, n))
@@ -50,7 +52,7 @@ export function StoryJourney({ chapters, showFlying = false }: { chapters: Chapt
   )
   return (
     <div className="journey" onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
-      <svg viewBox="0 0 400 320" className="journey-map" role="group" aria-label={t.story.title}>
+      <svg ref={svg} viewBox="0 0 400 320" className="journey-map" role="group" aria-label={t.story.title} style={drag ? { touchAction: "none" } : undefined}>
         {/* land: Australia, Japan, a corner of Canada (soft, painted feel) */}
         <path className="journey-land" d="M60 236c26-30 82-40 118-30 30-14 60-2 74 22 12 24 0 50-24 64-34 18-90 20-128 8-36-12-60-34-40-64z" />
         <path className="journey-land journey-land-green" d="M120 150c8-20 22-34 30-52 8-16 20-30 34-38 8 8 0 22-8 32-12 16-22 32-34 48-8 12-18 18-22 10z" />
@@ -68,6 +70,21 @@ export function StoryJourney({ chapters, showFlying = false }: { chapters: Chapt
             <text y="-12" textAnchor="middle" className="journey-label">{chapters[i].title}</text>
           </g>
         ))}
+        {/* Drag the seal (Options → Our story): it follows the finger and the nearest chapter opens as it passes */}
+        {drag && (() => {
+          const [x, y] = held ?? pts[on]
+          const toSvg = (e: React.PointerEvent) => { const m = svg.current!.getScreenCTM()!.inverse(); const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m); return [p.x, p.y] as [number, number] }
+          const nearest = ([px, py]: [number, number]) => pts.reduce((b, [sx, sy], i) => (Math.hypot(sx - px, sy - py) < Math.hypot(pts[b][0] - px, pts[b][1] - py) ? i : b), 0)
+          return (
+            <g aria-hidden className="journey-handle" transform={`translate(${x} ${y})`}
+              onPointerDown={(e) => { (e.currentTarget as Element).setPointerCapture(e.pointerId); setHeld(toSvg(e)) }}
+              onPointerMove={(e) => { if (!held) return; const p = toSvg(e); setHeld(p); setOn(nearest(p)) }}
+              onPointerUp={() => setHeld(null)} onPointerCancel={() => setHeld(null)}>
+              <circle r="18" className="journey-hit" />
+              <circle r="9" className="journey-handle-dot" />
+            </g>
+          )
+        })()}
         <g transform={`translate(${KYOTO[0] - 14} ${KYOTO[1] - 14})`} aria-hidden>
           <rect width="28" height="28" rx="6" className="journey-seal" />
           <text x="14" y="20" textAnchor="middle" className="journey-seal-text">京</text>

@@ -42,6 +42,8 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const setPull = (v: number) => stage.current?.style.setProperty("--pull", String(v))
   const onDown = (e: React.PointerEvent) => { if (phase !== "sealed") return; drag.current = { y: e.clientY, moved: false }; stage.current?.classList.add("is-pulling") }
   const onMove = (e: React.PointerEvent) => {
+    // Tilt toward a mouse (v3 T, Options → Arrival): a few degrees, like a card on a table
+    if (e.pointerType === "mouse" && !drag.current && stage.current) { stage.current.style.setProperty("--tx", (e.clientX / innerWidth - 0.5).toFixed(3)); stage.current.style.setProperty("--ty", (e.clientY / innerHeight - 0.5).toFixed(3)) }
     const d = drag.current; if (!d) return
     const dy = d.y - e.clientY
     if (Math.abs(dy) > 6) { d.moved = true; (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId) }

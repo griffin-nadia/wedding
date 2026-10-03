@@ -272,6 +272,8 @@ export const en = {
     message: "Anything else? (optional)",
     checkTitle: "All good?",
     send: "Send our reply",
+    holdSend: "Hold to send our reply",
+    holdHint: "Press and hold until it fills. Enter also sends.",
     next: "Next",
     back: "Back",
     bringing: "Bringing someone?",

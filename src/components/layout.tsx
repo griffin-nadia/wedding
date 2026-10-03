@@ -7,7 +7,6 @@ import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { arrivalScene, pageOf, sceneFor, sceneKind } from "@/lib/scenes"
-import { CreditMark } from "@/components/credit-mark"
 import { setStoryLetter, usePageTurn, usePaperScroll } from "@/lib/page-turn"
 import { usePaperGL } from "@/components/letter/use-paper-gl"
 import { LanternToggle } from "@/components/lantern-toggle"
@@ -17,6 +16,9 @@ import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
 import { SiteTune } from "@/tune/launcher"
 // Desktop only, so it loads after the first screen
+// Desktop only too: the credit mark and the Desk preview tabs
+const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
+const DeskTabs = lazy(() => import("@/components/desk-tabs").then((m) => ({ default: m.DeskTabs })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
 import { useOption } from "@/lib/options"
 
@@ -68,25 +70,6 @@ function Nav() {
   )
 }
 
-/**
- * Desk (preview, v3 S): from 1024 with Navigation → Desk, the other letters peek out from behind this one
- * as paper tabs down its right edge; clicking one brings that letter forward. Replaces the top-bar links.
- */
-function DeskTabs() {
-  const { t } = useLang()
-  const { story } = useContent()
-  const { pathname } = useLocation()
-  const links = story.length ? [...baseLinks, storyLink] : baseLinks
-  return (
-    <nav aria-label="Letters on the desk" className="desk-tabs">
-      <ul>
-        {links.filter((l) => l.to !== (pathname.replace(/\/$/, "") || "/")).map((l, i) => (
-          <li key={l.to} style={{ rotate: `${[1.5, -1, 2, -1.5, 1][i % 5]}deg` }}><Link to={l.to} className="desk-tab">{t.nav[l.key]}</Link></li>
-        ))}
-      </ul>
-    </nav>
-  )
-}
 
 
 /**
@@ -148,9 +131,9 @@ export function Layout() {
         </Arrival>
         {page === "home" && !sealed && <HomeCountdown />}
       </main>
-      {!sealed && <DeskTabs />}
+      {!sealed && <Suspense><DeskTabs /></Suspense>}
       <Suspense><PhoneQr /></Suspense>
-      <CreditMark />
+      <Suspense><CreditMark /></Suspense>
       <SiteTune />
     </>
   )

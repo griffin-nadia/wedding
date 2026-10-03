@@ -945,3 +945,25 @@ svg.lucide { stroke-width: 1.5; }
 @media (min-width: 768px) { .journey-dots { display: none; } }
 @media (max-width: 767px) { .journey-cards { display: none; } }
 @media (prefers-reduced-motion: reduce) { .journey-draw { animation: none; stroke-dashoffset: 0; } }
+/* Hold to stamp (v3 T): the ink fills left to right while held */
+.hold-fill { position: absolute; inset: 0; transform-origin: left; background: color-mix(in oklab, var(--sys-ink) 25%, transparent); pointer-events: none; }
+.hold-btn { touch-action: none; user-select: none; -webkit-user-select: none; }
+/* Envelope tilts toward the mouse (v3 T, option) */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :root[data-opt-tilt="on"] .arrival .envelope { transform: perspective(900px) rotateY(calc(var(--tx, 0) * 10deg)) rotateX(calc(var(--ty, 0) * -8deg)); transition: transform var(--duration-quick) var(--ease-paper); }
+}
+/* Drag the sheet down to close (v3 T, option, phones): a grab bar at the top */
+.sheet-grab { display: none; }
+@media (max-width: 767px) {
+  .sheet-grab { display: grid; place-items: center; height: 24px; margin-bottom: -8px; touch-action: none; cursor: grab; }
+  .sheet-grab span { width: 40px; height: 4px; border-radius: var(--radius-pill); background: var(--sys-line-strong); }
+}
+/* Catch a leaf (v3 T, option) */
+.leaf-fall { position: fixed; z-index: 35; top: -40px; width: 44px; height: 44px; padding: 10px; animation: leaf-fall linear forwards; cursor: pointer; }
+.leaf-svg { width: 100%; height: 100%; fill: color-mix(in oklab, var(--sys-moss) var(--season-green, 100%), var(--brand-sabi)); stroke: none; }
+.leaf-svg path:last-child { stroke: currentColor; }
+@keyframes leaf-fall { 0% { transform: translate(0, 0) rotate(0deg); } 25% { transform: translate(30px, 25vh) rotate(60deg); } 50% { transform: translate(-20px, 50vh) rotate(140deg); } 75% { transform: translate(25px, 75vh) rotate(220deg); } 100% { transform: translate(0, 110vh) rotate(300deg); } }
+.leaf-pressed { position: absolute; top: 14px; left: 14px; width: 22px; height: 22px; rotate: -24deg; opacity: 0.85; pointer-events: none; }
+.journey-handle { cursor: grab; }
+.journey-handle:active { cursor: grabbing; }
+.journey-handle-dot { fill: var(--brand-sabi); stroke: var(--brand-shiro-kinari); stroke-width: 2; filter: drop-shadow(0 2px 3px rgb(var(--sys-shadow-tint) / 0.3)); }

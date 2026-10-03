@@ -139,12 +139,13 @@ export function StoryPage() {
   const view = useOption("story")
   const journey = useOption("mapmode") !== "trail"
   const flying = useOption("flying") === "on"
+  const mapDrag = useOption("mapdrag") === "drag"
   if (ready && story.length) {
     return (
       <>
         <h1 className="heading">{t.story.title}</h1>
         {view === "d" ? <StoryStack chapters={story} /> : !view || view === "b" ? (journey
-          ? <StoryJourney chapters={story} showFlying={flying} />
+          ? <StoryJourney chapters={story} showFlying={flying} drag={mapDrag} />
           : <StoryMap chapters={story} />) : view === "c" ? <StoryTimeline chapters={story} /> : <StoryLetter chapters={story} />}
       </>
     )

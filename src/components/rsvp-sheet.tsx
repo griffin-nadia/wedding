@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { FormField } from "@/components/form-field"
 import { Combobox } from "@/components/combobox"
 import { Segmented } from "@/components/segmented"
+import { HoldButton } from "@/components/hold-button"
+import { useOption } from "@/lib/options"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
 import { FieldError, ReviewRow, StepProgress } from "@/components/blocks"
@@ -112,6 +114,11 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   const { household, setHousehold } = useHousehold()
   const { setDim } = useSceneDim()
   const [open, setOpen] = useState(openOnLoad)
+  const holdToSend = useOption("send") === "hold"
+  // Drag the sheet down to close (v3 T option, phones): the grab bar follows the finger, a short drag springs back
+  const dragClose = useOption("sheetdrag") === "drag"
+  const sheet = useRef<HTMLDivElement>(null)
+  const grab = useRef<{ y: number; t: number } | null>(null)
   // v3 Q9: while the sheet is open the letter steps aside and the sheet sits over the scene, dimmed to 40%
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sheet", open)
@@ -254,12 +261,25 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
       <Dialog.Trigger asChild disabled={locked}>{children}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="rsvp-overlay" />
-        <Dialog.Content className="letter rsvp-letter" aria-describedby={undefined}
+        <Dialog.Content ref={sheet} className="letter rsvp-letter" aria-describedby={undefined}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}
           // Only X, Esc or "Back to your invite" close the sheet; a tap outside never does (v3 A)
           onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}
           // Escape inside an open combobox closes its list, not the sheet
           onEscapeKeyDown={(e) => { const el = e.target as HTMLElement | null; if (el?.getAttribute("role") === "combobox" && el.getAttribute("aria-expanded") === "true") e.preventDefault() }}>
+          {dragClose && (
+            <div aria-hidden className="sheet-grab"
+              onPointerDown={(e) => { grab.current = { y: e.clientY, t: performance.now() }; e.currentTarget.setPointerCapture(e.pointerId); if (sheet.current) sheet.current.style.transition = "none" }}
+              onPointerMove={(e) => { const g = grab.current; if (g && sheet.current) sheet.current.style.transform = `translateY(${Math.max(0, e.clientY - g.y)}px)` }}
+              onPointerUp={(e) => {
+                const g = grab.current; grab.current = null; const el = sheet.current; if (!g || !el) return
+                const dy = e.clientY - g.y, v = dy / Math.max(1, performance.now() - g.t)
+                el.style.transition = "transform var(--duration-slide) var(--ease-spring)"
+                if (dy > 120 || v > 0.6) onOpenChange(false); else el.style.transform = ""
+              }}>
+              <span />
+            </div>
+          )}
           <Dialog.Close className="rsvp-close press" aria-label={t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
           {done ? <div className="rsvp-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
           <header className="rsvp-head flex flex-col gap-3">
@@ -371,7 +391,9 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
             {step > 1 && <Button variant="outline" size="lg" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
             {step < 3
               ? <Button size="lg" className="flex-1" onClick={next}>{t.rsvp.next}</Button>
-              : <Button size="lg" className="flex-1" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
+              : holdToSend && !error
+                ? <HoldButton className="flex-1" onDone={send} hint={t.rsvp.holdHint}>{t.rsvp.holdSend}</HoldButton>
+                : <Button size="lg" className="flex-1" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
           </footer>
           </>}
         </Dialog.Content>

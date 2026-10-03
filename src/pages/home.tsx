@@ -17,6 +17,8 @@ import type { Household } from "@/lib/api"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
+// Catch a leaf (Options → Home): its own small file, only when switched on
+const Leaves = lazy(() => import("@/components/leaves"))
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
 
 // The names reveal once, letter by letter, the first time the letter is opened (v3 L). Never again.
@@ -82,6 +84,7 @@ export function HomePage() {
   const dear = t.home.dearNames(names) || household?.displayName || ""
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
   const dateStyle = useOption("datestyle")
+  const leaves = useOption("leaves") === "on"
   useOption("mode") // re-render when the crew preview changes
   const { mode, contactDay } = useContent()
   const keepDone = useOption("ticks") !== "hide"
@@ -132,6 +135,7 @@ export function HomePage() {
         </div>
       )}
       <HomeCountdown placement="inside" />
+      {leaves && <Suspense><Leaves /></Suspense>}
     </>
   )
 }
