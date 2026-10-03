@@ -15,7 +15,7 @@ import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
 import { playFurin } from "@/lib/sound"
-import { answerOf, ApiError, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
+import { answerOf, ApiError, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
@@ -200,6 +200,7 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
       setMissing({})
       setDone(null)
       trackStarted(household!.token)
+      warmUp()
     }
     setOpen(o)
     if (!o) setStep(1)
