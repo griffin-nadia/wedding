@@ -228,7 +228,7 @@
   --font-hand: "Klee One", "Inter", cursive;
   --font-ja: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
 
-  --type-display-names-size: clamp(56px, 44.11px + 3.048vw, 88px);   /* 56 → 88 */
+  --type-display-names-size: 56px;                                     /* 88 from 1024 (below): two steps, not fluid */
   --type-display-names-leading: 1;
   --type-display-names-tracking: -0.02em;
   --type-display-numerals-size: 28px;                                  /* countdown tiles: the heading step */

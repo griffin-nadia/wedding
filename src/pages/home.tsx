@@ -42,8 +42,7 @@ function YourReply({ h, open }: { h: Household; open: (step: number) => void }) 
   ]
   if (rows.every((r) => r.done)) return null
   return (
-    <section aria-labelledby="your-reply" className="flex flex-col gap-1">
-      <h2 id="your-reply" className="label-caps text-foreground">{t.home.yourReply}</h2>
+    <section aria-label={t.home.yourReply}>
       <ul className="flex flex-col">
         {rows.map((r) => (
           <li key={r.key}>
