@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { Check, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 
 /** Selectable chip with a visible tick (dietary, allergens, flying from). Same states as every input. */
 export function Chip({ on, onClick, invalid = false, children }: { on: boolean; onClick: () => void; invalid?: boolean; children: ReactNode }) {
@@ -10,6 +11,19 @@ export function Chip({ on, onClick, invalid = false, children }: { on: boolean; 
       {on && <Check className="chip-tick size-4 text-primary" strokeWidth={3} aria-hidden />}
       {children}
     </button>
+  )
+}
+
+/**
+ * Choice card: one-of-few with a consequence (Coming / Can't make it). It is the radio itself
+ * (Radix role="radio" inside a radiogroup), 64 tall, stacked on phones and side by side from 480.
+ */
+export function ChoiceCard({ value, id, on, children, onFocus, invalid, ...rest }: { value: string; id?: string; on: boolean; children: ReactNode; onFocus?: () => void; invalid?: boolean; "data-force"?: string }) {
+  return (
+    <RadioGroupPrimitive.Item {...rest} value={value} id={id} onFocus={onFocus} aria-invalid={invalid || undefined} className="state choice-card w-full cursor-pointer text-left">
+      <Seal on={on} />
+      {children}
+    </RadioGroupPrimitive.Item>
   )
 }
 

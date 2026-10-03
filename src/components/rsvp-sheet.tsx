@@ -4,12 +4,12 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { RadioGroup } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { FormField } from "@/components/form-field"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
-import { Chip, FieldError, ReviewRow, Seal, StepProgress } from "@/components/blocks"
+import { Chip, ChoiceCard, FieldError, ReviewRow, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
@@ -239,17 +239,14 @@ export function RsvpSheet({ children, openOnLoad = false }: { children: ReactNod
                 )}
                 <RadioGroup id={`answer-${g.id}`} tabIndex={-1} aria-label={nameOf(g)} value={g.attending ?? ""} aria-invalid={Boolean(missing[`answer-${g.id}`])}
                   aria-describedby={missing[`answer-${g.id}`] ? `answer-${g.id}-err` : undefined}
-                  onValueChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })} className="grid grid-cols-2 gap-3 outline-none"
+                  onValueChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })} className="grid grid-cols-1 gap-3 outline-none min-[480px]:grid-cols-2"
                   onKeyDown={(e) => { if (e.key.startsWith("Arrow")) arrowKey.current = true }}>
                   {(["yes", "no"] as const).map((v) => (
-                    <label key={v} htmlFor={`${g.id}-${v}`} aria-invalid={Boolean(missing[`answer-${g.id}`]) || undefined}
-                      className="state choice-card cursor-pointer">
-                      <RadioGroupItem id={`${g.id}-${v}`} value={v} className="sr-only"
-                        // Arrow keys always select (Radix can skip the first press after the letter focuses it)
-                        onFocus={() => { if (arrowKey.current) { arrowKey.current = false; if (g.attending !== v) setGuest(g.id, { attending: v }) } }} />
-                      <Seal on={g.attending === v} />
+                    <ChoiceCard key={v} id={`${g.id}-${v}`} value={v} on={g.attending === v} invalid={Boolean(missing[`answer-${g.id}`])}
+                      // Arrow keys always select (Radix can skip the first press after the letter focuses it)
+                      onFocus={() => { if (arrowKey.current) { arrowKey.current = false; if (g.attending !== v) setGuest(g.id, { attending: v }) } }}>
                       {v === "yes" ? t.rsvp.coming : t.rsvp.notComing}
-                    </label>
+                    </ChoiceCard>
                   ))}
                 </RadioGroup>
                 <FieldError id={`answer-${g.id}-err`}>{missing[`answer-${g.id}`]}</FieldError>

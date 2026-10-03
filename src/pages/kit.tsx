@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Chip, ReviewRow, Seal, Skeleton, StepProgress } from "@/components/blocks"
+import { Chip, ChoiceCard, ReviewRow, Skeleton, StepProgress } from "@/components/blocks"
+import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 import { Pill } from "@/components/pill"
 import { Hanko } from "@/components/hanko"
 import { CountdownTile } from "@/components/countdown"
@@ -88,10 +89,10 @@ const GROUPS: Group[] = [
         <>
           {(["default", "hover", "focus", "pressed", "selected", "error"] as const).map((s) => (
             <Row key={s} label={s}>
-              <div className="grid w-full max-w-sm grid-cols-2 gap-3">
-                <span data-selected={s === "selected"} aria-invalid={s === "error" || undefined} {...force(s)} className="state choice-card"><Seal on={s === "selected"} />Coming</span>
-                <span aria-invalid={s === "error" || undefined} className="state choice-card"><Seal on={false} />Can't make it</span>
-              </div>
+              <RadioGroupPrimitive.Root aria-label={`Sam, ${s}`} defaultValue={s === "selected" ? "yes" : undefined} className="grid w-full max-w-sm grid-cols-1 gap-3 min-[480px]:grid-cols-2">
+                <ChoiceCard value="yes" on={s === "selected"} invalid={s === "error"} {...force(s)}>Coming</ChoiceCard>
+                <ChoiceCard value="no" on={false} invalid={s === "error"}>Can't make it</ChoiceCard>
+              </RadioGroupPrimitive.Root>
             </Row>
           ))}
         </>
