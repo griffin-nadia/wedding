@@ -24,6 +24,7 @@ still point at the old one.
 | Set up the Emails tab | Adds the tab with the invite and reminder wording to edit |
 | Check song search (Spotify) | Tells you if the Spotify keys work |
 | Reset test households… | Clears answers, songs, Log rows, visits, stamps and duplicate flags for households named "Test …" or "… (Test)" |
+| Send the "Final numbers soon" note… | Before changes lock, asks households who are coming to check their reply (Emails tab keys `final_*`; test households skipped) |
 | Make crew links | Makes the Crew tab (Jehan, Nadia, Griffin, wedding Gmail) and writes each person's /kit and /lab link. No guest data |
 
 ## Script properties (all optional)
@@ -40,7 +41,7 @@ still point at the old one.
 | `GET ?action=started&token=…` | Records "Started RSVP" once |
 | `GET ?action=songs&q=…` | Up to 6 Spotify matches, or `not_configured` |
 | `GET ?action=check&token=…` | That household's own saved rows, for testing (plus how many of its rows carry the duplicate flag) |
-| `GET ?action=content` | Our story chapters (Content tab: `story_1_title`, `story_1_year`, `story_1_body`… up to 6) and `mode` (invite, week-of, keepsake) |
+| `GET ?action=content` | Our story chapters (Content tab: `story_1_title`, `story_1_year`, `story_1_body`… up to 6), `mode` (invite, week-of, keepsake) and `contact_day` (shown under the FAQs) |
 | `GET ?action=crew&token=…` | `{ok:true, name}` only for a token in the Crew tab |
 | `POST {action:"stamps", token, stamps}` | Saves the stamp book (fixed list) to the Guests "Stamps" column |
 | `POST {action:"rsvp", token, guests, songs, arrival, departure, message}` | `{ok, updated, changes, household}` or `{ok:false, code, error}` |

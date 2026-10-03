@@ -3,7 +3,7 @@
 // Japanese lives in ja.ts with the same shape. Anything missing there falls back to English.
 
 import { DATES } from "@/lib/wedding-dates"
-import { fmtDay, fmtShort } from "@/lib/dates"
+import { fmtDay } from "@/lib/dates"
 
 const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
 const LOCK = fmtDay(DATES.changesLock)
@@ -107,7 +107,7 @@ export const en = {
     yourPlusOne: "your plus one",
     label: `${DAY}, Kyoto`,
     dateLine: `${DAY}, Kyoto`,
-    rsvpButton: `RSVP by ${fmtShort(DATES.rsvpBy)}`,
+    rsvpButton: `RSVP by ${fmtDay(DATES.rsvpBy)}`,
     yourReply: "Your reply",
     todo: { who: "Who's coming", food: "Food and a song", dates: "Travel dates", datesLater: "once you've booked", done: "done", toDo: "to do" },
     greetingLine: "we're getting married in Kyoto, where it all started, and we'd love you there. Everything you need is right here.",
@@ -119,7 +119,7 @@ export const en = {
       { to: "/travel", label: "Getting there" },
       { to: "/travel#stay", label: "Where to stay" },
     ],
-    rsvpBy: `RSVP by ${fmtShort(DATES.rsvpBy)}`,
+    rsvpBy: `RSVP by ${fmtDay(DATES.rsvpBy)}`,
     changeReply: "Change my reply",
     changeBy: CHANGE_BY,
   },
@@ -223,6 +223,7 @@ export const en = {
       { q: "What happens to my details?", a: `Your reply goes straight to ${A} and ${B} and no one else sees it. They'll delete it a few months after the wedding.` },
       { q: "Is it a traditional Japanese wedding?", a: "No, it's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are." },
     ],
+    onTheDay: "On the day, contact",
     contact: "Any questions at all, message either of us. We're always happy to help.",
   },
   rsvp: {

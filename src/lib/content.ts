@@ -3,7 +3,7 @@ import { config } from "@/lib/config"
 
 export type Chapter = { key: string; title: string; year: string; body: string[] }
 export type SiteMode = "invite" | "week-of" | "keepsake"
-export type SiteContent = { story: Chapter[]; mode: SiteMode }
+export type SiteContent = { story: Chapter[]; mode: SiteMode; contactDay?: string }
 
 // The lab's "Sample story" switch previews the three presentations before the real words exist
 const SAMPLE: Chapter[] = [
@@ -15,7 +15,7 @@ const SAMPLE: Chapter[] = [
 const KEY = "ng-content"
 let cached: SiteContent | null = (() => { try { return JSON.parse(sessionStorage.getItem(KEY) || "null") } catch { return null } })()
 
-/** Story chapters and the site mode, from the Content tab (story_1_title, story_1_year, story_1_body…, mode). */
+/** Story chapters, the site mode and who to contact on the day, from the Content tab (story_1_title…, mode, contact_day). */
 export async function getContent(): Promise<SiteContent> {
   if (cached) return cached
   const empty: SiteContent = { story: [], mode: "invite" }
@@ -24,7 +24,7 @@ export async function getContent(): Promise<SiteContent> {
     const res = await fetch(`${config.apiUrl}?action=content`)
     const d = await res.json()
     if (!d.ok) return empty
-    cached = { story: Array.isArray(d.story) ? d.story : [], mode: ["invite", "week-of", "keepsake"].includes(d.mode) ? d.mode : "invite" }
+    cached = { story: Array.isArray(d.story) ? d.story : [], mode: ["invite", "week-of", "keepsake"].includes(d.mode) ? d.mode : "invite", contactDay: typeof d.contactDay === "string" ? d.contactDay : undefined }
     try { sessionStorage.setItem(KEY, JSON.stringify(cached)) } catch { /* ignore */ }
     return cached
   } catch { return empty }

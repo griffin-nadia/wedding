@@ -9,8 +9,8 @@ export type TuneState = { overrides: Record<Scope, Record<string, string>>; note
 
 /** Each lab option's shipped value (the first choice). The labels and notes live in options.ts, loaded with the panel only. */
 export const OPTION_DEFAULTS: Record<string, string> = {
-  arrival: "envelope", peek: "on", story: "a", mapmode: "trail", flying: "off", storysample: "off", scene: "auto", gl: "on",
-  stamps: "off", texture: "on", preset: "letter", density: "auto", round: "auto", nav: "bar", navigation: "pages",
+  peek: "on", story: "a", mapmode: "trail", flying: "off", storysample: "off", scene: "auto",
+  stamps: "off", density: "auto", round: "auto", navigation: "pages",
 }
 
 const KEY = "ng-tune"

@@ -88,7 +88,7 @@ const ERRORS = {
 }
 
 // Invite and reminder wording. The Emails tab overrides these, so Nadia can edit without code.
-// {household}, {rsvp_by}, {date} and {venue} are filled in when sending.
+// {household}, {rsvp_by}, {lock}, {date} and {venue} are filled in when sending.
 const COPY = {
   invite_subject: "You're invited: " + COUPLE + ", Kyoto, Fri 15 Oct 2027",
   invite_heading: "You're invited",
@@ -100,6 +100,11 @@ const COPY = {
   reminder_body:
     "Hi {household},\n\nJust a friendly nudge to RSVP for our wedding in Kyoto. It only takes a minute.\n\nPlease RSVP by {rsvp_by}.",
   reminder_button: "RSVP now",
+  final_subject: "Final numbers soon: " + COUPLE + ", Kyoto",
+  final_heading: "Is your reply still right?",
+  final_body:
+    "Hi {household},\n\nWe send final numbers to the venue soon. If anything's changed (who's coming, food, or your travel dates), you can update your reply until {lock}.\n\nAfter that, message us directly.",
+  final_button: "Check your reply",
 }
 
 function onOpen() {
@@ -111,6 +116,7 @@ function onOpen() {
     .addItem("Send invites to everyone not yet invited…", "sendInvitesAll")
     .addItem("Resend invite to selected household", "resendInviteSelected")
     .addItem("Send a reminder to households who haven't replied…", "sendReminders")
+    .addItem("Send the \"Final numbers soon\" note to households coming…", "sendFinalNumbers")
     .addSeparator()
     .addItem("Set up the Emails tab", "setupEmailsTab")
     .addItem("Set up the Content tab (fortunes)", "setupContentTab")
@@ -832,7 +838,8 @@ function setupContentTab() {
 
 /**
  * Our story and the site mode, from the Content tab: story_1_title, story_1_year, story_1_body (paragraphs
- * split on blank lines), up to story_6; mode = invite | week-of | keepsake. Story stays hidden until filled in.
+ * split on blank lines), up to story_6; mode = invite | week-of | keepsake; contact_day = who to call on the day
+ * (shown under the FAQs once filled in). Story and contact stay hidden until filled in.
  */
 function content_() {
   const cache = CacheService.getScriptCache()
@@ -848,6 +855,7 @@ function content_() {
       out.story.push({ key: String(n), title: title.slice(0, 60), year: (kv["story_" + n + "_year"] || "").slice(0, 20), body: body.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean).slice(0, 6) })
     }
     if (["invite", "week-of", "keepsake"].indexOf(kv.mode) >= 0) out.mode = kv.mode
+    if (kv.contact_day) out.contactDay = kv.contact_day.slice(0, 200)
   }
   cache.put("content", JSON.stringify(out), 600)
   return out
@@ -1195,7 +1203,7 @@ function sendBatch_(kind, list, markInvited) {
     const mail = inviteEmail_(kind, h)
     MailApp.sendEmail({ to: h.emails.join(","), replyTo: prop_("REPLY_TO"), name: COUPLE, subject: mail.subject, body: mail.text, htmlBody: mail.html })
     if (markInvited) h.rows.forEach((r) => gSheet.getRange(r, head["Invite sent"] + 1).setValue(new Date()))
-    log_(h.name, h.token, (kind === "invite" ? "Invite" : "Reminder") + " sent to " + h.emails.join(", "), "")
+    log_(h.name, h.token, ({ invite: "Invite", reminder: "Reminder", final: "Final numbers note" })[kind] + " sent to " + h.emails.join(", "), "")
     SpreadsheetApp.flush()
     sent++
   }
@@ -1208,6 +1216,7 @@ function inviteEmail_(kind, h, testNote) {
     String(s)
       .replace(/\{household\}/g, h.name)
       .replace(/\{rsvp_by\}/g, longDate_(prop_("RSVP_BY")))
+      .replace(/\{lock\}/g, longDate_(prop_("CHANGES_LOCK")))
       .replace(/\{date\}/g, WEDDING.date)
       .replace(/\{venue\}/g, WEDDING.venue)
   const mail = buildEmail_({
@@ -1287,6 +1296,20 @@ function sendScheduledReminder() {
 }
 
 // ---------- Emails tab ----------
+
+/** Menu only: before final numbers go to the venue, asks households who are coming to check their reply. */
+function sendFinalNumbers() {
+  const ui = SpreadsheetApp.getUi()
+  if (isLocked_()) return ui.alert("Changes are already closed, so there's nothing for guests to update.")
+  const coming = {}
+  rows_(TABS.guests).forEach((g) => { if (g.Attending === "yes") coming[g.Token] = true })
+  const list = households_().filter((h) => h.responded && coming[h.token] && h.emails.length && !TEST_HOUSEHOLD.test(h.name))
+  if (!list.length) return ui.alert("No households who are coming have an email yet.")
+  const ok = ui.alert("Send \"Final numbers soon\"", "Send it to " + list.length + " household" + (list.length === 1 ? "" : "s") + " who are coming?\n\nGmail allows about " + MailApp.getRemainingDailyQuota() + " more emails today.", ui.ButtonSet.OK_CANCEL)
+  if (ok !== ui.Button.OK) return
+  const result = sendBatch_("final", list, false)
+  ui.alert("Sent " + result.sent + "." + (result.left ? "\n\n" + result.left + " not sent (daily limit). Run it again tomorrow." : ""))
+}
 
 function setupEmailsTab() {
   const created = ensureEmailsTab_()
