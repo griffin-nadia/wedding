@@ -19,7 +19,7 @@ const inSideScroller = (t: Element | null) => {
   return false
 }
 
-const TRACK = "transform 280ms var(--ease-letter)"
+const TRACK = "transform var(--duration-turn) var(--ease-letter)"
 let pending: { dir: number; at: number } | null = null
 
 /**
@@ -95,7 +95,7 @@ export function usePageTurn(enabled: boolean) {
       const i = here(), dir = dx < 0 ? 1 : -1, to = i + dir
       const go = (Math.abs(dx) > innerWidth * 0.25 || v > 0.5) && to >= 0 && to < LETTERS.length
       if (!go) {
-        el.style.transition = "transform 200ms cubic-bezier(0.34, 1.4, 0.64, 1)"; el.style.transform = ""
+        el.style.transition = "transform var(--duration-slide) var(--ease-spring)"; el.style.transform = ""
         return
       }
       if (!still()) leave(dir, dx)

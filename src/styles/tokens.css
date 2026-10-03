@@ -39,6 +39,8 @@
   --brand-ink-deep: #2a1206;
   /* Lantern (evening) */
   --brand-yoru: #22160e;
+  --brand-ai: #0b1a2a;            /* indigo: the cool shade in the letter's lower corner, Lantern */
+  --brand-kiri: #c9b9a3;          /* mist: the Lantern mist band */
   --brand-yoru-raised: #2f2016;
   --brand-yoru-fill: #3d2b1d;
   --brand-yoru-line: #4a3424;
@@ -185,6 +187,10 @@
   --countdown-ink: var(--sys-ink);
   --countdown-bg: var(--sys-surface-raised);
   --countdown-line: var(--sys-line);
+  /* Status pill: one tint per tone (component layer, so the pill never invents an alpha) */
+  --pill-good-bg: color-mix(in oklab, var(--sys-moss) 15%, transparent);
+  --pill-warn-bg: color-mix(in oklab, var(--sys-highlight) 25%, transparent);
+  --pill-accent-bg: color-mix(in oklab, var(--sys-accent) 12%, transparent);
   /* Paper texture on the letter only: our own fine grain (feTurbulence), 256px tile, multiply */
   --texture-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85 0.6' numOctaves='3' seed='15' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
   --texture-opacity: var(--theme-texture);
@@ -264,6 +270,17 @@
   --duration-settle: 300ms;
   --duration-rise: 600ms;
   --duration-drift: 6s;
+  --duration-slide: 200ms;    /* the nav and segmented markers sliding to the chosen item */
+  --duration-stamp: 420ms;    /* the hanko landing: the one bounce on the site */
+  --duration-shake: 900ms;    /* the omikuji box */
+  --duration-breathe: 1.8s;   /* washi skeleton while loading */
+  --duration-light: 40s;      /* the light drifting across the paper scene */
+  --duration-mist: 12s;       /* the mist band breathing */
+  --ease-breathe: ease-in-out; /* loops that go and come back */
+  --duration-draw: 1.2s;      /* a line drawing itself in (the trail, the timeline, the journey) */
+  --duration-flap: 420ms;     /* the envelope flap springing back */
+  --duration-turn: 280ms;     /* both letters moving on the page-turn track */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* the flap and a short swipe springing back */
   --press-scale: 0.98;
 
   --season-green: 100%;
