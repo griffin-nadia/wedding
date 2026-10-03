@@ -33,20 +33,20 @@ export function HomeCountdown({ placement = "outside" }: { placement?: "inside" 
   const { mode } = useContent()
   const style = useOption("count") ?? "boxes"
   const p = partsAt(now)
-  const inside = style === "boxes" || style === "boxes-secs" || style === "days"
+  const inside = style === "boxes" || style === "boxes-nosecs" || style === "days"
   if (mode === "keepsake" || inside !== (placement === "inside")) return null
   if (inside) {
     const ms = Math.max(0, new Date(config.weddingStart).getTime() - now.getTime())
     const days = Math.floor(ms / 86_400_000), hours = Math.floor((ms % 86_400_000) / 3_600_000), mins = Math.floor((ms % 3_600_000) / 60_000), secs = Math.floor((ms % 60_000) / 1000)
     const u = t.countdownMore.short
     const boxes: [string, string][] = style === "days" ? [[String(days), u.days]]
-      : [[String(days), u.days], [String(hours).padStart(2, "0"), u.hours], [String(mins).padStart(2, "0"), u.mins], ...(style === "boxes-secs" ? [[String(secs).padStart(2, "0"), u.secs] as [string, string]] : [])]
+      : [[String(days), u.days], [String(hours).padStart(2, "0"), u.hours], [String(mins).padStart(2, "0"), u.mins], ...(style !== "boxes-nosecs" ? [[String(secs).padStart(2, "0"), u.secs] as [string, string]] : [])]
     return (
       <section className="count-boxes" aria-label={t.countdownMore.until}>
         <p className="sr-only">{sentence(p)}</p>
         <ol aria-hidden className="count-boxes-row">
           {boxes.map(([v, unit]) => (
-            <li key={unit} className="count-box"><Flip value={v} /><span className="count-box-unit">{unit}</span></li>
+            <li key={unit} className={cn("count-box", unit === u.secs && "count-box-quiet")}><Flip value={v} /><span className="count-box-unit">{unit}</span></li>
           ))}
         </ol>
         <p aria-hidden className="count-boxes-caption">{t.countdownMore.until}</p>

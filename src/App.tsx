@@ -50,6 +50,12 @@ function Gate() {
   )
 }
 
+// Load the other pages once the first one has painted, so moving between them never flashes blank (v3 S)
+if (typeof window !== "undefined") {
+  const warm = () => { void import("@/pages/day"); void import("@/pages/travel"); void import("@/pages/faqs"); void import("@/pages/our-story") }
+  window.addEventListener("load", () => ("requestIdleCallback" in window ? (window as unknown as { requestIdleCallback: (f: () => void) => void }).requestIdleCallback(warm) : setTimeout(warm, 1500)), { once: true })
+}
+
 export default function App() {
   return (
     <ThemeProvider>

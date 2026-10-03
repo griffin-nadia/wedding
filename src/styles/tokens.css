@@ -140,7 +140,7 @@
   --letter-edge-color: var(--sys-edge);
   --letter-edge: 6px;
   --letter-radius: var(--radius-letter);
-  --letter-width: 620px;
+  --letter-width: 740px; /* every page the same width on desktop, wide enough for the names on one line (v3 S) */
   --letter-left: 180px;
   --letter-top: 120px;
   --letter-pad: var(--density-letter-pad);

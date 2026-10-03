@@ -99,7 +99,7 @@ const formFrom = (h: Household | null): RsvpPayload => ({
   arrival: h?.arrival ?? "",
   departure: h?.departure ?? "",
   message: h?.message ?? "",
-  photos: h?.photos ?? null,
+  photos: h?.photos ?? true, // happy to be in shared photos unless they say otherwise (v3 S)
 })
 
 /**

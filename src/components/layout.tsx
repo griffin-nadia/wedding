@@ -15,8 +15,9 @@ import { HomeCountdown } from "@/components/home-countdown"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
-import { Qr } from "@/components/qr"
 import { SiteTune } from "@/tune/launcher"
+// Desktop only, so it loads after the first screen
+const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
 import { useOption } from "@/lib/options"
 
 const baseLinks = [
@@ -67,29 +68,26 @@ function Nav() {
   )
 }
 
-/** From 1024 only (never rendered on phones): a small "Open on your phone" card at the bottom right of the scene. */
-function PhoneQr() {
+/**
+ * Desk (preview, v3 S): from 1024 with Navigation → Desk, the other letters peek out from behind this one
+ * as paper tabs down its right edge; clicking one brings that letter forward. Replaces the top-bar links.
+ */
+function DeskTabs() {
   const { t } = useLang()
-  const { household } = useHousehold()
-  const [wide, setWide] = useState(() => window.matchMedia("(min-width: 1024px)").matches)
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)")
-    const on = () => setWide(mq.matches)
-    mq.addEventListener("change", on)
-    return () => mq.removeEventListener("change", on)
-  }, [])
-  if (!wide || !household) return null
-  const url = `${location.origin}${import.meta.env.BASE_URL}?h=${household.token}`
+  const { story } = useContent()
+  const { pathname } = useLocation()
+  const links = story.length ? [...baseLinks, storyLink] : baseLinks
   return (
-    <aside aria-label={t.letter.phoneTitle} className="phone-qr">
-      <Qr value={url} label={t.letter.phoneTitle} className="size-24 shrink-0 text-foreground" />
-      <div className="flex flex-col gap-1">
-        <p className="label-caps text-foreground">{t.letter.phoneTitle}</p>
-        <p className="text-sm">{t.letter.phoneBody}</p>
-      </div>
-    </aside>
+    <nav aria-label="Letters on the desk" className="desk-tabs">
+      <ul>
+        {links.filter((l) => l.to !== (pathname.replace(/\/$/, "") || "/")).map((l, i) => (
+          <li key={l.to} style={{ rotate: `${[1.5, -1, 2, -1.5, 1][i % 5]}deg` }}><Link to={l.to} className="desk-tab">{t.nav[l.key]}</Link></li>
+        ))}
+      </ul>
+    </nav>
   )
 }
+
 
 /**
  * Scene behind, letter in front. No site footer: the letter ends with the sign-off, the sound and
@@ -150,7 +148,8 @@ export function Layout() {
         </Arrival>
         {page === "home" && !sealed && <HomeCountdown />}
       </main>
-      <PhoneQr />
+      {!sealed && <DeskTabs />}
+      <Suspense><PhoneQr /></Suspense>
       <CreditMark />
       <SiteTune />
     </>
