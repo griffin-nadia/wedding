@@ -2,7 +2,9 @@ import { useEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 /** The four letters in order (Home, The day, Travel, FAQs). */
-export const LETTERS = ["/", "/the-day", "/travel", "/faqs"] as const
+export const LETTERS: string[] = ["/", "/the-day", "/travel", "/faqs"]
+/** Our story joins the letters once its words exist */
+export const setStoryLetter = (on: boolean) => { const has = LETTERS.includes("/our-story"); if (on && !has) LETTERS.push("/our-story"); if (!on && has) LETTERS.pop() }
 const indexOf = (p: string) => { const i = LETTERS.findIndex((l) => l === (p.replace(/\/+$/, "") || "/")); return i }
 
 const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches

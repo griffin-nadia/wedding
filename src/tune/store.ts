@@ -16,10 +16,13 @@ export const OPTIONS: { key: string; label: string; values: [string, string][] }
   { key: "gl", label: "Paper shader", values: [["on", "On"], ["off", "CSS only"]] },
   { key: "texture", label: "Paper texture on the letter", values: [["on", "On"], ["off", "Off"]] },
   { key: "nav", label: "Nav from 768", values: [["bar", "Top bar"], ["dock", "Dock at the bottom"]] },
+  { key: "navigation", label: "Navigation", values: [["pages", "Pages"], ["desk", "Desk (after launch)"]] },
   { key: "peek", label: "Envelope peek on hover", values: [["on", "On"], ["off", "Off"]] },
   { key: "arrival", label: "Arrival", values: [["envelope", "Envelope"], ["noren", "Noren curtain"]] },
   { key: "daytabs", label: "The day", values: [["off", "No tabs"], ["on", "Tabs"]] },
-  { key: "story", label: "Our story", values: [["map", "Map"], ["list", "List"]] },
+  { key: "story", label: "Our story", values: [["a", "A · The letter"], ["b", "B · Map"], ["c", "C · Timeline"]] },
+  { key: "storysample", label: "Sample story (preview only)", values: [["off", "Off"], ["on", "On"]] },
+  { key: "stamps", label: "Stamp book (December)", values: [["off", "Off"], ["on", "On"]] },
 ]
 
 const KEY = "ng-tune"

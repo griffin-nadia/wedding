@@ -39,7 +39,7 @@ export const en = {
     eyebrow: "The Super Duper Wedding Extravaganza",
     fullTitle: `Nadia Baguley and Griffin Suddaby Super Duper Wedding Extravaganza`,
   },
-  nav: { home: "Home", day: "The day", travel: "Travel", faqs: "FAQs", rsvp: "RSVP" },
+  nav: { home: "Home", day: "The day", travel: "Travel", faqs: "FAQs", story: "Our story", rsvp: "RSVP" },
   letter: {
     signOff: "With love, N & G",
     credit: "Site by Jehan Baguley",
@@ -71,12 +71,19 @@ export const en = {
   } as Record<string, { alt: string; caption: string }>,
   story: {
     soonBody: "Our story, from Brisbane to Kyoto, is on its way.",
+    title: "Our story",
+    prevChapter: "Previous chapter", nextChapter: "Next chapter",
+    page: (n: number, of: number) => `Chapter ${n} of ${of}`,
     kyoto: "Kyoto", brisbane: "Brisbane", canada: "Canada",
     seeList: "See as a list", seeMap: "See the map", next: "Next", done: "Done",
     flyingFrom: (n: number, of: number) => `${n} of ${of} households flying in`,
   },
+  stamps: {
+    open: "Stamp book", title: "Stamp book", help: "A stamp for each part of the walk you've visited, and one for your reply.",
+    stops: { home: "The inn", day: "The garden gate", travel: "The station", qa: "The shrine", story: "The lane" } as Record<string, string>,
+    reply: "Your reply", full: "A full book. A note from us is coming here.",
+  },
   flying: { title: "Flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it." },
-  sound: { on: "Sound on", off: "Sound off", label: "Sound" },
   fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes." },
   driver: { label: "Taxi from Kyoto Station", fare: "Around ¥2,000, 15 to 20 minutes.", show: "Show the driver", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
   countdownMore: {

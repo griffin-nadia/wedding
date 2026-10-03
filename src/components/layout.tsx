@@ -1,13 +1,15 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
-import { CalendarDays, CircleHelp, Home, TrainFront } from "lucide-react"
+import { BookOpen, CalendarDays, CircleHelp, Home, TrainFront } from "lucide-react"
+import { useContent } from "@/lib/content"
 import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { arrivalScene, pageOf, sceneFor, sceneKind } from "@/lib/scenes"
 import { CreditMark } from "@/components/credit-mark"
-import { usePageTurn, usePaperScroll } from "@/lib/page-turn"
+import { StampBook } from "@/components/stamp-book"
+import { setStoryLetter, usePageTurn, usePaperScroll } from "@/lib/page-turn"
 import { usePaperGL } from "@/components/letter/use-paper-gl"
 import { LanternToggle } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
@@ -17,16 +19,20 @@ import { Qr } from "@/components/qr"
 import { SiteTune } from "@/tune/launcher"
 import { useOption } from "@/lib/options"
 
-const links = [
+const baseLinks = [
   { to: "/", key: "home", icon: Home },
   { to: "/the-day", key: "day", icon: CalendarDays },
   { to: "/travel", key: "travel", icon: TrainFront },
   { to: "/faqs", key: "faqs", icon: CircleHelp },
 ] as const
+const storyLink = { to: "/our-story", key: "story", icon: BookOpen } as const
 
 /** Four items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
 function Nav() {
   const { t } = useLang()
+  const { story } = useContent()
+  const links = story.length ? [...baseLinks, storyLink] : baseLinks
+  useEffect(() => { setStoryLetter(story.length > 0) }, [story.length])
   const { pathname } = useLocation()
   const list = useRef<HTMLUListElement>(null)
   const [mark, setMark] = useState<{ x: number; w: number; h: number; y: number } | null>(null)
@@ -106,6 +112,7 @@ export function Layout() {
   const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
   usePageTurn(!sealed)
   const glOption = useOption("gl")
+  const stampsOn = useOption("stamps") === "on"
   usePaperGL(!sealed && kind === "paper" && glOption !== "off")
   usePaperScroll()
   useEffect(() => {
@@ -120,6 +127,7 @@ export function Layout() {
         <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
         <Nav />
         {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-(length:--type-ui-size) font-medium md:inline-flex">{t.nav.rsvp}</Link>}
+        {stampsOn && <StampBook />}
         <LanternToggle className="chrome-lantern" />
       </header>
 

@@ -41,6 +41,6 @@ export const pageOf = (pathname: string) => {
   if (p === "the-day") return "day"
   if (p === "travel" || p === "getting-there" || p === "stay") return "travel"
   if (p === "faqs" || p === "qa") return "qa"
-  if (p === "our-story") return "day"
+  if (p === "our-story") return "story"
   return "home"
 }
