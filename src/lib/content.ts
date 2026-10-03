@@ -31,7 +31,9 @@ export async function getContent(): Promise<SiteContent> {
 }
 
 export function useContent(): SiteContent & { ready: boolean } {
-  const sample = typeof document !== "undefined" && document.documentElement.getAttribute("data-opt-storysample") === "on"
+  // The sample story shows when the Options switch is on, and always on a crew device until the real words exist
+  const crewDevice = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
+  const sample = typeof document !== "undefined" && (document.documentElement.getAttribute("data-opt-storysample") === "on" || (crewDevice && document.documentElement.getAttribute("data-opt-storysample") !== "off"))
   const [c, setC] = useState<SiteContent | null>(cached)
   useEffect(() => { let live = true; void getContent().then((x) => { if (live) setC(x) }); return () => { live = false } }, [])
   const base = c ?? { story: [], mode: "invite" as SiteMode }

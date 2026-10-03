@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useContent, type Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
-import { JourneyMap } from "@/components/journey-map"
+import { StoryJourney } from "@/components/story-journey"
 import { cn } from "@/lib/utils"
 
 /** Journey A · the letter continues (default): chapters as pages of the letter. Swipe or arrows on phones, side by side from 1024. No photos. */
@@ -137,14 +137,14 @@ export function StoryPage() {
   const { t } = useLang()
   const { story, ready } = useContent()
   const view = useOption("story")
-  const journey = useOption("mapmode") === "journey"
+  const journey = useOption("mapmode") !== "trail"
   const flying = useOption("flying") === "on"
   if (ready && story.length) {
     return (
       <>
         <h1 className="heading">{t.story.title}</h1>
         {!view || view === "d" ? <StoryStack chapters={story} /> : view === "b" ? (journey
-          ? <JourneyMap stops={story.map((c) => ({ title: c.title, body: c.body.join(" "), at: [0, 0] }))} labels={t.story} showFlying={flying} />
+          ? <StoryJourney chapters={story} showFlying={flying} />
           : <StoryMap chapters={story} />) : view === "c" ? <StoryTimeline chapters={story} /> : <StoryLetter chapters={story} />}
       </>
     )

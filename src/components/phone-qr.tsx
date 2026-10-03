@@ -3,13 +3,13 @@ import { useLang } from "@/lib/lang"
 import { useHousehold } from "@/lib/household"
 import { Qr } from "@/components/qr"
 
-/** From 1024 only (never rendered on phones): a small "Open on your phone" card at the bottom right of the scene. */
+/** From 1360 only, where it fits beside the letter (never on phones): a small "Open on your phone" card at the bottom right of the scene. */
 export function PhoneQr() {
   const { t } = useLang()
   const { household } = useHousehold()
-  const [wide, setWide] = useState(() => window.matchMedia("(min-width: 1024px)").matches)
+  const [wide, setWide] = useState(() => window.matchMedia("(min-width: 1360px)").matches)
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)")
+    const mq = window.matchMedia("(min-width: 1360px)")
     const on = () => setWide(mq.matches)
     mq.addEventListener("change", on)
     return () => mq.removeEventListener("change", on)

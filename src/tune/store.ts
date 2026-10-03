@@ -9,7 +9,7 @@ export type TuneState = { overrides: Record<Scope, Record<string, string>>; note
 
 /** Each lab option's shipped value (the first choice). The labels and notes live in options.ts, loaded with the panel only. */
 export const OPTION_DEFAULTS: Record<string, string> = {
-  peek: "on", mode: "sheet", datestyle: "badge", names: "one", count: "boxes", ticks: "stay", signoff: "home", toggle: "card", getthere: "maps", accent: "green", lang: "en", story: "d", mapmode: "trail", flying: "off", storysample: "off", scene: "auto",
+  peek: "on", mode: "sheet", datestyle: "badge", names: "two", count: "boxes", ticks: "stay", signoff: "home", toggle: "card", getthere: "maps", accent: "green", lang: "en", story: "d", mapmode: "journey", flying: "off", storysample: "off", scene: "photo",
   stamps: "off", density: "auto", round: "auto", navigation: "pages",
 }
 
@@ -32,7 +32,7 @@ export function save(s: TuneState) {
 
 export function apply(s: TuneState) {
   // Drop saved choices for options that no longer exist or values that were removed (e.g. Scene: Photo)
-  for (const k of Object.keys(s.options)) if (!(k in OPTION_DEFAULTS) || (k === "scene" && s.options[k] === "photo")) delete s.options[k]
+  for (const k of Object.keys(s.options)) if (!(k in OPTION_DEFAULTS)) delete s.options[k]
   for (const [key, first] of Object.entries(OPTION_DEFAULTS)) {
     const v = s.options[key]
     if (v && v !== first) document.documentElement.setAttribute(`data-opt-${key}`, v)

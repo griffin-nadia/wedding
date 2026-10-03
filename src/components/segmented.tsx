@@ -45,7 +45,7 @@ export function Segmented<T extends string>({ items, value, onChange, label, rol
             id={idPrefix ? `${idPrefix}-tab-${it.value}` : undefined} aria-controls={tab && idPrefix ? `${idPrefix}-panel-${it.value}` : undefined}
             {...(tab ? { "aria-selected": on } : { "aria-checked": on })} tabIndex={reachable ? 0 : -1}
             onClick={() => onChange(it.value)} onKeyDown={(e) => move(e, i)} className="segmented-item">
-            {!tab && <Check aria-hidden className={cn("segmented-tick size-5", !on && "invisible")} />}
+            {!tab && <Check aria-hidden className={cn("segmented-tick size-4", !on && "invisible")} />}
             {it.label}
           </button>
         )

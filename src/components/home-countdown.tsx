@@ -44,12 +44,14 @@ export function HomeCountdown({ placement = "outside" }: { placement?: "inside" 
     return (
       <section className="count-boxes" aria-label={t.countdownMore.until}>
         <p className="sr-only">{sentence(p)}</p>
-        <ol aria-hidden className="count-boxes-row">
-          {boxes.map(([v, unit]) => (
-            <li key={unit} className={cn("count-box", unit === u.secs && "count-box-quiet")}><Flip value={v} /><span className="count-box-unit">{unit}</span></li>
-          ))}
-        </ol>
-        <p aria-hidden className="count-boxes-caption">{t.countdownMore.until}</p>
+        <div aria-hidden className="count-boxes-row">
+          <ol className="count-boxes-list">
+            {boxes.map(([v, unit]) => (
+              <li key={unit} className="count-box"><Flip value={v} /><span className="count-box-unit">{unit}</span></li>
+            ))}
+          </ol>
+          <p className="count-boxes-caption">{t.countdownMore.until}</p>
+        </div>
       </section>
     )
   }

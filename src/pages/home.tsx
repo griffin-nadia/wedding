@@ -92,7 +92,7 @@ export function HomePage() {
 
   return (
     <>
-      <header className="flex flex-col gap-2">
+      <header className="flex flex-col gap-4">
         <Names />
         {dateStyle === "line"
           ? <p className="font-display text-2xl text-foreground">{mode === "keepsake" ? t.home.keepsake.badge : t.home.dateLine}</p>
