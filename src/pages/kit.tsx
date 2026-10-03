@@ -406,12 +406,12 @@ function Motion() {
 function Overview() {
   return (
     <div className="flex flex-col gap-4">
-      <p>Every page is a letter in front of a scene. The letter is the only surface; everything on it uses three type sizes and one set of states. Tokens come in three layers: brand (the palette), system (what a colour is for, per mode) and component (one component, tunable alone).</p>
+      <p>Every page is a letter in front of a scene. The letter is the only surface. Two faces plus the hand, six sizes, one set of states, one radius family, one shadow. Tokens come in three layers: brand (the palette), system (what a colour is for, per mode) and component.</p>
       <ul className="flex list-disc flex-col gap-2 pl-6">
-        <li>Scenes: {Object.keys(SCENES).join(", ")}</li>
-        <li>Three sizes per screen: names or heading, body, label</li>
-        <li>States: default, hover, focus, pressed, selected, disabled, error, loading</li>
-        <li>Motion: press 90, quick 150, settle 300, rise 600</li>
+        <li>Scenes: {Object.keys(SCENES).join(", ")} (the paper scene after opening; the photo only behind the envelope)</li>
+        <li>Sizes: 12, 14, 16, 20, 28, 56/88; at most two in a component</li>
+        <li>States: default, hover (border only), focus, pressed, selected (with a tick), disabled, error, loading</li>
+        <li>Motion: every duration and easing is a token (press 90, quick 150, slide 200, settle 300, rise 600, draw 1.2 s)</li>
       </ul>
     </div>
   )
