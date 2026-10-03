@@ -142,7 +142,7 @@ const GROUPS: Group[] = [
         <div className="flex flex-wrap gap-3"><Pill tone="good">Replied</Pill><Pill tone="warn">Not yet</Pill><Pill>{`Changes lock ${fmtShort(DATES.changesLock)}`}</Pill><Pill tone="accent">New</Pill></div>
       ) },
       { id: "hanko", name: "Hanko", purpose: "The success stamp, 京, the one thing that lands with a little weight (--duration-stamp).", render: () => <HankoDemo /> },
-      { id: "countdown", name: "Countdown", tokens: "--countdown-*", purpose: "Home only: five 48px paper tiles under the card, outside the letter. Oranienbaum numerals, Inter labels, the seconds tile ticking. No heading, no sentence.", render: () => <div className="max-w-md"><HomeCountdown /></div> },
+      { id: "countdown", name: "Countdown", tokens: "--countdown-*", purpose: "Home only, inside the letter: paper boxes for days, hrs and mins that flip only when their number changes, with a line saying what it counts. Other types (seconds, days only, strip, tiles) are in the Options panel.", render: () => <div className="flex max-w-md flex-col gap-6"><HomeCountdown placement="inside" /><HomeCountdown placement="outside" /></div> },
       { id: "timeline", name: "Timeline", purpose: "The day: one thin moss line that draws in as you scroll (the only thing that moves); times and labels swap sides; a Now marker on the day.", render: () => (
         <p>See it live on <a className="btn-text" href={`${import.meta.env.BASE_URL}the-day`}>The day</a>; the moss line draws in as you scroll.</p>
       ) },
