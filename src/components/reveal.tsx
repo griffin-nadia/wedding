@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
-/** "Settling paper": content rises 14px and un-blurs once as it scrolls in. Nothing under reduced motion. */
-export function Reveal({ children, className, as: Tag = "div" }: { children: ReactNode; className?: string; as?: "div" | "section" }) {
-  const ref = useRef<HTMLDivElement>(null)
+/** "Settling paper": content rises 8px and settles once (600 ms) as it scrolls in. Nothing under reduced motion. */
+export function Reveal({ children, className, as: Tag = "div" }: { children: ReactNode; className?: string; as?: "div" | "section" | "li" }) {
+  const ref = useRef<HTMLElement>(null)
   const [shown, setShown] = useState(false)
   useEffect(() => {
     const el = ref.current
@@ -12,5 +12,6 @@ export function Reveal({ children, className, as: Tag = "div" }: { children: Rea
     io.observe(el)
     return () => io.disconnect()
   }, [])
-  return <Tag ref={ref} className={cn("settle", shown && "settled", className)}>{children}</Tag>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return <Tag ref={ref as any} className={cn("settle", shown && "settled", className)}>{children}</Tag>
 }

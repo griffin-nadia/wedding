@@ -358,8 +358,8 @@
 @utility bleed { margin-inline: calc(50% - 50vw); }
 
 /* Settling paper reveal (once). */
-.settle { opacity: 0; transform: translateY(14px); filter: blur(4px); transition: opacity 700ms cubic-bezier(.22,1,.36,1), transform 700ms cubic-bezier(.22,1,.36,1), filter 700ms cubic-bezier(.22,1,.36,1); }
-.settle.settled { opacity: 1; transform: none; filter: none; }
+.settle { opacity: 0; transform: translateY(8px); transition: opacity var(--duration-rise) var(--ease-letter), transform var(--duration-rise) var(--ease-letter); }
+.settle.settled { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .settle { opacity: 1; transform: none; filter: none; transition: none; } }
 @media print { .settle { opacity: 1 !important; transform: none !important; filter: none !important; } }
 
@@ -516,3 +516,5 @@
 .field[aria-invalid="true"] { background-image: none !important; }
 .chip-tick { animation: tick-in var(--duration-quick) var(--ease-paper) both; }
 @keyframes tick-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
+/* Accordions open and close in 300 ms on the paper ease */
+.accordion-content[data-state] { animation-duration: var(--duration-settle) !important; animation-timing-function: var(--ease-paper) !important; }

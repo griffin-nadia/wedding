@@ -32,10 +32,10 @@ export function DriverCard() {
   }
   return (
     <>
-      <section aria-labelledby="driver" className="space-y-3 rounded-[1.25rem] bg-card p-5 shadow-paper ring-1 ring-border">
-        <h3 id="driver" className="label-caps text-eyebrow">{t.driver.label}</h3>
-        <p className="font-display text-2xl">{VENUE.name}</p>
-        <p className="text-sm text-body">{t.driver.fare}</p>
+      <section aria-labelledby="driver" className="flex flex-col gap-3 rounded-md bg-section-alt p-4 md:p-6">
+        <h2 id="driver" className="label-caps text-muted-foreground">{t.driver.label}</h2>
+        <p className="font-semibold text-foreground">{VENUE.name} <span lang="ja" className="font-ja font-normal text-body">· {VENUE.nameJa}</span></p>
+        <p>{t.driver.fare}</p>
         <div className="flex flex-wrap gap-3">
           <Button ref={opener} size="lg" onClick={() => setFull(true)}>{t.driver.show}<ArrowRight aria-hidden /></Button>
           <Button size="lg" variant="outline" onClick={copy}><Copy aria-hidden />{t.driver.copy}</Button>

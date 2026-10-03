@@ -1,21 +1,21 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useLang } from "@/lib/lang"
-import { MapleLeaf } from "@/components/maple-leaf"
 
+/** Q&A: one accordion. Answers are body text, always. */
 export function QaPage() {
   const { t } = useLang()
   return (
-    <div className="mx-auto max-w-[40rem] space-y-6 py-6 md:py-12">
-      <h1 className="heading flex items-start gap-3">{t.qa.title}<MapleLeaf /></h1>
-      <Accordion type="single" collapsible className="rounded-lg border bg-card px-6">
+    <>
+      <h1 className="heading">{t.qa.title}</h1>
+      <Accordion type="single" collapsible>
         {t.qa.items.map((item, i) => (
           <AccordionItem key={item.q} value={`q${i}`}>
-            <AccordionTrigger className="text-base font-bold">{item.q}</AccordionTrigger>
-            <AccordionContent className="font-display text-base text-body">{item.a}</AccordionContent>
+            <AccordionTrigger>{item.q}</AccordionTrigger>
+            <AccordionContent><p>{item.a}</p></AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
-      <p className="text-sm text-muted-foreground">{t.qa.contact}</p>
-    </div>
+      <p className="hand">{t.qa.contact}</p>
+    </>
   )
 }
