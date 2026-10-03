@@ -8,6 +8,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Chip, ChoiceCard, ReviewRow, Skeleton, StepProgress } from "@/components/blocks"
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 import { Pill } from "@/components/pill"
+import { DATES } from "@/lib/wedding-dates"
+import { fmtShort } from "@/lib/dates"
 import { Hanko } from "@/components/hanko"
 import { CountdownTile } from "@/components/countdown"
 import { FortuneCard } from "@/components/fortune-card"
@@ -20,7 +22,7 @@ import { SongPicker } from "@/components/song-picker"
 import { Combobox } from "@/components/combobox"
 import { Segmented } from "@/components/segmented"
 import { toast } from "@/components/toast"
-import { COUPLE } from "@/content/en"
+import { COUPLE, en } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { SCENES } from "@/lib/scenes"
 import { tuneEnabled, TuneLauncher } from "@/tune/launcher"
@@ -66,7 +68,7 @@ const GROUPS: Group[] = [
         <>
           {STATES.filter((s) => s !== "selected" && s !== "error").map((s) => (
             <Row key={s} label={s}>
-              <Button size="lg" disabled={s === "disabled"} {...force(s)}>RSVP by 15 Feb</Button>
+              <Button size="lg" disabled={s === "disabled"} {...force(s)}>{en.home.rsvpButton}</Button>
               <Button size="lg" variant="outline" disabled={s === "disabled"} {...force(s)}>Back</Button>
               <button type="button" className="btn-text min-h-11" disabled={s === "disabled"} {...force(s)}>Change my reply</button>
             </Row>
@@ -137,7 +139,7 @@ const GROUPS: Group[] = [
         </div>
       ) },
       { id: "pill", name: "Status pill", purpose: "The only other round thing besides the seal.", render: () => (
-        <div className="flex flex-wrap gap-3"><Pill tone="good">Replied</Pill><Pill tone="warn">Not yet</Pill><Pill>Changes lock 30 Apr</Pill><Pill tone="accent">New</Pill></div>
+        <div className="flex flex-wrap gap-3"><Pill tone="good">Replied</Pill><Pill tone="warn">Not yet</Pill><Pill>{`Changes lock ${fmtShort(DATES.changesLock)}`}</Pill><Pill tone="accent">New</Pill></div>
       ) },
       { id: "hanko", name: "Hanko", purpose: "The success stamp, the one thing that lands with a little weight (420 ms).", render: () => <HankoDemo /> },
       { id: "countdown", name: "Countdown", tokens: "--countdown-*, --type-display-numerals-*", purpose: "Display type, one row: Oranienbaum numerals, thin rust colons, labels under. Never tiles.", render: () => (
@@ -262,7 +264,7 @@ function LetterDemo() {
     <div className="relative h-80 overflow-hidden rounded-md">
       <img src={`${import.meta.env.BASE_URL}scenes/kyoto-view-1200.webp`} alt="" className="absolute inset-0 size-full object-cover" style={{ filter: "var(--scene-filter)" }} />
       <div className="letter absolute top-8 left-6 w-64 !gap-3 !p-6">
-        <p className="label-caps text-muted-foreground">Fri 15 Oct 2027 · Kyoto</p>
+        <p className="label-caps text-muted-foreground">{en.home.label}</p>
         <p className="font-display text-[40px] leading-none text-foreground">{COUPLE.first} <span className="text-primary">&amp;</span></p>
         <span className="moss-rule" />
         <p>Dear Sam and Alex,</p>
@@ -349,7 +351,7 @@ function Type() {
     ["Heading", "--type-heading-*", <p className="heading">Getting there</p>],
     ["Body", "--type-body-*", <p>We're getting married in Kyoto, where it all started, and we'd love you to be there.</p>],
     ["Note", "--type-note-*", <p className="hand">With love, N &amp; G</p>],
-    ["Label", "--type-label-*", <p className="label-caps text-muted-foreground">Fri 15 Oct 2027 · Kyoto</p>],
+    ["Label", "--type-label-*", <p className="label-caps text-muted-foreground">{en.home.label}</p>],
     ["Numerals", "--type-display-numerals-*", <p className="numerals text-(length:--type-display-numerals-size) text-foreground">376</p>],
     ["Small", "--type-small-*", <p className="text-xs text-destructive">Errors and fine print only.</p>],
   ]

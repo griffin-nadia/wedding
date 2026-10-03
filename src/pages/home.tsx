@@ -73,7 +73,8 @@ export function HomePage() {
   useEffect(() => { if (params.get("rsvp") === "1") setTapped(true) }, [params])
   const done = Boolean(household?.respondedAt)
   const locked = isLocked()
-  const names = household ? household.guests.filter((g) => !g.plusOne).map((g) => g.firstName).filter(Boolean) : []
+  // v3 P: first names in the sheet's order; a plus one without a name yet is "your plus one"
+  const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : g.firstName)).filter(Boolean) : []
   const dear = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0] || household?.displayName || ""
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
 

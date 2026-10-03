@@ -2,6 +2,12 @@
 // Edit here (or later, the Content tab in the data sheet) rather than inside components.
 // Japanese lives in ja.ts with the same shape. Anything missing there falls back to English.
 
+import { DATES } from "@/lib/wedding-dates"
+import { fmtDay, fmtShort } from "@/lib/dates"
+
+const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
+const LOCK = fmtDay(DATES.changesLock)
+
 // The couple's names live here once. Swapping the order is this one line.
 export const COUPLE = { first: "Nadia", second: "Griffin" }
 
@@ -96,9 +102,10 @@ export const en = {
     pills: { replied: "Replied" },
     rsvpClosed: `Replies are closed now. If something's changed, message ${A} or ${B}.`,
     dear: (name: string) => `Dear ${name},`,
-    label: "Fri 15 Oct 2027, Kyoto",
-    dateLine: "15 October 2027, Kyoto",
-    rsvpButton: "RSVP by Mon 15 Feb",
+    yourPlusOne: "your plus one",
+    label: `${DAY}, Kyoto`,
+    dateLine: `${DAY}, Kyoto`,
+    rsvpButton: `RSVP by ${fmtShort(DATES.rsvpBy)}`,
     yourReply: "Your reply",
     todo: { who: "Who's coming", food: "Food and a song", dates: "Travel dates", datesLater: "add once your flights are booked", done: "done", toDo: "to do" },
     greetingLine: "we're getting married in Kyoto, where it all started, and we'd love you there. Everything you need is right here.",
@@ -110,17 +117,17 @@ export const en = {
       { to: "/travel", label: "Getting there" },
       { to: "/travel#stay", label: "Where to stay" },
     ],
-    rsvpBy: "RSVP by 15 Feb",
+    rsvpBy: `RSVP by ${fmtShort(DATES.rsvpBy)}`,
     changeReply: "Change my reply",
   },
   day: {
     title: "The day",
-    date: "Fri 15 Oct 2027",
+    date: DAY,
     venue: "The Sodoh Higashiyama, Kyoto",
     addressLines: ["366 Yasaka Kamimachi, Higashiyama Ward", "Kyoto 605-0827, Japan"],
     howToGetThere: "How to get there",
     countdownTitle: "Counting down",
-    dateLong: "Friday 15 October 2027",
+    dateLong: DAY,
     dressNote: "No dress code. Wear what makes you feel like your best self, with shoes that grip on stone.",
     mapAlt: "A drawn map: from Kyoto Station north to Gion-Shijo, then east up the hill to The Sodoh.",
     mapStation: "Kyoto Station", mapGion: "Gion-Shijo", mapVenue: "The Sodoh",
@@ -248,14 +255,14 @@ export const en = {
     arrival: "Arriving",
     departure: "Leaving",
     datesHint: "Not booked yet? Add these later.",
-    dateRange: "Pick dates between 1 Sep and 30 Nov 2027.",
+    dateRange: `Pick dates between ${fmtDay(DATES.travelFrom)} and ${fmtDay(DATES.travelTo)}.`,
     dateOrder: "Pick a leaving date on or after your arrival.",
     message: "Anything else? (optional)",
     checkTitle: "All good?",
     send: "Send our reply",
     next: "Next",
     back: "Back",
-    editUntil: "You can change this until Fri 30 Apr 2027.",
+    editUntil: `You can change this until ${LOCK}.`,
     bringing: "Bringing someone?",
     plusOne: "Their name",
     plusOneName: "Your plus one",
@@ -266,8 +273,8 @@ export const en = {
     noSongs: "None yet",
     doneTitle: { all: "You're all set", none: "Thanks for letting us know", mixed: "Thanks, got it" },
     backHome: "Back to your invite",
-    sentLine: "Sent. You can change it until 30 Apr.",
-    updatedLine: "Updated. You can change it until 30 Apr.",
+    sentLine: `Sent. You can change it until ${LOCK}.`,
+    updatedLine: `Updated. You can change it until ${LOCK}.`,
     savingQuiet: "Sending…",
     savedOffline: "Saved on this phone. It'll send when you're back online.",
     changeReply: "Change my reply",

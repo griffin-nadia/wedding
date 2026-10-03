@@ -1,6 +1,7 @@
+import { DATES } from "./wedding-dates"
 // The leaves turn as the day gets closer: fully green on invite day (15 Oct 2026),
 // fully red in wedding week (15 Oct 2027). Static per day, no animation.
-const INVITE = Date.parse("2026-10-15T00:00:00+11:00")
+const INVITE = Date.parse(`${DATES.invites}T00:00:00+11:00`)
 const WEDDING_WEEK = Date.parse("2027-10-08T00:00:00+09:00")
 
 /** How green the leaves are today, 0 to 100. */

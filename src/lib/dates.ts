@@ -1,6 +1,11 @@
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
+/** "2027-10-12" → "Tue 12 Oct". */
+export function fmtShort(ymd: string) {
+  return fmtDay(ymd).replace(/ \d{4}$/, "")
+}
+
 /** "2027-10-12" → "Tue 12 Oct 2027". Calendar dates only, so no time zone surprises. */
 export function fmtDay(ymd: string) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd)

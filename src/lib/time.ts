@@ -1,4 +1,5 @@
 import { config } from "./config"
+import { DATES } from "./wedding-dates"
 
 export function countdown(now = new Date()) {
   const ms = Math.max(0, new Date(config.weddingStart).getTime() - now.getTime())
@@ -15,17 +16,19 @@ export function jstLabel(hhmm: string) {
 }
 
 /**
- * The same moment on the guest's own clock, e.g. "7:00 pm Thu in Vancouver".
+ * The same moment on the guest's own clock, e.g. "7:00 pm Thu in your time (Vancouver)".
  * Null when their device is already on Japan time, so the line can be hidden.
  */
 export function localTime(hhmm: string, timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) {
-  const d = new Date(`2027-10-15T${hhmm}:00+09:00`)
+  const d = new Date(`${DATES.ceremonyDay}T${hhmm}:00+09:00`)
   const fmt = (tz: string) => d.toLocaleString("en-AU", { weekday: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz })
   if (!timeZone || fmt(timeZone) === fmt("Asia/Tokyo")) return null
   const time = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone }).toLowerCase()
   const day = d.toLocaleDateString("en-AU", { weekday: "short", timeZone })
-  const city = timeZone.split("/").pop()!.replace(/_/g, " ")
-  return `${time} ${day} in ${city}`
+  // The city comes from the device's own zone, never the sheet: "in your time (Melbourne)", or just
+  // "your time" for zones with no city (UTC, Etc/GMT+5)
+  const city = timeZone.includes("/") && !timeZone.startsWith("Etc/") ? timeZone.split("/").pop()!.replace(/_/g, " ") : ""
+  return `${time} ${day} ${city ? `in your time (${city})` : "your time"}`
 }
 
 export function isLocked(now = new Date()) {

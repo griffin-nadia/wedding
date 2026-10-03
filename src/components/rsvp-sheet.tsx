@@ -1,3 +1,4 @@
+import { DATES } from "@/lib/wedding-dates"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Dialog } from "radix-ui"
 import { X } from "lucide-react"
@@ -24,7 +25,7 @@ import { cn } from "@/lib/utils"
 // Same limits as the back end, so nothing gets cut off silently.
 const MAX = { name: 40, song: 200, message: 2000 }
 // Trip dates around the wedding, same rule as the back end
-const TRIP = { from: "2027-09-01", to: "2027-11-30" }
+const TRIP = { from: DATES.travelFrom, to: DATES.travelTo }
 
 /**
  * Dietary is saved as words: "Vegetarian, Nut allergy, Other: kiwi". Older answers ("Allergy: Peanuts / Sesame")

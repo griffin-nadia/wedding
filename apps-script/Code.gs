@@ -11,6 +11,8 @@
  *   Songs    one row per song pick (written by the site)
  *   Log      every submission and send, in plain words (written by the site)
  *   Emails   invite and reminder wording (created by the menu, edited by Nadia)
+ *   Content  fortunes, Our story chapters and the site mode (created by the menu, edited by Nadia)
+ *   Crew     four crew links for /kit and /lab (created by "Make crew links"; no guest data)
  *
  * Visit counts (privacy first, only in this sheet: no cookies, IP addresses or third parties) go in
  * columns added at the END of Guests: First opened, Last opened, Opens, Started RSVP.
@@ -50,7 +52,7 @@ const DEFAULTS = {
 }
 
 const WEDDING = {
-  date: "Friday 15 October 2027, 11:00 am",
+  date: "Fri 15 Oct 2027, 11:00 am",
   venue: "The Sodoh Higashiyama, Kyoto",
 }
 
@@ -88,7 +90,7 @@ const ERRORS = {
 // Invite and reminder wording. The Emails tab overrides these, so Nadia can edit without code.
 // {household}, {rsvp_by}, {date} and {venue} are filled in when sending.
 const COPY = {
-  invite_subject: "You're invited: " + COUPLE + ", Kyoto, 15 October 2027",
+  invite_subject: "You're invited: " + COUPLE + ", Kyoto, Fri 15 Oct 2027",
   invite_heading: "You're invited",
   invite_body:
     "Hi {household},\n\nWe're getting married in Kyoto and we'd love you to be there.\n\nYour invite page has everything: the day, travel tips and your RSVP. Please RSVP by {rsvp_by}.",
@@ -115,6 +117,7 @@ function onOpen() {
     .addItem("Check song search", "checkSongSearch")
     .addItem("Turn on the fast email queue", "setupQueue")
     .addItem("Reset test households…", "resetTestHouseholds")
+    .addItem("Make crew links", "makeCrewLinks")
     .addSeparator()
     .addItem("Schedule the February reminder…", "scheduleReminder")
     .addItem("Cancel the February reminder", "cancelReminder")
@@ -134,11 +137,13 @@ function doGet(e) {
     }
     if (action === "flying") return json_(flyingCounts_())
     if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_() })
+    if (action === "content") return json_(content_())
+    if (action === "crew") return json_(crew_(p.token))
     if (action === "ping") {
       // Health check: is the minute trigger set up? (No guest data here.)
       const props = PropertiesService.getScriptProperties()
       const pending = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0).length
-      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", pending: pending, lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null })
+      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", pending: pending, lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: CacheService.getScriptCache().get("last_flush") || null })
     }
     if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
@@ -162,6 +167,7 @@ function doPost(e) {
   }
   if (body && body.action === "resend") return json_(resendLink_(body.email))
   if (body && body.action === "flying") return json_(setFlying_(body.token, body.city))
+  if (body && body.action === "stamps") return json_(setStamps_(body.token, body.stamps))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
   if (isLocked_()) return fail_("closed")
 
@@ -313,6 +319,8 @@ function check_(token) {
     rsvpRows: rows_(TABS.rsvps).filter((r) => r.Token === h.token).length,
     visits: visitsOf_(h.token),
     songRows: rows_(TABS.songs).filter((r) => r.Token === h.token).length,
+    // How many of this household's rows carry the duplicate flag (a count, never the note itself)
+    duplicateFlags: rows_(TABS.guests).filter((r) => r.Token === h.token && /Possible duplicate:/.test(String(r.Notes || ""))).length,
     log: rows_(TABS.log)
       .filter((r) => r.Token === h.token)
       .map((r) => ({ time: r.Time instanceof Date ? r.Time.toISOString() : String(r.Time), changed: String(r["What changed"]) })),
@@ -450,6 +458,8 @@ function forgetAllHouseholds_() {
 /** Simple trigger: any hand edit in the sheet (names, emails, rows) clears the cache. */
 function onEdit() {
   forgetAllHouseholds_()
+  // Edits to the Content tab show on the site straight away (fortunes, story, mode)
+  CacheService.getScriptCache().removeAll(["fortunes", "content"])
 }
 
 // ---------- queue (sent by flushQueue every minute) ----------
@@ -497,6 +507,8 @@ function flushTriggerReady_() {
 function flushQueue() {
   const lock = LockService.getScriptLock()
   if (!lock.tryLock(20000)) return
+  CacheService.getScriptCache().put("last_flush", new Date().toISOString(), 21600)
+  safely_(launchSetup_)
   const props = PropertiesService.getScriptProperties()
   let mails = []
   try {
@@ -691,6 +703,7 @@ function saveRsvp_(h, input) {
         gSheet.getRange(i + 1, gHead["First name"] + 1).setValue(cell_(name))
         props.setProperty("plusone_" + g.id, "1")
       }
+      flagDuplicate_(gSheet, i, name, h.token, gData)
     }
   }
 
@@ -734,6 +747,31 @@ function saveRsvp_(h, input) {
     r[sHead["Added at"]] = addedAt[s] || now
     sSheet.appendRow(fill_(r, sSheet.getLastColumn()))
   })
+}
+
+/**
+ * A plus one's name that already belongs to someone in another household gets a note on their own
+ * Guests row ("Possible duplicate: <household>") for Nadia to check. The guest never sees it.
+ * Matches first name plus last name when both rows have one, else the first name alone.
+ */
+function flagDuplicate_(gSheet, rowIndex, name, token, gData) {
+  const head = ensureColumns_(gSheet, ["Notes"])
+  const cell = gSheet.getRange(rowIndex + 1, head.Notes + 1)
+  const prior = String(cell.getValue() || "")
+  const keep = prior.replace(/\s*Possible duplicate: [^\n]*/g, "").trim()
+  const key = (v) => String(v || "").trim().toLowerCase().replace(/\s+/g, " ")
+  const mine = key(name)
+  let match = ""
+  if (mine && !PLUS_ONE.test(mine)) {
+    for (let k = 1; k < gData.length; k++) {
+      if (k === rowIndex || String(gData[k][head.Token]).trim() === token) continue
+      const first = key(gData[k][head["First name"]])
+      const full = "Last name" in head ? key(first + " " + key(gData[k][head["Last name"]])) : first
+      if (first === mine || full === mine) { match = String(gData[k][head.Household] || "another household"); break }
+    }
+  }
+  const next = match ? (keep ? keep + "\n" : "") + "Possible duplicate: " + match : keep
+  if (next !== prior) cell.setValue(next)
 }
 
 function log_(household, token, changed, payload) {
@@ -791,6 +829,207 @@ function setupContentTab() {
   s.setColumnWidth(1, 120); s.setColumnWidth(2, 520); s.setColumnWidth(3, 360)
   CacheService.getScriptCache().remove("fortunes")
   SpreadsheetApp.getUi().alert("Added the Content tab with the 12 fortunes.")
+}
+
+/**
+ * Our story and the site mode, from the Content tab: story_1_title, story_1_year, story_1_body (paragraphs
+ * split on blank lines), up to story_6; mode = invite | week-of | keepsake. Story stays hidden until filled in.
+ */
+function content_() {
+  const cache = CacheService.getScriptCache()
+  const hit = cache.get("content")
+  if (hit) return JSON.parse(hit)
+  const out = { ok: true, story: [], mode: "invite" }
+  if (SpreadsheetApp.getActive().getSheetByName("Content")) {
+    const kv = {}
+    rows_("Content").forEach((r) => { const k = String(r.Key || "").trim(); if (k) kv[k] = String(r.Text || "").trim() })
+    for (let n = 1; n <= 6; n++) {
+      const title = kv["story_" + n + "_title"], body = kv["story_" + n + "_body"]
+      if (!title || !body) continue
+      out.story.push({ key: String(n), title: title.slice(0, 60), year: (kv["story_" + n + "_year"] || "").slice(0, 20), body: body.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean).slice(0, 6) })
+    }
+    if (["invite", "week-of", "keepsake"].indexOf(kv.mode) >= 0) out.mode = kv.mode
+  }
+  cache.put("content", JSON.stringify(out), 600)
+  return out
+}
+
+// ---------- crew links (/kit and /lab) ----------
+
+const CREW = [["Jehan", "builder"], ["Nadia", "couple"], ["Griffin", "couple"], ["Wedding Gmail", "account"]]
+
+/** { ok, name } only for a token in the Crew tab. Never says anything about households. */
+function crew_(token) {
+  token = String(token || "").trim()
+  if (!/^[a-z2-9]{10}$/.test(token)) return { ok: false }
+  const cache = CacheService.getScriptCache()
+  const hit = cache.get("crew:" + token)
+  if (hit) return hit === "-" ? { ok: false } : { ok: true, name: hit }
+  const tab = SpreadsheetApp.getActive().getSheetByName("Crew")
+  const row = tab ? rows_("Crew").find((r) => String(r.Token || "").trim() === token) : null
+  cache.put("crew:" + token, row ? String(row.Name) : "-", 600)
+  return row ? { ok: true, name: String(row.Name) } : { ok: false }
+}
+
+/** Menu: makes the Crew tab if needed, fills a token for each crew row, and writes their /kit and /lab links. */
+function makeCrewLinks() {
+  makeCrewLinks_()
+  SpreadsheetApp.getUi().alert("Crew links are in the Crew tab. Send each person their own; anyone with a link can open /kit and /lab.")
+}
+
+/** The Crew tab and its links, without the alert (also run once by the launch set-up). `first` presets the first row's token. */
+function makeCrewLinks_(first) {
+  const ss = SpreadsheetApp.getActive()
+  let s = ss.getSheetByName("Crew")
+  if (!s) {
+    s = ss.insertSheet("Crew")
+    const rows = [["Name", "Role", "Token", "Kit link", "Lab link"]].concat(CREW.map((c) => [c[0], c[1], "", "", ""]))
+    s.getRange(1, 1, rows.length, 5).setValues(rows)
+    s.getRange(1, 1, 1, 5).setFontWeight("bold")
+    s.setColumnWidth(4, 420); s.setColumnWidth(5, 420)
+  }
+  const head = ensureColumns_(s, ["Name", "Role", "Token", "Kit link", "Lab link"])
+  const data = s.getDataRange().getValues()
+  for (let i = 1; i < data.length; i++) {
+    if (!String(data[i][head.Name]).trim()) continue
+    let token = String(data[i][head.Token] || "").trim()
+    if (!token) { token = (i === 1 && first) || makeToken_(); s.getRange(i + 1, head.Token + 1).setValue(token) }
+    s.getRange(i + 1, head["Kit link"] + 1).setValue(prop_("SITE_URL") + "/kit?c=" + token)
+    s.getRange(i + 1, head["Lab link"] + 1).setValue(prop_("SITE_URL") + "/lab?c=" + token)
+    CacheService.getScriptCache().remove("crew:" + token)
+  }
+}
+
+/**
+ * One-off, second part: the "Test family (test)" household (two guests and a plus one row) for the
+ * end-to-end check in v3 section P, with the test token from Local.gs. Logs what it found in the Crew
+ * tab against that token, so the check can be read back with ?action=check (no guest data involved).
+ */
+function launchSetupFamily_() {
+  const props = PropertiesService.getScriptProperties()
+  if (props.getProperty("launch_setup_v3c") || typeof LOCAL === "undefined") return
+  const tries = Number(props.getProperty("launch_setup_v3c_tries") || 0)
+  if (tries >= 3) return
+  props.setProperty("launch_setup_v3c_tries", String(tries + 1))
+  try {
+    launchSetupFamilyRun_()
+    props.setProperty("launch_setup_v3c", new Date().toISOString())
+  } catch (err) {
+    // Shown by ?action=ping (no guest data in it)
+    CacheService.getScriptCache().put("trigger_err", "launch set-up: " + String(err && err.message ? err.message : err).slice(0, 200), 21600)
+  }
+}
+
+/** One-off fix: the first set-up wrote the test token and crew token as one value. Corrects the test rows and Jehan's crew row. */
+function launchSetupFix_() {
+  const props = PropertiesService.getScriptProperties()
+  if (props.getProperty("launch_setup_v3d") || typeof LOCAL === "undefined") return
+  props.setProperty("launch_setup_v3d", new Date().toISOString())
+  const wrong = LOCAL.testToken + " " + LOCAL.crewToken
+  const g = sheet_(TABS.guests)
+  const head = headers_(g)
+  const data = g.getDataRange().getValues()
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][head.Token]).trim() !== wrong) continue
+    g.getRange(i + 1, head.Token + 1).setValue(LOCAL.testToken)
+    g.getRange(i + 1, head.Link + 1).setValue(linkFor_(LOCAL.testToken))
+  }
+  const crew = SpreadsheetApp.getActive().getSheetByName("Crew")
+  if (crew) {
+    const ch = headers_(crew)
+    const old = String(crew.getRange(2, ch.Token + 1).getValue()).trim()
+    if (old) CacheService.getScriptCache().remove("crew:" + old)
+    crew.getRange(2, ch.Token + 1).setValue(LOCAL.crewToken)
+    crew.getRange(2, ch["Kit link"] + 1).setValue(prop_("SITE_URL") + "/kit?c=" + LOCAL.crewToken)
+    crew.getRange(2, ch["Lab link"] + 1).setValue(prop_("SITE_URL") + "/lab?c=" + LOCAL.crewToken)
+  }
+  forgetAllHouseholds_()
+}
+
+function launchSetupFamilyRun_() {
+  const token = LOCAL.testToken
+  if (!households_().some((h) => h.token === token)) {
+    const g = sheet_(TABS.guests)
+    const head = headers_(g)
+    ;[["Sam", LOCAL.testEmail], ["Alex", ""], ["Guest", ""]].forEach((p, n) => {
+      const r = []
+      r[head.Household] = "Test family (test)"
+      r[head["First name"]] = p[0]
+      if ("Email" in head) r[head.Email] = p[1]
+      r[head["Guest ID"]] = "t" + token.slice(0, 4) + (n + 1)
+      r[head.Token] = token
+      r[head.Link] = linkFor_(token)
+      g.appendRow(fill_(r, g.getLastColumn()))
+    })
+    forgetAllHouseholds_()
+  }
+  const crew = SpreadsheetApp.getActive().getSheetByName("Crew")
+  const rows = crew ? rows_("Crew") : []
+  log_("(launch set-up)", token, "Crew tab: " + (crew ? rows.length + " rows, " + rows.filter((r) => String(r.Token || "").trim()).length + " with tokens, preset token " + (rows.some((r) => String(r.Token).trim() === LOCAL.crewToken) ? "present" : "absent") : "missing"), "")
+}
+
+/**
+ * One-off launch set-up, run once by the minute trigger (so it needs no menu click): adds a test
+ * household if there is none ("Test family (test)": two guests and a plus one row, test address only),
+ * makes the Crew tab, resets the test household (proving the reset works) and sends one [TEST] invite to
+ * the test address. Values come from Local.gs, which isn't in git. Remove the guard property to run again.
+ */
+function launchSetup_() {
+  launchSetupFamily_()
+  launchSetupFix_()
+  const props = PropertiesService.getScriptProperties()
+  if (props.getProperty("launch_setup_v3") || typeof LOCAL === "undefined") return
+  props.setProperty("launch_setup_v3", new Date().toISOString())
+  const g = sheet_(TABS.guests)
+  const head = headers_(g)
+  let test = households_().find((h) => TEST_HOUSEHOLD.test(h.name))
+  if (!test) {
+    const token = LOCAL.testToken
+    ;[["Sam", LOCAL.testEmail], ["Alex", ""], ["Guest", ""]].forEach((p, n) => {
+      const r = []
+      r[head.Household] = "Test family (test)"
+      r[head["First name"]] = p[0]
+      if ("Email" in head) r[head.Email] = p[1]
+      r[head["Guest ID"]] = "t" + token.slice(0, 4) + (n + 1)
+      r[head.Token] = token
+      r[head.Link] = linkFor_(token)
+      g.appendRow(fill_(r, g.getLastColumn()))
+    })
+    SpreadsheetApp.flush()
+    test = households_().find((h) => h.token === token)
+  }
+  makeCrewLinks_(LOCAL.crewToken)
+  resetHouseholds_([test.token])
+  const mail = inviteEmail_("invite", test, "Test: the real invite would go to " + (test.emails.join(", ") || "nobody"))
+  MailApp.sendEmail({ to: LOCAL.testEmail, replyTo: prop_("REPLY_TO"), name: COUPLE, subject: "[TEST] " + mail.subject, body: mail.text, htmlBody: mail.html })
+  log_("(test send)", "", "Launch set-up: test household ready, Crew tab made, test invite sent to the test address.", "")
+  props.setProperty("last_test_send", new Date().toISOString() + " · 1")
+}
+
+// ---------- stamp book (concept B, December) ----------
+
+const STAMPS = ["home", "day", "travel", "qa", "story", "reply"]
+
+/** Saves the household's collected stamps (a fixed list) in a Stamps column at the end of Guests. */
+function setStamps_(token, stamps) {
+  token = String(token || "").trim()
+  const list = (Array.isArray(stamps) ? stamps : []).map(String).filter((x, i, all) => STAMPS.indexOf(x) >= 0 && all.indexOf(x) === i)
+  const lock = LockService.getUserLock()
+  if (!lock.tryLock(10000)) return { ok: false, code: "busy", error: ERRORS.busy }
+  try {
+    const s = sheet_(TABS.guests)
+    const head = ensureColumns_(s, ["Stamps"])
+    const data = s.getDataRange().getValues()
+    let found = false
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][head.Token]).trim() !== token) continue
+      s.getRange(i + 1, head.Stamps + 1).setValue(list.join(", "))
+      found = true
+    }
+    return found ? { ok: true } : { ok: false, code: "not_found", error: ERRORS.not_found }
+  } finally {
+    lock.releaseLock()
+  }
 }
 
 // ---------- "Flying from" (anonymous counts for the journey map) ----------
@@ -1196,19 +1435,27 @@ function resetTestHouseholds() {
   const ui = SpreadsheetApp.getUi()
   const tests = households_().filter((h) => TEST_HOUSEHOLD.test(h.name))
   if (!tests.length) return ui.alert("No test households found.")
-  const ok = ui.alert("Reset test households", "Clear answers, songs, Log rows and visits for:\n\n" + tests.map((h) => h.name).join("\n") + "\n\nTheir rows on Guests stay.", ui.ButtonSet.OK_CANCEL)
+  const ok = ui.alert("Reset test households", "Clear answers, songs, Log rows, visits, stamps and duplicate flags for:\n\n" + tests.map((h) => h.name).join("\n") + "\n\nTheir rows on Guests stay.", ui.ButtonSet.OK_CANCEL)
   if (ok !== ui.Button.OK) return
-  const tokens = tests.map((h) => h.token)
-  const props = PropertiesService.getScriptProperties()
+  resetHouseholds_(tests.map((h) => h.token))
+  ui.alert("Reset " + tests.length + " test household" + (tests.length === 1 ? "" : "s") + ".")
+}
 
+/** Clears answers, songs, Log rows, visits, stamps and duplicate flags for these tokens. Guests rows stay. */
+function resetHouseholds_(tokens) {
+  const props = PropertiesService.getScriptProperties()
   const g = sheet_(TABS.guests)
   const head = headers_(g)
   const data = g.getDataRange().getValues()
   for (let i = 1; i < data.length; i++) {
     if (tokens.indexOf(String(data[i][head.Token]).trim()) < 0) continue
-    ;["Attending", "Dietary", "Invite sent"].concat(VISITS).forEach((k) => {
+    ;["Attending", "Dietary", "Invite sent", "Stamps", "Flying from"].concat(VISITS).forEach((k) => {
       if (k in head) g.getRange(i + 1, head[k] + 1).setValue("")
     })
+    if ("Notes" in head) {
+      const note = String(data[i][head.Notes] || "").replace(/\s*Possible duplicate: [^\n]*/g, "").trim()
+      g.getRange(i + 1, head.Notes + 1).setValue(note)
+    }
     const id = String(data[i][head["Guest ID"]])
     if (props.getProperty("plusone_" + id)) {
       g.getRange(i + 1, head["First name"] + 1).setValue("Guest")
@@ -1222,7 +1469,6 @@ function resetTestHouseholds() {
     for (let i = rows.length - 1; i >= 1; i--) if (tokens.indexOf(String(rows[i][col]).trim()) >= 0) s.deleteRow(i + 1)
   })
   forgetAllHouseholds_()
-  ui.alert("Reset " + tests.length + " test household" + (tests.length === 1 ? "" : "s") + ".")
 }
 
 /** Creates the 1-minute trigger that sends confirmation emails and writes visit counts. */
@@ -1384,7 +1630,7 @@ function shortDate_(ymd) {
 }
 
 function longDate_(ymd) {
-  return ymd ? Utilities.formatDate(new Date(ymd + "T12:00:00+09:00"), "Asia/Tokyo", "d MMMM yyyy") : ""
+  return ymd ? Utilities.formatDate(new Date(ymd + "T12:00:00+09:00"), "Asia/Tokyo", "EEE d MMM yyyy") : ""
 }
 
 function esc_(s) {

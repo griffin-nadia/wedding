@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Download, MapPin, RotateCcw, X } from "lucide-react"
 import tokensCss from "@/styles/tokens.css?raw"
-import { empty, exportJson, FLOWS, load, OPTIONS, save, type Note, type Scope, type TuneState } from "./store"
+import { FLOWS, OPTIONS } from "./options"
+import { empty, exportJson, load, save, type Note, type Scope, type TuneState } from "./store"
 import { cn } from "@/lib/utils"
 import { Segmented } from "@/components/segmented"
 

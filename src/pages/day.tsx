@@ -4,6 +4,7 @@ import { AddToCalendar } from "@/components/add-to-calendar"
 import { Trail } from "@/components/trail"
 import { Link } from "react-router-dom"
 import { config } from "@/lib/config"
+import { DATES } from "@/lib/wedding-dates"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { jstLabel, kyotoNow, localTime } from "@/lib/time"
@@ -18,9 +19,9 @@ const ICONS = [Flower2, Wine, UtensilsCrossed]
 function nowOnTheDay(real: Date, times: string[]) {
   const mock = new URLSearchParams(location.search).get("now")
   const now = mock ? new Date(`${mock}:00+09:00`) : real
-  if (now.toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" }) !== "2027-10-15") return null
-  const at = (hhmm: string) => new Date(`2027-10-15T${hhmm}:00+09:00`).getTime()
-  const start = at(times[0]), end = at("15:30")
+  if (now.toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" }) !== DATES.ceremonyDay) return null
+  const at = (hhmm: string) => new Date(`${DATES.ceremonyDay}T${hhmm}:00+09:00`).getTime()
+  const start = at(times[0]), end = at(DATES.endsAt)
   return Math.min(1, Math.max(0, (now.getTime() - start) / (end - start)))
 }
 

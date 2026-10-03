@@ -7,10 +7,11 @@ import { ThemeProvider } from "@/lib/theme"
 import { SceneDimProvider } from "@/components/letter/letter"
 import { Toaster } from "@/components/toast"
 import { HomePage } from "@/pages/home"
-import { NoInvitePage } from "@/pages/no-invite"
 import { CrewGate } from "@/components/crew-gate"
 
 // Pages beyond Home load when first visited, so the greeting paints sooner.
+// Shown only when a link is missing or wrong, so it loads then
+const NoInvitePage = lazy(() => import("@/pages/no-invite").then((m) => ({ default: m.NoInvitePage })))
 const DayPage = lazy(() => import("@/pages/day").then((m) => ({ default: m.DayPage })))
 const TravelPage = lazy(() => import("@/pages/travel").then((m) => ({ default: m.TravelPage })))
 const FaqsPage = lazy(() => import("@/pages/faqs").then((m) => ({ default: m.FaqsPage })))
@@ -30,7 +31,7 @@ function Gate() {
   if (/\/lab\/?$/.test(window.location.pathname)) return <CrewGate page="lab" />
   // While the invite loads, the pages render straight away (the hero paints first);
   // only Home's greeting and RSVP card wait for the household.
-  if (status !== "ready" && status !== "loading") return <NoInvitePage reason={status} />
+  if (status !== "ready" && status !== "loading") return <Suspense><NoInvitePage reason={status} /></Suspense>
   return (
     <Routes>
       <Route element={<Layout />}>
