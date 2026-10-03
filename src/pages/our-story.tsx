@@ -1,8 +1,11 @@
+import { OurStory } from "@/components/slots"
+import slots from "@/content/slots.json"
 import { useLang } from "@/lib/lang"
 
-/** Our story (hidden route): "Coming soon" in display type until the couple's story is written. */
+/** Our story (hidden route): the journey map once the couple's story is written; "Coming soon" in display type until then. */
 export function StoryPage() {
   const { t } = useLang()
+  if (slots.ourStory.show) return <OurStory />
   return (
     <div className="grid min-h-64 place-items-center text-center">
       <div className="flex flex-col items-center gap-4">

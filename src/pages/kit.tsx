@@ -12,6 +12,8 @@ import { CountdownTile } from "@/components/countdown"
 import { FortuneCard } from "@/components/fortune-card"
 import { DriverCard } from "@/components/driver-card"
 import { SoundToggle } from "@/components/sound-toggle"
+import { LanternToggle } from "@/components/lantern-toggle"
+import { VenueMap } from "@/components/venue-map"
 import { InlineSubmit } from "@/components/inline-submit"
 import { SongPicker } from "@/components/song-picker"
 import { toast } from "@/components/toast"
@@ -136,12 +138,16 @@ const GROUPS: Group[] = [
         <div className="flex flex-wrap gap-3"><Pill tone="good">Replied</Pill><Pill tone="warn">Not yet</Pill><Pill>Changes lock 30 Apr</Pill><Pill tone="accent">New</Pill></div>
       ) },
       { id: "hanko", name: "Hanko", purpose: "The success stamp, the one thing that lands with a little weight (420 ms).", render: () => <HankoDemo /> },
-      { id: "countdown", name: "Countdown tile", tokens: "--countdown-*", purpose: "Numerals 32, label under. The seconds tile sits on the fill.", render: () => (
-        <div className="grid max-w-sm grid-cols-4 gap-2"><CountdownTile value={12} unit="months" /><CountdownTile value={3} unit="days" /><CountdownTile value={14} unit="hrs" /><CountdownTile value={42} unit="secs" ticking /></div>
+      { id: "countdown", name: "Countdown", tokens: "--countdown-*, --type-display-numerals-*", purpose: "Display type, one row: Oranienbaum numerals, thin rust colons, labels under. Never tiles.", render: () => (
+        <div className="flex items-start gap-3"><CountdownTile value={12} unit="months" /><span className="numerals text-[32px] leading-10 text-primary">:</span><CountdownTile value={3} unit="days" /><span className="numerals text-[32px] leading-10 text-primary">:</span><CountdownTile value={14} unit="hrs" /><span className="numerals text-[32px] leading-10 text-primary">:</span><CountdownTile value={42} unit="secs" /></div>
       ) },
+      { id: "timeline", name: "Timeline", purpose: "The day: one thin moss line that draws in, times and labels swapping sides, moss line icons.", render: () => (
+        <p>See it live on <a className="btn-text" href={`${import.meta.env.BASE_URL}the-day`}>The day</a>; rows settle in once as they scroll into view.</p>
+      ) },
+      { id: "venue", name: "Venue map", purpose: "Our own drawn map: station, Gion-Shijo, the venue as the hanko. No map service.", render: () => <div className="max-w-md"><VenueMap /></div> },
       { id: "fortune", name: "Fortune card", purpose: "After a yes: one fortune per household, the same on every device.", render: () => <div className="flex max-w-md flex-col gap-4"><FortuneCard token="kit-closed" /><FortuneCard token="kit-open" /></div> },
       { id: "driver", name: "Driver card", purpose: "Sage paper, the second surface. Full screen for the taxi driver.", render: () => <div className="max-w-md"><DriverCard /></div> },
-      { id: "sound", name: "Sound toggle", purpose: "Tiny, at the end of the letter. Off by default, remembered on the device.", render: () => <SoundToggle /> },
+      { id: "sound", name: "Sound and Lantern", purpose: "Two quiet icons at the end of the letter, next to the sign-off. Pressed sits on sage.", render: () => <div className="flex gap-2"><SoundToggle /><LanternToggle /></div> },
       { id: "toast", name: "Toast", purpose: "One line, bottom of the screen, 2.4 s.", render: () => <Button variant="outline" onClick={() => toast("Address copied")}><Copy aria-hidden />Show a toast</Button> },
       { id: "skeleton", name: "Skeleton", purpose: "Washi breathing; only appears after 300 ms so fast loads never flash it.", render: () => <div className="flex max-w-xs flex-col gap-3"><Skeleton className="h-7 w-40" /><Skeleton className="h-13 w-full rounded-lg" /></div> },
     ],
@@ -150,7 +156,15 @@ const GROUPS: Group[] = [
     group: "Surfaces",
     pages: [
       { id: "letter", name: "Letter and scene", tokens: "--letter-*, --scene-*", purpose: "The only UI surface. 620 wide on desktop, forest edge (honey in Lantern), paper blur within 24px.", render: () => <LetterDemo /> },
-      { id: "envelope", name: "Envelope", purpose: "Arrival, first visit only. Flap 300 ms, letter rises 600 ms.", render: () => <EnvelopeDemo /> },
+      { id: "envelope", name: "Envelope", purpose: "Arrival, first visit only. Hover lifts the flap and a corner peeks out; tap opens it (flap 300 ms, letter rises 600 ms).", render: () => <EnvelopeDemo /> },
+      { id: "nav", name: "Nav", purpose: "Four items, rendered once: a floating dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms).", render: () => (
+        <div className="flex max-w-sm flex-col gap-3">
+          <div className="relative grid h-16 grid-cols-4 rounded-3xl border bg-background p-1 shadow-paper">
+            <span aria-hidden className="absolute top-1 bottom-1 left-1 w-[calc(25%-2px)] rounded-[20px] bg-section-alt" />
+            {["Home", "The day", "Travel", "FAQs"].map((x, i) => <span key={x} className={cn("relative grid place-items-center font-label text-[12px] font-medium", i === 0 ? "text-foreground" : "text-muted-foreground")}>{x}</span>)}
+          </div>
+        </div>
+      ) },
     ],
   },
 ]
