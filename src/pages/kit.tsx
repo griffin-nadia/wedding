@@ -151,7 +151,7 @@ const GROUPS: Group[] = [
       { id: "driver", name: "Driver card", purpose: "Sage paper in the page; Show the driver opens a modal above everything (dock and toggle hidden), Japanese on the type scale, Done in the footer, Esc closes.", render: () => <div className="max-w-md"><DriverCard /></div> },
       { id: "sound", name: "Mode toggle", purpose: "Sun or moon, top right, outside the letter. The only switch on the site.", render: () => <LanternToggle /> },
       { id: "toast", name: "Toast", purpose: "One line, bottom of the screen, 2.4 s (copy confirmations only).", render: () => <Button variant="outline" onClick={() => toast("Address copied")}><Copy aria-hidden />Show a toast</Button> },
-      { id: "skeleton", name: "Skeleton", purpose: "Washi breathing; only appears after 300 ms so fast loads never flash it.", render: () => <div className="flex max-w-xs flex-col gap-3"><Skeleton className="h-7 w-40" /><Skeleton className="h-13 w-full rounded-lg" /></div> },
+      { id: "skeleton", name: "Skeleton", purpose: "Washi breathing; only appears after 300 ms so fast loads never flash it.", render: () => <div className="flex max-w-xs flex-col gap-3"><Skeleton className="h-7 w-40" /><Skeleton className="h-13 w-full rounded-lg!" /></div> },
     ],
   },
   {

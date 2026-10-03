@@ -117,7 +117,7 @@ export function HomePage() {
       {household && mode === "keepsake" && <Link to="/our-story" className="btn-text inline-flex min-h-11 items-center self-start">{t.home.keepsake.story}</Link>}
 
       {mode !== "invite" ? null : !household ? (
-        <div role="status"><span className="sr-only">{t.loading}</span><Skeleton className="h-13 w-full rounded-lg sm:w-64" /></div>
+        <div role="status"><span className="sr-only">{t.loading}</span><Skeleton className="h-13 w-full rounded-lg! sm:w-64" /></div>
       ) : locked ? (
         <p>{t.home.rsvpClosed}</p>
       ) : (

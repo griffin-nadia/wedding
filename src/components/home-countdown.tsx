@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { config } from "@/lib/config"
 import { partsAt, sentence } from "@/lib/countdown-parts"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
 import { useContent } from "@/lib/content"
 import { cn } from "@/lib/utils"
+
+// The strip and tiles are Options alternatives, so they load only when picked
+const CountAlt = lazy(() => import("@/components/count-alt"))
 
 /** A number that flips over (top half down) when it changes; still on first paint and under reduced motion. */
 function Flip({ value }: { value: string }) {
@@ -55,36 +58,5 @@ export function HomeCountdown({ placement = "outside" }: { placement?: "inside" 
       </section>
     )
   }
-  const u = t.countdownMore.short
-  const tiles: [number, string][] = [[p.months, u.months], [p.days, u.days], [p.hours, u.hours], [p.mins, u.mins], [p.secs, u.secs]]
-  if (style !== "tiles") return (
-    <div className="home-count">
-      <p className="sr-only">{sentence(p)}</p>
-      <div aria-hidden className="count-strip">
-        <ol className="count-strip-row">
-          {tiles.map(([v, unit], i) => (
-            <li key={unit} className={cn("count-strip-unit", i === 4 && "count-tile-secs")}>
-              {i > 0 && <span className="count-strip-colon">:</span>}
-              <span className="count-strip-num numerals"><span className="count-num">{i < 2 ? v : String(v).padStart(2, "0")}</span></span>
-              <span className="count-strip-label">{unit}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="count-strip-caption">{t.countdownMore.until}</p>
-      </div>
-    </div>
-  )
-  return (
-    <div className="home-count">
-      <p className="sr-only">{sentence(p)}</p>
-      <ol aria-hidden className="home-count-row">
-        {tiles.map(([v, unit], i) => (
-          <li key={unit} className={cn("home-count-tile", i === 4 && "count-tile-secs")}>
-            <span className="numerals"><span className="count-num">{i < 2 ? v : String(v).padStart(2, "0")}</span></span>
-            <span className="home-count-unit">{unit}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  )
+  return <Suspense><CountAlt style={style} now={now} /></Suspense>
 }

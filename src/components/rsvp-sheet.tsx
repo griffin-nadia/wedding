@@ -310,7 +310,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                 {form.guests.filter((g) => g.plusOne).map((g) => (
                   <div key={g.id} className="flex flex-col gap-2 pt-4">
                     <label htmlFor={`bring-${g.id}`} className="check-row">
-                      <Checkbox id={`bring-${g.id}`} className="mt-0.5 shrink-0" checked={g.attending === "yes"}
+                      <Checkbox id={`bring-${g.id}`} className="mt-0.5" checked={g.attending === "yes"}
                         onCheckedChange={(v) => setGuest(g.id, { attending: v === true ? "yes" : "no" })} />
                       <span className="font-medium text-foreground">{t.rsvp.bringing}</span>
                     </label>
@@ -341,11 +341,11 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                 <div className="flex flex-col">
                   <div className="grid grid-cols-1 gap-x-3 gap-y-(--form-block-gap) min-[400px]:grid-cols-2">
                     <FormField id="arr" label={t.rsvp.arrival}>
-                      <Input id="arr" type="date" min={TRIP.from} max={TRIP.to} value={form.arrival} data-filled={Boolean(form.arrival)} className="min-w-40"
+                      <Input id="arr" type="date" min={TRIP.from} max={TRIP.to} value={form.arrival} data-filled={Boolean(form.arrival)} className="min-w-40!"
                         aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, arrival: e.target.value })} />
                     </FormField>
                     <FormField id="dep" label={t.rsvp.departure}>
-                      <Input id="dep" type="date" min={form.arrival || TRIP.from} max={TRIP.to} value={form.departure} data-filled={Boolean(form.departure)} className="min-w-40"
+                      <Input id="dep" type="date" min={form.arrival || TRIP.from} max={TRIP.to} value={form.departure} data-filled={Boolean(form.departure)} className="min-w-40!"
                         aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, departure: e.target.value })} />
                     </FormField>
                   </div>
@@ -375,7 +375,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                   <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
                 </dl>
                 <label htmlFor="photos" className="check-row">
-                  <Checkbox id="photos" className="mt-0.5 shrink-0" checked={form.photos === true}
+                  <Checkbox id="photos" className="mt-0.5" checked={form.photos === true}
                     onCheckedChange={(v) => setForm((f) => ({ ...f, photos: v === true }))} />
                   {t.rsvp.photos}
                 </label>
@@ -390,10 +390,10 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
           <footer className="rsvp-actions">
             {step > 1 && <Button variant="outline" size="lg" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
             {step < 3
-              ? <Button size="lg" className="flex-1" onClick={next}>{t.rsvp.next}</Button>
+              ? <Button size="lg" className="flex-1 shrink!" onClick={next}>{t.rsvp.next}</Button>
               : holdToSend && !error
                 ? <HoldButton className="flex-1" onDone={send} hint={t.rsvp.holdHint}>{t.rsvp.holdSend}</HoldButton>
-                : <Button size="lg" className="flex-1" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
+                : <Button size="lg" className="flex-1 shrink!" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
           </footer>
           </>}
         </Dialog.Content>
