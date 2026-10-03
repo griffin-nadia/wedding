@@ -508,7 +508,6 @@ function flushQueue() {
   const lock = LockService.getScriptLock()
   if (!lock.tryLock(20000)) return
   CacheService.getScriptCache().put("last_flush", new Date().toISOString(), 21600)
-  safely_(launchSetup_)
   const props = PropertiesService.getScriptProperties()
   let mails = []
   try {
@@ -877,7 +876,7 @@ function makeCrewLinks() {
   SpreadsheetApp.getUi().alert("Crew links are in the Crew tab. Send each person their own; anyone with a link can open /kit and /lab.")
 }
 
-/** The Crew tab and its links, without the alert (also run once by the launch set-up). `first` presets the first row's token. */
+/** The Crew tab and its links, without the alert. `first` presets the first row's token. */
 function makeCrewLinks_(first) {
   const ss = SpreadsheetApp.getActive()
   let s = ss.getSheetByName("Crew")
@@ -900,111 +899,6 @@ function makeCrewLinks_(first) {
   }
 }
 
-/**
- * One-off, second part: the "Test family (test)" household (two guests and a plus one row) for the
- * end-to-end check in v3 section P, with the test token from Local.gs. Logs what it found in the Crew
- * tab against that token, so the check can be read back with ?action=check (no guest data involved).
- */
-function launchSetupFamily_() {
-  const props = PropertiesService.getScriptProperties()
-  if (props.getProperty("launch_setup_v3c") || typeof LOCAL === "undefined") return
-  const tries = Number(props.getProperty("launch_setup_v3c_tries") || 0)
-  if (tries >= 3) return
-  props.setProperty("launch_setup_v3c_tries", String(tries + 1))
-  try {
-    launchSetupFamilyRun_()
-    props.setProperty("launch_setup_v3c", new Date().toISOString())
-  } catch (err) {
-    // Shown by ?action=ping (no guest data in it)
-    CacheService.getScriptCache().put("trigger_err", "launch set-up: " + String(err && err.message ? err.message : err).slice(0, 200), 21600)
-  }
-}
-
-/** One-off fix: the first set-up wrote the test token and crew token as one value. Corrects the test rows and Jehan's crew row. */
-function launchSetupFix_() {
-  const props = PropertiesService.getScriptProperties()
-  if (props.getProperty("launch_setup_v3d") || typeof LOCAL === "undefined") return
-  props.setProperty("launch_setup_v3d", new Date().toISOString())
-  const wrong = LOCAL.testToken + " " + LOCAL.crewToken
-  const g = sheet_(TABS.guests)
-  const head = headers_(g)
-  const data = g.getDataRange().getValues()
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][head.Token]).trim() !== wrong) continue
-    g.getRange(i + 1, head.Token + 1).setValue(LOCAL.testToken)
-    g.getRange(i + 1, head.Link + 1).setValue(linkFor_(LOCAL.testToken))
-  }
-  const crew = SpreadsheetApp.getActive().getSheetByName("Crew")
-  if (crew) {
-    const ch = headers_(crew)
-    const old = String(crew.getRange(2, ch.Token + 1).getValue()).trim()
-    if (old) CacheService.getScriptCache().remove("crew:" + old)
-    crew.getRange(2, ch.Token + 1).setValue(LOCAL.crewToken)
-    crew.getRange(2, ch["Kit link"] + 1).setValue(prop_("SITE_URL") + "/kit?c=" + LOCAL.crewToken)
-    crew.getRange(2, ch["Lab link"] + 1).setValue(prop_("SITE_URL") + "/lab?c=" + LOCAL.crewToken)
-  }
-  forgetAllHouseholds_()
-}
-
-function launchSetupFamilyRun_() {
-  const token = LOCAL.testToken
-  if (!households_().some((h) => h.token === token)) {
-    const g = sheet_(TABS.guests)
-    const head = headers_(g)
-    ;[["Sam", LOCAL.testEmail], ["Alex", ""], ["Guest", ""]].forEach((p, n) => {
-      const r = []
-      r[head.Household] = "Test family (test)"
-      r[head["First name"]] = p[0]
-      if ("Email" in head) r[head.Email] = p[1]
-      r[head["Guest ID"]] = "t" + token.slice(0, 4) + (n + 1)
-      r[head.Token] = token
-      r[head.Link] = linkFor_(token)
-      g.appendRow(fill_(r, g.getLastColumn()))
-    })
-    forgetAllHouseholds_()
-  }
-  const crew = SpreadsheetApp.getActive().getSheetByName("Crew")
-  const rows = crew ? rows_("Crew") : []
-  log_("(launch set-up)", token, "Crew tab: " + (crew ? rows.length + " rows, " + rows.filter((r) => String(r.Token || "").trim()).length + " with tokens, preset token " + (rows.some((r) => String(r.Token).trim() === LOCAL.crewToken) ? "present" : "absent") : "missing"), "")
-}
-
-/**
- * One-off launch set-up, run once by the minute trigger (so it needs no menu click): adds a test
- * household if there is none ("Test family (test)": two guests and a plus one row, test address only),
- * makes the Crew tab, resets the test household (proving the reset works) and sends one [TEST] invite to
- * the test address. Values come from Local.gs, which isn't in git. Remove the guard property to run again.
- */
-function launchSetup_() {
-  launchSetupFamily_()
-  launchSetupFix_()
-  const props = PropertiesService.getScriptProperties()
-  if (props.getProperty("launch_setup_v3") || typeof LOCAL === "undefined") return
-  props.setProperty("launch_setup_v3", new Date().toISOString())
-  const g = sheet_(TABS.guests)
-  const head = headers_(g)
-  let test = households_().find((h) => TEST_HOUSEHOLD.test(h.name))
-  if (!test) {
-    const token = LOCAL.testToken
-    ;[["Sam", LOCAL.testEmail], ["Alex", ""], ["Guest", ""]].forEach((p, n) => {
-      const r = []
-      r[head.Household] = "Test family (test)"
-      r[head["First name"]] = p[0]
-      if ("Email" in head) r[head.Email] = p[1]
-      r[head["Guest ID"]] = "t" + token.slice(0, 4) + (n + 1)
-      r[head.Token] = token
-      r[head.Link] = linkFor_(token)
-      g.appendRow(fill_(r, g.getLastColumn()))
-    })
-    SpreadsheetApp.flush()
-    test = households_().find((h) => h.token === token)
-  }
-  makeCrewLinks_(LOCAL.crewToken)
-  resetHouseholds_([test.token])
-  const mail = inviteEmail_("invite", test, "Test: the real invite would go to " + (test.emails.join(", ") || "nobody"))
-  MailApp.sendEmail({ to: LOCAL.testEmail, replyTo: prop_("REPLY_TO"), name: COUPLE, subject: "[TEST] " + mail.subject, body: mail.text, htmlBody: mail.html })
-  log_("(test send)", "", "Launch set-up: test household ready, Crew tab made, test invite sent to the test address.", "")
-  props.setProperty("last_test_send", new Date().toISOString() + " · 1")
-}
 
 // ---------- stamp book (concept B, December) ----------
 
