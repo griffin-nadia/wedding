@@ -58,13 +58,13 @@ export function DriverCard() {
             <Button asChild size="lg" className="w-full sm:w-auto sm:self-start">
               <a href={directionsUrl} target="_blank" rel="noreferrer"><MapPin aria-hidden />{t.driver.maps}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
             </Button>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid gap-3 sm:flex sm:flex-wrap">
               <Button ref={opener} size="lg" variant="outline" onClick={() => setFull(true)}>{t.driver.show}</Button>
               <Button size="lg" variant="outline" onClick={copy}><Copy aria-hidden />{t.driver.copy}</Button>
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap gap-3">
+          <div className="grid gap-3 sm:flex sm:flex-wrap">
             <Button ref={opener} size="lg" onClick={() => setFull(true)}>{t.driver.show}</Button>
             <Button size="lg" variant="outline" onClick={copy}><Copy aria-hidden />{t.driver.copy}</Button>
             <Button asChild size="lg" variant="outline"><a href={directionsUrl} target="_blank" rel="noreferrer"><MapPin aria-hidden />{t.driver.maps}</a></Button>

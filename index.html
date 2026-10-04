@@ -21,7 +21,7 @@
         try { var po = (JSON.parse(localStorage.getItem("ng-tune") || "{}").options || {}).photo; if (po === "day") n = "kyoto-view"; else if (po === "night") n = "night-lane" } catch (e) {}
         var l = document.createElement("link"), b = "%BASE_URL%scenes/" + n + "-"
         l.rel = "preload"; l.as = "image"; l.type = "image/avif"; l.setAttribute("fetchpriority", "high")
-        l.setAttribute("imagesrcset", b + "800.avif 800w, " + b + "1200.avif 1200w, " + b + "1600.avif 1600w"); l.setAttribute("imagesizes", "100vw")
+        l.setAttribute("imagesrcset", b + "800.avif 800w, " + b + "1200.avif 1200w, " + b + "1600.avif 1600w"); l.setAttribute("imagesizes", "max(100vw, 75vh)")
         document.head.appendChild(l)
         window.__ngScene = { n: n, b: b }
       })()
