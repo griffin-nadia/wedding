@@ -16,6 +16,14 @@ export function fortuneIndex(token: string, of = 12) {
 
 const drawnKey = (token: string) => `ng-fortune-${token}`
 
+/** This household's fortune: Griffin's lines from the Content tab once they're in, the drafts until then. */
+export function useFortune(token: string) {
+  const [tips, setTips] = useState(FORTUNES)
+  useEffect(() => { getFortunes().then((f) => f && f.length === 12 && setTips(f)) }, [])
+  const i = fortuneIndex(token, tips.length)
+  return { i, of: tips.length, text: tips[i], drawn: () => { try { localStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ } } }
+}
+
 /**
  * Omikuji after RSVP, all 大吉. Closed: a box and "Draw one". Drawing tilts the box three times
  * (900 ms) and unfolds the slip (400 ms); reduced motion just fades. The slip gets focus.

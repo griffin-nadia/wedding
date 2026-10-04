@@ -1123,3 +1123,28 @@ svg.lucide { stroke-width: 1.5; }
   :root[data-opt-daytick] .timeline-time, .home-rsvp::after { animation: none !important; }
   .journey-print { transition: none; }
 }
+
+/* Nadia's painted envelope (Options → Arrival; placeholder art until her scan, public/art/envelope). The pencil
+   sketch sits under the colour; with "Colour bleeds in", the colour spreads from a ragged wet edge on arrival. */
+.envelope .envelope-pencil, .envelope .envelope-paint { background: url("/wedding/art/envelope/placeholder-820.webp") center / 100% 100%; clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%); pointer-events: none; }
+.envelope .envelope-pencil { filter: grayscale(1) contrast(1.6) brightness(1.08); opacity: 0.55; }
+:root[data-opt-envpaint] .envelope-flap { background: color-mix(in oklab, var(--sys-fill) 70%, #c9cfae); }
+:root[data-opt-bleed] .arrival .envelope-paint { -webkit-mask: url("/wedding/art/envelope/bleed-mask.png") center / 0% no-repeat; mask: url("/wedding/art/envelope/bleed-mask.png") center / 0% no-repeat; animation: paint-bleed 2.4s var(--ease-paper) 700ms forwards; }
+@keyframes paint-bleed { to { -webkit-mask-size: 420%; mask-size: 420%; } }
+@media (prefers-reduced-motion: reduce) { :root[data-opt-bleed] .arrival .envelope-paint { animation: none; -webkit-mask: none; mask: none; } }
+.arrival .envelope { -webkit-touch-callout: none; user-select: none; }
+.loupe { position: fixed; z-index: 35; width: 144px; height: 144px; border-radius: 50%; pointer-events: none; background-repeat: no-repeat; filter: url(#loupe-glass); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.7), 0 0 0 4px rgb(var(--sys-shadow-tint) / 0.12), 0 14px 30px -10px rgb(var(--sys-shadow-tint) / 0.5), inset 0 0 18px rgb(var(--sys-shadow-tint) / 0.25); }
+.loupe::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(60% 50% at 32% 26%, rgb(255 255 255 / 0.28), transparent 60%); }
+
+/* Postcard flip after RSVP (Options → RSVP): one card, Sent on the front, the fortune on the back */
+.postcard { display: grid; perspective: 1200px; margin-top: 36px; } /* clear of the sheet's close button */
+.postcard-face { grid-area: 1 / 1; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-card); background: var(--brand-paper-bright); border: 1px solid var(--sys-line); backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform var(--duration-rise) var(--ease-letter); outline: 2px solid transparent; outline-offset: 2px; }
+.postcard-face:focus-visible { outline-color: var(--input-focus); }
+.postcard-back { transform: rotateY(-180deg); color: var(--brand-kogecha); }
+.postcard.is-back .postcard-front { transform: rotateY(180deg); }
+.postcard.is-back .postcard-back { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .postcard-face { transition: opacity var(--duration-quick) linear; transform: none !important; }
+  .postcard .postcard-back, .postcard.is-back .postcard-front { opacity: 0; }
+  .postcard.is-back .postcard-back { opacity: 1; }
+}

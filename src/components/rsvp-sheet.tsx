@@ -15,7 +15,7 @@ import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
 import { FieldError, ReviewRow, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
-import { FortuneCard } from "@/components/fortune-card"
+import { FortuneCard, useFortune } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
 import { answerOf, ApiError, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
@@ -413,18 +413,53 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
   useEffect(() => {
     titleRef.current?.focus()
   }, [answer, titleRef])
-  return (
-    <div className="flex flex-col gap-6">
+  const postcard = useOption("postcard") === "on" && answer !== "none"
+  const front = (
+    <>
       <header className="flex items-center gap-5 pr-10">
         {answer !== "none" && <Hanko stamp />}
         <Dialog.Title ref={titleRef} tabIndex={-1} className="heading outline-none">{t.rsvp.doneTitle[answer]}</Dialog.Title>
       </header>
       <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
-      {answer !== "none" && <FortuneCard token={h.token} />}
+    </>
+  )
+  return (
+    <div className="flex flex-col gap-6">
+      {postcard ? <Postcard token={h.token}>{front}</Postcard> : front}
+      {answer !== "none" && !postcard && <FortuneCard token={h.token} />}
       {answer !== "none" && <AddToCalendar />}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
         <Button size="lg" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
         <button type="button" className="btn-text min-h-11" onClick={onChange}>{t.rsvp.changeReply}</button>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Postcard (Options → RSVP): "Sent" is the front of a card; "Turn it over" flips it (600 ms, the letter's easing)
+ * to Griffin's fortune on the back. Both faces share one grid cell, so the card never changes height; the face
+ * that's away is inert. Reduced motion: a cross-fade.
+ */
+function Postcard({ token, children }: { token: string; children: ReactNode }) {
+  const { t } = useLang()
+  const { i, of, text, drawn } = useFortune(token)
+  const [back, setBack] = useState(false)
+  const backRef = useRef<HTMLDivElement>(null), turn = useRef<HTMLButtonElement>(null)
+  const flip = (to: boolean) => { setBack(to); if (to) drawn(); requestAnimationFrame(() => (to ? backRef.current : turn.current)?.focus()) }
+  return (
+    <div className={cn("postcard", back && "is-back")}>
+      <div className="postcard-face postcard-front" inert={back}>
+        {children}
+        <button ref={turn} type="button" className="btn-text min-h-11 self-start" onClick={() => flip(true)}>{t.rsvp.turnOver}</button>
+      </div>
+      <div ref={backRef} tabIndex={-1} role="group" aria-labelledby="postcard-fortune" className="postcard-face postcard-back" inert={!back}>
+        <p id="postcard-fortune" className="flex items-baseline justify-between gap-3">
+          <span><span lang="ja" className="font-ja text-2xl text-(--sys-stamp)">{t.fortune.blessing}</span> <span className="label-caps">{t.fortune.blessingEn}</span></span>
+          <span className="label-caps">{t.fortune.number(i + 1, of)}</span>
+        </p>
+        <p className="hand">{text}</p>
+        <button type="button" className="btn-text min-h-11 self-start" onClick={() => flip(false)}>{t.rsvp.turnBack}</button>
       </div>
     </div>
   )

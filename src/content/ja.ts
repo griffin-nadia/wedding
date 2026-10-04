@@ -262,6 +262,7 @@ export const ja: DeepPartial<Content> = {
     updatedLine: `更新しました。${CHANGE_BY}`,
     savingQuiet: "送信中…",
     savedOffline: "この端末に保存しました。オンラインに戻ったら送信します。",
+    turnOver: "裏返して、おみくじを見る", turnBack: "表に戻す",
     changeReply: "お返事を変更する",
     plusOneHint: "まだ決まっていなければ、空欄のままで大丈夫です。",
     offline: "オフラインです。接続が戻ったら送信します。",

@@ -10,6 +10,8 @@ import { useOption } from "@/lib/options"
 const KEY = "ng-opened"
 // The handwritten "open your invite" (only on a first visit, so it loads beside the envelope, not with the site)
 const ArrivalNote = lazy(() => import("@/components/arrival-note"))
+// The loupe over the painted envelope (Options → Arrival), only when switched on
+const EnvelopeLoupe = lazy(() => import("@/components/envelope-loupe"))
 type Phase = "sealed" | "opening" | "open"
 
 export function firstPhase(enabled: boolean): Phase {
@@ -37,6 +39,10 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const [phase, setPhase] = useState<Phase>(() => (sealedAgain && enabled ? "sealed" : firstPhase(enabled)))
   const button = useRef<HTMLButtonElement>(null)
   const hint = useOption("arrivalhint")
+  // Nadia's painted envelope (a placeholder until her scan), its colour bleeding in, and a loupe to lean in on it
+  const painted = useOption("envpaint") === "on"
+  const loupeOn = useOption("loupe") === "on"
+  const loupe = painted && loupeOn
   const stage = useRef<HTMLDivElement>(null)
   // Pull to open (v3 K): drag the flap up and it follows the finger; let go past 40% and it opens,
   // otherwise it springs back. A tap still opens it.
@@ -48,6 +54,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
     // Tilt toward a mouse (v3 T, Options → Arrival): a few degrees, like a card on a table
     if (e.pointerType === "mouse" && !drag.current && stage.current) { stage.current.style.setProperty("--tx", (e.clientX / innerWidth - 0.5).toFixed(3)); stage.current.style.setProperty("--ty", (e.clientY / innerHeight - 0.5).toFixed(3)) }
     const d = drag.current; if (!d) return
+    if (stage.current?.hasAttribute("data-loupe")) return // holding the loupe, not pulling
     const dy = d.y - e.clientY
     if (Math.abs(dy) > 6) { d.moved = true; (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId) }
     setPull(Math.max(0, Math.min(1, dy / 140)))
@@ -55,6 +62,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const onUp = () => {
     const d = drag.current; drag.current = null
     stage.current?.classList.remove("is-pulling")
+    if (stage.current?.hasAttribute("data-loupe")) { suppressClick.current = true; setPull(0); return } // letting go of the loupe doesn't open it
     if (!d?.moved) return
     suppressClick.current = true // the click that follows a drag isn't a tap
     const p = Number(stage.current?.style.getPropertyValue("--pull") || 0)
@@ -108,10 +116,12 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
             <span aria-hidden className="envelope-back" />
             <span aria-hidden className="envelope-paper" />
             <span aria-hidden className="envelope-front" />
+            {painted && <><span aria-hidden className="envelope-pencil" /><span aria-hidden className="envelope-paint" /></>}
             <span aria-hidden className="envelope-flap" />
             <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
           </button>
         )}
+        {loupe && !noren && phase === "sealed" && <Suspense><EnvelopeLoupe envelope={button} stage={stage} /></Suspense>}
         {hint === "pill" || noren
           ? <span aria-hidden className="arrival-hint label-caps">{t.letter.open}</span>
           : phase === "sealed" && <Suspense><ArrivalNote envelope={button} /></Suspense>}

@@ -293,6 +293,7 @@ export const en = {
     updatedLine: `Updated. ${CHANGE_BY}`,
     savingQuiet: "Sending…",
     savedOffline: "Saved on this phone. It'll send when you're back online.",
+    turnOver: "Turn it over for your fortune", turnBack: "Turn it back",
     changeReply: "Change my reply",
     plusOneHint: "Leave it blank if you're not sure yet.",
     offline: "You're offline. We'll send it when you're back.",

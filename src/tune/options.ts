@@ -9,6 +9,9 @@ export type Option = { key: string; label: string; flow: (typeof FLOWS)[number];
  */
 export const OPTIONS: Option[] = [
   { key: "arrivalhint", label: "Envelope hint", flow: "Arrival", note: "A handwritten \u201copen your invite\u201d with an arrow, placed clear of their faces, or the small \u201cTap to open\u201d pill.", values: [["note", "Handwritten arrow"], ["pill", "Pill"]] },
+  { key: "envpaint", label: "Painted envelope", flow: "Arrival", note: "Nadia's painted envelope on the front (a placeholder painting until her scan is in public/art/envelope).", values: [["off", "Plain paper"], ["on", "Painted"]] },
+  { key: "bleed", label: "Colour bleeds in", flow: "Arrival", note: "Painted envelope only: the pencil sketch shows first, then the colour spreads over it from a wet, ragged edge.", values: [["off", "Off"], ["on", "On"]], when: (o) => o.envpaint === "on" },
+  { key: "loupe", label: "Loupe", flow: "Arrival", note: "Painted envelope only: a glass lens shows the brushwork three times over. Laptop: hover. Phones: press and hold still (moving first still pulls it open).", values: [["off", "Off"], ["on", "On"]], when: (o) => o.envpaint === "on" },
   { key: "glow", label: "Lantern light", flow: "Arrival", note: "Laptop: a warm pool of light follows the mouse over the photo, and the seal catches it. Nothing else moves.", values: [["off", "Off"], ["on", "On"]] },
   { key: "tilt", label: "Envelope tilt", flow: "Arrival", note: "Laptop: the envelope tilts a few degrees toward the mouse, like a card on a table.", values: [["off", "Still"], ["on", "Tilts"]] },
   { key: "peek", label: "Envelope peek on hover", flow: "Arrival", note: "Desktop only: the flap lifts and a corner of the letter shows on hover.", values: [["on", "On"], ["off", "Off"]], },
@@ -18,6 +21,7 @@ export const OPTIONS: Option[] = [
   { key: "underline", label: "RSVP underline", flow: "Home", note: "Before they reply: a sage line draws in under \u201cRSVP by\u201d once the letter has settled.", values: [["off", "Off"], ["on", "On"]] },
   { key: "leaves", label: "Catch a leaf", flow: "Home", note: "Now and then a maple leaf drifts past, green now and red by the wedding; tap one and it lands pressed in the letter's corner.", values: [["off", "Off"], ["on", "On"]] },
   { key: "send", label: "Sending the reply", flow: "RSVP", note: "Tap to send, or press and hold until the ink fills, like pressing the hanko. Enter always sends.", values: [["tap", "Tap"], ["hold", "Hold to stamp"]] },
+  { key: "postcard", label: "After sending", flow: "RSVP", note: "Draw a fortune from the omikuji box, or a postcard: Sent on the front, turn it over for Griffin's fortune on the back.", values: [["off", "Omikuji box"], ["on", "Postcard"]] },
   { key: "sheetdrag", label: "Closing the sheet (phones)", flow: "RSVP", note: "X, Esc and Back to your invite always work; this adds a grab bar to drag the sheet down.", values: [["buttons", "Buttons only"], ["drag", "Drag down too"]] },
   { key: "datestyle", label: "Date", flow: "Home", note: "Under the names: the date and place as a sage badge, or as a second display line.", values: [["badge", "Badge"], ["line", "Display line"]] },
   { key: "names", label: "Names on desktop", flow: "Home", note: "From 1024: Nadia & Griffin on two lines at 88, or on one line at 56.", values: [["two", "Two lines"], ["one", "One line"]] },
