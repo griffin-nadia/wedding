@@ -128,7 +128,7 @@ export function DayPage() {
       {timeline}
       <div className="no-print flex flex-col gap-4">
         <AddToCalendar />
-        <button type="button" className="btn-text min-h-11 self-start" onClick={() => window.print()}>{t.day.print}</button>
+        <button type="button" className="btn-text hidden min-h-11 self-start md:inline-flex md:items-center" onClick={() => window.print()}>{t.day.print}</button>
       </div>
     </>
   )

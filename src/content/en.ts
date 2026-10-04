@@ -146,7 +146,7 @@ export const en = {
       { time: "13:00", label: "Reception", where: "The Terrace, until 3:30 pm" },
     ],
     japanTime: "All times are Japan time.",
-    localLine: (time: string, day: string, city: string) => `${time} ${day} ${city ? `in your time (${city})` : "your time"}`,
+    localLine: (time: string, day: string, city: string) => `${time} ${day} ${city ? `in ${city}` : "your time"}`,
     timelineLabel: "The day, in order",
     kyotoNow: (time: string) => `It's ${time} in Kyoto right now.`,
     addToCalendar: "Add to calendar",

@@ -85,8 +85,8 @@ function PhotoScene({ name, priority, onReady }: { name: string; priority: boole
       {/* Blur-up and, from 1024, the soft fill the letter sits over */}
       <div className="scene-fill absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${meta.lqip})` }} />
       <picture className="scene-photo absolute inset-0">
-        <source type="image/avif" srcSet={set(name, "avif")} sizes="100vw" />
-        <source type="image/webp" srcSet={set(name, "webp")} sizes="100vw" />
+        <source type="image/avif" srcSet={set(name, "avif")} sizes="max(100vw, 75vh)" />
+        <source type="image/webp" srcSet={set(name, "webp")} sizes="max(100vw, 75vh)" />
         <img ref={img} src={`${base}scenes/${name}-1600.webp`} alt="" width={meta.w} height={meta.h} decoding="async"
           fetchPriority={priority ? "high" : "auto"} onLoad={onReady} className="size-full object-cover" />
       </picture>

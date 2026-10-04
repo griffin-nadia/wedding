@@ -115,7 +115,7 @@ export const ja: DeepPartial<Content> = {
       { time: "13:00", label: "披露宴", where: "テラス、15:30まで" },
     ],
     japanTime: "時刻はすべて日本時間です。",
-    localLine: (time: string, day: string, city: string) => `${time}（${day}）${city ? `、現地時間（${city}）` : "、お住まいの地域の時間"}`,
+    localLine: (time: string, day: string, city: string) => `${city ? `${city}では` : "お住まいの地域では"}${time}（${day}）`,
     timelineLabel: "当日の流れ",
     kyotoNow: (time: string) => `京都は今、${time}です。`,
     addToCalendar: "カレンダーに追加",

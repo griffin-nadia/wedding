@@ -18,7 +18,7 @@ export function jstLabel(hhmm: string, lang: "en" | "ja" = "en") {
 
 /**
  * The same moment on the guest's own clock: { time, day, city } for the words to format ("7:00 pm Thu in
- * your time (Vancouver)", or 「19:00（木）、現地時間（Vancouver）」). Null when the device is already on Japan
+ * Vancouver", or 「Vancouverでは19:00（木）」). Null when the device is already on Japan
  * time, so the line can be hidden. The city comes from the device's own zone, never the sheet; zones with
  * no city (UTC, Etc/GMT+5) give city "".
  */
@@ -37,7 +37,7 @@ export function localTimeParts(hhmm: string, lang: "en" | "ja" = "en", timeZone 
 /** English line, kept for anything that doesn't go through the words file. */
 export function localTime(hhmm: string, timeZone?: string) {
   const p = localTimeParts(hhmm, "en", timeZone)
-  return p && `${p.time} ${p.day} ${p.city ? `in your time (${p.city})` : "your time"}`
+  return p && `${p.time} ${p.day} ${p.city ? `in ${p.city}` : "your time"}`
 }
 
 export function isLocked(now = new Date()) {
