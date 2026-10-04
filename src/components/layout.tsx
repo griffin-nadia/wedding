@@ -86,6 +86,7 @@ export function Layout() {
   const { dim } = useSceneDim()
   const replied = Boolean(household?.respondedAt)
   const kind = sceneKind(useOption("scene"), useOption("preset"))
+  useOption("photo") // re-render when the Photo option changes (photoFor reads it)
   // Sealed envelope on a first visit: their photo behind it, the dock and top bar hidden until it opens
   const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
   usePageTurn(!sealed)

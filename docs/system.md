@@ -9,7 +9,7 @@ See it live at `/kit` (every component, Light and Lantern side by side, every st
 - **Mood:** painted, foggy, warm, autumn Kyoto. Original only: nothing that references or imitates a show, film or studio.
 - **Voice:** warm, plain, a bit playful. Australian English, sentence case, no em dashes. Guests never see back-end words; their reply "goes only to Nadia and Griffin".
 - **Marks:** the names in Oranienbaum with a sage "&", the N&G seal (favicon, envelope, credit), the hanko 京 for "done".
-- **Photos:** one per mode, behind every page: kyoto-view by day, night-lane in Lantern. Fixed and cover; nothing moves, rescales or reflows it. Each has a face-safe rect in `scenes.json` that nothing on the arrival may cover.
+- **Photos:** behind every page. The Photo option picks one per mode (kyoto-view by day, night-lane in Lantern) or the same one in both modes. Fixed and cover; nothing moves, rescales or reflows it. Each has a face-safe rect in `scenes.json` that nothing on the arrival may cover.
 - **Texture:** one fine paper grain of our own, on the letter itself.
 
 ## Colour: one action, one story accent, one ink
@@ -21,7 +21,7 @@ See it live at `/kit` (every component, Light and Lantern side by side, every st
 | Story accent | `--sys-story` | rust | Our story only: map lines, chapter labels, stop numbers. Never on a control |
 | Stamp | `--sys-stamp` | vermilion | the hanko when a reply lands, nothing else |
 
-**The letter is always cream.** The letter, the envelope, the RSVP sheet and the driver card carry `.paper`, which re-declares the light system and component tokens, so they read the same in both modes. Lantern changes only the scene, the dock, the top bar and the photo.
+**The envelope is always cream.** The envelope and the driver card carry `.paper`, which re-declares the light system and component tokens, so they read the same in both modes. The letter and the RSVP sheet go dark with the scene in Lantern (the "Letter in Lantern" option turns them cream instead).
 
 ## Tokens: three layers
 

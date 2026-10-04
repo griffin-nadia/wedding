@@ -25,7 +25,14 @@ export function sceneKind(option: string | null, preset: string | null): SceneKi
   return "photo"
 }
 /** Behind the sealed envelope only: the photo with their faces (the one photo on the launch site). */
-export const arrivalScene = (theme: Theme): { photo: SceneName } => ({ photo: theme === "lantern" ? "night-lane" : "kyoto-view" })
+/** Which of the two photos a mode shows. "Photo" option (Jehan, 6 Oct): one per mode, or the same one in both. */
+export function photoFor(theme: Theme): SceneName {
+  const opt = typeof document === "undefined" ? null : document.documentElement.getAttribute("data-opt-photo")
+  if (opt === "day") return "kyoto-view"
+  if (opt === "night") return "night-lane"
+  return theme === "lantern" ? "night-lane" : "kyoto-view"
+}
+export const arrivalScene = (theme: Theme): { photo: SceneName } => ({ photo: photoFor(theme) })
 
 export function sceneFor(page: string, theme: Theme, kind: SceneKind = "paper"): SceneSource {
   // One photo per mode on every page (Jehan, 6 Oct): the arrival photo, kyoto-view by day, night-lane in Lantern

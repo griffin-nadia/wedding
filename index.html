@@ -17,7 +17,9 @@
         document.documentElement.setAttribute("data-theme", dark ? "lantern" : "autumn")
         document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#22160e" : "#f3e7d3")
         // Their photo is the largest paint on every page: start fetching this mode's one now, not after the app script
-        var l = document.createElement("link"), n = dark ? "night-lane" : "kyoto-view", b = "%BASE_URL%scenes/" + n + "-"
+        var n = dark ? "night-lane" : "kyoto-view"
+        try { var po = (JSON.parse(localStorage.getItem("ng-tune") || "{}").options || {}).photo; if (po === "day") n = "kyoto-view"; else if (po === "night") n = "night-lane" } catch (e) {}
+        var l = document.createElement("link"), b = "%BASE_URL%scenes/" + n + "-"
         l.rel = "preload"; l.as = "image"; l.type = "image/avif"; l.setAttribute("fetchpriority", "high")
         l.setAttribute("imagesrcset", b + "800.avif 800w, " + b + "1200.avif 1200w, " + b + "1600.avif 1600w"); l.setAttribute("imagesizes", "100vw")
         document.head.appendChild(l)
