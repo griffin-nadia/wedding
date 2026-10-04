@@ -5,6 +5,7 @@ import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { cn } from "@/lib/utils"
 import { useOption } from "@/lib/options"
+import { photoFor } from "@/lib/scenes"
 
 /**
  * Sun or moon: the mode toggle. Switching reveals the new mode in a circle growing from the button (v3 S,
@@ -23,7 +24,7 @@ export function LanternToggle({ className }: { className?: string }) {
       const r = e.currentTarget.getBoundingClientRect(), root = document.documentElement
       root.style.setProperty("--vt-x", `${r.left + r.width / 2}px`); root.style.setProperty("--vt-y", `${r.top + r.height / 2}px`)
       // Wait (briefly) for the next mode's photo to be decoded, so the reveal shows it whole, not loading
-      const img = document.querySelector<HTMLImageElement>(`[data-photo="${next === "lantern" ? "night-lane" : "kyoto-view"}"] img`)
+      const img = document.querySelector<HTMLImageElement>(`[data-photo="${photoFor(next)}"] img`)
       const ready = img ? Promise.race([img.decode().catch(() => {}), new Promise((ok) => setTimeout(ok, 350))]) : Promise.resolve()
       root.dataset.vt = mode === "fade" ? "fade" : "circle"
       void ready.then(() => {

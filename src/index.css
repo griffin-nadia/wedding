@@ -284,6 +284,13 @@
 }
 
 /* Lantern mode: photos sit a touch dimmer so they don't glare. */
+/* Lantern letter (the default; "Letter in Lantern" = cream turns the letter into paper under a lamp instead) */
+:root:not([data-opt-letterpaper="cream"])[data-theme="lantern"] .letter { background:
+    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 8%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%),
+    var(--letter-bg); }
+:root:not([data-opt-letterpaper="cream"])[data-theme="lantern"] .letter .photo-img { filter: saturate(0.95) brightness(0.92); }
+:root:not([data-opt-letterpaper="cream"])[data-theme="lantern"] .field[data-filled="true"]:not([type="date"]):not(textarea) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a37e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
 [data-theme="lantern"] .scene img {
   filter: brightness(0.9);
 }

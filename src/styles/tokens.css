@@ -56,9 +56,11 @@
 /* ─── 2 · System (per mode) ─────────────────────────────────────────────────── */
 :root,
 [data-theme="autumn"],
-.paper {
-  /* .paper: the letter, the envelope and the sheets stay cream in both modes (v3 U). Lantern reaches only the
-     scene, the dock and the top bar. Declared again on .paper so every alias below resolves to the light values. */
+.paper:not(.letter),
+[data-opt-letterpaper="cream"] .letter.paper {
+  /* .paper: the envelope (and the driver card) stays cream in both modes (Jehan, 6 Oct: "only the envelope stays
+     light"). The letter and the sheets keep their Lantern dark tokens unless the "Letter in Lantern" option is set
+     to cream. Declared again on .paper so every alias below resolves to the light values. */
   color-scheme: light;
   --sys-surface: var(--brand-kinari);              /* the letter */
   --sys-surface-raised: var(--brand-shiro-kinari); /* inputs, cards on the letter */
