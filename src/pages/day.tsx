@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { Link } from "react-router-dom"
@@ -45,8 +45,27 @@ function Row({ i, time, label, where, local }: { i: number; time: string; label:
 function Timeline({ now }: { now: Date }) {
   const { t, lang } = useLang()
   const nowAt = nowOnTheDay(now, t.day.schedule.map((x) => x.time))
+  const ref = useRef<HTMLOListElement>(null)
+  // The line draws with a scroll-driven animation where the browser has one. Where it doesn't (iOS before Safari 26,
+  // so every iPhone browser), the same thing by hand: progress from 10% in until the whole timeline is on screen.
+  useEffect(() => {
+    const el = ref.current
+    if (!el || (typeof CSS !== "undefined" && CSS.supports("animation-timeline: view()")) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    el.classList.add("timeline-js")
+    let raf = 0
+    const tick = () => {
+      raf = 0
+      const r = el.getBoundingClientRect(), vh = window.innerHeight
+      const p = Math.min(1, Math.max(0, ((vh - r.top) / r.height - 0.1) / 0.9))
+      el.style.setProperty("--fill", p.toFixed(3))
+    }
+    const on = () => { if (!raf) raf = requestAnimationFrame(tick) }
+    tick()
+    window.addEventListener("scroll", on, { passive: true }); window.addEventListener("resize", on)
+    return () => { window.removeEventListener("scroll", on); window.removeEventListener("resize", on); if (raf) cancelAnimationFrame(raf) }
+  }, [])
   return (
-    <ol className="timeline" aria-label={t.day.timelineLabel}>
+    <ol ref={ref} className="timeline" aria-label={t.day.timelineLabel}>
       <span aria-hidden className="timeline-line" />
       <span aria-hidden className="timeline-line timeline-fill" />
       {nowAt !== null && (
