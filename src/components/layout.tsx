@@ -37,8 +37,11 @@ const MECHANICS = ["glow", "inkset", "countin", "thread", "hoverprint", "haptics
 function Nav() {
   const { t } = useLang()
   const { story } = useContent()
-  const links = story.length ? [...baseLinks, storyLink] : baseLinks
-  useEffect(() => { setStoryLetter(story.length > 0) }, [story.length])
+  // Crew devices see Our story (the base map, no invented chapters) before the words exist; guests only once they do
+  const crew = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
+  const hasStory = story.length > 0 || crew
+  const links = hasStory ? [...baseLinks, storyLink] : baseLinks
+  useEffect(() => { setStoryLetter(hasStory) }, [hasStory])
   const { pathname } = useLocation()
   const list = useRef<HTMLUListElement>(null)
   const [mark, setMark] = useState<{ x: number; w: number; h: number; y: number } | null>(null)

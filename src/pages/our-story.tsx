@@ -1,6 +1,7 @@
 import { useRef, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useContent, type Chapter } from "@/lib/content"
+import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
 import { StoryJourney } from "@/components/story-journey"
@@ -136,6 +137,7 @@ function StoryStack({ chapters }: { chapters: Chapter[] }) {
 export function StoryPage() {
   const { t } = useLang()
   const { story, ready } = useContent()
+  const { household } = useHousehold()
   const view = useOption("story")
   const journey = useOption("mapmode") !== "trail"
   const flying = useOption("flying") === "on"
@@ -145,8 +147,19 @@ export function StoryPage() {
       <>
         <h1 className="heading">{t.story.title}</h1>
         {view === "d" ? <StoryStack chapters={story} /> : !view || view === "b" ? (journey
-          ? <StoryJourney chapters={story} showFlying={flying} drag={mapDrag} />
+          ? <StoryJourney chapters={story} showFlying={flying} drag={mapDrag} token={household?.token} replied={Boolean(household?.respondedAt)} />
           : <StoryMap chapters={story} />) : view === "c" ? <StoryTimeline chapters={story} /> : <StoryLetter chapters={story} />}
+      </>
+    )
+  }
+  // Crew devices: the base map with no chapters (nothing invented), so the map and guests' lines can be judged
+  // before Nadia and Griffin's words are in the Content tab. Guests never reach this page while it's empty.
+  const crew = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
+  if (ready && crew && !story.length && (!view || view === "b") && journey) {
+    return (
+      <>
+        <h1 className="heading">{t.story.title}</h1>
+        <StoryJourney chapters={[]} showFlying={flying} drag={mapDrag} token={household?.token} replied={Boolean(household?.respondedAt)} />
       </>
     )
   }
