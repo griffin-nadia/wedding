@@ -327,7 +327,9 @@
 .timeline-fill { background: var(--sys-moss); transform-origin: top; }
 @keyframes timeline-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @supports (animation-timeline: view()) {
-  .timeline-fill { animation: timeline-fill linear both; animation-timeline: view(); animation-range: entry 10% entry 100%; /* complete once the whole timeline is on screen, even at the very bottom of the page */ }
+  /* The tip of the line follows a point about 60% down the screen: it starts as the timeline comes in and is
+     complete when the last stop is just above the dock, so you see it draw past each time as you scroll. */
+  .timeline-fill { animation: timeline-fill linear both; animation-timeline: view(); animation-range: cover 5% cover 60%; }
 }
 .timeline-row { position: relative; display: grid; grid-template-columns: 1fr 40px 1fr; align-items: start; column-gap: var(--space-3); }
 .timeline-icon { grid-column: 2; grid-row: 1; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-pill); background: var(--letter-bg); border: 1px solid var(--sys-moss); color: var(--sys-moss); position: relative; z-index: 1; }

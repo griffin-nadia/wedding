@@ -56,7 +56,8 @@ function Timeline({ now }: { now: Date }) {
     const tick = () => {
       raf = 0
       const r = el.getBoundingClientRect(), vh = window.innerHeight
-      const p = Math.min(1, Math.max(0, ((vh - r.top) / r.height - 0.1) / 0.9))
+      // Same range as the CSS version: cover 5% to cover 60% (cover = from top at the bottom edge to bottom at the top edge)
+      const p = Math.min(1, Math.max(0, ((vh - r.top) / (r.height + vh) - 0.05) / 0.55))
       el.style.setProperty("--fill", p.toFixed(3))
     }
     const on = () => { if (!raf) raf = requestAnimationFrame(tick) }
