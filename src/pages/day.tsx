@@ -103,6 +103,9 @@ function Details() {
 export function DayPage() {
   const { t } = useLang()
   const [now, setNow] = useState(() => new Date())
+  // The Kyoto clock rolls only when the minute changes, not when the page first shows (that read as a flicker)
+  const firstMinute = useRef(kyotoNow(now))
+  const rolls = kyotoNow(now) !== firstMinute.current
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 60_000)
     return () => clearInterval(id)
@@ -111,7 +114,7 @@ export function DayPage() {
     <div className="flex flex-col gap-4">
       <Timeline now={now} />
       {/* The Kyoto minute rolls up into place when it ticks over (Options → Kyoto clock rolls); the key remounts it */}
-      <p className="text-sm text-muted-foreground">{t.day.japanTime} <span className="no-print clock-roll" key={kyotoNow(now)}>{t.day.kyotoNow(kyotoNow(now))}</span></p>
+      <p className="text-sm text-muted-foreground">{t.day.japanTime} <span className={rolls ? "no-print clock-roll" : "no-print"} key={kyotoNow(now)}>{t.day.kyotoNow(kyotoNow(now))}</span></p>
       <p>{t.day.rainPlan}</p>
     </div>
   )
