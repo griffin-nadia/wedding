@@ -58,7 +58,7 @@ export const ja: DeepPartial<Content> = {
   },
   stay: { title: "宿泊について" },
   qa: { title: "よくある質問", contact: "ご不明な点があれば、どちらにでもお気軽にご連絡ください。", onTheDay: "当日の連絡先：" },
-  story: { title: "ふたりのこと", soonBody: "ブリスベンから京都までのふたりの話を、まもなく公開します。" },
+  story: { title: "ふたりのこと", soonBody: "ふたりの話は、まもなく公開します。" },
   rsvp: {
     whoTitle: "どなたが出席されますか？",
     coming: "出席",

@@ -5,12 +5,7 @@ export type Chapter = { key: string; title: string; year: string; body: string[]
 export type SiteMode = "invite" | "week-of" | "keepsake"
 export type SiteContent = { story: Chapter[]; mode: SiteMode; contactDay?: string }
 
-// The lab's "Sample story" switch previews the three presentations before the real words exist
-const SAMPLE: Chapter[] = [
-  { key: "1", title: "Brisbane", year: "2019", body: ["Sample chapter. Where they met, in a sentence or two.", "A second short paragraph, in their words."] },
-  { key: "2", title: "Canada", year: "2022", body: ["Sample chapter. The year away, in a sentence or two.", "A second short paragraph."] },
-  { key: "3", title: "Kyoto", year: "2024", body: ["Sample chapter. The trip where it all started.", "A second short paragraph."] },
-]
+// No sample chapters (Jehan, 6 Oct): Our story shows only what Nadia and Griffin put in the Content tab, nothing invented.
 
 const KEY = "ng-content"
 let cached: SiteContent | null = (() => { try { return JSON.parse(sessionStorage.getItem(KEY) || "null") } catch { return null } })()
@@ -31,14 +26,11 @@ export async function getContent(): Promise<SiteContent> {
 }
 
 export function useContent(): SiteContent & { ready: boolean } {
-  // The sample story shows when the Options switch is on, and always on a crew device until the real words exist
-  const crewDevice = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
-  const sample = typeof document !== "undefined" && (document.documentElement.getAttribute("data-opt-storysample") === "on" || (crewDevice && document.documentElement.getAttribute("data-opt-storysample") !== "off"))
   const [c, setC] = useState<SiteContent | null>(cached)
   useEffect(() => { let live = true; void getContent().then((x) => { if (live) setC(x) }); return () => { live = false } }, [])
   const base = c ?? { story: [], mode: "invite" as SiteMode }
   // Crew preview (v3 S): the Options panel can show the week-of or keepsake site before the Content tab says so
   const preview = typeof document !== "undefined" ? document.documentElement.getAttribute("data-opt-mode") : null
   if (preview === "invite" || preview === "week-of" || preview === "keepsake") base.mode = preview
-  return { ...base, story: sample && !base.story.length ? SAMPLE : base.story, ready: Boolean(c) || sample }
+  return { ...base, ready: Boolean(c) }
 }

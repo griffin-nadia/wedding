@@ -79,7 +79,7 @@ export const en = {
     "stone-lantern-maple": { alt: "A stone lantern framed by maple leaves", caption: "" },
   } as Record<string, { alt: string; caption: string }>,
   story: {
-    soonBody: "Our story, from Brisbane to Kyoto, is on its way.",
+    soonBody: "Our story is on its way.",
     title: "Our story",
     prevChapter: "Previous chapter", nextChapter: "Next chapter",
     page: (n: number, of: number) => `Chapter ${n} of ${of}`,
