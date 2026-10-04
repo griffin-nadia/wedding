@@ -327,7 +327,9 @@
 .timeline-fill { background: var(--sys-moss); transform-origin: top; }
 @keyframes timeline-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @supports (animation-timeline: view()) {
-  .timeline-fill { animation: timeline-fill linear both; animation-timeline: view(); animation-range: entry 10% entry 100%; /* complete once the whole timeline is on screen, even at the very bottom of the page */ }
+  /* The tip of the line follows a point about 60% down the screen: it starts as the timeline comes in and is
+     complete when the last stop is just above the dock, so you see it draw past each time as you scroll. */
+  .timeline-fill { animation: timeline-fill linear both; animation-timeline: view(); animation-range: cover 5% cover 60%; }
 }
 .timeline-row { position: relative; display: grid; grid-template-columns: 1fr 40px 1fr; align-items: start; column-gap: var(--space-3); }
 .timeline-icon { grid-column: 2; grid-row: 1; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-pill); background: var(--letter-bg); border: 1px solid var(--sys-moss); color: var(--sys-moss); position: relative; z-index: 1; }
@@ -1055,6 +1057,32 @@ svg.lucide { stroke-width: 1.5; }
 @media (min-width: 768px) { .credit-inline { display: none; } }
 [data-sheet] .scene-band, [data-modal] .scene-band { visibility: hidden; }
 
+
+/* Times tick in, where scroll-driven animations are missing (iOS): rows settle as the line's tip reaches them */
+:root[data-opt-daytick] .timeline-js .timeline-time { opacity: 0.3; translate: 0 6px; transition: opacity var(--duration-settle) var(--ease-paper), translate var(--duration-settle) var(--ease-paper); }
+:root[data-opt-daytick] .timeline-js .timeline-row.is-past .timeline-time { opacity: 1; translate: 0 0; }
+/* Dock: a 90 ms press on the icon you tap, so the dock feels like a thing (part of the state system, no switch) */
+.site-nav-link svg { transition: transform var(--duration-press) var(--ease-paper); }
+.site-nav-link:active svg { transform: scale(0.9); }
+/* Calendar: the quiet line of feedback fades up for 3 s */
+.cal-note { min-height: 1.25rem; opacity: 0; translate: 0 4px; transition: opacity var(--duration-quick) var(--ease-paper), translate var(--duration-quick) var(--ease-paper); }
+.cal-note.is-on { opacity: 1; translate: 0 0; }
+/* Kyoto clock: the new minute rolls up (default on; off in Options) */
+:root:not([data-opt-clockroll="off"]) .clock-roll { display: inline-block; animation: clock-roll var(--duration-settle) var(--ease-paper) both; }
+@keyframes clock-roll { from { opacity: 0; translate: 0 0.5em; } to { opacity: 1; translate: 0 0; } }
+/* Sections rise in (Options): below the fold only; the mechanics module marks them as they arrive */
+:root[data-opt-rise] .letter-body > [data-rise] { opacity: 0; translate: 0 8px; transition: opacity var(--duration-rise) var(--ease-paper), translate var(--duration-rise) var(--ease-paper); transition-delay: var(--rise-delay, 0ms); }
+:root[data-opt-rise] .letter-body > [data-rise="in"] { opacity: 1; translate: 0 0; }
+/* Dock steps aside (Options, phones): slips down while scrolling down, back on scroll up or when scrolling stops */
+@media (max-width: 767px) {
+  :root[data-opt-dockhide] .site-nav { transition: transform var(--duration-settle) var(--ease-paper), opacity var(--duration-settle) var(--ease-paper); }
+  :root[data-opt-dockhide][data-dock-away] .site-nav { transform: translateY(calc(100% + 12px + env(safe-area-inset-bottom))); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-opt-daytick] .timeline-js .timeline-time, .clock-roll, .cal-note, .site-nav-link svg { animation: none !important; transition: none !important; opacity: 1; translate: 0 0; transform: none; }
+  :root[data-opt-rise] .letter-body > [data-rise] { opacity: 1; translate: 0 0; transition: none; }
+  :root[data-opt-dockhide][data-dock-away] .site-nav { transform: none; opacity: 1; }
+}
 /* Kit mechanics (v3 U), each behind its Options switch; the JS half is src/mechanics (lazy) */
 @media (hover: hover) and (pointer: fine) {
   :root[data-opt-glow][data-sealed] .arrival::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(200px circle at var(--glow-x, -400px) var(--glow-y, -400px), color-mix(in oklab, var(--brand-mitsu) 22%, transparent), transparent 70%); mix-blend-mode: soft-light; }
@@ -1067,6 +1095,7 @@ svg.lucide { stroke-width: 1.5; }
 @keyframes underline-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @supports (animation-timeline: view()) {
   :root[data-opt-daytick] .timeline-time { animation: time-tick linear both; animation-timeline: view(); animation-range: entry 30% cover 45%; }
+  :root[data-opt-daytick] .timeline-js .timeline-time { animation: none; }
 }
 @keyframes time-tick { from { opacity: 0.3; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
 :root[data-opt-thread] .timeline-fill { animation: none !important; transform: scaleY(var(--thread, 0)); }
