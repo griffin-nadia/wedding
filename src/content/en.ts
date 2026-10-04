@@ -92,7 +92,7 @@ export const en = {
     stops: { home: "The inn", day: "The garden gate", travel: "The station", qa: "The shrine", story: "The lane" } as Record<string, string>,
     reply: "Your reply", full: "A full book. A note from us is coming here.",
   },
-  flying: { title: "Flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it." },
+  flying: { title: "Flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (city: string) => `Your line is drawn from ${city}.`, change: "Change" },
   fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes." },
   driver: { label: "Taxi from Kyoto Station", fare: "Around ¥2,000, 15 to 20 minutes.", show: "Show the driver", maps: "Directions in Google Maps", mapsOpens: "opens Google Maps", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
   countdownMore: {

@@ -956,6 +956,27 @@ svg.lucide { stroke-width: 1.5; }
 @media (min-width: 768px) { .journey-dots { display: none; } }
 @media (max-width: 767px) { .journey-cards { display: none; } }
 @media (prefers-reduced-motion: reduce) { .journey-draw { animation: none; stroke-dashoffset: 0; } }
+/* Arrival (v3 R): land washes in (600), the two home routes draw to Kyoto (900, the second 300 later), the seal
+   lands with the hanko press, then guests' lines one by one 120 apart, each with a soft pulse at Kyoto. */
+.journey .journey-land { opacity: 0; transition: opacity var(--duration-rise) var(--ease-paper); }
+.journey.is-in .journey-land { opacity: 1; }
+.journey-reveal { fill: none; stroke: #fff; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.journey.is-in .journey-reveal { animation: journey-reveal 900ms var(--ease-letter) forwards; animation-delay: 300ms; }
+.journey.is-in .journey-reveal-2 { animation-delay: 600ms; }
+.journey.is-in .journey-reveal-guest { animation-duration: 700ms; }
+@keyframes journey-reveal { to { stroke-dashoffset: 0; } }
+.journey-seal-g { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.journey.is-in .journey-seal-g { animation: journey-seal-land 300ms var(--ease-paper) 1200ms forwards; }
+@keyframes journey-seal-land { from { opacity: 0; transform: scale(1.4); } 60% { opacity: 1; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.journey-pulse { fill: none; stroke: var(--sys-accent); stroke-width: 1.5; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.journey.is-in .journey-pulse { animation: journey-pulse 600ms var(--ease-paper) forwards; }
+@keyframes journey-pulse { from { opacity: 0.6; transform: scale(0.4); } to { opacity: 0; transform: scale(2.2); } }
+@media (prefers-reduced-motion: reduce) {
+  .journey .journey-land { opacity: 1; transition: none; }
+  .journey-reveal { stroke-dashoffset: 0; animation: none !important; }
+  .journey-seal-g { opacity: 1; animation: none !important; }
+  .journey-pulse { display: none; }
+}
 /* Hold to stamp (v3 T): the ink fills left to right while held */
 .hold-fill { position: absolute; inset: 0; transform-origin: left; background: color-mix(in oklab, var(--sys-ink) 25%, transparent); pointer-events: none; }
 .hold-btn { touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -1008,7 +1029,21 @@ svg.lucide { stroke-width: 1.5; }
 :root { --dock-band: calc(66px + 12px + env(safe-area-inset-bottom) + 8px); }
 .scene-band { display: none; }
 @media (max-width: 767px) {
-  .scene.scene-band { display: block; z-index: 10; pointer-events: none; clip-path: inset(calc(100dvh - var(--dock-band)) 0 0 0); }
+  /* The band is the strip from 8px above the dock down, plus the two squares where the letter's bottom corners
+     would be, minus the corner circles: so the paper ends above the dock with its real rounded corners (v3 R). */
+  .scene.scene-band {
+    display: block; z-index: 10; pointer-events: none;
+    --band-top: calc(100dvh - var(--dock-band));
+    --corner: var(--letter-radius);
+    -webkit-mask-image: linear-gradient(#000, #000), radial-gradient(circle at 100% 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px)), radial-gradient(circle at 0 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px));
+    mask-image: linear-gradient(#000, #000), radial-gradient(circle at 100% 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px)), radial-gradient(circle at 0 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px));
+    -webkit-mask-size: 100% 100lvh, var(--corner) var(--corner), var(--corner) var(--corner);
+    mask-size: 100% 100lvh, var(--corner) var(--corner), var(--corner) var(--corner);
+    -webkit-mask-position: 0 var(--band-top), 12px calc(var(--band-top) - var(--corner)), calc(100% - 12px) calc(var(--band-top) - var(--corner));
+    mask-position: 0 var(--band-top), 12px calc(var(--band-top) - var(--corner)), calc(100% - 12px) calc(var(--band-top) - var(--corner));
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-composite: source-over; mask-composite: add;
+  }
   /* Always in the strip (a short page pushes it to the bottom), so only a bounce past the end shows it, never over a face */
   .letter-wrap { display: flex; flex-direction: column; }
   .letter-wrap > :not(.credit-inline) { width: 100%; } /* full width from the first paint, not shrink-to-fit while the page loads */
