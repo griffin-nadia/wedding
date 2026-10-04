@@ -88,11 +88,20 @@
     color: var(--foreground);
     letter-spacing: var(--type-heading-tracking);
   }
+  /* Japanese: Zen Old Mincho for display and headings (Oranienbaum has no kana), the system Japanese sans for
+     body and UI beside Inter, strict line breaking so particles never start a line, no letter-spacing on kana. */
   :lang(ja) body,
   [lang="ja"] {
+    --font-display: var(--font-ja);
+    font-family: "Inter", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
     line-height: 1.8;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
+    line-break: strict;
+    overflow-wrap: anywhere;
+    font-feature-settings: "palt" 0;
   }
+  :lang(ja) h1, :lang(ja) h2, [lang="ja"] h1, [lang="ja"] h2 { font-family: var(--font-ja); letter-spacing: 0.04em; font-weight: 400; }
+  :lang(ja) .font-display, [lang="ja"] .font-display { font-family: var(--font-ja); }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
