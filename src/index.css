@@ -338,6 +338,8 @@
 .is-right .timeline-text { grid-column: 1; grid-row: 1; text-align: right; }
 @media (max-width: 479px) { .timeline-time { font-size: var(--type-lead-size); line-height: var(--type-lead-leading); } }
 .timeline-now { position: absolute; left: 50%; z-index: 2; translate: -50% -50%; list-style: none; }
+/* JS fallback where scroll-driven animations are missing (iOS): the page sets --fill on the timeline */
+.timeline-js .timeline-fill { animation: none; transform: scaleY(var(--fill, 0)); transition: transform 120ms linear; }
 @media (prefers-reduced-motion: reduce) { .timeline-fill { animation: none !important; } }
 @media print { .timeline-fill { animation: none !important; transform: none !important; } }
 
@@ -1033,7 +1035,7 @@ svg.lucide { stroke-width: 1.5; }
      would be, minus the corner circles: so the paper ends above the dock with its real rounded corners (v3 R). */
   .scene.scene-band {
     display: block; z-index: 10; pointer-events: none;
-    --band-top: calc(100dvh - var(--dock-band));
+    --band-top: calc(var(--vvh, 100dvh) - var(--dock-band));
     --corner: var(--letter-radius);
     -webkit-mask-image: linear-gradient(#000, #000), radial-gradient(circle at 100% 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px)), radial-gradient(circle at 0 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px));
     mask-image: linear-gradient(#000, #000), radial-gradient(circle at 100% 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px)), radial-gradient(circle at 0 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px));

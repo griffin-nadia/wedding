@@ -111,6 +111,18 @@ export function Layout() {
     check(); addEventListener("ng-tune", check)
     return () => removeEventListener("ng-tune", check)
   }, [])
+  // Phones: the strip above the dock follows the visual viewport, frame by frame, so it doesn't jump while the
+  // browser bar collapses or grows on scroll (100dvh updates late on iOS; visualViewport doesn't)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv || !window.matchMedia("(max-width: 767px)").matches) return
+    const root = document.documentElement
+    let raf = 0, last = 0
+    const set = () => { raf = 0; const h = Math.round(vv.height); if (h !== last) { last = h; root.style.setProperty("--vvh", `${h}px`) } }
+    const on = () => { if (!raf) raf = requestAnimationFrame(set) }
+    set(); vv.addEventListener("resize", on); vv.addEventListener("scroll", on)
+    return () => { vv.removeEventListener("resize", on); vv.removeEventListener("scroll", on); root.style.removeProperty("--vvh") }
+  }, [])
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sealed", sealed)
     return () => document.documentElement.removeAttribute("data-sealed")
