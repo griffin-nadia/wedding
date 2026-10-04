@@ -31,7 +31,7 @@ const baseLinks = [
 // The stamp book (December, walk scene only) loads only when the lab turns it on
 const StampBook = lazy(() => import("@/components/stamp-book").then((m) => ({ default: m.StampBook })))
 const storyLink = { to: "/our-story", key: "story", icon: BookOpen } as const
-const MECHANICS = ["glow", "inkset", "countin", "thread", "hoverprint", "haptics"]
+const MECHANICS = ["glow", "inkset", "countin", "thread", "hoverprint", "haptics", "rise", "dockhide"]
 
 /** Four items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
 function Nav() {

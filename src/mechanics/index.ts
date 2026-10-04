@@ -89,8 +89,41 @@ export function install() {
     for (const m of list) for (const n of m.addedNodes) if (n instanceof Element && (n.matches(".hanko") || n.querySelector(".hanko"))) { setTimeout(() => buzz(14), 380); return }
   }).observe(document.body, { childList: true, subtree: true })
 
+  // Theme · sections rise in as they scroll into view (below the fold only; what's already on screen never moves)
+  let riseIO: IntersectionObserver | null = null
+  const rise = () => {
+    riseIO?.disconnect(); riseIO = null
+    const body = document.querySelector<HTMLElement>("#letter .letter-body")
+    if (!on("rise") || !body) { document.querySelectorAll("[data-rise]").forEach((el) => el.removeAttribute("data-rise")); return }
+    const blocks = [...body.children] as HTMLElement[]
+    if (still()) { blocks.forEach((el) => el.setAttribute("data-rise", "in")); return }
+    let queued = 0
+    blocks.forEach((el) => { el.setAttribute("data-rise", el.getBoundingClientRect().top < innerHeight ? "in" : "") })
+    riseIO = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return
+        const el = en.target as HTMLElement
+        el.style.setProperty("--rise-delay", `${Math.min(queued++ * 60, 240)}ms`)
+        el.setAttribute("data-rise", "in"); riseIO?.unobserve(el)
+      })
+      setTimeout(() => { queued = 0 }, 300)
+    }, { rootMargin: "0px 0px -8% 0px" })
+    blocks.filter((el) => el.getAttribute("data-rise") === "").forEach((el) => riseIO!.observe(el))
+  }
+
+  // Theme · the dock steps aside while scrolling down (phones), back on scroll up or when the scrolling stops
+  let lastY = scrollY, awayTimer = 0
+  addEventListener("scroll", () => {
+    if (!on("dockhide") || still() || innerWidth > 767) { root.removeAttribute("data-dock-away"); return }
+    const y = scrollY, dy = y - lastY; lastY = y
+    const max = document.documentElement.scrollHeight - innerHeight
+    if (dy > 4 && y > 80 && y < max - 40) root.setAttribute("data-dock-away", "")
+    else if (dy < -2 || y <= 80 || y >= max - 40) root.removeAttribute("data-dock-away")
+    clearTimeout(awayTimer); awayTimer = window.setTimeout(() => root.removeAttribute("data-dock-away"), 900)
+  }, { passive: true })
+
   // Run the once-per-open ones whenever the letter appears (after the envelope, or on a page change)
-  const kick = () => requestAnimationFrame(() => { settle(); countIn(); pull() })
+  const kick = () => requestAnimationFrame(() => { settle(); countIn(); pull(); rise() })
   new MutationObserver((list) => {
     if (list.some((m) => [...m.addedNodes].some((n) => n instanceof Element && (n.matches(".letter-body, .letter") || n.querySelector(".letter-body"))))) kick()
   }).observe(document.querySelector("main") ?? document.body, { childList: true, subtree: true })

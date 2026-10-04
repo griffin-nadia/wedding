@@ -56,8 +56,12 @@ function Timeline({ now }: { now: Date }) {
     const tick = () => {
       raf = 0
       const r = el.getBoundingClientRect(), vh = window.innerHeight
-      const p = Math.min(1, Math.max(0, ((vh - r.top) / r.height - 0.1) / 0.9))
+      // Same range as the CSS version: cover 5% to cover 60% (cover = from top at the bottom edge to bottom at the top edge)
+      const p = Math.min(1, Math.max(0, ((vh - r.top) / (r.height + vh) - 0.05) / 0.55))
       el.style.setProperty("--fill", p.toFixed(3))
+      // Times tick in (Options): a row has been reached once the line's tip (p of the timeline's height) passes it
+      const tip = r.top + r.height * p
+      el.querySelectorAll<HTMLElement>(".timeline-row").forEach((row) => row.classList.toggle("is-past", row.getBoundingClientRect().top + 20 <= tip))
     }
     const on = () => { if (!raf) raf = requestAnimationFrame(tick) }
     tick()
@@ -106,7 +110,8 @@ export function DayPage() {
   const timeline = (
     <div className="flex flex-col gap-4">
       <Timeline now={now} />
-      <p className="text-sm text-muted-foreground">{t.day.japanTime} <span className="no-print">{t.day.kyotoNow(kyotoNow(now))}</span></p>
+      {/* The Kyoto minute rolls up into place when it ticks over (Options → Kyoto clock rolls); the key remounts it */}
+      <p className="text-sm text-muted-foreground">{t.day.japanTime} <span className="no-print clock-roll" key={kyotoNow(now)}>{t.day.kyotoNow(kyotoNow(now))}</span></p>
       <p>{t.day.rainPlan}</p>
     </div>
   )

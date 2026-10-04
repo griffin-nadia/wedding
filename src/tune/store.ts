@@ -10,7 +10,7 @@ export type TuneState = { overrides: Record<Scope, Record<string, string>>; note
 /** Each lab option's shipped value (the first choice). The labels and notes live in options.ts, loaded with the panel only. */
 export const OPTION_DEFAULTS: Record<string, string> = {
   modeswitch: "circle", glow: "off", inkset: "off", countin: "off", underline: "off", daytick: "off", thread: "off", focus: "off", faq: "many", dotmap: "off", hoverprint: "off", haptics: "off", arrivalhint: "note", tilt: "off", leaves: "off", send: "tap", sheetdrag: "buttons", mapdrag: "tap", peek: "on", mode: "sheet", datestyle: "badge", names: "two", count: "boxes", ticks: "stay", signoff: "home", toggle: "card", getthere: "maps", accent: "green", lang: "en", story: "b", mapmode: "journey", flying: "off", scene: "photo",
-  stamps: "off", density: "auto", round: "auto", navigation: "pages", letterpaper: "dark", photo: "each",
+  stamps: "off", density: "auto", round: "auto", navigation: "pages", letterpaper: "dark", photo: "each", rise: "off", dockhide: "off", clockroll: "on",
 }
 
 const KEY = "ng-tune"

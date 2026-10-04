@@ -151,6 +151,8 @@ export const en = {
     kyotoNow: (time: string) => `It's ${time} in Kyoto right now.`,
     addToCalendar: "Add to calendar",
     googleCalendar: "Google Calendar",
+    calendarOpened: "Opened in a new tab. Save it there and you're set.",
+    calendarSaved: "Downloaded. Open the file to add the day.",
     appleCalendar: "Apple or Outlook (.ics)",
     print: "Print the day",
     now: "Now",
