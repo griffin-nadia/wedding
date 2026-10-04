@@ -150,6 +150,17 @@ export function StoryPage() {
       </>
     )
   }
+  // Crew devices: the base map with no chapters (nothing invented), so the map and guests' lines can be judged
+  // before Nadia and Griffin's words are in the Content tab. Guests never reach this page while it's empty.
+  const crew = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
+  if (ready && crew && !story.length && (!view || view === "b") && journey) {
+    return (
+      <>
+        <h1 className="heading">{t.story.title}</h1>
+        <StoryJourney chapters={[]} showFlying={flying} drag={mapDrag} />
+      </>
+    )
+  }
   return (
     <div className="grid min-h-64 place-items-center text-center">
       <div className="flex flex-col items-center gap-4">

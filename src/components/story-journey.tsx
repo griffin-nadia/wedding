@@ -39,7 +39,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false }: { c
   const svg = useRef<SVGSVGElement>(null)
   const [held, setHeld] = useState<[number, number] | null>(null)
   const n = chapters.length
-  const go = (i: number) => setOn((i + n) % n)
+  const go = (i: number) => { if (n) setOn((i + n) % n) }
   const pts = chapters.map((c, i) => placeOf(c, i, n))
   const c = chapters[on]
   if (list) return (
@@ -61,7 +61,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false }: { c
         {flying && (Object.entries(flying.counts) as [Flying, number][]).filter(([city]) => FLY[city]).map(([city]) => <path key={city} d={arc(FLY[city]!, KYOTO, 0.15)} className="journey-guest" />)}
         <path d={arc(PLACES.brisbane, KYOTO)} className="journey-route journey-route-nadia" pathLength={1} />
         <path d={arc(PLACES.canada, KYOTO, 0.2)} className="journey-route journey-route-griffin" pathLength={1} />
-        <path key={`draw-${on}`} d={arc(pts[on], KYOTO, 0.25)} className="journey-draw" pathLength={1} />
+        {pts[on] && <path key={`draw-${on}`} d={arc(pts[on], KYOTO, 0.25)} className="journey-draw" pathLength={1} />}
         {pts.map(([x, y], i) => (
           <g key={chapters[i].key} role="button" tabIndex={0} aria-label={chapters[i].title} aria-pressed={on === i}
             className={cn("journey-stop", on === i && "is-on")} transform={`translate(${x} ${y})`}
@@ -72,7 +72,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false }: { c
           </g>
         ))}
         {/* Drag the seal (Options → Our story): it follows the finger and the nearest chapter opens as it passes */}
-        {drag && (() => {
+        {drag && n > 0 && (() => {
           const [x, y] = held ?? pts[on]
           const toSvg = (e: React.PointerEvent) => { const m = svg.current!.getScreenCTM()!.inverse(); const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m); return [p.x, p.y] as [number, number] }
           const nearest = ([px, py]: [number, number]) => pts.reduce((b, [sx, sy], i) => (Math.hypot(sx - px, sy - py) < Math.hypot(pts[b][0] - px, pts[b][1] - py) ? i : b), 0)
@@ -102,6 +102,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false }: { c
             </li>
           ))}
         </ol>
+        {c ? (
         <section className="journey-stopcard" aria-live="polite">
           <p className="text-sm text-muted-foreground">{t.story.page(on + 1, n)}, {c.year}</p>
           <h2 className="font-display text-2xl text-foreground">{c.title}</h2>
@@ -112,6 +113,12 @@ export function StoryJourney({ chapters, showFlying = false, drag = false }: { c
             <button type="button" className="utility-btn" onClick={() => go(on + 1)} aria-label={t.story.nextChapter}><ChevronRight className="size-5" aria-hidden /></button>
           </div>
         </section>
+        ) : (
+        <section className="journey-stopcard" aria-live="polite">
+          <h2 className="font-display text-2xl text-foreground">{t.letter.comingSoon}</h2>
+          <p>{t.story.soonBody}</p>
+        </section>
+        )}
         {flying && flying.told > 0 && <p className="text-sm text-muted-foreground">{t.story.flyingFrom(flying.told, flying.households)}</p>}
         <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(true)}>{t.story.seeList}</button>
       </div>
