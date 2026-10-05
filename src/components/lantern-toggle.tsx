@@ -39,10 +39,10 @@ export function LanternToggle({ className }: { className?: string }) {
 }
 
 /**
- * あ / A: read in Japanese or English, beside the sun and moon (Jehan, 6 Oct). Crew devices only until a
- * native speaker has checked the Japanese; then `guests` flips to true and everyone gets it.
+ * あ / A: read in Japanese or English, beside the sun and moon. On for everyone (Jehan, 6 Oct).
+ * The Japanese is still worth a native speaker's read-through; flip back to false if it needs work first.
  */
-const guests = false
+const guests = true
 export function LangToggle() {
   const { lang, setLang } = useLang()
   const [show] = useState(() => { try { return guests || Boolean(localStorage.getItem("ng-crew")) } catch { return guests } })

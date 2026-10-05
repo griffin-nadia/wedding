@@ -29,6 +29,21 @@ const PAIR = ["kyoto-view", "night-lane"] as const
 const dropShell = () => { document.getElementById("scene-shell")?.remove(); document.getElementById("scene-shell-band")?.remove() }
 function PhotoPair({ name, dim, className }: { name: string; dim: boolean; className?: string }) {
   const [both, setBoth] = useState(false)
+  const drift = useRef<HTMLDivElement>(null)
+  // Mouse drift (Jehan, 6 Oct): the photo leans a few px toward the cursor and settles slowly.
+  // Laptops with a fine pointer only; the CSS (and the still photo) is untouched anywhere else.
+  useEffect(() => {
+    if (!window.matchMedia("(min-width: 1024px) and (pointer: fine)").matches) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const el = drift.current
+    if (!el) return
+    const on = (e: PointerEvent) => {
+      el.style.setProperty("--sx", ((e.clientX / innerWidth - 0.5) * 12).toFixed(1))
+      el.style.setProperty("--sy", ((e.clientY / innerHeight - 0.5) * 8).toFixed(1))
+    }
+    window.addEventListener("pointermove", on, { passive: true })
+    return () => window.removeEventListener("pointermove", on)
+  }, [])
   useEffect(() => {
     const go = () => setBoth(true)
     const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback
@@ -36,7 +51,7 @@ function PhotoPair({ name, dim, className }: { name: string; dim: boolean; class
     else window.addEventListener("load", () => (idle ? idle(go) : setTimeout(go, 1500)), { once: true })
   }, [])
   return (
-    <div aria-hidden className={cn("scene fixed inset-0 -z-10 overflow-hidden bg-[var(--scene-scrim)]", dim && "scene-dim", className)}>
+    <div ref={drift} aria-hidden className={cn("scene fixed inset-0 -z-10 overflow-hidden bg-[var(--scene-scrim)]", dim && "scene-dim", className)}>
       {PAIR.filter((n) => n === name || both).map((n) => (
         <div key={n} data-photo={n} className={cn("scene-layer absolute inset-0", n === name ? "opacity-100" : "opacity-0")}>
           <PhotoScene name={n} priority={n === name} onReady={n === name ? dropShell : () => {}} />
