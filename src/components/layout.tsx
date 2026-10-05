@@ -41,22 +41,29 @@ function Nav() {
   const crew = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
   const hasStory = story.length > 0 || crew
   const links = hasStory ? [...baseLinks, storyLink] : baseLinks
+  const linksKey = links.map((l) => `${l.to}:${t.nav[l.key]}`).join("|")
   useEffect(() => { setStoryLetter(hasStory) }, [hasStory])
   const { pathname } = useLocation()
   const list = useRef<HTMLUListElement>(null)
   const [mark, setMark] = useState<{ x: number; w: number; h: number; y: number } | null>(null)
   useLayoutEffect(() => {
+    const ul = list.current
     const place = () => {
-      const a = list.current?.querySelector<HTMLElement>("a.is-active")
-      if (!a || !list.current) return setMark(null)
-      const r = a.getBoundingClientRect(), l = list.current.getBoundingClientRect()
+      const a = ul?.querySelector<HTMLElement>("a.is-active")
+      if (!a || !ul) return setMark(null)
+      const r = a.getBoundingClientRect(), l = ul.getBoundingClientRect()
       setMark({ x: r.left - l.left, w: r.width, y: r.top - l.top, h: r.height })
     }
     place()
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(place)
+    if (ul) observer?.observe(ul)
+    const active = ul?.querySelector<HTMLElement>("a.is-active")
+    if (active) observer?.observe(active)
     window.addEventListener("resize", place)
-    document.fonts?.ready.then(place)
-    return () => window.removeEventListener("resize", place)
-  }, [pathname])
+    let cancelled = false
+    document.fonts?.ready.then(() => { if (!cancelled) place() })
+    return () => { cancelled = true; observer?.disconnect(); window.removeEventListener("resize", place) }
+  }, [pathname, linksKey])
   return (
     <nav aria-label="Main" className="site-nav">
       <ul ref={list}>
