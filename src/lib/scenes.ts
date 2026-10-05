@@ -9,7 +9,7 @@ import type { Theme } from "@/lib/theme"
  */
 export type SceneName = keyof typeof meta
 export type SceneSource = { photo: SceneName } | { plate: string; fallback?: SceneName } | { paper: true } | { walk: true }
-export const SCENES = meta as Record<SceneName, { w: number; h: number; lqip: string; face?: number[] }>
+export const SCENES = meta as Record<SceneName, { w: number; h: number; lqip: string; face?: number[]; wide?: { w: number; h: number; lqip: string } }>
 
 
 // The four painted plates (from Nadia, Jehan or commissioned), named now so dropping art in changes nothing else
