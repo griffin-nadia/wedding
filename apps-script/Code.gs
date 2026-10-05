@@ -990,7 +990,7 @@ function setStamps_(token, stamps) {
 
 // ---------- "Flying from" (anonymous counts for the journey map) ----------
 
-const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Somewhere else"]
+const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Already in Japan", "Somewhere else"]
 
 /** Saves the household's "Flying from" pick (a fixed list, never free text) in a Guests column at the end. */
 function setFlying_(token, city) {

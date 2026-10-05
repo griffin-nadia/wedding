@@ -1173,3 +1173,77 @@ svg.lucide { stroke-width: 1.5; }
 /* An open question keeps a faint tint on its row, so you can see which one you are reading */
 :root:not([data-opt-rowhover="off"]) [data-slot="accordion-trigger"][data-state="open"]::before { opacity: 0.6; }
 @media (prefers-reduced-motion: reduce) { :root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row)::before { transition: none; } }
+
+/* Omikuji (v3 V, Nadia: "prioritise the fortunes, no branch"). The tin is the button; it shakes, its stick rises,
+   then the slip unfolds: a tall paper slip with rust rules top and bottom, the number in kanji, 大吉 large. */
+.omikuji-hit { flex: none; display: grid; place-items: center; width: 72px; height: 104px; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; cursor: pointer; transition: transform var(--duration-press) var(--ease-paper); -webkit-tap-highlight-color: transparent; }
+.omikuji-hit:focus-visible { outline-color: var(--input-focus); }
+.omikuji-hit:active:not(:disabled) { transform: scale(var(--press-scale)); }
+@media (hover: hover) { .omikuji-hit:hover:not(:disabled) .omikuji-tin { translate: 0 -2px; } }
+.omikuji-tin { width: 64px; height: 96px; overflow: visible; transform-origin: 50% 90%; transition: translate var(--duration-quick) var(--ease-paper); }
+.omikuji-tin.is-drawing { animation: omikuji-shake var(--duration-shake) var(--ease-breathe) both; }
+.omikuji-body { fill: var(--brand-sabi); }
+.omikuji-top { fill: var(--brand-doro); }
+.omikuji-label { fill: var(--brand-kinari); }
+.omikuji-glyph { fill: var(--brand-kogecha); font-family: var(--font-ja); font-size: 13px; }
+.omikuji-stick { fill: var(--brand-hachimitsu); translate: 0 14px; transition: translate var(--duration-settle) var(--ease-letter) 700ms; }
+.omikuji-tin.is-drawing .omikuji-stick { translate: 0 0; }
+.omikuji-slip {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: 100%; max-width: 320px; margin-inline: auto;
+  padding: var(--space-6) var(--space-5); text-align: center; background: var(--brand-paper-bright); color: var(--brand-kogecha);
+  border-block: 6px solid var(--brand-sabi); border-radius: 2px; box-shadow: var(--letter-shadow);
+  outline: 2px solid transparent; outline-offset: 4px; transform-origin: top;
+  animation: slip-unfold var(--duration-settle) var(--ease-letter) both;
+}
+.omikuji-slip:focus-visible { outline-color: var(--input-focus); }
+.omikuji-slip .label-caps { color: var(--brand-kuri); }
+.omikuji-no { font-size: 0.9rem; letter-spacing: 0.2em; color: var(--brand-kuri); }
+.omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--brand-doro); }
+.omikuji-text { font-family: var(--font-hand, inherit); font-size: 1.125rem; line-height: 1.5; text-wrap: pretty; max-width: 26ch; }
+.omikuji-count { opacity: 0.8; }
+.omikuji-save { min-height: 44px; color: var(--brand-doro); text-decoration: underline; text-underline-offset: 4px; outline: 2px solid transparent; outline-offset: 2px; border-radius: var(--radius-control); }
+.omikuji-save:focus-visible { outline-color: var(--brand-doro); }
+@media (prefers-reduced-motion: reduce) {
+  .omikuji-tin.is-drawing { animation: none; }
+  .omikuji-stick { transition: none; }
+  .omikuji-slip { animation: toast-in var(--duration-quick) linear both; }
+}
+
+/* Nadia's lettering for the names (ART.names): a mask, so it takes the ink of whichever theme; drawn on once */
+.names-lettering { display: block; width: min(100%, 520px); background: currentColor; color: var(--sys-ink); -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; }
+.names-lettering.is-revealing { animation: letter-draw 1400ms var(--ease-letter) 200ms both; }
+@keyframes letter-draw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+[data-sealed] .names-lettering.is-revealing { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .names-lettering.is-revealing { animation: none; } }
+
+/* Around the venue (v3 V): a schematic plate with real buttons over it. The plate keeps its shape at every
+   width (aspect-ratio), so nothing moves when a pin is chosen; the card under it swaps with a short fade. */
+.kmap { position: relative; width: 100%; aspect-ratio: 360 / 260; }
+.kmap-plate { position: absolute; inset: 0; width: 100%; height: 100%; }
+.kmap-land { fill: var(--brand-sage-paper); }
+[data-theme="lantern"] .kmap-land { fill: var(--brand-yoru-sage); }
+.kmap-leaf { opacity: 0.85; }
+.kmap-river { fill: none; stroke: color-mix(in oklab, var(--brand-ai) 30%, var(--brand-sage)); stroke-width: 14; stroke-linecap: round; opacity: 0.55; }
+.kmap-river-label { font-family: var(--font-label); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--sys-ink-muted); }
+.kmap-route { fill: none; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 0.012 0.018; }
+.kmap-taxi { stroke: var(--brand-sabi); }
+.kmap-walk { stroke: var(--brand-sage-ink); }
+[data-theme="lantern"] .kmap-walk { stroke: var(--brand-sage); }
+.kmap-note { font-family: var(--font-label); font-size: 9px; fill: var(--sys-ink-muted); }
+.kmap-pin { position: absolute; translate: -50% -50%; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; outline: 2px solid transparent; outline-offset: 2px; -webkit-tap-highlight-color: transparent; }
+.kmap-pin:focus-visible { outline-color: var(--input-focus); }
+.kmap-dot { flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--sys-surface-raised, var(--brand-paper-bright)); border: 2px solid var(--sys-ink-soft); box-shadow: 0 1px 2px rgb(0 0 0 / 0.15); transition: transform var(--duration-quick) var(--ease-paper), background-color var(--duration-quick) var(--ease-paper); }
+.kmap-pin.is-on .kmap-dot { background: var(--brand-sabi); border-color: var(--brand-paper-bright); transform: scale(1.25); }
+.kmap-pin-venue .kmap-dot { border-color: var(--brand-sabi); }
+.kmap-tag { position: absolute; top: 50%; left: 34px; translate: 0 -50%; pointer-events: none; display: flex; flex-direction: column; padding: 3px 8px; border-radius: var(--radius-control); background: color-mix(in oklab, var(--letter-bg) 92%, transparent); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); font-family: var(--font-label); font-size: 11px; line-height: 1.25; text-align: left; color: var(--sys-ink); white-space: nowrap; }
+.kmap-pin.is-east .kmap-tag { left: auto; right: 34px; text-align: right; align-items: flex-end; }
+.kmap-tag .font-ja { font-size: 10px; color: var(--sys-ink-muted); }
+.kmap-pin.is-on .kmap-tag { box-shadow: inset 0 0 0 1.5px var(--brand-sabi), 0 1px 2px rgb(0 0 0 / 0.12); }
+/* Phones: the plate is narrow, so the tags hide except the chosen one (the card names it anyway) */
+@media (max-width: 479px) { .kmap-pin:not(.is-on) .kmap-tag { display: none; } }
+@media (hover: hover) { .kmap-pin:hover .kmap-dot { transform: scale(1.15); } }
+.kmap-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-control); background: var(--section-alt); animation: toast-in var(--duration-quick) var(--ease-paper) both; }
+.kmap-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.kmap-key { display: inline-block; width: 20px; border-top: 2px dashed; }
+.kmap-key-taxi { color: var(--brand-sabi); } .kmap-key-walk { color: var(--brand-sage-ink); margin-left: 8px; }
+@media (prefers-reduced-motion: reduce) { .kmap-card { animation: none; } .kmap-dot { transition: none; } }
