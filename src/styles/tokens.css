@@ -58,6 +58,8 @@
 [data-theme="autumn"],
 .paper:not(.letter),
 [data-opt-letterpaper="cream"] .letter.paper {
+  --row-hover-mix: 5%;                             /* row hover tint: this much ink (v3 T) */
+  --row-press-mix: 8%;
   /* .paper: the envelope (and the driver card) stays cream in both modes (Jehan, 6 Oct: "only the envelope stays
      light"). The letter and the sheets keep their Lantern dark tokens unless the "Letter in Lantern" option is set
      to cream. Declared again on .paper so every alias below resolves to the light values. */
@@ -88,6 +90,8 @@
 }
 
 [data-theme="lantern"] {
+  --row-hover-mix: 7%;
+  --row-press-mix: 11%;
   color-scheme: dark;
   --sys-texture-blend: soft-light;
   --sys-surface: var(--brand-yoru);
