@@ -9,12 +9,12 @@ Distilled from Jehan's working notes. One page that answers: what's decided, wha
 Every guest gets a personal invitation that knows who they are, what they're invited to, and what they need to know about a wedding in Japan. They reply for the household in two minutes and come back to it on the day.
 
 - **Three jobs:** reply → prepare (travel, etiquette) → on the day (events, maps, table)
-- **Nav:** Home · Events · Info · RSVP. No login, no hamburger, personal link or short code only
+- **Nav:** Home · The day · Travel · FAQs (+ Our story once its three chapters exist). No login, no hamburger, personal link or short code only
 - **Guardrails:** one chosen interaction moment per screen, everything else quiet. Kit states stay canonical (default, hover, focus, pressed, selected, disabled, error, loading). CSS/SVG first, Motion only where spring physics materially improve feel. 60fps on a mid-range phone, transform-only where possible. Reduced motion gets a complete still state, never a broken one. No scroll hijacking, no three.js, no smooth-scroll library. Japanese and Lantern switches are first-class site controls.
 
 ## 2. Right now
 
-- **PR #20 (state alignment + image quality) is open.** Merge it, then visual-check: FAQs in English/Japanese, Autumn/Lantern, phone and desktop, reduced motion on/off.
+- #19 and #20 are merged; #22 fixes what the review of them found (FAQ and tilt defaults, あ/A state, envelope photo alignment, the arrival note). Then visual-check: FAQs in English/Japanese, Autumn/Lantern, phone and desktop, reduced motion on/off.
 - Do not reopen the loupe, postcard flip, shared branch, stamp book, keepsake, or colour transition unless Nadia explicitly says they were scope cuts, not taste cuts.
 
 ## 3. What N&G owe us (Mon 5 – Wed 7 Oct)
@@ -39,6 +39,7 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 ## 5. Build queue
 
 ### PR 1 · Fortune reveal (omikuji)
+Already built in #15 (SVG tin, shake on Android, numbered slip, save): this PR is springs and polish on top, not a rebuild.
 - Tap-first; shake is progressive enhancement only.
 - Spring-driven: tin shakes → stick rises → paper slip unfolds.
 - One 大吉 slip per reply, numbered (e.g. No. 7 of 12), with 大吉 / GREAT BLESSING, Griffin's line, and "Save to my phone".
@@ -46,6 +47,7 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 - Reduced motion: static opened slip.
 
 ### PR 2 · Journey map
+The journey map, the flying-from step and "Already in Japan" exist (#15, story-journey.tsx): extend them, don't start over.
 - RSVP step 3 becomes "Your journey": optional "Where are you flying from?" with a small map under the choices and the guest's gold line drawing as they pick. Travel dates stay optional / add later.
 - One shared map element across Our story, the reply mini-map and the post-reply map — it should feel like the same element travelling with the guest.
 - Dotted world map + drawn guest arcs; lines draw in, reduced motion fades or shows the completed state.
@@ -54,7 +56,7 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 - Our story stays hidden until all three chapters exist in Content.
 
 ### PR 3 · Desktop-only polish (pointer-fine only, stills under reduced motion)
-- Faint ink/brush cursor trail over the photo
+No cursor trails (ruled out by the site's ethos).
 - Face-safe edge soft-focus around the letter
 - Optional dock magnification
 
