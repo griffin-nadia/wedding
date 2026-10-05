@@ -1,3 +1,4 @@
+import { ART } from "@/lib/art"
 import { BrandSeal } from "@/components/brand-seal"
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
 import { COUPLE } from "@/content/en"
@@ -40,7 +41,9 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const button = useRef<HTMLButtonElement>(null)
   const hint = useOption("arrivalhint")
   // Nadia's painted envelope (a placeholder until her scan), its colour bleeding in, and a loupe to lean in on it
-  const painted = useOption("envpaint") === "on"
+  // Real painting (ART.envelope): on for everyone unless crew switch it off. Placeholder: crew-only preview.
+  const envOpt = useOption("envpaint")
+  const painted = ART.envelope ? envOpt !== "off" : envOpt === "on"
   const loupeOn = useOption("loupe") === "on"
   const loupe = painted && loupeOn
   const stage = useRef<HTMLDivElement>(null)

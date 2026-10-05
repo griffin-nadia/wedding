@@ -210,7 +210,7 @@ export function clearDraft(token: string) {
   try { localStorage.removeItem(draftKey(token)) } catch { /* private mode */ }
 }
 
-export const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Somewhere else"] as const
+export const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Already in Japan", "Somewhere else"] as const
 export type Flying = (typeof FLYING)[number]
 
 /** Optional, after RSVP: where the household is flying from (a fixed list). Only counts are ever shown. */

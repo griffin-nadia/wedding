@@ -13,7 +13,7 @@ export function FlyingFrom({ token, initial = null, onSaved }: { token: string; 
       <p id="flying" className="font-medium text-foreground">{t.flying.title} <span className="font-normal text-body">{t.flying.hint}</span></p>
       <div className="flex flex-wrap gap-2">
         {FLYING.map((c) => (
-          <Chip key={c} on={picked === c} onClick={() => { setPicked(c); setSaved(false); setFlying(token, c).then(() => { setSaved(true); onSaved?.(c) }).catch(() => setPicked(null)) }}>{c}</Chip>
+          <Chip key={c} on={picked === c} onClick={() => { setPicked(c); setSaved(false); setFlying(token, c).then(() => { setSaved(true); onSaved?.(c) }).catch(() => setPicked(null)) }}>{t.flying.cities[c] ?? c}</Chip>
         ))}
       </div>
       {saved && <p role="status" className="text-success">{t.flying.thanks}</p>}

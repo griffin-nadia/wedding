@@ -6,6 +6,7 @@ import { Disclosure } from "@/components/disclosure"
 import { DriverCard } from "@/components/driver-card"
 import { FlyingFrom } from "@/components/flying-from"
 import { Trail } from "@/components/trail"
+import { KyotoMap } from "@/components/kyoto-map"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
@@ -82,6 +83,7 @@ export function TravelPage() {
         <p>{g.intro}</p>
         <DriverCard />
         <Trail />
+        <KyotoMap />
       </section>
 
       <section id="stay" aria-labelledby="stay-title" className="flex scroll-mt-24 flex-col gap-4">
