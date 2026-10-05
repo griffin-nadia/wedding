@@ -4,7 +4,7 @@
    2. Page changes fade and rise on laptops and up
    3. FAQs: the open question drops the hover tint for a quiet marker
    4. Tick boxes answer their own hover, ticked or not
-   5. Scene photos softened (a breath of blur + grain) so they read as photos
+   5. Scene photos stay sharp, with grain and softening only at the letter-side edge
    6. The scene leans a few px toward the mouse on laptops
    7. Richer paper: a soft mottle under the letter's grain, grain on the envelope
    8. Arrival: the envelope tilts by default, the note bobs gently
@@ -37,11 +37,19 @@ html { scrollbar-gutter: stable; }
   [data-slot="checkbox"][data-state="checked"]:not(:disabled):hover { filter: brightness(1.08); }
 }
 
-/* 5 - The scene from 1024: a breath of blur and the paper grain over the photo,
-   so the long images read as photographs, not AI renders. */
+/* 5 - The scene from 1024: the photo stays sharp, with paper grain over it and
+   softening only at the letter-side edge, away from their faces. */
 @media (min-width: 1024px) {
-  .scene-photo img { filter: var(--scene-filter) blur(0.6px) saturate(1.03); }
-  [data-theme="lantern"] .scene-photo img { filter: brightness(0.9) blur(0.6px) saturate(1.03); }
+  .scene-photo img { filter: var(--scene-filter) saturate(1.03); }
+  [data-theme="lantern"] .scene-photo img { filter: var(--scene-filter) brightness(0.9) saturate(1.03); }
+  /* Soft only at the letter-side edge; faces stay on the sharp base image. */
+  .scene-photo::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(to right, rgb(var(--sys-shadow-tint) / 0.08), transparent 26%);
+    backdrop-filter: blur(1.2px); -webkit-backdrop-filter: blur(1.2px);
+    mask-image: linear-gradient(to right, #000 0%, rgb(0 0 0 / 0.55) 12%, transparent 32%);
+    opacity: 0.35;
+  }
   .scene-photo::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background-image: var(--texture-paper); background-size: 256px;

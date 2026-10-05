@@ -45,6 +45,14 @@ function PhotoPair({ name, dim, className }: { name: string; dim: boolean; class
     return () => window.removeEventListener("pointermove", on)
   }, [])
   useEffect(() => {
+    const warm = (event: Event) => {
+      const photo = (event as CustomEvent<string>).detail
+      if (PAIR.includes(photo as (typeof PAIR)[number]) && photo !== name) setBoth(true)
+    }
+    window.addEventListener("ng-scene-warm", warm)
+    return () => window.removeEventListener("ng-scene-warm", warm)
+  }, [name])
+  useEffect(() => {
     const go = () => setBoth(true)
     const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback
     if (document.readyState === "complete") { if (idle) idle(go); else setTimeout(go, 1500) }

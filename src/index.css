@@ -522,7 +522,7 @@
 .site-nav { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); border-radius: calc(var(--radius-control) + 4px); background: color-mix(in oklab, var(--letter-bg) 94%, transparent); border: 1px solid var(--sys-line); box-shadow: var(--letter-shadow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 .site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px; }
 .site-nav li { display: flex; position: relative; }
-.nav-mark { position: absolute !important; left: 0; top: 0; border-radius: var(--radius-control); background: var(--sys-surface-alt); transition: transform var(--duration-slide) var(--ease-paper), width var(--duration-slide) var(--ease-paper); pointer-events: none; }
+.nav-mark { position: absolute !important; left: 0; top: 0; border-radius: var(--radius-control); background: var(--sys-surface-alt); transition: transform var(--duration-slide) var(--ease-paper), width var(--duration-slide) var(--ease-paper), height var(--duration-slide) var(--ease-paper); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .nav-mark { transition: none; } }
 .site-nav-link { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: var(--font-label); font-size: var(--type-label-size); line-height: var(--type-label-leading); font-weight: 500; color: var(--sys-ink-muted); outline: 2px solid transparent; outline-offset: -2px; border-radius: var(--radius-control); transition: color var(--duration-quick); }
 .site-nav-link.is-active { color: var(--sys-ink); }
@@ -686,7 +686,7 @@
 .arch-photo { overflow: hidden; border-radius: 999px 999px var(--radius-card) var(--radius-card); aspect-ratio: 4 / 3; }
 .arch-photo img { width: 100%; height: 100%; object-fit: cover; filter: var(--scene-filter); }
 /* Lantern toggle in the chrome: top right of the scene on phones (44px target, 12px in), in the top bar from 768 */
-.mode-switches { display: inline-flex; align-items: center; gap: 0; }
+.mode-switches { display: inline-flex; align-items: center; gap: var(--space-1); }
 .chrome-lantern { position: fixed; z-index: 41; top: 12px; right: 12px; border-radius: var(--radius-pill); background: var(--letter-bg); box-shadow: var(--shadow-paper); }
 @media (min-width: 768px) { .chrome-lantern { position: static; background: transparent; box-shadow: none; } }
 .home-countdown .numerals { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); font-variant-numeric: lining-nums tabular-nums; }
