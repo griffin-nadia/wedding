@@ -13,12 +13,12 @@
  "night-lane": {
   "w": 1600,
   "h": 2000,
-  "lqip": "data:image/webp;base64,UklGRpgAAABXRUJQVlA4IIwAAACQBQCdASoYAB4APu1gq02ppSQiMBgMATAdiWIAtRr1QXAkytnlYjojKIitdW3i99IB2e99AAD+7pDtATm1CFmss1GKbOSiRRUF30HI9x9Cluwxg36Fl3OoGzMN6+SKK/ZTDdTc2tTdQkJi4TiJhvCIMwOkVy6JMifirPt5GgQ2ZCqFE14pKS8gawAAAA==",
+  "lqip": "data:image/webp;base64,UklGRvAAAABXRUJQVlA4IOQAAABwBQCdASoYAB4APu1irE+ppSQiMBgIATAdiWYAs4AQ8LhOJnV8gA85b511dCiY/PfeoMwAAP7scPzBrcz9qrzjeCiaRN1MjyCf1+Al0UYlQg4OwGbRa+k0ph7Y2LwUssoUx/MG7BSHZdv0ISe57aonAOo+bAlaf0MWEMWzVfE/jh7+r7UkIc0zbLcM2/ZJjTR+1lb/h8O3NzPdUD/4rY/CUTSvTXCR24UbLbxoB4uUfE1nFBttydppDIUDlqLdcwDIMCIn6pLCDLAGf8KAVZ+dab4gvFZSMXhY/wiCMRS2YhnR3AA=",
   "face": [
-   0.2,
-   0.07,
-   0.86,
-   0.56
+   0.13,
+   0.24,
+   0.75,
+   0.68
   ]
  }
 }
