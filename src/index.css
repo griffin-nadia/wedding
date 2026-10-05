@@ -931,6 +931,17 @@ svg.lucide { stroke-width: 1.5; }
   .scene-photo img { object-position: var(--photo-focus-x, 62%) var(--arrival-focus-y, 40%); }
   [data-theme="lantern"] .scene-photo img { --arrival-focus-y: 12%; --photo-focus-x: 58%; }
 }
+/* Wide photos (5 Oct): from 1280 the 16:9 version fills the whole screen, them on the right, no fade to a plain
+   colour. Anchored right; the letter sits closer to the left edge on 1280 to 1500 screens so both faces stay clear
+   of it (checked at 1280, 1366, 1440, 1920). 1024 to 1279 keeps the panel. The sealed envelope keeps its paper
+   and the photo panel on the right. */
+@media (min-width: 1280px) {
+  :root:root { --letter-left: max(48px, min(180px, calc((100vw - 1180px) / 2))); }
+  :root:not([data-sealed]) .scene-photo[data-wide] { left: 0; width: 100%; mask-image: none; }
+  :root:not([data-sealed]) .scene-photo[data-wide] img { object-position: 100% 32%; }
+  :root:not([data-sealed]) .scene-fill:has(+ .scene-photo[data-wide]) { background-image: var(--scene-wide-lqip) !important; filter: var(--scene-filter); transform: none; }
+  [data-sealed] .scene-photo[data-wide] img { object-position: 88% 32%; }
+}
 /* Our story · journey map (Figma D1 / M2, v3 S) */
 .journey { display: grid; gap: var(--space-5); }
 @media (min-width: 768px) { .journey { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; } }
