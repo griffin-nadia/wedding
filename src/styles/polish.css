@@ -98,7 +98,14 @@ html { scrollbar-gutter: stable; }
     filter: drop-shadow(0 30px 32px rgb(var(--sys-shadow-tint) / 0.34));
   }
 }
-@keyframes polish-note-bob { from { margin-top: 0; } to { margin-top: -5px; } }
+/* The note (6 Oct): written at a slight tilt, the line draws with a little ease, its head lands after it,
+   then the whole note sways a degree or so, like paper in a draught. */
+.arrival-note-words { font-size: 22px; rotate: -5deg; transform-origin: 0 100%; padding-inline: 4px; }
+.arrival-note[data-side="right"] .arrival-note-words { rotate: 4deg; transform-origin: 100% 100%; }
+.arrival-note-arrow { stroke-width: 1.75; overflow: visible; }
+.arrival-note-arrow path { animation-duration: 950ms; animation-timing-function: cubic-bezier(0.45, 0.05, 0.25, 1); }
+.arrival-note-arrow path.head { animation-duration: 240ms; animation-delay: 1850ms; animation-timing-function: var(--ease-paper); }
+@keyframes polish-note-sway { 0%, 100% { rotate: 0deg; translate: 0 0; } 50% { rotate: -1.2deg; translate: 0 -3px; } }
 @media (prefers-reduced-motion: no-preference) {
-  .arrival-note { animation: polish-note-bob 3.2s var(--ease-breathe) 1.8s infinite alternate; }
+  .arrival-note { transform-origin: 50% 100%; animation: polish-note-sway 4.2s var(--ease-breathe) 2.4s infinite; }
 }
