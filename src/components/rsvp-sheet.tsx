@@ -13,11 +13,14 @@ import { HoldButton } from "@/components/hold-button"
 import { useOption } from "@/lib/options"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
-import { FieldError, ReviewRow, StepProgress } from "@/components/blocks"
+import { Chip, FieldError, ReviewRow, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard, useFortune } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
-import { answerOf, ApiError, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
+import { JourneyMini } from "@/components/journey-mini"
+import { keepFlying, readFlying } from "@/lib/journey"
+import { FlyingFrom } from "@/components/flying-from"
+import { answerOf, ApiError, FLYING, getFlying, setFlying, type Flying, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
@@ -149,6 +152,9 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (request && household) { onOpenChange(true); setStep(request.step) } }, [request?.at])
   const sending = useRef(false)
+  // Options → Journey map: step 3 becomes "Your journey" (where they're flying from, a mini map, the dates)
+  const journeyOn = useOption("journey") === "on"
+  const [flying, setFlyingPick] = useState<Flying | null>(() => readFlying(household?.token))
   const [form, setForm] = useState<RsvpPayload>(() => startingForm(household))
   // Opened by an early tap (before this form loaded): count it as a started RSVP too.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,6 +182,9 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     setMissing((m) => { const n = { ...m }; delete n[`answer-${id}`]; delete n[`diet-other-${id}`]; return n })
   }
   const coming = form.guests.filter((g) => g.attending === "yes")
+  const journeyStep = journeyOn && coming.length ? 3 : 0
+  const total = journeyStep ? 4 : 3
+  const datesStep = journeyStep || 2
   const songsFilled = form.songs.map((x) => x.trim()).filter(Boolean)
   const outside = (d: string) => Boolean(d) && (d < TRIP.from || d > TRIP.to)
   const dateError = outside(form.arrival) || outside(form.departure)
@@ -191,8 +200,9 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
         const d = parseDiet(g.dietary, t.rsvp.dietaryOptions)
         if (d.picked.includes(OTHER) && !d.other.trim()) m[`diet-other-${g.id}`] = t.rsvp.dietaryOtherMissing
       }
-      if (dateError) m.arr = dateError
+      if (dateError && datesStep === 2) m.arr = dateError
     }
+    if (step === journeyStep && dateError) m.arr = dateError
     return m
   }
   function next() {
@@ -211,6 +221,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   function onOpenChange(o: boolean) {
     if (o) {
       setForm(startingForm(household))
+      setFlyingPick(readFlying(household!.token))
       replyId.current = ""
       setError("")
       setMissing({})
@@ -231,6 +242,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     // An unticked "Bringing someone?" is a no
     if (form.guests.some((g) => g.plusOne && !g.attending)) form.guests = form.guests.map((g) => (g.plusOne && !g.attending ? { ...g, attending: "no" } : g))
     replyId.current ||= crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    // Their line is theirs on this device straight away (Home's map card reads it); the count goes in once the reply is safe
+    if (journeyStep && flying) keepFlying(before.token, flying)
     const optimistic = applyLocal(before, form)
     setDone({ household: optimistic, updated: Boolean(before.respondedAt), changes: [] })
     setHousehold(optimistic)
@@ -240,6 +253,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     try {
       const result = await saveRsvpWithRetry(before.token, form, before, replyId.current)
       clearDraft(before.token)
+      // Where they're flying from goes in once the reply is safe (counts only, never names)
+      if (journeyStep && flying) void setFlying(before.token, flying).catch(() => {})
       setHousehold(result.household)
       setDone((d) => (d ? { ...result } : d))
       setConfirm("saved")
@@ -248,13 +263,31 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
       if (code === "network" && navigator.onLine === false) { setConfirm("offline"); setOffline(true); return }
       setHousehold(before)
       setDone(null)
-      setStep(3)
+      setStep(total)
       setConfirm(null)
       setError(code in t.rsvp.errors ? t.rsvp.errors[code as keyof typeof t.rsvp.errors] : t.rsvp.errors.other)
     } finally {
       sending.current = false
     }
   }
+
+  const datesBlock = (
+    <div className="flex flex-col">
+      <div className="grid grid-cols-1 gap-x-3 gap-y-(--form-block-gap) min-[400px]:grid-cols-2">
+        <FormField id="arr" label={t.rsvp.arrival}>
+          <Input id="arr" type="date" min={TRIP.from} max={TRIP.to} value={form.arrival} data-filled={Boolean(form.arrival)} className="min-w-40!"
+            aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, arrival: e.target.value })} />
+        </FormField>
+        <FormField id="dep" label={t.rsvp.departure}>
+          <Input id="dep" type="date" min={form.arrival || TRIP.from} max={TRIP.to} value={form.departure} data-filled={Boolean(form.departure)} className="min-w-40!"
+            aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, departure: e.target.value })} />
+        </FormField>
+      </div>
+      {dateError
+        ? <FieldError id="date-error" className="mt-(--field-helper-gap)">{dateError}</FieldError>
+        : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-xs text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</p>}
+    </div>
+  )
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -281,13 +314,13 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
             </div>
           )}
           <Dialog.Close className="rsvp-close press" aria-label={t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
-          {done ? <div className="rsvp-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
+          {done ? <div className="rsvp-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} journey={journeyOn} flying={flying} onFlying={(c) => { setFlyingPick(c); keepFlying(done.household.token, c) }} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
           <header className="rsvp-head flex flex-col gap-3">
-            <p className="label-caps text-muted-foreground">{t.rsvp.step(step)}</p>
+            <p className="label-caps text-muted-foreground">{t.rsvp.step(step, total)}</p>
             <Dialog.Title ref={heading} tabIndex={-1} className="heading outline-none">
-              {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : t.rsvp.checkTitle}
+              {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : step === journeyStep ? t.journey.title : t.rsvp.checkTitle}
             </Dialog.Title>
-            <StepProgress step={step} of={3} label={t.rsvp.step(step)} />
+            <StepProgress step={step} of={total} label={t.rsvp.step(step, total)} />
           </header>
 
           <div ref={body} className="rsvp-body">
@@ -338,27 +371,26 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                 {coming.length > 0 && <>
                 <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song}
                   t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded, versions: t.rsvp.versions, hideVersions: t.rsvp.hideVersions }} />
-                <div className="flex flex-col">
-                  <div className="grid grid-cols-1 gap-x-3 gap-y-(--form-block-gap) min-[400px]:grid-cols-2">
-                    <FormField id="arr" label={t.rsvp.arrival}>
-                      <Input id="arr" type="date" min={TRIP.from} max={TRIP.to} value={form.arrival} data-filled={Boolean(form.arrival)} className="min-w-40!"
-                        aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, arrival: e.target.value })} />
-                    </FormField>
-                    <FormField id="dep" label={t.rsvp.departure}>
-                      <Input id="dep" type="date" min={form.arrival || TRIP.from} max={TRIP.to} value={form.departure} data-filled={Boolean(form.departure)} className="min-w-40!"
-                        aria-invalid={Boolean(dateError) || undefined} aria-describedby={dateError ? "date-error" : "date-hint"} onChange={(e) => setForm({ ...form, departure: e.target.value })} />
-                    </FormField>
-                  </div>
-                  {dateError
-                    ? <FieldError id="date-error" className="mt-(--field-helper-gap)">{dateError}</FieldError>
-                    : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-xs text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</p>}
-                </div>
+                {datesStep === 2 && datesBlock}
                 </>}
                 <FormField id="msg" label={t.rsvp.message}><Textarea id="msg" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></FormField>
               </>
             )}
 
-            {step === 3 && (
+            {step === journeyStep && journeyStep > 0 && (
+              <>
+                <section aria-labelledby="fly-q" className="flex flex-col gap-3">
+                  <p id="fly-q" className="font-medium text-foreground">{t.flying.title} <span className="font-normal text-body">{t.flying.hint}</span></p>
+                  <div className="flex flex-wrap gap-2">
+                    {FLYING.map((c) => <Chip key={c} on={flying === c} onClick={() => setFlyingPick(flying === c ? null : c)}>{t.flying.cities[c] ?? c}</Chip>)}
+                  </div>
+                  <JourneyMini you={flying} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} className="max-w-64" />
+                </section>
+                {datesBlock}
+              </>
+            )}
+
+            {step === total && (
               <>
                 <dl className="divide-y divide-border rounded-md border bg-card">
                   {form.guests.map((g) => (
@@ -370,7 +402,10 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                     <ReviewRow label={t.rsvp.songs} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.songs)}>{songsFilled.join(", ") || t.rsvp.noSongs}</ReviewRow>
                   )}
                   {coming.length > 0 && (
-                    <ReviewRow label={t.rsvp.dates} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.notSet}</ReviewRow>
+                    <ReviewRow label={t.rsvp.dates} edit={() => goTo(datesStep)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.notSet}</ReviewRow>
+                  )}
+                  {journeyStep > 0 && (
+                    <ReviewRow label={t.journey.review} edit={() => goTo(journeyStep)} editLabel={t.rsvp.edit(t.journey.review)}>{flying ? t.flying.cities[flying] ?? flying : t.journey.notSaying}</ReviewRow>
                   )}
                   <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
                 </dl>
@@ -383,13 +418,13 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
             )}
             {error && <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
-            {step === 3 && <p className="text-sm text-muted-foreground">{t.rsvp.privacy}</p>}
+            {step === total && <p className="text-sm text-muted-foreground">{t.rsvp.privacy}</p>}
           </div>
           </div>
 
           <footer className="rsvp-actions">
             {step > 1 && <Button variant="outline" size="lg" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
-            {step < 3
+            {step < total
               ? <Button size="lg" className="flex-1 shrink!" onClick={next}>{t.rsvp.next}</Button>
               : holdToSend && !error
                 ? <HoldButton className="flex-1" onDone={send} hint={t.rsvp.holdHint}>{t.rsvp.holdSend}</HoldButton>
@@ -406,10 +441,20 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
  * Success, on the same letter: the hanko stamps (with one furin ting if sound is on), the words match
  * the answer, one line on the save, the fortune, add to calendar, and a way to change it.
  */
-function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveResult; confirm: "saving" | "saved" | "offline" | null; titleRef: React.RefObject<HTMLHeadingElement | null>; onClose: () => void; onChange: () => void }) {
+function Done({ result, confirm, titleRef, journey = false, flying = null, onFlying, onClose, onChange }: { result: SaveResult; confirm: "saving" | "saved" | "offline" | null; titleRef: React.RefObject<HTMLHeadingElement | null>; journey?: boolean; flying?: Flying | null; onFlying?: (city: Flying) => void; onClose: () => void; onChange: () => void }) {
   const { t } = useLang()
   const h = result.household
   const answer = answerOf(h)
+  // After the fortune (Options → Journey map): the same map, everyone's faint lines first, theirs drawing in last
+  const [map, setMap] = useState(false)
+  const [counts, setCounts] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
+  const [changing, setChanging] = useState(false)
+  const mapHead = useRef<HTMLHeadingElement>(null)
+  const showMap = () => {
+    setMap(true)
+    void getFlying().then(setCounts)
+    requestAnimationFrame(() => { mapHead.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); mapHead.current?.focus({ preventScroll: true }) })
+  }
   useEffect(() => {
     titleRef.current?.focus()
   }, [answer, titleRef])
@@ -426,7 +471,17 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
   return (
     <div className="flex flex-col gap-6">
       {postcard ? <Postcard token={h.token}>{front}</Postcard> : front}
-      {answer !== "none" && !postcard && <FortuneCard token={h.token} />}
+      {answer !== "none" && !postcard && <FortuneCard token={h.token} onMap={journey && !map ? showMap : undefined} />}
+      {journey && map && (
+        <section aria-labelledby="map-head" className="flex flex-col gap-3">
+          <h3 id="map-head" ref={mapHead} tabIndex={-1} className="font-medium text-foreground outline-none">{t.journey.onMap}</h3>
+          <JourneyMini you={flying} counts={counts?.counts} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} />
+          {counts && counts.told > 0 && <p className="text-sm text-muted-foreground">{t.story.flyingFrom(counts.told, counts.households)}</p>}
+          {changing || !flying
+            ? <><p className="text-sm text-muted-foreground">{!flying && t.journey.notPicked}</p><FlyingFrom token={h.token} initial={flying} onSaved={(c) => { onFlying?.(c); setChanging(false) }} /></>
+            : <p className="text-sm text-muted-foreground">{t.flying.yours(t.flying.cities[flying] ?? flying)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}
+        </section>
+      )}
       {answer !== "none" && <AddToCalendar />}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
         <Button size="lg" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>

@@ -212,6 +212,8 @@
   --nav-mark-bg: color-mix(in oklab, var(--sys-accent) 16%, transparent);
   --nav-mark-line: color-mix(in oklab, var(--sys-accent) 40%, transparent);
   --nav-hover-bg: color-mix(in oklab, var(--sys-accent) 9%, transparent);
+  /* Guest maps: the household's own line, honey gold on both papers */
+  --journey-you: var(--brand-hachimitsu);
   /* Paper texture on the letter only: our own fine grain (feTurbulence), 256px tile, multiply */
   --texture-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85 0.6' numOctaves='3' seed='15' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
   --texture-opacity: var(--theme-texture);

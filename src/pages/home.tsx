@@ -20,6 +20,7 @@ import type { Household } from "@/lib/api"
 // still opens it as soon as it arrives.
 // Catch a leaf (Options → Home): its own small file, only when switched on
 const Leaves = lazy(() => import("@/components/leaves"))
+const JourneyCard = lazy(() => import("@/components/journey-card"))
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
 
 // The names reveal once, letter by letter, the first time the letter is opened (v3 L). Never again.
@@ -47,12 +48,13 @@ function Names() {
 /** What's left, quietly (v3 J): three lines with a tick or a soft dash, each opening its step. Hidden once all three are done. */
 function YourReply({ h, open, keepDone }: { h: Household; open: (step: number) => void; keepDone: boolean }) {
   const { t } = useLang()
+  const datesStep = useOption("journey") === "on" ? 3 : 2 // Options → Journey map moves the dates to Your journey
   const coming = h.guests.filter((g) => g.attending === "yes")
   if (!coming.length) return null
   const rows = [
     { key: "who", label: t.home.todo.who, done: h.guests.every((g) => g.attending), step: 1 },
     { key: "food", label: t.home.todo.food, done: h.songs.length > 0 || coming.some((g) => g.dietary && g.dietary !== "None"), step: 2 },
-    { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: 2, note: t.home.todo.datesLater },
+    { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: datesStep, note: t.home.todo.datesLater },
   ]
   if (rows.every((r) => r.done) && !keepDone) return null
   return (
@@ -92,6 +94,7 @@ export function HomePage() {
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
   const dateStyle = useOption("datestyle")
   const leaves = useOption("leaves") === "on"
+  const journey = useOption("journey") === "on"
   useOption("mode") // re-render when the crew preview changes
   const { mode, contactDay } = useContent()
   const keepDone = useOption("ticks") !== "hide"
@@ -139,6 +142,7 @@ export function HomePage() {
             {done && <p className="text-sm text-muted-foreground">{t.home.changeBy}</p>}
           </div>
           {done && <YourReply h={household} open={openAt} keepDone={keepDone} />}
+          {done && journey && <Suspense><JourneyCard token={household.token} /></Suspense>}
         </div>
       )}
       <HomeCountdown placement="inside" />
