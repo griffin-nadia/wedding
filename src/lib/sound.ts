@@ -1,5 +1,5 @@
 // The envelope's paper slide, on the tap that opens it. Made in the browser (no files); nothing is created until
-// that tap. It only plays when the guest has turned music on (Options → Music toggle), at the same 30% as the music.
+// that tap. It plays unless the guest has turned music off (Options → Music toggle), at the same 30% as the music.
 const KEY = "ng-music"
 const VOLUME = 0.3
 let ctx: AudioContext | null = null
@@ -16,7 +16,7 @@ function audio() {
 
 /** Paper slide: a short, soft brush of filtered noise, about 0.35 s. */
 export function playPaper() {
-  try { if (localStorage.getItem(KEY) !== "on") return } catch { return }
+  try { if (localStorage.getItem(KEY) === "off") return } catch { /* private mode: music is on by default */ }
   const a = audio(); if (!a) return
   const len = Math.floor(a.sampleRate * 0.35)
   const buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0)
