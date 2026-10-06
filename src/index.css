@@ -746,6 +746,10 @@ svg.lucide { stroke-width: 1.5; }
 .arrival.is-pulling .envelope-paper { transition: none; }
 /* Page turn: vertical scroll stays native; horizontal moves are the turn */
 @media (max-width: 767px) { .letter-wrap { touch-action: pan-y; } }
+/* The leaving copy is a still picture of the letter: nothing inside it replays its entrance or eases */
+.letter-ghost { pointer-events: none; will-change: transform; contain: layout paint; }
+.letter-ghost, .letter-ghost * { animation: none !important; }
+.letter-ghost * { transition: none !important; }
 /* The paper shader draws over the CSS paper (its fallback) once it's running */
 .paper-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; animation: fade-in var(--duration-rise) var(--ease-paper) both; }
 .paper-gl .paper-light, .paper-gl .paper-mist { display: none; }
@@ -925,7 +929,9 @@ svg.lucide { stroke-width: 1.5; }
 /* One reveal, nothing else moving inside it (6 Oct): the photo swaps instantly under the snapshot, so it never
    fades twice. The circle itself is animated from lantern-toggle.tsx (exact pixels from the tapped button). */
 :root[data-vt="fade"]::view-transition-new(root) { animation: mode-fade var(--duration-mode) var(--ease-mode); }
-:root[data-vt="fade"]::view-transition-old(root) { animation: mode-fade var(--duration-mode) var(--ease-mode) reverse; }
+:root[data-vt="fade"]::view-transition-old(root) { animation: none; } /* the old mode stays put underneath, so the page never dips mid-fade */
+/* The new mode waits hidden until the circle starts, so it never flashes in full for a frame */
+:root[data-vt="circle"]::view-transition-new(root) { clip-path: circle(0px at 50% 50%); }
 @keyframes mode-fade { from { opacity: 0; } to { opacity: 1; } }
 :root[data-vt] .scene-layer, :root[data-vt] * { transition: none !important; }
 /* Segmented choice: a small tick in a slot, mirrored by an equal empty slot on the right, so every label sits centred */
