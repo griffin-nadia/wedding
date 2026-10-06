@@ -1045,8 +1045,8 @@ svg.lucide { stroke-width: 1.5; }
 .arrival .envelope { translate: 0 calc(var(--pull, 0) * 20px); opacity: calc(1 - var(--pull, 0) * 0.25); }
 .arrival .envelope-paper { transform: translateY(calc(var(--pull, 0) * -62%)); }
 .arrival:not(.is-pulling) .envelope { transition: translate var(--duration-flap) var(--ease-spring), opacity var(--duration-flap) var(--ease-paper), transform var(--duration-quick) var(--ease-paper); }
-/* From 1024 the envelope sits on warm paper, not the photo: the note is ink there, not white */
-@media (min-width: 1024px) { .arrival-note { color: var(--sys-ink-soft); filter: none; } }
+/* From 1024 to 1279 the envelope sits on warm paper, not the photo: the note is ink there, not white (from 1280 it is over the photo again) */
+@media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-note { color: var(--sys-ink-soft); filter: none; } }
 
 /* Phones (v3 U): the letter never sits under the dock. --dock-band is the dock (64 + its border), its 12 offset,
    the safe area and 8 of air; .scene-band repaints the scene over the letter in exactly that strip. */

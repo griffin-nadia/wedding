@@ -4,11 +4,12 @@ import { useLang } from "@/lib/lang"
 
 type Place = { x: number; y: number; w: number; h: number; side: "centre" | "left" | "right"; row?: boolean; words: boolean } | null
 
-/** Where the photo's face-safe rect (fractions of the image, in scenes.json) lands on screen, given object-fit: cover. */
+/** Where the shown photo's face-safe rect (fractions of the image, in scenes.json) lands on screen, given object-fit: cover. */
 function faceRect(): DOMRect | null {
   const box = document.querySelector<HTMLElement>("[data-photo].opacity-100")
   const img = box?.querySelector("img"), name = box?.dataset.photo as keyof typeof SCENES | undefined
-  const meta = name && SCENES[name]
+  // From 1280 the picture shows the wide photo, which has its own size and face rect
+  const meta = name && (matchMedia("(min-width: 1280px)").matches && SCENES[name].wide ? SCENES[name].wide : SCENES[name])
   if (!img || !meta?.face) return null
   const r = img.getBoundingClientRect(), s = Math.max(r.width / meta.w, r.height / meta.h)
   const [px, py] = getComputedStyle(img).objectPosition.split(" ").map((v) => parseFloat(v) / 100)
