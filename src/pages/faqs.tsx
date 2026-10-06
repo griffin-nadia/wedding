@@ -2,11 +2,14 @@ import { Disclosure } from "@/components/disclosure"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useLang } from "@/lib/lang"
 import { useContent } from "@/lib/content"
+import { useOption } from "@/lib/options"
+import { ART } from "@/lib/art"
 
 /** FAQs: one numbered accordion (numbers help guests point to a question when they message). Answers are body.
  * Who to contact on the day appears once Nadia and Griffin fill contact_day in the Content tab. */
 export function FaqsPage() {
   const { t } = useLang()
+  const music = useOption("music") === "on" // Options → Music toggle: the track's credit line
   const { contactDay } = useContent()
   return (
     <>
@@ -26,6 +29,7 @@ export function FaqsPage() {
       </Disclosure>
       <p className="text-sm">{t.qa.contact}</p>
       {contactDay && <p className="text-sm">{t.qa.onTheDay} {contactDay}</p>}
+      {music && <p className="text-sm text-muted-foreground">{t.music.credit(ART.music.title, ART.music.artist, ART.music.year)}</p>}
     </>
   )
 }

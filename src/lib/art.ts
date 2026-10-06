@@ -25,4 +25,9 @@ export const ART = {
    * swap the file and the kind. Either way it's cropped to the pagoda and the aisle.
    */
   garden: { src: "art/garden/garden-ink.webp", kind: "ink" as "ink" | "colour" },
+  /**
+   * Background music (Options → Music toggle). Placeholder until the artist says yes: don't commit the audio file
+   * before then; src stays empty and the toggle plays silence. Then put the file in public/audio/ and set src.
+   */
+  music: { src: "", title: "among the clouds", artist: "aqualina", year: 2023 },
 }

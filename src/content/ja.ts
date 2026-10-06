@@ -25,6 +25,7 @@ export const ja: DeepPartial<Content> = {
     skip: "本文へ移動",
     open: "タップしてひらく",
     note: "招待状をひらいてね",
+    notePull: "タップするか、手紙を引き上げてね",
     openLabel: (name: string) => `招待状をひらく${name ? `（${name}さん）` : ""}`,
     phoneTitle: "スマホでひらく",
     phoneBody: "読み取ると、この招待状をスマホで見られます。",
@@ -78,6 +79,7 @@ export const ja: DeepPartial<Content> = {
     stops: { home: "宿", day: "庭の門", travel: "駅", qa: "神社", story: "小路" },
     reply: "お返事", full: "スタンプがそろいました。ここにふたりからのメッセージが届きます。",
   },
+  music: { on: "音楽を流す", off: "音楽を止める", credit: (title: string, artist: string, year: number) => `音楽：${artist}「${title}」（${year}年）` },
   journey: {
     title: "旅の道のり",
     map: (city: string | null) => (city ? `${city}から京都までのあなたの線を描いた小さな地図` : "京都までの道のりを描いた小さな地図"),
