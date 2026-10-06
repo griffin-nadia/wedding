@@ -103,7 +103,7 @@ export const en = {
     kyoto: "Kyoto · 15 Oct 2027", brisbane: "Brisbane", canada: "Canada",
     legend: { nadia: A, griffin: B, guests: "Guests", you: "Your line" },
     count: (n: number, of: number) => `${n} of ${of} lines drawn so far`,
-    seeList: "See as a list", seeMap: "See the map",
+    backToFortune: "Back to your fortune", seeList: "See as a list", seeMap: "See the map",
     list: { nadia: `${A}: Brisbane to Kyoto`, griffin: `${B}: Canada to Kyoto`, you: (city: string) => `Your line: ${city} to Kyoto`, city: (city: string, n: number) => `${city}: ${n} ${n === 1 ? "line" : "lines"}` },
   },
   fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes.", hint: "Tap the box to draw one.", hintShake: "Tap the box, or give your phone a little shake.", boxLabel: "The fortune box. Draw a fortune", drawing: "Shaking the box…", onMap: "See your line on the map" },

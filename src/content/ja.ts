@@ -88,7 +88,7 @@ export const ja: DeepPartial<Content> = {
     kyoto: "京都・2027年10月15日", brisbane: "ブリスベン", canada: "カナダ",
     legend: { nadia: A, griffin: B, guests: "ゲスト", you: "あなたの線" },
     count: (n: number, of: number) => `${of}本中${n}本の線が描かれました`,
-    seeList: "リストで見る", seeMap: "地図で見る",
+    backToFortune: "おみくじに戻る", seeList: "リストで見る", seeMap: "地図で見る",
     list: { nadia: `${A}：ブリスベンから京都へ`, griffin: `${B}：カナダから京都へ`, you: (city: string) => `あなたの線：${city}から京都へ`, city: (city: string, n: number) => `${city}：${n}本` },
   },
   flying: { cities: { Brisbane: "ブリスベン", Melbourne: "メルボルン", Sydney: "シドニー", Perth: "パース", Adelaide: "アデレード", "Elsewhere in Australia": "オーストラリアのその他の地域", Canada: "カナダ", "Already in Japan": "日本国内から", "Somewhere else": "その他" }, title: "どちらから来られますか？", hint: "任意です。人数のみ表示し、お名前は表示しません。", thanks: "ありがとうございます。", yours: (city: string) => `${city}からの線を描きました。`, change: "変更" },
