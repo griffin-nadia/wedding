@@ -157,3 +157,45 @@ html { scrollbar-gutter: stable; }
    Lantern" paper keeps the day tokens, so this never sits on cream. */
 :root[data-opt-nightgreen="greener"][data-theme="lantern"] { --brand-sage: #9db08a; }
 :root[data-opt-nightgreen="greener"]:not([data-opt-letterpaper="cream"])[data-theme="lantern"] .field[data-filled="true"]:not([type="date"]):not(textarea) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239db08a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+/* Light, not a glow (Options → Light, laptops with a fine pointer). Light only: it brightens, never darkens, and a
+   soft hole keeps it off their faces. The pointer nudges it through --nx/--ny (eased in scene-light.tsx). */
+.scene-light {
+  position: fixed; inset: 0; z-index: 25; pointer-events: none; overflow: hidden;
+  -webkit-mask-image: radial-gradient(circle var(--face-r, 0px) at var(--face-x, -999px) var(--face-y, -999px), rgb(0 0 0 / 0.25) 55%, #000 100%);
+  mask-image: radial-gradient(circle var(--face-r, 0px) at var(--face-x, -999px) var(--face-y, -999px), rgb(0 0 0 / 0.25) 55%, #000 100%);
+}
+.scene-light-defs { position: absolute; }
+.scene-light-canvas { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; }
+/* Day: komorebi. Spots of sun through leaf gaps (an SVG noise threshold), strongest toward the top right where the
+   sun is, two layers drifting at different speeds over a minute or two */
+.scene-light-leaves {
+  position: absolute; left: -10%; top: -10%; width: 120%; height: 120%; mix-blend-mode: screen; opacity: 0.32;
+  -webkit-mask-image: linear-gradient(215deg, #000 10%, rgb(0 0 0 / 0.4) 45%, transparent 80%); mask-image: linear-gradient(215deg, #000 10%, rgb(0 0 0 / 0.4) 45%, transparent 80%);
+  translate: calc(var(--nx, 0) * 18px) calc(var(--ny, 0) * 12px);
+  animation: komorebi-drift 110s ease-in-out infinite alternate;
+}
+.scene-light-leaves.is-near { opacity: 0.22; translate: calc(var(--nx, 0) * 30px) calc(var(--ny, 0) * 20px); animation-duration: 75s; animation-direction: alternate-reverse; }
+@keyframes komorebi-drift { from { transform: translate(-2%, -1%) rotate(-1deg); } to { transform: translate(3%, 2%) rotate(1.5deg); } }
+/* Night: the lantern pool breathes (6 s) and flickers a little (irregular, 2.7 s); the grain catches its light */
+.scene-light-pool {
+  position: absolute; inset: -10%; mix-blend-mode: screen;
+  background: radial-gradient(42vmax 34vmax at calc(32% + var(--nx, 0) * 2%) calc(60% + var(--ny, 0) * 2%), rgb(255 184 110 / 0.26), rgb(255 160 90 / 0.08) 45%, transparent 70%);
+  animation: lantern-breathe 6s ease-in-out infinite, lantern-flicker 2.7s steps(1) infinite;
+}
+@keyframes lantern-breathe { 0%, 100% { scale: 1; } 50% { scale: 1.05; } }
+@keyframes lantern-flicker { 0% { opacity: 1; } 18% { opacity: 0.93; } 22% { opacity: 1; } 61% { opacity: 0.96; } 64% { opacity: 1; } 83% { opacity: 0.94; } }
+.scene-light-grain {
+  position: absolute; inset: 0; background-image: var(--texture-paper); background-size: 256px; mix-blend-mode: screen; opacity: 0.18;
+  -webkit-mask-image: radial-gradient(36vmax 28vmax at calc(32% + var(--nx, 0) * 2%) calc(60% + var(--ny, 0) * 2%), #000, transparent 70%);
+  mask-image: radial-gradient(36vmax 28vmax at calc(32% + var(--nx, 0) * 2%) calc(60% + var(--ny, 0) * 2%), #000, transparent 70%);
+}
+/* A few lanterns far back, out of focus, near the edges */
+.scene-light-bokeh i { position: absolute; width: 7vmax; aspect-ratio: 1; border-radius: 50%; background: rgb(255 176 96 / 0.22); filter: blur(14px); mix-blend-mode: screen; animation: bokeh-float 40s ease-in-out infinite alternate; }
+.scene-light-bokeh i:nth-child(1) { left: 4%; top: 12%; }
+.scene-light-bokeh i:nth-child(2) { left: 88%; top: 8%; width: 5vmax; animation-duration: 52s; }
+.scene-light-bokeh i:nth-child(3) { left: 94%; top: 70%; width: 6vmax; animation-duration: 46s; }
+.scene-light-bokeh i:nth-child(4) { left: 46%; top: 92%; width: 4vmax; animation-duration: 58s; }
+.scene-light-bokeh i:nth-child(5) { left: 12%; top: 84%; width: 5vmax; animation-duration: 36s; }
+@keyframes bokeh-float { from { translate: 0 0; opacity: 0.7; } to { translate: 1.5vmax -1vmax; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .scene-light * { animation: none !important; } }
+.arrival-note-words[data-long] { white-space: normal; max-width: 7.4em; text-align: center; line-height: 1.15; }

@@ -14,15 +14,6 @@ export function install() {
   if (installed) return
   installed = true
 
-  // Arrival · a pool of lantern light follows the cursor over the photo (desktop)
-  addEventListener("pointermove", (e) => {
-    if (!on("glow") || e.pointerType !== "mouse" || !root.hasAttribute("data-sealed")) return
-    root.style.setProperty("--glow-x", `${e.clientX}px`); root.style.setProperty("--glow-y", `${e.clientY}px`)
-    // The N&G seal catches the light too: a sheen that moves with the cursor across the envelope
-    const env = document.querySelector<HTMLElement>(".arrival .envelope")
-    if (env) { const r = env.getBoundingClientRect(); env.style.setProperty("--sheen", `${Math.round(((e.clientX - r.left) / r.width) * 100)}%`) }
-  }, { passive: true })
-
   // Home · the letter's lines settle from a 2px blur, 40 ms apart, like ink drying; once per session
   const settle = () => {
     if (!on("inkset") || still()) return
@@ -35,15 +26,21 @@ export function install() {
     try { sessionStorage.setItem("ng-inkset", "1") } catch { /* fine */ }
   }
 
-  // Home · the days box counts down from three more to the real number, once on open
+  // Home · the days box counts down from three more to the real number. It plays when the site is opened or
+  // refreshed (this flag lives as long as the page does), or when you come back to the tab after 5+ minutes away,
+  // never on a page change inside the site.
+  let countDue = true, hiddenAt = 0
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) hiddenAt = Date.now()
+    else if (hiddenAt && Date.now() - hiddenAt >= 5 * 60_000) { countDue = true; countIn() }
+  })
   const countIn = () => {
-    if (!on("countin") || still()) return
-    try { if (sessionStorage.getItem("ng-countin")) return } catch { /* fine */ }
+    if (!on("countin") || still() || !countDue) return
     const num = document.querySelector<HTMLElement>(".count-box:first-child .count-box-num")
     if (!num) return
     const real = num.textContent ?? "", n = Number(real)
     if (!Number.isFinite(n)) return
-    try { sessionStorage.setItem("ng-countin", "1") } catch { /* fine */ }
+    countDue = false
     ;[3, 2, 1, 0].forEach((k, i) => setTimeout(() => { if (num.isConnected) num.textContent = k ? String(n + k) : real }, 200 + i * 220))
   }
 
@@ -55,7 +52,8 @@ export function install() {
     if (!on("thread") || !ol) return
     const r = ol.getBoundingClientRect()
     target = Math.max(0, Math.min(1, (innerHeight * 0.7 - r.top) / Math.max(1, r.height)))
-    if (r.bottom <= innerHeight) target = 1 // the line always finishes at the bottom of the page
+    // the line always finishes: once its end is on screen, or when the page can't scroll any further
+    if (r.bottom <= innerHeight || scrollY + innerHeight >= document.documentElement.scrollHeight - 2) target = 1
     thread += (target - thread) * (still() ? 1 : 0.12)
     ol.style.setProperty("--thread", thread.toFixed(4))
     if (Math.abs(target - thread) > 0.001) raf = requestAnimationFrame(pull)
