@@ -9,7 +9,7 @@ import { ART } from "@/lib/art"
  * Who to contact on the day appears once Nadia and Griffin fill contact_day in the Content tab. */
 export function FaqsPage() {
   const { t } = useLang()
-  const music = useOption("music") === "on" // Options → Music toggle: the track's credit line
+  const music = useOption("music") !== "off" // Options → Music toggle: the track's credit line
   const { contactDay } = useContent()
   return (
     <>
