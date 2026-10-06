@@ -12,22 +12,28 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 - **Nav:** Home · The day · Travel · FAQs (+ Our story once its three chapters exist). No login, no hamburger, personal link or short code only
 - **Guardrails:** one chosen interaction moment per screen, everything else quiet. Kit states stay canonical (default, hover, focus, pressed, selected, disabled, error, loading). CSS/SVG first, Motion only where spring physics materially improve feel. 60fps on a mid-range phone, transform-only where possible. Reduced motion gets a complete still state, never a broken one. No scroll hijacking, no three.js, no smooth-scroll library. Japanese and Lantern switches are first-class site controls.
 
-## 2. Right now (6 Oct)
+## 2. Right now (6 Oct, evening)
 
-**Live on main:** everything up to #21 (wide laptop photos, #19 polish, #20 nav and mode fixes, this plan).
+**Live on main:** everything through #24: review fixes, QA pass (sage nav pill, `npm test`), sharper phone photos. #4 is superseded (already on main); close it.
 
-**Open, merge in this order** (each is stacked on the one before, except #23):
-1. #22 review-fixes: FAQ and tilt defaults, あ/A state, envelope photo framed like every page, hand-written arrival note
-2. #24 qa-pass: clearer nav pill, sealed envelope no longer scrolls, FAQ hover, `npm test` for option defaults
-3. #23 photo-hq: sharper phone photos, 2000 and 2400 sizes
-4. #25 fortune-spring: fortune on Motion springs, behind Options → Fortune
-5. #26 journey-map: Your journey step, map after the fortune, Home card, behind Options → Journey map
+**Not live yet:** #25 (fortune on springs) and #26 (journey map) were merged into their stack branches, not main. **#29** brings both to main (still off behind Options). Lesson: after merging a stacked PR, retarget the next one to main (or delete the merged branch) before merging it.
 
-**Nadia's art arrived (6 Oct)**, a 200 dpi scan: closed envelope (maple leaf, gum leaf, wax seal), open envelope (flap up), garden line drawing (pagoda, benches, aisle; coloured version still to come). Copy in `photos-private/art/` (never committed). Rescan requested at 600 dpi PNG, one piece per scan, plus the seal and leaves on their own.
+**Small:** #31 removes the filled circle behind the sun button in Lantern (it looked like a stuck hover).
 
-**The seal reads "G·N".** That matches their Q&A answer ("Griffin and Nadia") but not the site (Nadia & Griffin, N&G everywhere, the #12 link preview). Waiting on their answer; don't build the lettering or change names until it's settled.
+**Merge order:** #29 (fortune + journey map to main) → #27 (Nadia's drawings, now targets main) → #31 (sun button) → #28 (this plan). After each merge, check the next one still says "able to merge".
 
-**Waiting on Jehan:** paste `apps-script/Code.gs` into the Site-Data script and deploy (for "Already in Japan"); re-export the day PSD at 3840 × 2160 for a sharper laptop photo.
+**Open:** #27 Nadia's drawings (envelope + garden, behind Options): done and ready for review. Art cut from the scan, AVIF + WebP at 380/760, a format-agnostic garden slot (`ART.garden.kind` ink or colour).
+
+**QA (#24) result:** 240 screenshots across 6 widths × 2 modes × 2 languages × motion on/off. Everything passed after its fixes. Left open:
+- Replied Home on a 390×844 phone: with the journey card on, the countdown drops below the fold. Decide whether that's fine or the card should sit lower.
+- New Japanese needs a native read: `fortune.onMap`, `journey.*`, `rsvp.step`, `day.gardenAlt`.
+- The "everyone's lines" on the map only show against the live sheet (sample mode has no back end), so check them on the live site once switched on.
+
+**Switch-on decisions (Jehan):** Fortune → Springs, Journey map → On, Nadia's envelope drawing, Garden drawing. Try each on the live site first.
+
+**Waiting on Jehan:** push `nadia-art-images`; paste `apps-script/Code.gs` into the Site-Data script and deploy ("Already in Japan"); re-export the day PSD at 3840 × 2160.
+
+**Waiting on N&G:** name order (her seal reads "G·N", the site says Nadia & Griffin); Griffin's 12 fortune lines (travel tips show until then); Nadia's 600 dpi rescan, plus the seal and leaves on their own; three story chapters; Noya.
 
 - Do not reopen the loupe, postcard flip, shared branch, stamp book, keepsake, or colour transition unless Nadia explicitly says they were scope cuts, not taste cuts.
 
@@ -44,11 +50,23 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 | Nadia | Envelope painting + hand-lettered names | Final envelope + letterhead (fallbacks ship fine) |
 | Nadia | Confirm dietary pick list (veg / no beef / halal / Jain) and which cultural nods to include | RSVP options |
 
-## 4. Asset spec (Nadia, scan/photograph Thu 8 – Sat 10 Oct)
+## 4. Art from Nadia (what, how, why)
 
-- **Envelope painting** and **names lettering**, scanned or photographed flat in daylight, **600 dpi if scanned**.
-- Drop in Sun 11 Oct; check every screen in Autumn + Lantern, phone + laptop.
-- Photos generally: AVIF first, WebP fallback; 2400px wide desktop scenes, 1600px standard/mobile. **Faces stay sharp** — no global blur on final photos; masked edge treatment only, skipped on phones and reduced motion. LQIP is a loading placeholder, never the final treatment.
+Traditional (ink and watercolour, scanned) is the default: it matches the site's paper and is already working. Digital only where layers or exact alignment matter, and only if she prefers it. No need to do both versions of anything.
+
+| # | Piece | Have | Need | How | Used for |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Closed envelope (maple, gum leaf, seal) | 200 dpi scan | 600 dpi rescan | scan, PNG | Arrival envelope (#27) |
+| 2 | Open envelope (flap up) | 200 dpi scan | 600 dpi rescan | scan, PNG | Envelope opening (#27) |
+| 3 | Garden line drawing | 200 dpi scan | 600 dpi rescan; coloured version later (optional) | scan, PNG | The day header (#27) |
+| 4 | Wax seal, maple leaf, gum leaf on their own | – | optional | scan each on plain paper | Seal pressing in, leaves lifting on the flap |
+| 5 | **Journey map land** (Australia, Japan, corner of Canada) | – | yes, the main new piece | watercolour washes on the printed template (`photos-private/art/templates/journey-map-template-A4.pdf`), land only: no lines, dots, names or labels; keep the corner marks; Kyoto should sit on her Japan. Digital is fine too: paint on the PNG template, export the land layer as a transparent PNG at 4000 × 3200 | The hand-painted land under every guest map (Figma "Journey map · hi-fi concept": "Nadia paints the land; the code draws dotted lines on top") |
+| 6 | Name lettering | – | after the name order is settled | black ink on white, 600 dpi, or SVG | Names on the letter |
+| 7 | Blank sheet of her paper | – | optional | 600 dpi scan of an unpainted sheet | Real paper texture for the letter and envelope |
+
+Scanning: 600 dpi, colour, PNG or TIFF (not PDF or JPEG), lid closed, one piece per scan, nothing else on the glass. Jehan doesn't need to Photoshop anything: the cut-outs, transparency, ink layers and sizes are done in code from the scans. Only touch up dust or stray marks if they're obvious.
+
+Photos (not Nadia's art): story chapter photos from N&G; everything else stays on the current photos.
 
 ## 5. Build queue
 
@@ -129,18 +147,28 @@ You're picking up the wedding site for Nadia and Griffin (Fri 15 Oct 2027, The S
 - Every motion has a still version under prefers-reduced-motion. Desktop-only effects gated to (hover: hover) and (pointer: fine). No cursor trails, smooth-scroll libraries or three.js. Faces stay sharp.
 - Before every PR: npm run build, npm run lint (no new errors), npm test, then look at it in a browser at 390, 768, 1024, 1280, 1440 and 1920, in Autumn and Lantern, English and Japanese, reduced motion on and off.
 
-## Step 1: Check the stack
-#22, #24, #23, #25, #26 are open (merge order in MEGA-PLAN §2). If any no longer merges cleanly after I merge the one before, rebase it and tell me. Don't start new work on top of an unmerged branch without saying which one.
+## Step 1: #27 is done (skip unless I've left review notes on it)
+Nadia's drawings: art files from nadia-art-images, AVIF + WebP at 1x/2x, the format-agnostic garden slot. Check the envelope (same size and spot as the paper one, opens to her open envelope with the letter rising, no jump) and the garden (dark ink by day, cream in Lantern, phones cropped to the pagoda and aisle). Report and stop for my review.
 
-## Step 2: Nadia's painted envelope (behind Options → Envelope art, off by default)
-Source: photos-private/art/nadia-scans-2026-10-06.pdf (200 dpi; page 1 garden, page 2 open envelope, page 3 closed envelope). Use it now as a stand-in; a 600 dpi PNG rescan will replace it with no code change.
-- Cut the closed and open envelopes from the paper (transparent PNG, then AVIF/WebP at 1x and 2x of the rendered size, about 380px wide on laptops) into public/art/envelope/. Keep the hand-drawn edge; no clean vector redraw.
-- Sealed state: her closed envelope replaces the CSS one, same size, position and tilt. Opening: cross-fade to her open envelope as the flap lifts, then the letter rises out of it as now. The existing art slots (src/lib/art.ts, envelope.tsx) are where this plugs in.
-- The seal on her drawing reads "G·N". Do not change any names, the CSS seal or the link preview; the name order is still being decided.
-- Lantern: her envelope stays cream (it's paper under a lamp).
+## Step 2: Mode switch grows from the button
+The sun/moon switch should reveal the new mode in a circle growing from the centre of the button that was tapped (top bar on laptops, top-right corner chip on phones), not from the top centre. lantern-toggle.tsx sets --vt-x/--vt-y; check the keyframe in index.css actually reads them at every width and on the sealed envelope, fix whatever makes it start elsewhere, and keep the cross-fade fallback and the instant change under reduced motion. Frame-by-frame screenshots in the PR.
 
-## Step 3: Garden drawing on The day (behind Options → Garden drawing, off by default)
-Her ink drawing as a header above the timeline on The day. Day mode: ink on paper, multiply into the letter. Lantern: lines inverted to cream on the dark letter. Crop to the pagoda and aisle on phones. It's line art now; a coloured version may replace it later, so keep the slot format-agnostic.
+## Step 3: Journey map, aligned to the Figma hi-fi
+Compare what's built (#26 / #29, Options → Journey map) with Figma "Journey map · hi-fi concept" (file s23BmyKLaYjCzT97QVFXQZ, node 273:311, page 08) and "3 · Final flow · the journey" (node 360:56, page 10). Match: Kyoto as the 京 seal with "KYOTO · 15 OCT 2027", Canada and Brisbane labels, Nadia's line rust from Brisbane and Griffin's moss from Canada (dotted, drawn in), guests' lines faint gold, the Nadia / Griffin / Guests legend, "17 of 40 lines drawn so far" count line, "See as a list", desktop split (map left, story cards right) and the Lantern version (lines softly glow, no lanterns on the map). Make the land a slot: ART.mapLand (off until Nadia's painted land lands; the SVG land stays the fallback), placed with the template's 400 × 320 viewBox so her painting lines up. List every gap you find before changing anything, then fix them behind Options → Journey map. Don't invent story content.
+
+## Step 4: Everything switched on, together
+Turn on Fortune → Springs, Journey map → On, Nadia's envelope drawing and Garden drawing, then walk a whole guest visit: envelope → Home → reply (all 4 steps) → fortune → map → Home card → The day, at 390 and 1440, Autumn and Lantern, English and Japanese, reduced motion on and off. List anything that clashes or is too much at once (one moment per screen). Don't change defaults; I decide what goes on.
+
+## Step 5: The replied Home on phones
+With the journey card on, the countdown falls below the fold on a 390×844 phone. Propose the smallest fix behind an Option, with before/after screenshots.
+
+## Step 6: Interaction polish round (Jehan, 6 Oct evening)
+Each behind an Option unless it's a plain fix; list before/after with screenshots or a short screen recording.
+1. Light, not a glow. Replace Options → Lantern light with something that feels alive and delicate rather than a cursor spotlight. Day (Autumn): komorebi, soft dappled light through leaves drifting very slowly over the photo and paper; the pointer only nudges it with a long, eased lag. Night (Lantern): a warm lantern pool that drifts and breathes (slight flicker), a few out-of-focus lantern bokeh far back, light catching the paper grain; the pointer nudges it the same way. Ambient when idle, never a trail (no cursor trails stays a rule). Use the existing ogl dependency (or CSS/SVG if it holds up), 30fps cap, DPR ≤ 1.5, paused when the tab is hidden, laptops with a fine pointer only, still frame under reduced motion. Never over faces at full strength. Refs: shaders.paper.design (mesh/grain gradients), css-tricks "A serene CSS dappled light effect". Build two or three variants for me to pick.
+2. Envelope note. On hover the letter peeks up and crosses the note's line: give the note enough clearance for the peek at every width. Keep "open your invite" as the default copy; add an Option for a phone variant that hints the pull ("tap, or pull the letter up"). Redraw the arrow so it comes in from the upper-left at an angle, one loose loop, and a cleaner arrowhead (two short strokes of slightly different length, round caps); a touch of hand-drawn wobble is fine, nothing mechanical.
+3. Background music, opt-in only. A small music toggle (top bar / corner chip, same style as the sun), off by default, 20% volume, fades in over 2s and out on pause, remembers the choice on the device, pauses when the tab is hidden, never autoplays with sound. Placeholder track: "among the clouds" by aqualina (2023). Do NOT commit the audio file until Jehan confirms permission from the artist; build it against a silent placeholder file and a config entry in src/lib/art.ts (src, title, artist, credit line shown in FAQs or the footer).
+4. Countdown. The count-in plays when the site is opened or refreshed, or when you come back to the tab after a while (5+ minutes away), not on every page change. Session-scoped flag plus visibilitychange.
+5. The day timeline. The scroll-linked line must be able to reach the bottom: finish when the timeline's end reaches about 60% of the viewport height (not the viewport bottom), and snap to full when the page can't scroll any further. Same for the CSS scroll-timeline path and the JS fallback. Check on a short laptop (1280×720) and a phone.
 
 ## When you finish
 Tell me in plain language what changed, the PR links, and exactly where to check (page, width, mode, which Option to switch on). Short.
