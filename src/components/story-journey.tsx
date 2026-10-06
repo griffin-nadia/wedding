@@ -12,7 +12,7 @@ const KYOTO: [number, number] = [132, 112]
 const PLACES: Record<string, [number, number]> = {
   brisbane: [196, 272], canada: [318, 46], kyoto: KYOTO, japan: [150, 96], melbourne: [160, 296], sydney: [186, 288], perth: [70, 280], adelaide: [132, 290],
 }
-const FLY: Partial<Record<Flying, [number, number]>> = { Brisbane: PLACES.brisbane, Sydney: PLACES.sydney, Melbourne: PLACES.melbourne, Adelaide: PLACES.adelaide, Perth: PLACES.perth, "Elsewhere in Australia": [110, 262], Canada: PLACES.canada }
+const FLY: Partial<Record<Flying, [number, number]>> = { Brisbane: PLACES.brisbane, Sydney: PLACES.sydney, Melbourne: PLACES.melbourne, Adelaide: PLACES.adelaide, Perth: PLACES.perth, "Elsewhere in Australia": [110, 262], Canada: PLACES.canada, "Already in Japan": [178, 74] }
 const arc = ([x1, y1]: [number, number], [x2, y2]: [number, number], lift = 0.3) => {
   const mx = (x1 + x2) / 2 - Math.abs(y2 - y1) * lift, my = (y1 + y2) / 2 - Math.abs(x2 - x1) * lift
   return `M${x1} ${y1}Q${mx} ${my} ${x2} ${y2}`
@@ -157,7 +157,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
         </section>
         )}
         {chips && token && <FlyingFrom token={token} initial={picked} onSaved={onPicked} />}
-        {!chips && picked && showFlying && <p className="text-sm text-muted-foreground">{t.flying.yours(picked)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}
+        {!chips && picked && showFlying && <p className="text-sm text-muted-foreground">{t.flying.yours(t.flying.cities[picked] ?? picked)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}
         {flying && flying.told > 0 && <p className="text-sm text-muted-foreground">{t.story.flyingFrom(flying.told, flying.households)}</p>}
         <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(true)}>{t.story.seeList}</button>
       </div>

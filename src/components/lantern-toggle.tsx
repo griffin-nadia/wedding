@@ -7,6 +7,10 @@ import { cn } from "@/lib/utils"
 import { useOption } from "@/lib/options"
 import { photoFor } from "@/lib/scenes"
 
+const warmPhoto = (name: string) => {
+  window.dispatchEvent(new CustomEvent("ng-scene-warm", { detail: name }))
+}
+
 /**
  * Sun or moon: the mode toggle. Switching reveals the new mode in a circle growing from the button (v3 S,
  * View Transitions where the browser has them); a plain cut under reduced motion or older browsers.
@@ -16,20 +20,30 @@ export function LanternToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme()
   const lantern = theme === "lantern"
   const mode = useOption("modeswitch")
+  const next = lantern ? "autumn" : "lantern"
+  const nextPhoto = photoFor(next)
   return (
-    <button type="button" aria-pressed={lantern} title={t.theme.label} onClick={(e) => {
-      const next = lantern ? "autumn" : "lantern"
-      const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown }
+    <button type="button" aria-pressed={lantern} title={t.theme.label}
+      onPointerEnter={() => warmPhoto(nextPhoto)} onFocus={() => warmPhoto(nextPhoto)} onClick={(e) => {
+      const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished?: Promise<void> } }
       if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return setTheme(next)
       const r = e.currentTarget.getBoundingClientRect(), root = document.documentElement
       root.style.setProperty("--vt-x", `${r.left + r.width / 2}px`); root.style.setProperty("--vt-y", `${r.top + r.height / 2}px`)
-      // Wait (briefly) for the next mode's photo to be decoded, so the reveal shows it whole, not loading
-      const img = document.querySelector<HTMLImageElement>(`[data-photo="${photoFor(next)}"] img`)
+      // Mount and decode the next mode's photo before the reveal, so it never shows a loading state
+      flushSync(() => warmPhoto(nextPhoto))
+      const img = document.querySelector<HTMLImageElement>(`[data-photo="${nextPhoto}"] img`)
       const ready = img ? Promise.race([img.decode().catch(() => {}), new Promise((ok) => setTimeout(ok, 350))]) : Promise.resolve()
       root.dataset.vt = mode === "fade" ? "fade" : "circle"
+      const clear = () => { delete root.dataset.vt }
       void ready.then(() => {
-        const vt = doc.startViewTransition!(() => flushSync(() => setTheme(next))) as { finished?: Promise<void> }
-        vt.finished?.finally(() => { delete root.dataset.vt })
+        try {
+          const vt = doc.startViewTransition!(() => flushSync(() => setTheme(next)))
+          vt.finished?.finally(clear)
+          window.setTimeout(clear, 1200)
+        } catch {
+          clear()
+          setTheme(next)
+        }
       })
     }} className={cn("utility-btn press", className)}>
       {lantern ? <Sun className="size-5" aria-hidden /> : <Moon className="size-5" aria-hidden />}
@@ -39,10 +53,10 @@ export function LanternToggle({ className }: { className?: string }) {
 }
 
 /**
- * あ / A: read in Japanese or English, beside the sun and moon (Jehan, 6 Oct). Crew devices only until a
- * native speaker has checked the Japanese; then `guests` flips to true and everyone gets it.
+ * あ / A: read in Japanese or English, beside the sun and moon. On for everyone (Jehan, 6 Oct).
+ * The Japanese is still worth a native speaker's read-through; flip back to false if it needs work first.
  */
-const guests = false
+const guests = true
 export function LangToggle() {
   const { lang, setLang } = useLang()
   const [show] = useState(() => { try { return guests || Boolean(localStorage.getItem("ng-crew")) } catch { return guests } })
@@ -50,7 +64,8 @@ export function LangToggle() {
   const ja = lang === "ja"
   return (
     <button type="button" onClick={() => setLang(ja ? "en" : "ja")} className="utility-btn press font-label text-(length:--type-ui-size) font-medium"
-      aria-label={ja ? "Read in English" : "日本語で読む"} lang={ja ? "en" : "ja"}>
+      aria-pressed={ja} title={ja ? "Switch to English" : "日本語に切り替える"}
+      aria-label={ja ? "Switch to English" : "日本語に切り替える"} lang={ja ? "en" : "ja"}>
       <span aria-hidden>{ja ? "A" : "あ"}</span>
     </button>
   )

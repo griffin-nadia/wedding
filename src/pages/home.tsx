@@ -1,3 +1,4 @@
+import { ART } from "@/lib/art"
 import { lazy, Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Check, Minus } from "lucide-react"
@@ -27,6 +28,12 @@ const REVEAL_NAMES = (() => {
 })()
 
 function Names() {
+  // Nadia's lettering (ART.names): drawn on left to right the first time, recoloured to the ink of the theme
+  if (ART.names) return (
+    <h1 aria-label={`${COUPLE.first} & ${COUPLE.second}`} className="names">
+      <span aria-hidden className={REVEAL_NAMES ? "names-lettering is-revealing" : "names-lettering"} style={{ aspectRatio: String(ART.namesRatio), maskImage: `url(${import.meta.env.BASE_URL}art/names/names.svg)`, WebkitMaskImage: `url(${import.meta.env.BASE_URL}art/names/names.svg)` }} />
+    </h1>
+  )
   const chars = (s: string, from: number) => [...s].map((c, i) => <span key={i} className="name-char" style={{ animationDelay: `${(from + i) * 40}ms` }}>{c === " " ? " " : c}</span>)
   return (
     <h1 aria-label={`${COUPLE.first} & ${COUPLE.second}`} className={REVEAL_NAMES ? "names names-reveal" : "names"}>
