@@ -6,7 +6,9 @@ import { useLang } from "@/lib/lang"
 const KEY = "ng-music"
 /** One level for every sound on the site (the music and the envelope's paper sound). */
 export const SITE_VOLUME = 0.3
-const FADE_IN = 2000
+const FADE_IN = 2500
+/** After the first tap anywhere (usually opening the envelope) wait this long, so the song arrives with the letter. */
+const START_DELAY = 2000
 const FADE_OUT = 600
 
 /** One second of silence as a WAV, in case ART.music.src is ever empty. */
@@ -44,7 +46,9 @@ function ramp(to: number, ms: number, then?: () => void) {
   cancelAnimationFrame(fade)
   const step = (now: number) => {
     const k = Math.min(1, (now - start) / ms)
-    a.volume = Math.max(0, Math.min(1, from + (to - from) * k))
+    // Eased (slow start, gentle landing) so the fade sounds smooth rather than switched on
+    const eased = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2
+    a.volume = Math.max(0, Math.min(1, from + (to - from) * eased))
     if (k < 1) fade = requestAnimationFrame(step); else then?.()
   }
   fade = requestAnimationFrame(step)
@@ -69,7 +73,7 @@ function arm() {
   const first = (e: PointerEvent) => {
     if ((e.target as Element | null)?.closest?.("[data-music-toggle]")) return
     removeEventListener("pointerdown", first)
-    if (on) play()
+    window.setTimeout(() => { if (on) play() }, START_DELAY)
   }
   addEventListener("pointerdown", first)
   // Hidden tab: fade out and pause; back again: carry on if it's on
@@ -78,7 +82,7 @@ function arm() {
 
 /**
  * Background music (Options → Music toggle). On by default, but browsers never allow sound before a tap, so it starts
- * on the guest's first tap anywhere (usually opening the envelope), fades in over 2 s to 30%, fades out when paused, remembers the choice on this
+ * on the guest's first tap anywhere (usually opening the envelope), waits 2 s, then fades in smoothly over 2.5 s to 30%, fades out when paused, remembers the choice on this
  * device, keeps playing across pages, and pauses while the tab is hidden. The track is ART.music.
  */
 export default function MusicToggle() {
