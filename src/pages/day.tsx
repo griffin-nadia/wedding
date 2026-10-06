@@ -118,12 +118,14 @@ export function DayPage() {
       <p>{t.day.rainPlan}</p>
     </div>
   )
+  const garden = useOption("garden") === "on"
   return (
     <>
       <header className="flex flex-col gap-4">
         <h1 className="heading">{t.day.title}</h1>
         <p className="lead">{t.day.dateLong}</p>
       </header>
+      {garden && <div role="img" aria-label={t.day.gardenAlt} className="garden-art" style={{ ["--garden" as string]: `url(${import.meta.env.BASE_URL}art/garden/garden-ink.webp)` }} />}
       <Details />
       {timeline}
       <div className="no-print flex flex-col gap-4">

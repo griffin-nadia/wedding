@@ -137,6 +137,7 @@ export const en = {
   },
   day: {
     title: "The day",
+    gardenAlt: "Nadia's ink drawing of the garden at The Sodoh: the pagoda above the trees and two rows of benches either side of the aisle",
     date: DAY,
     venue: "The Sodoh Higashiyama, Kyoto",
     addressLines: ["366 Yasaka Kamimachi, Higashiyama Ward", "Kyoto 605-0827, Japan"],

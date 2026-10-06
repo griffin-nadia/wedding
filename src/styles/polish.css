@@ -109,3 +109,31 @@ html { scrollbar-gutter: stable; }
 @media (prefers-reduced-motion: no-preference) {
   .arrival-note { transform-origin: 50% 100%; animation: polish-note-sway 4.2s var(--ease-breathe) 2.4s infinite; }
 }
+
+/* Nadia's drawn envelope (Options → Arrival, 6 Oct). Her closed envelope replaces the paper one at the same
+   width; as it opens it cross-fades to her open envelope (flap up, sitting on the same bottom edge) while the
+   letter rises above both. Stays cream in Lantern: it's paper under a lamp. */
+.envelope.is-drawn { height: auto; aspect-ratio: 760 / 544; filter: drop-shadow(0 18px 22px rgb(var(--sys-shadow-tint) / 0.3)); }
+.envelope.is-drawn > span:not(.envelope-paper) { display: none; }
+.envelope.is-drawn .envelope-paper { opacity: 0; z-index: 2; }
+.envelope.is-drawn::after { display: none; }
+.envelope-drawn { position: absolute; left: 0; width: 100%; height: auto; pointer-events: none; user-select: none; transition: opacity var(--duration-settle) var(--ease-paper); }
+.envelope-drawn.is-closed { top: 0; z-index: 3; }
+.envelope-drawn.is-open { bottom: 0; z-index: 1; opacity: 0; }
+.is-opening .envelope.is-drawn .envelope-drawn.is-closed { opacity: 0; }
+.is-opening .envelope.is-drawn .envelope-drawn.is-open { opacity: 1; }
+.is-opening .envelope.is-drawn .envelope-paper { opacity: 1; transition: opacity var(--duration-quick) var(--ease-paper) var(--duration-settle), transform var(--duration-rise) var(--ease-letter) var(--duration-settle); }
+@media (hover: hover) and (pointer: fine) {
+  .arrival .envelope.is-drawn:hover { filter: drop-shadow(0 26px 30px rgb(var(--sys-shadow-tint) / 0.36)); }
+}
+@media (prefers-reduced-motion: reduce) { .envelope-drawn { transition: none; } }
+
+/* Her garden drawing on The day (Options → The day). The ink is a mask, so it takes the page's ink colour:
+   dark on paper by day, cream on the dark letter in Lantern. Phones crop to the pagoda and the aisle. */
+.garden-art {
+  width: 100%; aspect-ratio: 960 / 1478; background-color: var(--sys-ink); opacity: 0.88;
+  -webkit-mask: var(--garden) center top / 100% auto no-repeat; mask: var(--garden) center top / 100% auto no-repeat;
+}
+@media (max-width: 767px) { .garden-art { aspect-ratio: 4 / 5; -webkit-mask-size: cover; mask-size: cover; -webkit-mask-position: 50% 30%; mask-position: 50% 30%; } }
+@media (min-width: 768px) { .garden-art { max-width: 520px; margin-inline: auto; } }
+@media print { .garden-art { display: none; } }
