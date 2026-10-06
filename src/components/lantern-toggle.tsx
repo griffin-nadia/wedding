@@ -85,6 +85,6 @@ const MusicToggle = lazy(() => import("@/components/music-toggle"))
 
 /** The sun or moon, with あ / A beside it where shown, as one group (the letter's corner, or the top bar). */
 export function ModeSwitches({ className }: { className?: string }) {
-  const music = useOption("music") === "on" // Options → Music toggle: the opt-in music button beside the sun
+  const music = useOption("music") !== "off" // Options → Music toggle: the opt-in music button beside the sun
   return <span className={cn("mode-switches", className)}><LangToggle />{music && <Suspense><MusicToggle /></Suspense>}<LanternToggle /></span>
 }

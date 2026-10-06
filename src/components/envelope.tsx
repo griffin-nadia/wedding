@@ -55,7 +55,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const hint = useOption("arrivalhint")
   // Nadia's painted envelope (a placeholder until her scan), its colour bleeding in, and a loupe to lean in on it
   // Real painting (ART.envelope): on for everyone unless crew switch it off. Placeholder: crew-only preview.
-  const drawn = useOption("envart") === "drawn" // Nadia's drawn envelope (6 Oct scan), closed then open
+  const drawn = useOption("envart") !== "off" // Nadia's drawn envelope (6 Oct scan), closed then open
   const envOpt = useOption("envpaint")
   const painted = ART.envelope ? envOpt !== "off" : envOpt === "on"
   const loupeOn = useOption("loupe") === "on"
