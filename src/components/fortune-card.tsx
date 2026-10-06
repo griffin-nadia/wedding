@@ -105,6 +105,7 @@ export function FortuneCard({ token, className, onMap }: { token: string; classN
     <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip", className)}>
       <SlipWords i={i} of={tips.length} text={text} />
       <button type="button" onClick={save} className="omikuji-save">{t.fortune.save}</button>
+      {onMap && <Button variant="outline" onClick={onMap}>{t.fortune.onMap}</Button>}
     </div>
   )
 }
