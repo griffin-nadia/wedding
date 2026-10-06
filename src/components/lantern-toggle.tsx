@@ -25,10 +25,12 @@ export function LanternToggle({ className }: { className?: string }) {
   return (
     <button type="button" aria-pressed={lantern} title={t.theme.label}
       onPointerEnter={() => warmPhoto(nextPhoto)} onFocus={() => warmPhoto(nextPhoto)} onClick={(e) => {
-      const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished?: Promise<void> } }
+      const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready?: Promise<void>; finished?: Promise<void> } }
       if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return setTheme(next)
+      // The circle grows from the centre of the button that was tapped, in exact pixels, out to the farthest corner
       const r = e.currentTarget.getBoundingClientRect(), root = document.documentElement
-      root.style.setProperty("--vt-x", `${r.left + r.width / 2}px`); root.style.setProperty("--vt-y", `${r.top + r.height / 2}px`)
+      const x = r.left + r.width / 2, y = r.top + r.height / 2
+      const reach = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
       // Mount and decode the next mode's photo before the reveal, so it never shows a loading state
       flushSync(() => warmPhoto(nextPhoto))
       const img = document.querySelector<HTMLImageElement>(`[data-photo="${nextPhoto}"] img`)
@@ -38,6 +40,14 @@ export function LanternToggle({ className }: { className?: string }) {
       void ready.then(() => {
         try {
           const vt = doc.startViewTransition!(() => flushSync(() => setTheme(next)))
+          // Driven from here rather than a keyframe reading CSS variables, which not every browser resolves on the
+          // transition's snapshot: that left the circle starting from the top of the page instead of the button
+          if (mode !== "fade") void vt.ready?.then(() => {
+            const css = getComputedStyle(root), d = css.getPropertyValue("--duration-mode").trim()
+            const duration = d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000 // the token can compute to "0.76s"
+            root.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${reach}px at ${x}px ${y}px)`] },
+              { duration: duration || 760, easing: css.getPropertyValue("--ease-mode").trim() || "ease-in-out", pseudoElement: "::view-transition-new(root)" })
+          })
           vt.finished?.finally(clear)
           window.setTimeout(clear, 1200)
         } catch {
