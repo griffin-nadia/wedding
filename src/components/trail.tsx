@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { CarTaxiFront, Flower2, TrainFront } from "lucide-react"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
@@ -12,6 +12,7 @@ export function Trail({ className }: { className?: string }) {
   const { t } = useLang()
   const ref = useRef<HTMLDivElement>(null)
   const [drawn, setDrawn] = useState(false)
+  const clip = `trail-${useId().replace(/:/g, "")}`
   useEffect(() => {
     const el = ref.current
     if (!el || typeof IntersectionObserver === "undefined") return setDrawn(true)
@@ -29,7 +30,10 @@ export function Trail({ className }: { className?: string }) {
       <div ref={ref} className="trail-plate">
         <div className="trail-track">
         <svg viewBox="0 0 600 72" preserveAspectRatio="none" className="trail-svg" aria-hidden>
-          <path d="M84 36 C 156 8, 228 64, 300 36 S 444 8, 516 36" pathLength={1} vectorEffect="non-scaling-stroke" className={cn("trail-path", drawn && "is-drawn")} />
+          {/* Drawn in by a clip that sweeps left to right: a dash sized by pathLength comes up short on a stretched,
+              non-scaling stroke, so the line used to stop before The Sodoh */}
+          <defs><clipPath id={clip}><rect x="0" y="-12" width="600" height="96" className={cn("trail-reveal", drawn && "is-drawn")} /></clipPath></defs>
+          <path d="M84 36 C 156 8, 228 64, 300 36 S 444 8, 516 36" vectorEffect="non-scaling-stroke" clipPath={`url(#${clip})`} className="trail-path" />
         </svg>
         <ol className={cn("trail-stops", drawn && "is-drawn")}>
           {stops.map((s, i) => (

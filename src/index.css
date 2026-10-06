@@ -334,12 +334,8 @@
 .timeline { position: relative; display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-2); }
 .timeline-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; translate: -1px 0; background: var(--sys-line); border-radius: 2px; }
 .timeline-fill { background: var(--sys-moss); transform-origin: top; }
-@keyframes timeline-fill { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-@supports (animation-timeline: view()) {
-  /* The tip of the line follows a point about 60% down the screen: it starts as the timeline comes in and is
-     complete when the last stop is just above the dock, so you see it draw past each time as you scroll. */
-  .timeline-fill { animation: timeline-fill linear both; animation-timeline: view(); animation-range: cover 5% cover 60%; }
-}
+/* The tip of the line follows a point 60% down the screen (day.tsx sets --fill): complete when the timeline's end
+   reaches it, or when the page can't scroll any further. Still and complete under reduced motion. */
 .timeline-row { position: relative; display: grid; grid-template-columns: 1fr 40px 1fr; align-items: start; column-gap: var(--space-3); }
 .timeline-icon { grid-column: 2; grid-row: 1; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-pill); background: var(--letter-bg); border: 1px solid var(--sys-moss); color: var(--sys-moss); position: relative; z-index: 1; }
 .timeline-time { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); }
@@ -785,11 +781,12 @@ svg.lucide { stroke-width: 1.5; }
   .trail-stop { position: absolute; top: 34px; translate: -50% 0; display: flex; flex-direction: column; align-items: center; width: 30%; text-align: center; }
   .trail-text { align-items: center; }
 }
-.trail-path { fill: none; stroke: var(--sys-moss); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset var(--duration-draw) var(--ease-letter); }
-.trail-path.is-drawn { stroke-dashoffset: 0; }
+.trail-path { fill: none; stroke: var(--sys-moss); stroke-width: 2.5; stroke-linecap: round; }
+.trail-reveal { transform-box: fill-box; transform-origin: left center; transform: scaleX(0); transition: transform var(--duration-draw) var(--ease-letter); }
+.trail-reveal.is-drawn { transform: none; }
 .trail-icon { display: grid; place-items: center; width: 36px; height: 36px; margin-bottom: var(--space-1); border-radius: var(--radius-pill); background: var(--sys-surface-raised); border: 1px solid var(--sys-moss); color: var(--sys-moss); }
-@media (prefers-reduced-motion: reduce) { .trail-path { transition: none; stroke-dashoffset: 0; } .trail-stop { opacity: 1; transition: none; } .trail-stops::before { transition: none; transform: none; } }
-@media print { .trail-path { stroke-dashoffset: 0; } .trail-stop { opacity: 1; } .trail-stops::before { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .trail-reveal { transition: none; transform: none; } .trail-stop { opacity: 1; transition: none; } .trail-stops::before { transition: none; transform: none; } }
+@media print { .trail-reveal { transform: none; } .trail-stop { opacity: 1; } .trail-stops::before { transform: none; } }
 /* Countdown tiles (v3 A): each unit on its own paper tile, one row, seconds ticking */
 .count-tile-secs { background: color-mix(in oklab, var(--sys-surface-alt) 70%, var(--sys-surface-raised)); }
 .count-tile-secs .count-num { display: inline-block; }

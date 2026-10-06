@@ -47,18 +47,19 @@ function Timeline({ now }: { now: Date }) {
   const { t, lang } = useLang()
   const nowAt = nowOnTheDay(now, t.day.schedule.map((x) => x.time))
   const ref = useRef<HTMLOListElement>(null)
-  // The line draws with a scroll-driven animation where the browser has one. Where it doesn't (iOS before Safari 26,
-  // so every iPhone browser), the same thing by hand: progress from 10% in until the whole timeline is on screen.
+  // The line's tip follows a point 60% down the screen, so it's complete once the timeline's end reaches that point,
+  // and it snaps to full when the page can't scroll any further (a short laptop screen never gets the end that high).
+  // One path for every browser: a CSS scroll timeline can't know the page has run out of scroll.
   useEffect(() => {
     const el = ref.current
-    if (!el || (typeof CSS !== "undefined" && CSS.supports("animation-timeline: view()")) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     el.classList.add("timeline-js")
     let raf = 0
     const tick = () => {
       raf = 0
       const r = el.getBoundingClientRect(), vh = window.innerHeight
-      // Same range as the CSS version: cover 5% to cover 60% (cover = from top at the bottom edge to bottom at the top edge)
-      const p = Math.min(1, Math.max(0, ((vh - r.top) / (r.height + vh) - 0.05) / 0.55))
+      const atEnd = window.scrollY + vh >= document.documentElement.scrollHeight - 2
+      const p = atEnd ? 1 : Math.min(1, Math.max(0, (vh * 0.6 - r.top) / r.height))
       el.style.setProperty("--fill", p.toFixed(3))
       // Times tick in (Options): a row has been reached once the line's tip (p of the timeline's height) passes it
       const tip = r.top + r.height * p
