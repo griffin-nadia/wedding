@@ -4,7 +4,7 @@ import { ART } from "@/lib/art"
 import { useLang } from "@/lib/lang"
 
 const KEY = "ng-music"
-const VOLUME = 0.2
+const VOLUME = 0.5
 const FADE_IN = 2000
 const FADE_OUT = 600
 
