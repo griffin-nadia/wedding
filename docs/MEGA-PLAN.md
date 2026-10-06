@@ -20,7 +20,9 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 
 **Small:** #31 removes the filled circle behind the sun button in Lantern (it looked like a stuck hover).
 
-**Open:** #27 Nadia's drawings (envelope + garden, behind Options). Claude Code is finishing it locally: art files from `nadia-art-images`, AVIF + WebP at 1x/2x, a format-agnostic garden slot (`ART.garden.kind` ink or colour).
+**Merge order:** #29 (fortune + journey map to main) → #27 (Nadia's drawings, now targets main) → #31 (sun button) → #28 (this plan). After each merge, check the next one still says "able to merge".
+
+**Open:** #27 Nadia's drawings (envelope + garden, behind Options): done and ready for review. Art cut from the scan, AVIF + WebP at 380/760, a format-agnostic garden slot (`ART.garden.kind` ink or colour).
 
 **QA (#24) result:** 240 screenshots across 6 widths × 2 modes × 2 languages × motion on/off. Everything passed after its fixes. Left open:
 - Replied Home on a 390×844 phone: with the journey card on, the countdown drops below the fold. Decide whether that's fine or the card should sit lower.
@@ -145,7 +147,7 @@ You're picking up the wedding site for Nadia and Griffin (Fri 15 Oct 2027, The S
 - Every motion has a still version under prefers-reduced-motion. Desktop-only effects gated to (hover: hover) and (pointer: fine). No cursor trails, smooth-scroll libraries or three.js. Faces stay sharp.
 - Before every PR: npm run build, npm run lint (no new errors), npm test, then look at it in a browser at 390, 768, 1024, 1280, 1440 and 1920, in Autumn and Lantern, English and Japanese, reduced motion on and off.
 
-## Step 1: Finish #27 (if not already)
+## Step 1: #27 is done (skip unless I've left review notes on it)
 Nadia's drawings: art files from nadia-art-images, AVIF + WebP at 1x/2x, the format-agnostic garden slot. Check the envelope (same size and spot as the paper one, opens to her open envelope with the letter rising, no jump) and the garden (dark ink by day, cream in Lantern, phones cropped to the pagoda and aisle). Report and stop for my review.
 
 ## Step 2: Mode switch grows from the button
