@@ -22,7 +22,7 @@
         var l = document.createElement("link"), b = "%BASE_URL%scenes/" + n + "-"
         l.rel = "preload"; l.as = "image"; l.type = "image/avif"; l.setAttribute("fetchpriority", "high")
         if (innerWidth >= 1280) { l.setAttribute("imagesrcset", b + "wide-1600.avif 1600w, " + b + "wide-2400.avif 2400w"); l.setAttribute("imagesizes", "100vw") }
-        else { l.setAttribute("imagesrcset", b + "800.avif 800w, " + b + "1200.avif 1200w, " + b + "1600.avif 1600w"); l.setAttribute("imagesizes", "max(100vw, 75vh)") }
+        else { l.setAttribute("imagesrcset", b + "800.avif 800w, " + b + "1200.avif 1200w, " + b + "1600.avif 1600w, " + b + "2000.avif 2000w, " + b + "2400.avif 2400w"); l.setAttribute("imagesizes", "max(100vw, 75vh)") }
         document.head.appendChild(l)
         window.__ngScene = { n: n, b: b }
       })()
