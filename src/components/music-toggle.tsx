@@ -26,7 +26,8 @@ function silentWav() {
  */
 let audio: HTMLAudioElement | null = null
 let fade = 0
-let on = (() => { try { return localStorage.getItem(KEY) === "on" } catch { return false } })()
+// On by default: with nothing remembered, the song starts on their first tap anywhere (usually opening the envelope)
+let on = (() => { try { return localStorage.getItem(KEY) !== "off" } catch { return true } })()
 let armed = false
 const subs = new Set<() => void>()
 const emit = () => subs.forEach((f) => f())
@@ -76,8 +77,8 @@ function arm() {
 }
 
 /**
- * Background music, opt-in only (Options → Music toggle). Off by default and never autoplays with sound: it starts
- * only from a tap on this button, fades in over 2 s to 30%, fades out when paused, remembers the choice on this
+ * Background music (Options → Music toggle). On by default, but browsers never allow sound before a tap, so it starts
+ * on the guest's first tap anywhere (usually opening the envelope), fades in over 2 s to 30%, fades out when paused, remembers the choice on this
  * device, keeps playing across pages, and pauses while the tab is hidden. The track is ART.music.
  */
 export default function MusicToggle() {
