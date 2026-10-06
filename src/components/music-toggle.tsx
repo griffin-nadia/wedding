@@ -90,7 +90,7 @@ export default function MusicToggle() {
   const isOn = useSyncExternalStore((f) => { subs.add(f); return () => { subs.delete(f) } }, () => on, () => false)
   useEffect(() => { arm() }, [])
   return (
-    <button type="button" data-music-toggle onClick={() => { arm(); setOn(!on) }} aria-pressed={isOn} className="utility-btn press" title={isOn ? t.music.off : t.music.on} aria-label={isOn ? t.music.off : t.music.on}>
+    <button type="button" data-music-toggle onClick={() => { setOn(!on); arm() }} aria-pressed={isOn} className="utility-btn press" title={isOn ? t.music.off : t.music.on} aria-label={isOn ? t.music.off : t.music.on}>
       {isOn ? <Volume2 className="size-5" aria-hidden /> : <VolumeX className="size-5" aria-hidden />}
     </button>
   )
