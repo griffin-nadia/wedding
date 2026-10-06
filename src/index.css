@@ -553,7 +553,8 @@
 
 /* Sound and Lantern: two quiet icons at the end of the letter */
 .utility-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--sys-ink-muted); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-quick), background-color var(--duration-quick); }
-.utility-btn[aria-pressed="true"] { color: var(--sys-ink); background: var(--sys-surface-alt); }
+/* The sun/moon is a switch, not a tab: no filled "on" chip in Lantern (6 Oct), just full-strength ink */
+.utility-btn[aria-pressed="true"] { color: var(--sys-ink); }
 .utility-btn:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .utility-btn:hover { color: var(--sys-ink); } }
 
