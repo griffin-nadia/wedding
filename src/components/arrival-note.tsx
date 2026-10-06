@@ -4,11 +4,12 @@ import { useLang } from "@/lib/lang"
 
 type Place = { x: number; y: number; w: number; h: number; side: "centre" | "left" | "right"; row?: boolean; words: boolean } | null
 
-/** Where the photo's face-safe rect (fractions of the image, in scenes.json) lands on screen, given object-fit: cover. */
+/** Where the shown photo's face-safe rect (fractions of the image, in scenes.json) lands on screen, given object-fit: cover. */
 function faceRect(): DOMRect | null {
   const box = document.querySelector<HTMLElement>("[data-photo].opacity-100")
   const img = box?.querySelector("img"), name = box?.dataset.photo as keyof typeof SCENES | undefined
-  const meta = name && SCENES[name]
+  // From 1280 the picture shows the wide photo, which has its own size and face rect
+  const meta = name && (matchMedia("(min-width: 1280px)").matches && SCENES[name].wide ? SCENES[name].wide : SCENES[name])
   if (!img || !meta?.face) return null
   const r = img.getBoundingClientRect(), s = Math.max(r.width / meta.w, r.height / meta.h)
   const [px, py] = getComputedStyle(img).objectPosition.split(" ").map((v) => parseFloat(v) / 100)
@@ -19,7 +20,8 @@ function faceRect(): DOMRect | null {
 const hits = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
 
 /**
- * "open your invite" with a hand-drawn arrow (Jehan, 6 Oct), one white 1.5px line pointing down at the envelope.
+ * "open your invite" in Klee One, tilted like a hand-written note, with a hand-drawn arrow that loops once on its way
+ * to the envelope (6 Oct): the words write in, the line draws, then its head.
  * Placed by rule: above the envelope, centred; if that would cover a face, slid to the side; if both sides would,
  * the words go and the arrow stays; if even the arrow would, there's no note. Draws in once (600 ms) after the envelope settles; still under reduced motion.
  */
@@ -58,11 +60,12 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
       style={{ transform: `translate(${Math.round(place.x)}px, ${Math.round(place.y)}px)`, width: place.w, height: place.h }}>
       {place.words && <span className="arrival-note-words">{t.letter.note}</span>}
       <svg viewBox="0 0 96 64" className="arrival-note-arrow" fill="none">
+        {/* One loose loop on the way down, like a pen flourish, then the head is drawn after the line lands */}
         {place.row
-          ? <path pathLength={1} d="M4 14 C 30 6, 54 14, 60 40 M52 32 L60 42 L66 31" />
+          ? <><path pathLength={1} d="M4 12 C 22 2, 42 4, 44 14 C 46 24, 30 26, 32 16 C 34 6, 60 10, 62 42" /><path className="head" pathLength={1} d="M54 35 L62 44 L69 34" /></>
           : place.side === "centre"
-          ? <path pathLength={1} d="M48 2 C 28 16, 66 28, 48 50 M39 41 L48 52 L57 41" />
-          : <path pathLength={1} d="M14 6 C 30 40, 56 50, 80 52 M70 44 L81 52 L70 60" />}
+          ? <><path pathLength={1} d="M10 4 C 34 -2, 60 6, 56 20 C 52 32, 36 26, 42 17 C 48 8, 70 20, 52 58" /><path className="head" pathLength={1} d="M44 50 L52 59 L59 49" /></>
+          : <><path pathLength={1} d="M10 4 C 12 24, 26 30, 34 22 C 42 14, 30 8, 28 20 C 26 38, 56 52, 82 52" /><path className="head" pathLength={1} d="M72 44 L83 52 L72 60" /></>}
       </svg>
     </div>
   )

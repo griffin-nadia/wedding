@@ -831,9 +831,7 @@ svg.lucide { stroke-width: 1.5; }
    the sharp photo as a full-height panel on the right, cropped per photo so their faces sit in view */
 @media (min-width: 1024px) {
   [data-sealed] .scene-fill { background-image: none !important; background-color: var(--letter-bg); }
-  [data-sealed] .scene-photo { mask-image: linear-gradient(to right, transparent, #000 96px); }
-  [data-sealed] .scene-photo img { object-position: 50% var(--arrival-focus-y, 40%); }
-  [data-sealed][data-theme="lantern"] .scene-photo img { --arrival-focus-y: 12%; }
+  /* The photo itself is framed exactly as on every other page (6 Oct): no re-crop when the envelope opens */
 }
 
 /* ─── v3 S · Home overhaul ─────────────────────────────────────────── */
@@ -937,10 +935,12 @@ svg.lucide { stroke-width: 1.5; }
    and the photo panel on the right. */
 @media (min-width: 1280px) {
   :root:root { --letter-left: max(48px, min(180px, calc((100vw - 1180px) / 2))); }
-  :root:not([data-sealed]) .scene-photo[data-wide] { left: 0; width: 100%; mask-image: none; }
-  :root:not([data-sealed]) .scene-photo[data-wide] img { object-position: 100% 32%; }
-  :root:not([data-sealed]) .scene-fill:has(+ .scene-photo[data-wide]) { background-image: var(--scene-wide-lqip) !important; filter: var(--scene-filter); transform: none; }
-  [data-sealed] .scene-photo[data-wide] img { object-position: 88% 32%; }
+  /* Same full-bleed frame behind the envelope as behind the letter (6 Oct), so opening it never moves the photo */
+  :root .scene-photo[data-wide] { left: 0; width: 100%; mask-image: none; transform-origin: 80% 40%; }
+  :root .scene-photo[data-wide] img { object-position: 100% 32%; }
+  :root .scene-fill:has(+ .scene-photo[data-wide]) { background-image: var(--scene-wide-lqip) !important; filter: var(--scene-filter); transform: none; }
+  /* Over the photo the note is white with a soft shadow again, as on phones */
+  .arrival-note { color: #fff; filter: drop-shadow(0 1px 6px rgb(0 0 0 / 0.4)); }
 }
 /* Our story · journey map (Figma D1 / M2, v3 S) */
 .journey { display: grid; gap: var(--space-5); }
@@ -1045,8 +1045,8 @@ svg.lucide { stroke-width: 1.5; }
 .arrival .envelope { translate: 0 calc(var(--pull, 0) * 20px); opacity: calc(1 - var(--pull, 0) * 0.25); }
 .arrival .envelope-paper { transform: translateY(calc(var(--pull, 0) * -62%)); }
 .arrival:not(.is-pulling) .envelope { transition: translate var(--duration-flap) var(--ease-spring), opacity var(--duration-flap) var(--ease-paper), transform var(--duration-quick) var(--ease-paper); }
-/* From 1024 the envelope sits on warm paper, not the photo: the note is ink there, not white */
-@media (min-width: 1024px) { .arrival-note { color: var(--sys-ink-soft); filter: none; } }
+/* From 1024 to 1279 the envelope sits on warm paper, not the photo: the note is ink there, not white (from 1280 it is over the photo again) */
+@media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-note { color: var(--sys-ink-soft); filter: none; } }
 
 /* Phones (v3 U): the letter never sits under the dock. --dock-band is the dock (64 + its border), its 12 offset,
    the safe area and 8 of air; .scene-band repaints the scene over the letter in exactly that strip. */

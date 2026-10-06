@@ -12,7 +12,13 @@
   "wide": {
    "w": 2400,
    "h": 1350,
-   "lqip": "data:image/webp;base64,UklGRqoAAABXRUJQVlA4IJ4AAADwBACdASogABIAPu1osFAppaUiqAqpMB2JYwAAj/PxfU5t5Fw9xwSHGyxWkWpzSYAAzdw+MzpZi6Vf8g4/ZEsxxuHA+NDfcO/4w99rWm2iYKdL3m+Fh/fLPlxykbCos/tHTi9FhvWrTpd6h+fqltmAZtzagyXo/a9UdqRseK25D6hVgP15/W2QiQ6fNpKtnEDE6L9Ik3HEJBsI6wAAAA=="
+   "lqip": "data:image/webp;base64,UklGRqoAAABXRUJQVlA4IJ4AAADwBACdASogABIAPu1osFAppaUiqAqpMB2JYwAAj/PxfU5t5Fw9xwSHGyxWkWpzSYAAzdw+MzpZi6Vf8g4/ZEsxxuHA+NDfcO/4w99rWm2iYKdL3m+Fh/fLPlxykbCos/tHTi9FhvWrTpd6h+fqltmAZtzagyXo/a9UdqRseK25D6hVgP15/W2QiQ6fNpKtnEDE6L9Ik3HEJBsI6wAAAA==",
+   "face": [
+    0.68,
+    0.2,
+    0.9,
+    0.58
+   ]
   }
  },
  "night-lane": {
@@ -28,7 +34,13 @@
   "wide": {
    "w": 2400,
    "h": 1350,
-   "lqip": "data:image/webp;base64,UklGRrgAAABXRUJQVlA4IKwAAAAwBQCdASogABIAPu1kq1AppSOisBgIATAdiWIAsR+CL/4F7AhcRJJ3bgQ16juyr4IlkAD+z4Hfzmy9YOq1VrqIdINFn0TmTGh/jvJY1aexJHN++9SubVDZV9YqLWyRZ0JC/RgPALHLmFTJz5ou0Cb/p8RGQmQqduzWj8R8L7LX17CKGIwCO5rRSiDyoXFIUjABJ56NzaMML/neWqGzwrRadzCZiqTR8wxd26AA"
+   "lqip": "data:image/webp;base64,UklGRrgAAABXRUJQVlA4IKwAAAAwBQCdASogABIAPu1kq1AppSOisBgIATAdiWIAsR+CL/4F7AhcRJJ3bgQ16juyr4IlkAD+z4Hfzmy9YOq1VrqIdINFn0TmTGh/jvJY1aexJHN++9SubVDZV9YqLWyRZ0JC/RgPALHLmFTJz5ou0Cb/p8RGQmQqduzWj8R8L7LX17CKGIwCO5rRSiDyoXFIUjABJ56NzaMML/neWqGzwrRadzCZiqTR8wxd26AA",
+   "face": [
+    0.68,
+    0.25,
+    0.9,
+    0.64
+   ]
   }
  }
 }
