@@ -880,7 +880,7 @@ svg.lucide { stroke-width: 1.5; }
 .reply-chip[data-done] { background: var(--sys-surface-alt); color: var(--sys-ink); }
 .reply-chip:focus-visible { outline-color: var(--input-focus); }
 .reply-chip:active { transform: scale(var(--press-scale)); }
-@media (hover: hover) { .reply-chip:hover { border-color: var(--sys-line-strong); } }
+@media (hover: hover) and (pointer: fine) { .reply-chip:hover { border-color: var(--sys-line-strong); } }
 @media (min-width: 1024px) { :root:not([data-opt-names="one"]) { --type-display-names-size: 88px; } }
 .count-strip .count-tile-secs { background: none; }
 /* Before you fly: tick on the left, the row opens on the right (v3 S) */
