@@ -1138,6 +1138,14 @@ svg.lucide { stroke-width: 1.5; }
 :root[data-opt-faq] .accordion-content[data-state] { animation-duration: 150ms !important; }
 :root[data-opt-dotmap] .journey-land { fill: url(#journey-dots); }
 .journey-dot-grain { fill: var(--sys-moss); opacity: 0.55; }
+/* Guest maps (Options → Journey map): the household's own line in gold, drawing in last; the rest stay faint */
+.journey-mini { display: block; }
+.journey-you { fill: none; stroke: var(--journey-you); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: journey-draw var(--duration-draw) var(--ease-letter) forwards; }
+.journey-you-dot { fill: var(--journey-you); }
+@media (prefers-reduced-motion: reduce) { .journey-you { animation: none; stroke-dashoffset: 0; } }
+.journey-card-home { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding-block: var(--space-1); text-align: left; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
+.journey-card-home:focus-visible { outline-color: var(--input-focus); }
+.journey-card-thumb { flex: none; width: 72px; border-radius: var(--radius-control); }
 .journey-print { position: absolute; z-index: 2; width: 160px; padding: var(--space-4) var(--space-3) var(--space-5); border-radius: 4px; background: var(--brand-paper-bright); box-shadow: 0 10px 24px -12px rgb(var(--sys-shadow-tint) / 0.4); font-family: var(--font-hand); font-size: 16px; color: var(--sys-ink); text-align: center; pointer-events: none; opacity: 0; rotate: 2deg; translate: 0 8px; transition: opacity var(--duration-quick), translate var(--duration-settle) var(--ease-paper); }
 .journey-print[data-from="left"] { rotate: -2deg; translate: -12px 8px; }
 .journey-print[data-from="right"] { translate: 12px 8px; }

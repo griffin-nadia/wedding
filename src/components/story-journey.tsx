@@ -5,18 +5,9 @@ import { FlyingFrom } from "@/components/flying-from"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
+import { FLY, KYOTO, PLACES, arc } from "@/lib/journey"
+import { JourneyLand } from "@/components/journey-mini"
 
-// The hand-drawn map (Figma D1 / M2, "Journey map · hi-fi concept"): soft land, Kyoto as a 京 seal, Nadia's line
-// from Brisbane and Griffin's from Canada. Stylised, not to scale. viewBox 400 × 320.
-const KYOTO: [number, number] = [132, 112]
-const PLACES: Record<string, [number, number]> = {
-  brisbane: [196, 272], canada: [318, 46], kyoto: KYOTO, japan: [150, 96], melbourne: [160, 296], sydney: [186, 288], perth: [70, 280], adelaide: [132, 290],
-}
-const FLY: Partial<Record<Flying, [number, number]>> = { Brisbane: PLACES.brisbane, Sydney: PLACES.sydney, Melbourne: PLACES.melbourne, Adelaide: PLACES.adelaide, Perth: PLACES.perth, "Elsewhere in Australia": [110, 262], Canada: PLACES.canada, "Already in Japan": [178, 74] }
-const arc = ([x1, y1]: [number, number], [x2, y2]: [number, number], lift = 0.3) => {
-  const mx = (x1 + x2) / 2 - Math.abs(y2 - y1) * lift, my = (y1 + y2) / 2 - Math.abs(x2 - x1) * lift
-  return `M${x1} ${y1}Q${mx} ${my} ${x2} ${y2}`
-}
 /** Where a chapter sits: its title if it names a place, otherwise spread along Nadia's line. */
 function placeOf(c: Chapter, i: number, n: number): [number, number] {
   const k = c.title.toLowerCase().split(/[ ,]/)[0]
@@ -75,11 +66,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
   return (
     <div className={cn("journey", inView && "is-in")} onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
       <svg ref={svg} viewBox="0 0 400 320" className="journey-map" role="group" aria-label={t.story.title} style={drag ? { touchAction: "none" } : undefined}>
-        {/* land: Australia, Japan, a corner of Canada (soft, painted feel) */}
-        <defs><pattern id="journey-dots" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" className="journey-dot-grain" /></pattern></defs>
-        <path className="journey-land" d="M60 236c26-30 82-40 118-30 30-14 60-2 74 22 12 24 0 50-24 64-34 18-90 20-128 8-36-12-60-34-40-64z" />
-        <path className="journey-land journey-land-green" d="M120 150c8-20 22-34 30-52 8-16 20-30 34-38 8 8 0 22-8 32-12 16-22 32-34 48-8 12-18 18-22 10z" />
-        <path className="journey-land" d="M300 6c30-10 70-6 96 6v70c-22 8-50 0-68-12-18-14-40-50-28-64z" />
+        <JourneyLand />
         {/* Each line is revealed by a mask whose solid copy draws in (dotted strokes can't draw with dashoffset alone) */}
         <defs>
           <mask id="jm-nadia" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="320"><path d={arc(PLACES.brisbane, KYOTO)} className="journey-reveal" pathLength={1} /></mask>

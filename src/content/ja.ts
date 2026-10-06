@@ -78,6 +78,12 @@ export const ja: DeepPartial<Content> = {
     stops: { home: "宿", day: "庭の門", travel: "駅", qa: "神社", story: "小路" },
     reply: "お返事", full: "スタンプがそろいました。ここにふたりからのメッセージが届きます。",
   },
+  journey: {
+    title: "旅の道のり",
+    map: (city: string | null) => (city ? `${city}から京都までのあなたの線を描いた小さな地図` : "京都までの道のりを描いた小さな地図"),
+    review: "出発地", notSaying: "未回答",
+    onMap: "あなたの線が地図に加わりました", seeIt: "地図を見る", notPicked: "出発地を選ぶと、あなたの線が地図に加わります。", pick: "都市を選ぶ",
+  },
   flying: { cities: { Brisbane: "ブリスベン", Melbourne: "メルボルン", Sydney: "シドニー", Perth: "パース", Adelaide: "アデレード", "Elsewhere in Australia": "オーストラリアのその他の地域", Canada: "カナダ", "Already in Japan": "日本国内から", "Somewhere else": "その他" }, title: "どちらから来られますか？", hint: "任意です。人数のみ表示し、お名前は表示しません。", thanks: "ありがとうございます。", yours: (city: string) => `${city}からの線を描きました。`, change: "変更" },
   fortune: { title: "旅のささやかなおみくじ", draw: "ひく", blessing: "大吉", blessingEn: "大吉", number: (n: number, of: number) => `第${n}番（全${of}番）`, save: "スマホに保存", copied: "コピーしました。メモに貼り付けてください。", hint: "箱をタップしてひいてください。", hintShake: "箱をタップするか、スマホを軽く振ってください。", boxLabel: "おみくじの箱。おみくじをひく", drawing: "箱を振っています…", onMap: "地図であなたの線を見る" },
   driver: { label: "京都駅からタクシーで", fare: "約2,000円、15〜20分です。", show: "運転手さんに見せる", maps: "Googleマップで道順を見る", mapsOpens: "Googleマップがひらきます", english: "Please take me here", done: "閉じる", copy: "住所をコピー", copied: "住所をコピーしました" },
@@ -223,7 +229,7 @@ export const ja: DeepPartial<Content> = {
     contact: "ご不明な点があれば、どちらにでもお気軽にご連絡ください。",
   },
   rsvp: {
-    step: (n: number) => `ステップ ${n}/3`,
+    step: (n: number, of = 3) => `ステップ ${n}/${of}`,
     whoTitle: "どなたが出席されますか？",
     coming: "出席",
     notComing: "欠席",
