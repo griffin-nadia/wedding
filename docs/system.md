@@ -70,7 +70,7 @@ At most two sizes in any one component. Caps only on the status pill. Semibold a
 |---|---|---|---|
 | Default | surface-raised | line 1px | |
 | Hover (pointer only) | same | line-strong | controls: border only, never a fill change |
-| Hover, whole rows | ink tint, `--row-hover-mix` (5%, 7% in Lantern) | same | accordion questions, tick rows, stay rows, your reply: a tint 12px wider than the text; `--row-press-mix` while a finger is down; a tick box answers its row with a stronger line; an open question keeps a faint tint. Options → Row hover. |
+| Hover, whole rows | ink tint, `--row-hover-mix` (5%, 7% in Lantern) | same | accordion questions, tick rows, stay rows, your reply: a tint 12px wider than the text; `--row-press-mix` while a finger is down; a tick box answers its row with a stronger line; an open question shows no tint (its chevron turns moss) until the pointer is on it. Options → Row hover. |
 | Focus-visible | same | same | 2px ring in `focus`, 2px offset, on everything |
 | Pressed | fill | same | scale .98, `--duration-press` (90 ms) |
 | Selected | secondary | primary 2px | tick (a slot reserved so nothing shifts) |

@@ -535,6 +535,15 @@
   .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-4); font-size: var(--type-small-size); line-height: var(--type-small-leading); border-radius: var(--radius-control); outline-offset: 2px; }
 }
 @media (min-width: 1024px) { .site-bar { padding-left: var(--letter-left); } .site-mark { position: absolute; left: 24px; } }
+/* Top bar: the current page on a sage tint, hover a lighter one under the pointer (Jehan, 6 Oct: the pale marker was hard
+   to see). Options → Nav pill → Paper brings back the old sage-paper marker. */
+@media (min-width: 768px) {
+  :root:not([data-opt-navtint]):not([data-opt-nav="dock"]) .nav-mark { background: var(--nav-mark-bg); box-shadow: inset 0 0 0 1px var(--nav-mark-line); }
+  :root:not([data-opt-navtint]):not([data-opt-nav="dock"]) .site-nav-link { transition: color var(--duration-quick) var(--ease-paper), background-color var(--duration-quick) var(--ease-paper); }
+}
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  :root:not([data-opt-navtint]):not([data-opt-nav="dock"]) .site-nav-link:not(.is-active):hover { background: var(--nav-hover-bg); }
+}
 /* Options lab: the dock on desktop too */
 @media (min-width: 768px) {
   [data-opt-nav="dock"] .site-bar { background: none; border: 0; pointer-events: none; }
@@ -702,6 +711,9 @@
 
 /* Sealed envelope: only the photo, the envelope and the mode toggle. The dock and top bar wait. */
 [data-sealed] .site-nav, [data-sealed] .site-mark, [data-sealed] .site-rsvp, [data-sealed] .phone-qr, [data-sealed] .credit-mark { display: none !important; }
+/* The sealed envelope never scrolls: the letter waiting under it (hidden) used to make short laptops scroll 10-40px.
+   The scrollbar's space is kept (scrollbar-gutter: stable), so nothing shifts when it opens. */
+:root[data-sealed] { overflow: hidden; }
 [data-sealed] .site-bar { background: none; border: 0; }
 .arrival { align-content: end; gap: var(--space-4); padding-top: 0; padding-bottom: max(5svh, 24px); }
 @media (max-width: 767px) { .arrival .envelope { width: 240px; height: 156px; } .arrival .envelope-seal { width: 48px !important; height: 48px !important; } }
@@ -1181,8 +1193,6 @@ svg.lucide { stroke-width: 1.5; }
   [data-slot="checkbox"]:not([data-state="checked"], :disabled):hover { border-color: var(--sys-ink-soft); }
 }
 :root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):active::before { opacity: 1; background: color-mix(in oklab, var(--sys-ink) var(--row-press-mix, 8%), transparent); }
-/* An open question keeps a faint tint on its row, so you can see which one you are reading */
-:root:not([data-opt-rowhover="off"]) [data-slot="accordion-trigger"][data-state="open"]::before { opacity: 0.6; }
 @media (prefers-reduced-motion: reduce) { :root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row)::before { transition: none; } }
 
 /* Omikuji (v3 V, Nadia: "prioritise the fortunes, no branch"). The tin is the button; it shakes, its stick rises,

@@ -25,7 +25,7 @@ html { scrollbar-gutter: stable; }
 /* 3 - The open question no longer keeps the hover tint (it read as a stuck hover).
    Instead the chevron turns moss while open, and the hover icon colour is guarded
    so it never sticks on touch screens. */
-:root:not([data-opt-rowhover="off"]) [data-slot="accordion-trigger"][data-state="open"]::before { opacity: 0; }
+:root:not([data-opt-rowhover="off"]) [data-slot="accordion-trigger"][data-state="open"]:not(:hover)::before { opacity: 0; }
 [data-slot="accordion-trigger"][data-state="open"] [data-slot="accordion-trigger-icon"] { color: var(--primary); }
 @media (hover: hover) {
   [data-slot="accordion-trigger"]:hover [data-slot="accordion-trigger-icon"] { color: var(--foreground); }
@@ -60,7 +60,7 @@ html { scrollbar-gutter: stable; }
 /* 6 - Mouse drift (laptops, fine pointers): the photo leans toward the cursor a
    few px and settles slowly. The scale keeps the soft edges covered. The variables
    are only ever set by a fine pointer, so touch and reduced motion never move. */
-@media (min-width: 1024px) and (pointer: fine) {
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
   .scene-photo {
     transform: translate3d(calc(var(--sx, 0) * 1px), calc(var(--sy, 0) * 1px), 0) scale(1.04);
     transition: transform 700ms var(--ease-paper);

@@ -33,7 +33,7 @@ function PhotoPair({ name, dim, className }: { name: string; dim: boolean; class
   // Mouse drift (Jehan, 6 Oct): the photo leans a few px toward the cursor and settles slowly.
   // Laptops with a fine pointer only; the CSS (and the still photo) is untouched anywhere else.
   useEffect(() => {
-    if (!window.matchMedia("(min-width: 1024px) and (pointer: fine)").matches) return
+    if (!window.matchMedia("(min-width: 1024px) and (hover: hover) and (pointer: fine)").matches) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     const el = drift.current
     if (!el) return
