@@ -6,7 +6,8 @@ import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
 import { FLY, KYOTO, PLACES, arc } from "@/lib/journey"
-import { JourneyLand } from "@/components/journey-mini"
+import { JourneyLand, JourneyLegend, JourneyPlaces } from "@/components/journey-mini"
+import { useOption } from "@/lib/options"
 
 /** Where a chapter sits: its title if it names a place, otherwise spread along Nadia's line. */
 function placeOf(c: Chapter, i: number, n: number): [number, number] {
@@ -24,6 +25,8 @@ function placeOf(c: Chapter, i: number, n: number): [number, number] {
  */
 export function StoryJourney({ chapters, showFlying = false, drag = false, token, replied = false }: { chapters: Chapter[]; showFlying?: boolean; drag?: boolean; token?: string; replied?: boolean }) {
   const { t } = useLang()
+  // Options → Journey map: the hi-fi details (place names, the Kyoto line, legend, gold guest lines, Lantern glow)
+  const hifi = useOption("journey") === "on"
   const [on, setOn] = useState(0)
   const [list, setList] = useState(false)
   const [flying, setFlying] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
@@ -64,7 +67,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
     </div>
   )
   return (
-    <div className={cn("journey", inView && "is-in")} onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
+    <div className={cn("journey", inView && "is-in", hifi && "journey-hifi")} onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
       <svg ref={svg} viewBox="0 0 400 320" className="journey-map" role="group" aria-label={t.story.title} style={drag ? { touchAction: "none" } : undefined}>
         <JourneyLand />
         {/* Each line is revealed by a mask whose solid copy draws in (dotted strokes can't draw with dashoffset alone) */}
@@ -108,6 +111,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
             </g>
           )
         })()}
+        {hifi && <JourneyPlaces />}
         <g transform={`translate(${KYOTO[0] - 14} ${KYOTO[1] - 14})`} aria-hidden>
           <g className="journey-seal-g">
             <rect width="28" height="28" rx="6" className="journey-seal" />
@@ -145,7 +149,8 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
         )}
         {chips && token && <FlyingFrom token={token} initial={picked} onSaved={onPicked} />}
         {!chips && picked && showFlying && <p className="text-sm text-muted-foreground">{t.flying.yours(t.flying.cities[picked] ?? picked)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}
-        {flying && flying.told > 0 && <p className="text-sm text-muted-foreground">{t.story.flyingFrom(flying.told, flying.households)}</p>}
+        {hifi && <JourneyLegend you={Boolean(picked)} />}
+        {flying && flying.told > 0 && <p className="text-sm text-muted-foreground">{hifi ? t.journey.count(flying.told, flying.households) : t.story.flyingFrom(flying.told, flying.households)}</p>}
         <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(true)}>{t.story.seeList}</button>
       </div>
     </div>

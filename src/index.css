@@ -1147,6 +1147,24 @@ svg.lucide { stroke-width: 1.5; }
 .journey-card-home { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding-block: var(--space-1); text-align: left; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
 .journey-card-home:focus-visible { outline-color: var(--input-focus); }
 .journey-card-thumb { flex: none; width: 72px; border-radius: var(--radius-control); }
+/* Journey map, hi-fi (Options → Journey map): Nadia rust, Griffin moss, guests faint gold, yours full gold; the places
+   named; a legend; in Lantern the lines glow softly (no lanterns on the map) */
+.journey-hifi .journey-route { opacity: 0.85; stroke-width: 2; }
+.journey-hifi .journey-guest { stroke: var(--journey-you); stroke-width: 1.2; opacity: 0.45; }
+.journey-place { font-family: var(--font-label); font-size: 11px; fill: var(--sys-ink-soft); }
+.journey-place-kyoto { font-size: 9.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--sys-ink); }
+.journey-place-dot { fill: var(--sys-ink-soft); }
+.journey-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin: 0; padding: 0; list-style: none; font-size: var(--type-small-size); color: var(--sys-ink-soft); }
+.journey-legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.journey-key { display: inline-block; width: 18px; height: 0; border-top: 2px dotted; }
+.journey-key-nadia { border-color: var(--sys-story); }
+.journey-key-griffin { border-color: var(--sys-moss); }
+.journey-key-guests { border-color: var(--journey-you); opacity: 0.6; }
+.journey-key-you { border-top-style: solid; border-top-width: 3px; border-color: var(--journey-you); }
+[data-theme="lantern"] .journey-hifi :is(.journey-route, .journey-guest, .journey-you) { filter: drop-shadow(0 0 2.5px currentColor); }
+[data-theme="lantern"] .journey-hifi .journey-route-nadia { color: var(--sys-story); }
+[data-theme="lantern"] .journey-hifi .journey-route-griffin { color: var(--sys-moss); }
+[data-theme="lantern"] .journey-hifi :is(.journey-guest, .journey-you) { color: var(--journey-you); }
 .journey-print { position: absolute; z-index: 2; width: 160px; padding: var(--space-4) var(--space-3) var(--space-5); border-radius: 4px; background: var(--brand-paper-bright); box-shadow: 0 10px 24px -12px rgb(var(--sys-shadow-tint) / 0.4); font-family: var(--font-hand); font-size: 16px; color: var(--sys-ink); text-align: center; pointer-events: none; opacity: 0; rotate: 2deg; translate: 0 8px; transition: opacity var(--duration-quick), translate var(--duration-settle) var(--ease-paper); }
 .journey-print[data-from="left"] { rotate: -2deg; translate: -12px 8px; }
 .journey-print[data-from="right"] { translate: 12px 8px; }
