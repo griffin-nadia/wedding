@@ -1145,6 +1145,8 @@ svg.lucide { stroke-width: 1.5; }
 .journey-card-home { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding-block: var(--space-1); text-align: left; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
 .journey-card-home:focus-visible { outline-color: var(--input-focus); }
 .journey-card-thumb { flex: none; width: 72px; border-radius: var(--radius-control); }
+/* The thumbnail is a still picture of their line: the countdown is Home's one moving thing */
+.journey-card-thumb .journey-you, .journey-card-thumb .journey-reveal { animation: none; stroke-dashoffset: 0; }
 /* Journey map, hi-fi (Options → Journey map): Nadia rust, Griffin moss, guests faint gold, yours full gold; the places
    named; a legend; in Lantern the lines glow softly (no lanterns on the map) */
 .journey-hifi .journey-route { opacity: 0.85; stroke-width: 2; }
