@@ -1,7 +1,7 @@
 // The envelope's paper slide, on the tap that opens it. Made in the browser (no files); nothing is created until
-// that tap. It only plays when the guest has turned music on (Options → Music toggle), at the same 50% as the music.
+// that tap. It only plays when the guest has turned music on (Options → Music toggle), at the same 30% as the music.
 const KEY = "ng-music"
-const VOLUME = 0.5
+const VOLUME = 0.3
 let ctx: AudioContext | null = null
 
 function audio() {
