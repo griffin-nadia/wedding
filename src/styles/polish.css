@@ -199,3 +199,8 @@ html { scrollbar-gutter: stable; }
 @keyframes bokeh-float { from { translate: 0 0; opacity: 0.7; } to { translate: 1.5vmax -1vmax; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .scene-light * { animation: none !important; } }
 .arrival-note-words[data-long] { white-space: normal; max-width: 7.4em; text-align: center; line-height: 1.15; }
+
+/* After sending, one at a time (Options → RSVP): the fortune card arrives once the stamp has landed */
+.sent-next { animation: sent-next var(--duration-settle) var(--ease-paper) calc(var(--duration-stamp) + 450ms) both; }
+@keyframes sent-next { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .sent-next { animation: none; } }
