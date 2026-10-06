@@ -711,6 +711,9 @@
 
 /* Sealed envelope: only the photo, the envelope and the mode toggle. The dock and top bar wait. */
 [data-sealed] .site-nav, [data-sealed] .site-mark, [data-sealed] .site-rsvp, [data-sealed] .phone-qr, [data-sealed] .credit-mark { display: none !important; }
+/* The sealed envelope never scrolls: the letter waiting under it (hidden) used to make short laptops scroll 10-40px.
+   The scrollbar's space is kept (scrollbar-gutter: stable), so nothing shifts when it opens. */
+:root[data-sealed] { overflow: hidden; }
 [data-sealed] .site-bar { background: none; border: 0; }
 .arrival { align-content: end; gap: var(--space-4); padding-top: 0; padding-bottom: max(5svh, 24px); }
 @media (max-width: 767px) { .arrival .envelope { width: 240px; height: 156px; } .arrival .envelope-seal { width: 48px !important; height: 48px !important; } }
