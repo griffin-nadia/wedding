@@ -1114,8 +1114,6 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* Kit mechanics (v3 U), each behind its Options switch; the JS half is src/mechanics (lazy) */
 @media (hover: hover) and (pointer: fine) {
-  :root[data-opt-glow][data-sealed] .arrival::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(200px circle at var(--glow-x, -400px) var(--glow-y, -400px), color-mix(in oklab, var(--brand-mitsu) 22%, transparent), transparent 70%); mix-blend-mode: soft-light; }
-  :root[data-opt-glow] .arrival .envelope-seal { background-image: linear-gradient(105deg, transparent calc(var(--sheen, -40%) - 30%), rgb(255 255 255 / 0.35) var(--sheen, -40%), transparent calc(var(--sheen, -40%) + 30%)); }
 }
 :root[data-opt-inkset][data-inking] #letter .letter-body > *, :root[data-opt-inkset][data-inking] #letter .letter-body > * > * { animation: ink-settle 520ms var(--ease-paper) both; animation-delay: calc(var(--ink-i, 0) * 40ms); }
 @keyframes ink-settle { from { opacity: 0; filter: blur(2px); } to { opacity: 1; filter: none; } }

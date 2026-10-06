@@ -31,7 +31,9 @@ const baseLinks = [
 // The stamp book (December, walk scene only) loads only when the lab turns it on
 const StampBook = lazy(() => import("@/components/stamp-book").then((m) => ({ default: m.StampBook })))
 const storyLink = { to: "/our-story", key: "story", icon: BookOpen } as const
-const MECHANICS = ["glow", "inkset", "countin", "thread", "hoverprint", "haptics", "rise", "dockhide"]
+const SceneLight = lazy(() => import("@/components/scene-light"))
+const FINE_POINTER = typeof matchMedia !== "undefined" && matchMedia("(hover: hover) and (pointer: fine)").matches
+const MECHANICS = ["inkset", "countin", "thread", "hoverprint", "haptics", "rise", "dockhide"]
 
 /** Four items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
 function Nav() {
@@ -103,6 +105,9 @@ export function Layout() {
   const glOption = useOption("gl")
   const stampsOn = useOption("stamps") === "on"
   usePaperGL(!sealed && kind === "paper" && glOption !== "off")
+  // Options → Light: komorebi by day, a lantern pool by night; laptops with a fine pointer only
+  const light = useOption("light")
+  const lightOn = (light === "css" || light === "shader") && FINE_POINTER
   usePaperScroll()
   // "Put it back in the envelope" (Home): seal it again; tapping opens it as on the first visit
   const [resealed, setResealed] = useState(0)
@@ -138,6 +143,7 @@ export function Layout() {
     <>
       <a href="#letter" className="skip-link">{t.letter.skip}</a>
       <Scene source={sealed ? arrivalScene(theme) : sceneFor(page, theme, kind)} dim={dim} />
+      {lightOn && <Suspense><SceneLight variant={light as "css" | "shader"} /></Suspense>}
       {/* Phones (v3 U): the same scene again, clipped to the strip from 8px above the dock down. The scene never
           moves, so the copy matches it exactly and the letter seems to end 8px above the dock, even on a bounce. */}
       {!sealed && <Scene source={sceneFor(page, theme, kind)} dim={dim} className="scene-band" />}

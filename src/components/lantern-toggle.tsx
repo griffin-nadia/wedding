@@ -1,6 +1,6 @@
 import { flushSync } from "react-dom"
 import { Moon, Sun } from "lucide-react"
-import { useState } from "react"
+import { lazy, Suspense, useState } from "react"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { cn } from "@/lib/utils"
@@ -81,7 +81,10 @@ export function LangToggle() {
   )
 }
 
+const MusicToggle = lazy(() => import("@/components/music-toggle"))
+
 /** The sun or moon, with あ / A beside it where shown, as one group (the letter's corner, or the top bar). */
 export function ModeSwitches({ className }: { className?: string }) {
-  return <span className={cn("mode-switches", className)}><LangToggle /><LanternToggle /></span>
+  const music = useOption("music") === "on" // Options → Music toggle: the opt-in music button beside the sun
+  return <span className={cn("mode-switches", className)}><LangToggle />{music && <Suspense><MusicToggle /></Suspense>}<LanternToggle /></span>
 }
