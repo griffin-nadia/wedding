@@ -144,13 +144,15 @@ html { scrollbar-gutter: stable; }
 /* One outline, both modes (7 Oct): every small box on the letter and in the top bar has the same 1px --sys-line at
    rest. --sys-line-strong only on hover (laptops) and for the current page; the focus ring stays separate. Inset, so
    nothing changes size. */
-.count-box, .date-badge, .pill-line, .utility-btn { box-shadow: inset 0 0 0 1px var(--sys-line); }
+/* The top-bar buttons (あ/A, sun/moon, music, stamps: the .press ones) sit bare: no outline at rest, just the hover
+   circle on laptops and the focus ring. The story arrows keep the outline. */
+.count-box, .date-badge, .pill-line, .utility-btn:not(.press) { box-shadow: inset 0 0 0 1px var(--sys-line); }
 .phone-qr { border: 1px solid var(--sys-line); }
 @media (min-width: 768px) {
   :root:not([data-opt-nav="dock"]) .site-nav-link:not(.is-active) { box-shadow: inset 0 0 0 1px var(--sys-line); }
 }
 @media (hover: hover) and (pointer: fine) {
-  .utility-btn:hover, :root:not([data-opt-nav="dock"]) .site-nav-link:not(.is-active):hover { box-shadow: inset 0 0 0 1px var(--sys-line-strong); }
+  .utility-btn:not(.press):hover, :root:not([data-opt-nav="dock"]) .site-nav-link:not(.is-active):hover { box-shadow: inset 0 0 0 1px var(--sys-line-strong); }
 }
 
 /* Night green (Options → Theme): the Lantern sage, greener, so it matches the day's olive. The cream "Letter in
