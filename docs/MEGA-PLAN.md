@@ -12,22 +12,22 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 - **Nav:** Home · The day · Travel · FAQs (+ Our story once its three chapters exist). No login, no hamburger, personal link or short code only
 - **Guardrails:** one chosen interaction moment per screen, everything else quiet. Kit states stay canonical (default, hover, focus, pressed, selected, disabled, error, loading). CSS/SVG first, Motion only where spring physics materially improve feel. 60fps on a mid-range phone, transform-only where possible. Reduced motion gets a complete still state, never a broken one. No scroll hijacking, no three.js, no smooth-scroll library. Japanese and Lantern switches are first-class site controls.
 
-## 2. Right now (6 Oct)
+## 2. Right now (6 Oct, evening)
 
-**Live on main:** everything up to #21 (wide laptop photos, #19 polish, #20 nav and mode fixes, this plan).
+**Live on main:** everything through #26: review fixes, QA pass (sage nav pill, `npm test`), sharper phone photos, fortune on springs and the journey map. The last two are **off** behind Options until we switch them on. #4 is superseded (already on main); close it.
 
-**Open, merge in this order** (each is stacked on the one before, except #23):
-1. #22 review-fixes: FAQ and tilt defaults, あ/A state, envelope photo framed like every page, hand-written arrival note
-2. #24 qa-pass: clearer nav pill, sealed envelope no longer scrolls, FAQ hover, `npm test` for option defaults
-3. #23 photo-hq: sharper phone photos, 2000 and 2400 sizes
-4. #25 fortune-spring: fortune on Motion springs, behind Options → Fortune
-5. #26 journey-map: Your journey step, map after the fortune, Home card, behind Options → Journey map
+**Open:** #27 Nadia's drawings (envelope + garden, behind Options). Code is in; the three image files are on the Mac branch `nadia-art-images` and get added to #27 once that's pushed.
 
-**Nadia's art arrived (6 Oct)**, a 200 dpi scan: closed envelope (maple leaf, gum leaf, wax seal), open envelope (flap up), garden line drawing (pagoda, benches, aisle; coloured version still to come). Copy in `photos-private/art/` (never committed). Rescan requested at 600 dpi PNG, one piece per scan, plus the seal and leaves on their own.
+**QA (#24) result:** 240 screenshots across 6 widths × 2 modes × 2 languages × motion on/off. Everything passed after its fixes. Left open:
+- Replied Home on a 390×844 phone: with the journey card on, the countdown drops below the fold. Decide whether that's fine or the card should sit lower.
+- New Japanese needs a native read: `fortune.onMap`, `journey.*`, `rsvp.step`, `day.gardenAlt`.
+- The "everyone's lines" on the map only show against the live sheet (sample mode has no back end), so check them on the live site once switched on.
 
-**The seal reads "G·N".** That matches their Q&A answer ("Griffin and Nadia") but not the site (Nadia & Griffin, N&G everywhere, the #12 link preview). Waiting on their answer; don't build the lettering or change names until it's settled.
+**Switch-on decisions (Jehan):** Fortune → Springs, Journey map → On, Nadia's envelope drawing, Garden drawing. Try each on the live site first.
 
-**Waiting on Jehan:** paste `apps-script/Code.gs` into the Site-Data script and deploy (for "Already in Japan"); re-export the day PSD at 3840 × 2160 for a sharper laptop photo.
+**Waiting on Jehan:** push `nadia-art-images`; paste `apps-script/Code.gs` into the Site-Data script and deploy ("Already in Japan"); re-export the day PSD at 3840 × 2160.
+
+**Waiting on N&G:** name order (her seal reads "G·N", the site says Nadia & Griffin); Griffin's 12 fortune lines (travel tips show until then); Nadia's 600 dpi rescan, plus the seal and leaves on their own; three story chapters; Noya.
 
 - Do not reopen the loupe, postcard flip, shared branch, stamp book, keepsake, or colour transition unless Nadia explicitly says they were scope cuts, not taste cuts.
 
@@ -129,18 +129,14 @@ You're picking up the wedding site for Nadia and Griffin (Fri 15 Oct 2027, The S
 - Every motion has a still version under prefers-reduced-motion. Desktop-only effects gated to (hover: hover) and (pointer: fine). No cursor trails, smooth-scroll libraries or three.js. Faces stay sharp.
 - Before every PR: npm run build, npm run lint (no new errors), npm test, then look at it in a browser at 390, 768, 1024, 1280, 1440 and 1920, in Autumn and Lantern, English and Japanese, reduced motion on and off.
 
-## Step 1: Check the stack
-#22, #24, #23, #25, #26 are open (merge order in MEGA-PLAN §2). If any no longer merges cleanly after I merge the one before, rebase it and tell me. Don't start new work on top of an unmerged branch without saying which one.
+## Step 1: Land #27
+If nadia-art-images isn't on GitHub yet, push it (git push -u origin nadia-art-images), then bring its three files (public/art/envelope/drawn-closed.webp, drawn-open.webp, public/art/garden/garden-ink.webp) onto the nadia-art branch and push. Check #27 in a browser with Options → Nadia's envelope drawing and Options → Garden drawing on: envelope same size and spot as the paper one, opens to her open envelope with the letter rising, no jump; garden ink dark by day, cream in Lantern, cropped to the pagoda and aisle on phones. Fix anything off on the same branch and say what you changed.
 
-## Step 2: Nadia's painted envelope (behind Options → Envelope art, off by default)
-Source: photos-private/art/nadia-scans-2026-10-06.pdf (200 dpi; page 1 garden, page 2 open envelope, page 3 closed envelope). Use it now as a stand-in; a 600 dpi PNG rescan will replace it with no code change.
-- Cut the closed and open envelopes from the paper (transparent PNG, then AVIF/WebP at 1x and 2x of the rendered size, about 380px wide on laptops) into public/art/envelope/. Keep the hand-drawn edge; no clean vector redraw.
-- Sealed state: her closed envelope replaces the CSS one, same size, position and tilt. Opening: cross-fade to her open envelope as the flap lifts, then the letter rises out of it as now. The existing art slots (src/lib/art.ts, envelope.tsx) are where this plugs in.
-- The seal on her drawing reads "G·N". Do not change any names, the CSS seal or the link preview; the name order is still being decided.
-- Lantern: her envelope stays cream (it's paper under a lamp).
+## Step 2: Everything switched on, together
+In one browser, turn on Fortune → Springs, Journey map → On, Nadia's envelope drawing and Garden drawing, then walk a whole guest visit: envelope → Home → reply (all 4 steps) → fortune → map → Home card → The day. At 390 and 1440, Autumn and Lantern, English and Japanese, reduced motion on and off. List anything that clashes or feels like too much at once (one moment per screen). Don't change the defaults; I decide what goes on.
 
-## Step 3: Garden drawing on The day (behind Options → Garden drawing, off by default)
-Her ink drawing as a header above the timeline on The day. Day mode: ink on paper, multiply into the letter. Lantern: lines inverted to cream on the dark letter. Crop to the pagoda and aisle on phones. It's line art now; a coloured version may replace it later, so keep the slot format-agnostic.
+## Step 3: The replied Home on phones
+With the journey card on, the countdown falls below the fold on a 390×844 phone. Propose the smallest fix (e.g. the card below the countdown, or folded into the reply row) behind an Option, with before/after screenshots in the PR.
 
 ## When you finish
 Tell me in plain language what changed, the PR links, and exactly where to check (page, width, mode, which Option to switch on). Short.
