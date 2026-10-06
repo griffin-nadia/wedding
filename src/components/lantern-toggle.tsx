@@ -24,7 +24,7 @@ export function LanternToggle({ className }: { className?: string }) {
   const nextPhoto = photoFor(next)
   return (
     <button type="button" aria-pressed={lantern} title={t.theme.label}
-      onPointerEnter={() => warmPhoto(nextPhoto)} onFocus={() => warmPhoto(nextPhoto)} onClick={(e) => {
+      onPointerEnter={() => warmPhoto(nextPhoto)} onPointerDown={() => warmPhoto(nextPhoto)} onFocus={() => warmPhoto(nextPhoto)} onClick={(e) => {
       const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready?: Promise<void>; finished?: Promise<void> } }
       if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return setTheme(next)
       // The circle grows from the centre of the button that was tapped, in exact pixels, out to the farthest corner
@@ -34,7 +34,7 @@ export function LanternToggle({ className }: { className?: string }) {
       // Mount and decode the next mode's photo before the reveal, so it never shows a loading state
       flushSync(() => warmPhoto(nextPhoto))
       const img = document.querySelector<HTMLImageElement>(`[data-photo="${nextPhoto}"] img`)
-      const ready = img ? Promise.race([img.decode().catch(() => {}), new Promise((ok) => setTimeout(ok, 350))]) : Promise.resolve()
+      const ready = img ? Promise.race([img.decode().catch(() => {}), new Promise((ok) => setTimeout(ok, 220))]) : Promise.resolve()
       root.dataset.vt = mode === "fade" ? "fade" : "circle"
       const clear = () => { delete root.dataset.vt }
       void ready.then(() => {
@@ -46,7 +46,7 @@ export function LanternToggle({ className }: { className?: string }) {
             const css = getComputedStyle(root), d = css.getPropertyValue("--duration-mode").trim()
             const duration = d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000 // the token can compute to "0.76s"
             root.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${reach}px at ${x}px ${y}px)`] },
-              { duration: duration || 760, easing: css.getPropertyValue("--ease-mode").trim() || "ease-in-out", pseudoElement: "::view-transition-new(root)" })
+              { duration: duration || 760, easing: css.getPropertyValue("--ease-mode").trim() || "ease-in-out", fill: "both", pseudoElement: "::view-transition-new(root)" })
           })
           vt.finished?.finally(clear)
           window.setTimeout(clear, 1200)

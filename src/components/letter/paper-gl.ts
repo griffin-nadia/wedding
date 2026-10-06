@@ -82,7 +82,8 @@ export function startPaper(art: string | null): () => void {
   const resize = () => { renderer.setSize(innerWidth, innerHeight); u.uRes.value = [innerWidth, innerHeight] }
   resize()
   const onMouse = (e: PointerEvent) => { if (e.pointerType === "mouse") u.uMouse.value = [e.clientX / innerWidth, e.clientY / innerHeight] }
-  const mo = new MutationObserver(colours)
+  // Repaint straight away on a mode change, so the reveal captures the new paper, not last frame's
+  const mo = new MutationObserver(() => { colours(); renderer.render({ scene: mesh }) })
   mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] })
   window.addEventListener("resize", resize)
   window.addEventListener("pointermove", onMouse, { passive: true })
@@ -93,7 +94,8 @@ export function startPaper(art: string | null): () => void {
     raf = requestAnimationFrame(frame)
     if (document.hidden || now - last < 41) return // ~24 fps; nothing here needs more
     last = now
-    const root = getComputedStyle(document.documentElement)
+    // Inline values only (set by the scroll hook): a full style read every frame made the page recalculate mid-swipe
+    const root = document.documentElement.style
     u.uTime.value = (now - t0) / 1000
     u.uScroll.value = Number(root.getPropertyValue("--paper-scroll") || 0)
     u.uTurn.value = Number(root.getPropertyValue("--paper-turn") || 0)
