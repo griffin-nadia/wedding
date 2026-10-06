@@ -10,7 +10,7 @@ export type TuneState = { overrides: Record<Scope, Record<string, string>>; note
 /** Each lab option's shipped value (the first choice). The labels and notes live in options.ts, loaded with the panel only. */
 export const OPTION_DEFAULTS: Record<string, string> = {
   modeswitch: "circle", envart: "off", garden: "off", envpaint: "off", bleed: "off", loupe: "off", postcard: "off", inkset: "off", countin: "off", underline: "off", daytick: "off", thread: "off", focus: "off", faq: "one", dotmap: "off", hoverprint: "off", haptics: "off", arrivalhint: "note", tilt: "on", leaves: "off", send: "tap", sheetdrag: "buttons", mapdrag: "tap", peek: "on", mode: "sheet", datestyle: "badge", names: "two", count: "boxes", ticks: "stay", signoff: "home", toggle: "card", getthere: "maps", accent: "green", lang: "en", story: "b", mapmode: "journey", flying: "off", scene: "photo",
-  stamps: "off", density: "auto", round: "auto", navigation: "pages", letterpaper: "dark", photo: "each", rise: "off", dockhide: "off", clockroll: "on", rowhover: "tint", nightgreen: "current", navtint: "sage", fortune: "css", journey: "off", light: "off", notecopy: "open", music: "off", homemap: "card",
+  stamps: "off", density: "auto", round: "auto", navigation: "pages", letterpaper: "dark", photo: "each", rise: "off", dockhide: "off", clockroll: "on", rowhover: "tint", nightgreen: "greener", navtint: "sage", fortune: "css", journey: "off", light: "off", notecopy: "open", music: "off", homemap: "card",
 }
 
 const KEY = "ng-tune"
