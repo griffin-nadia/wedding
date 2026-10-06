@@ -26,10 +26,9 @@ export const ART = {
    */
   garden: { src: "art/garden/garden-ink.webp", kind: "ink" as "ink" | "colour" },
   /**
-   * Background music (Options → Music toggle). Placeholder until the artist says yes: don't commit the audio file
-   * before then; src stays empty and the toggle plays silence. Then put the file in public/audio/ and set src.
+   * Background music (Options → Music toggle). Cleared by the artist (6 Oct 2026). Off until a guest taps it, 50%.
    */
-  music: { src: "", title: "among the clouds", artist: "aqualina", year: 2023 },
+  music: { src: "audio/orange-hues.mp3", title: "orange hues", artist: "Aqualina", year: undefined as number | undefined },
   /**
    * Nadia's painted land for the journey map: one image painted on the map template (photos-private/art/templates),
    * covering exactly the template's dashed box, which is the map's 400 × 320 viewBox. Empty until it lands; the

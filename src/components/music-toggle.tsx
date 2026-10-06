@@ -20,9 +20,9 @@ function silentWav() {
 
 /**
  * Background music, opt-in only (Options → Music toggle). Off by default and never autoplays with sound: it starts
- * only from a tap on this button, fades in over 2 s to 20%, fades out when paused, remembers the choice on this
+ * only from a tap on this button, fades in over 2 s to 50%, fades out when paused, remembers the choice on this
  * device (a return visit shows it on, and it plays after their first tap anywhere), and pauses while the tab is hidden.
- * The track is ART.music; until the artist says yes it plays silence.
+ * The track is ART.music (cleared by the artist); if src is ever empty it plays silence.
  */
 export default function MusicToggle() {
   const { t } = useLang()

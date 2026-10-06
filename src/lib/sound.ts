@@ -1,5 +1,7 @@
-// One sound on the whole site (v3 A): the envelope's paper slide, on the tap that opens it.
-// Made in the browser (no files); nothing is created until that tap. No setting, no other sounds.
+// The envelope's paper slide, on the tap that opens it. Made in the browser (no files); nothing is created until
+// that tap. It only plays when the guest has turned music on (Options → Music toggle), at the same 50% as the music.
+const KEY = "ng-music"
+const VOLUME = 0.5
 let ctx: AudioContext | null = null
 
 function audio() {
@@ -14,11 +16,12 @@ function audio() {
 
 /** Paper slide: a short, soft brush of filtered noise, about 0.35 s. */
 export function playPaper() {
+  try { if (localStorage.getItem(KEY) !== "on") return } catch { return }
   const a = audio(); if (!a) return
   const len = Math.floor(a.sampleRate * 0.35)
   const buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0)
   for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.sin((Math.PI * i) / len)
   const src = a.createBufferSource(), f = a.createBiquadFilter(), v = a.createGain()
-  f.type = "bandpass"; f.frequency.value = 2400; f.Q.value = 0.8; v.gain.value = 0.08
+  f.type = "bandpass"; f.frequency.value = 2400; f.Q.value = 0.8; v.gain.value = VOLUME
   src.buffer = buf; src.connect(f).connect(v).connect(a.destination); src.start()
 }
