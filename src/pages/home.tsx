@@ -46,7 +46,7 @@ function Names() {
 }
 
 /** What's left, quietly (v3 J): three lines with a tick or a soft dash, each opening its step. Hidden once all three are done. */
-function YourReply({ h, open, keepDone }: { h: Household; open: (step: number) => void; keepDone: boolean }) {
+function YourReply({ h, open, keepDone, extra }: { h: Household; open: (step: number) => void; keepDone: boolean; extra?: React.ReactNode }) {
   const { t } = useLang()
   const datesStep = useOption("journey") === "on" ? 3 : 2 // Options → Journey map moves the dates to Your journey
   const coming = h.guests.filter((g) => g.attending === "yes")
@@ -56,11 +56,12 @@ function YourReply({ h, open, keepDone }: { h: Household; open: (step: number) =
     { key: "food", label: t.home.todo.food, done: h.songs.length > 0 || coming.some((g) => g.dietary && g.dietary !== "None"), step: 2 },
     { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: datesStep, note: t.home.todo.datesLater },
   ]
-  if (rows.every((r) => r.done) && !keepDone) return null
+  const allDone = rows.every((r) => r.done) && !keepDone
+  if (allDone && !extra) return null
   return (
     <section aria-label={t.home.yourReply}>
       <ul className="reply-chips">
-        {rows.map((r) => (
+        {(allDone ? [] : rows).map((r, i) => [i === 1 && extra ? <li key="extra">{extra}</li> : null, (
           <li key={r.key}>
             <button type="button" onClick={() => open(r.step)} className="reply-chip" data-done={r.done || undefined}>
               {r.done ? <Check className="size-5 text-success" aria-hidden /> : <Minus className="size-5 text-muted-foreground" aria-hidden />}
@@ -68,7 +69,8 @@ function YourReply({ h, open, keepDone }: { h: Household; open: (step: number) =
               <span className="sr-only">, {r.done ? t.home.todo.done : t.home.todo.toDo}</span>
             </button>
           </li>
-        ))}
+        )])}
+        {(allDone || rows.length < 2) && extra && <li>{extra}</li>}
       </ul>
     </section>
   )
@@ -95,6 +97,7 @@ export function HomePage() {
   const dateStyle = useOption("datestyle")
   const leaves = useOption("leaves") === "on"
   const journey = useOption("journey") === "on"
+  const homemap = useOption("homemap")
   useOption("mode") // re-render when the crew preview changes
   const { mode, contactDay } = useContent()
   const keepDone = useOption("ticks") !== "hide"
@@ -141,8 +144,9 @@ export function HomePage() {
             </div>
             {done && <p className="text-sm text-muted-foreground">{t.home.changeBy}</p>}
           </div>
-          {done && <YourReply h={household} open={openAt} keepDone={keepDone} />}
-          {done && journey && <Suspense><JourneyCard token={household.token} /></Suspense>}
+          {/* Options → Home map card → One chip: the map line joins Your reply's chips, beside "Who's coming" */}
+          {done && <YourReply h={household} open={openAt} keepDone={keepDone} extra={journey && homemap === "chip" ? <Suspense><JourneyCard token={household.token} chip /></Suspense> : undefined} />}
+          {done && journey && homemap !== "chip" && <Suspense><JourneyCard token={household.token} /></Suspense>}
         </div>
       )}
       <HomeCountdown placement="inside" />
