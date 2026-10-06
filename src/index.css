@@ -554,9 +554,10 @@
 /* Sound and Lantern: two quiet icons at the end of the letter */
 .utility-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--sys-ink-muted); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-quick), background-color var(--duration-quick); }
 /* The sun/moon is a switch, not a tab: no filled "on" chip in Lantern (6 Oct), just full-strength ink */
-.utility-btn[aria-pressed="true"] { color: var(--sys-ink); }
 .utility-btn:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .utility-btn:hover { color: var(--sys-ink); } }
+/* A light sage circle only while the pointer is on it (laptops); nothing stays filled to look switched on */
+@media (hover: hover) and (pointer: fine) { .utility-btn { transition: color var(--duration-quick), background-color var(--duration-quick) var(--ease-paper); } .utility-btn:hover { background: var(--nav-hover-bg); } }
 
 /* From 1024: "Open on your phone", bottom right of the scene, outside the letter */
 .phone-qr { position: fixed; z-index: 20; right: 24px; bottom: 24px; display: flex; align-items: center; gap: var(--space-4); width: 320px; padding: var(--space-4); border-radius: var(--radius-card); background: var(--letter-bg); color: var(--letter-ink); box-shadow: var(--letter-shadow); }
@@ -925,13 +926,11 @@ svg.lucide { stroke-width: 1.5; }
 /* Evening mode switch (v3 S): the new mode grows in a circle from the toggle */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 /* One reveal, nothing else moving inside it (6 Oct): the photo swaps instantly under the snapshot, so it never
-   fades twice. Slower and eased at both ends so the edge glides rather than snaps. */
-::view-transition-new(root) { animation: mode-reveal var(--duration-mode) var(--ease-mode); }
+   fades twice. The circle itself is animated from lantern-toggle.tsx (exact pixels from the tapped button). */
 :root[data-vt="fade"]::view-transition-new(root) { animation: mode-fade var(--duration-mode) var(--ease-mode); }
 :root[data-vt="fade"]::view-transition-old(root) { animation: mode-fade var(--duration-mode) var(--ease-mode) reverse; }
 @keyframes mode-fade { from { opacity: 0; } to { opacity: 1; } }
 :root[data-vt] .scene-layer, :root[data-vt] * { transition: none !important; }
-@keyframes mode-reveal { from { clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0)); } to { clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0)); } }
 /* Segmented choice: a small tick in a slot, mirrored by an equal empty slot on the right, so every label sits centred */
 .segmented[role="radiogroup"] .segmented-item { justify-content: center; padding-inline: var(--space-3); }
 .segmented[role="radiogroup"] .segmented-item::after { content: ""; flex: none; width: 16px; }
