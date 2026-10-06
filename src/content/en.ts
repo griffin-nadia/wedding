@@ -94,7 +94,7 @@ export const en = {
     reply: "Your reply", full: "A full book. A note from us is coming here.",
   },
   flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (city: string) => `Your line is drawn from ${city}.`, change: "Change" },
-  music: { on: "Play music", off: "Pause music", credit: (title: string, artist: string, year: number) => `Music: “${title}” by ${artist} (${year})` },
+  music: { on: "Play music", off: "Pause music", credit: (title: string, artist: string, year?: number) => `Music: “${title}” by ${artist}${year ? ` (${year})` : ""}` },
   journey: {
     title: "Your journey",
     map: (city: string | null) => (city ? `A small map with your line from ${city} to Kyoto` : "A small map of the way to Kyoto"),
