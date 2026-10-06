@@ -462,6 +462,9 @@ function Done({ result, confirm, titleRef, journey = false, flying = null, onFly
     titleRef.current?.focus()
   }, [answer, titleRef])
   const postcard = useOption("postcard") === "on" && answer !== "none"
+  // Options → RSVP → After sending → One at a time (default): the stamp lands on its own, the fortune card arrives
+  // once it has, and the map takes the fortune's place rather than sitting under it, so one thing moves at a time
+  const steps = useOption("sentflow") !== "together"
   const front = (
     <>
       <header className="flex items-center gap-5 pr-10">
@@ -474,11 +477,12 @@ function Done({ result, confirm, titleRef, journey = false, flying = null, onFly
   return (
     <div className="flex flex-col gap-6">
       {postcard ? <Postcard token={h.token}>{front}</Postcard> : front}
-      {answer !== "none" && !postcard && <FortuneCard token={h.token} onMap={journey && !map ? showMap : undefined} />}
+      {answer !== "none" && !postcard && !(steps && map) && <div className={cn(steps && "sent-next")}><FortuneCard token={h.token} onMap={journey && !map ? showMap : undefined} /></div>}
       {journey && map && (
         <section aria-labelledby="map-head" className="flex flex-col gap-3">
           <h3 id="map-head" ref={mapHead} tabIndex={-1} className="font-medium text-foreground outline-none">{t.journey.onMap}</h3>
           <GuestMap you={flying} flying={counts} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} />
+          {steps && <button type="button" className="btn-text min-h-11 self-start" onClick={() => setMap(false)}>{t.journey.backToFortune}</button>}
           {changing || !flying
             ? <><p className="text-sm text-muted-foreground">{!flying && t.journey.notPicked}</p><FlyingFrom token={h.token} initial={flying} onSaved={(c) => { onFlying?.(c); setChanging(false) }} /></>
             : <p className="text-sm text-muted-foreground">{t.flying.yours(t.flying.cities[flying] ?? flying)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}

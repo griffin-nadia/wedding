@@ -3,7 +3,7 @@ import { faceRect } from "@/lib/face"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
 
-type Place = { x: number; y: number; w: number; h: number; side: "centre" | "left" | "right"; row?: boolean; words: boolean } | null
+type Place = { x: number; y: number; w: number; h: number; side: "centre" | "left" | "right" | "below"; row?: boolean; words: boolean } | null
 
 const hits = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
 
@@ -20,6 +20,8 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
   // Options → Arrival → Envelope note words: phones can hint the pull instead ("tap, or pull the letter up")
   const pullCopy = useOption("notecopy") === "pull" && typeof matchMedia !== "undefined" && matchMedia("(pointer: coarse)").matches
   const peekOff = useOption("peek") === "off"
+  // Options → Arrival → Note when faces are in the way: below the envelope (default) or hidden as before
+  const below = useOption("notebelow") !== "hide"
   useLayoutEffect(() => {
     const fit = () => {
       const e = envelope.current?.getBoundingClientRect()
@@ -39,6 +41,13 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
         stack("left", Math.max(16, e.left - 92)),
         stack("right", Math.min(innerWidth - 184, e.right - 76)),
       ]
+      // Nothing clear above: under the envelope instead, pointing up at it. A full note where there's room, else one
+      // line (the words and a small arrow) in the strip under it, as on a 390 × 844 phone
+      if (below) {
+        const room = innerHeight - e.bottom - 8
+        if (room >= 96) tries.push({ x: cx - 84, y: e.bottom + 6, w: 168, h: 96, side: "below", words: true })
+        else if (room >= 28) tries.push({ x: cx - 112, y: e.bottom + 4, w: 224, h: Math.min(room, 36), side: "below", row: true, words: true })
+      }
       const ok = tries.find((p) => !face || !hits(new DOMRect(p.x, p.y, p.w, p.h), face))
       const arrow = { x: cx - 36, y: e.top - 48 - gap, w: 72, h: 48, side: "centre" as const, words: false }
       // Nothing clear at all (a short phone with faces right above the envelope): no note, the envelope stands alone
@@ -48,7 +57,7 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
     addEventListener("resize", fit)
     const id = setTimeout(fit, 400) // once the photo has its size
     return () => { removeEventListener("resize", fit); clearTimeout(id) }
-  }, [envelope, peekOff, pullCopy])
+  }, [envelope, peekOff, pullCopy, below])
   if (!place) return null
   return (
     <div ref={note} aria-hidden className="arrival-note" data-side={place.side} data-row={place.row || undefined} data-words={place.words || undefined}
