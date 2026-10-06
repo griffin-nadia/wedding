@@ -52,7 +52,7 @@
         if (!s || !el || innerWidth >= 1024) { document.getElementById("scene-shell-band").remove(); return el && el.remove() }
         var band = document.getElementById("scene-shell-band")
         if (location.pathname.replace(/\/+$/, "").endsWith("/wedding") && !localStorage.getItem("ng-opened")) band.remove() // sealed envelope: no dock yet
-        el.innerHTML = '<div class="scene-layer absolute inset-0"><picture class="scene-photo absolute inset-0"><source type="image/avif" sizes="100vw" srcset="' + s.b + '800.avif 800w, ' + s.b + '1200.avif 1200w, ' + s.b + '1600.avif 1600w"><img alt="" class="size-full object-cover" fetchpriority="high" src="' + s.b + '1600.webp"></picture></div>'
+        el.innerHTML = '<div class="scene-layer absolute inset-0"><picture class="scene-photo absolute inset-0"><source type="image/avif" sizes="max(100vw, 75vh)" srcset="' + s.b + '800.avif 800w, ' + s.b + '1200.avif 1200w, ' + s.b + '1600.avif 1600w, ' + s.b + '2000.avif 2000w, ' + s.b + '2400.avif 2400w"><img alt="" class="size-full object-cover" fetchpriority="high" src="' + s.b + '1600.webp"></picture></div>'
         el.hidden = false
         if (band.isConnected) { band.innerHTML = el.innerHTML; band.hidden = false }
       })()
