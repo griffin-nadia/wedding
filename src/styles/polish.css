@@ -129,11 +129,14 @@ html { scrollbar-gutter: stable; }
 @media (prefers-reduced-motion: reduce) { .envelope-drawn { transition: none; } }
 
 /* Her garden drawing on The day (Options → The day). The ink is a mask, so it takes the page's ink colour:
-   dark on paper by day, cream on the dark letter in Lantern. Phones crop to the pagoda and the aisle. */
+   dark on paper by day, cream on the dark letter in Lantern. Cropped to the pagoda and the aisle (4:5) so it reads as
+   a header, not a page: full width on phones, 440 wide from 768. */
 .garden-art {
-  width: 100%; aspect-ratio: 960 / 1478; background-color: var(--sys-ink); opacity: 0.88;
-  -webkit-mask: var(--garden) center top / 100% auto no-repeat; mask: var(--garden) center top / 100% auto no-repeat;
+  width: 100%; aspect-ratio: 4 / 5; background-color: var(--sys-ink); opacity: 0.88;
+  -webkit-mask: var(--garden) 50% 30% / cover no-repeat; mask: var(--garden) 50% 30% / cover no-repeat;
 }
-@media (max-width: 767px) { .garden-art { aspect-ratio: 4 / 5; -webkit-mask-size: cover; mask-size: cover; -webkit-mask-position: 50% 30%; mask-position: 50% 30%; } }
-@media (min-width: 768px) { .garden-art { max-width: 520px; margin-inline: auto; } }
+@media (min-width: 768px) { .garden-art { max-width: 440px; margin-inline: auto; } }
+/* A coloured version (ART.garden.kind "colour") is a plain picture: same frame and crop, multiplied into the paper by day */
+.garden-art.is-colour { display: block; height: auto; object-fit: cover; object-position: 50% 30%; background: none; opacity: 1; mix-blend-mode: multiply; }
+[data-theme="lantern"] .garden-art.is-colour { mix-blend-mode: normal; }
 @media print { .garden-art { display: none; } }

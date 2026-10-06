@@ -34,6 +34,20 @@ export function firstPhase(enabled: boolean): Phase {
 /** Put the letter back in the envelope (v3 S): the next render shows it sealed again, even under reduced motion. */
 export function resetArrival() { try { localStorage.removeItem(KEY) } catch { /* fine */ } }
 
+/** One of Nadia's two drawn envelopes, at the size the envelope renders (410 on laptops, 260 on phones). */
+function DrawnEnvelope({ which }: { which: "closed" | "open" }) {
+  const b = `${import.meta.env.BASE_URL}${ART.drawnEnvelope[which]}`
+  const set = (fmt: string) => ART.drawnEnvelope.widths.map((w) => `${b}-${w}.${fmt} ${w}w`).join(", ")
+  const sizes = "(min-width: 768px) 410px, 260px"
+  return (
+    <picture className="contents">
+      <source type="image/avif" sizes={sizes} srcSet={set("avif")} />
+      <img aria-hidden alt="" sizes={sizes} srcSet={set("webp")} src={`${b}-760.webp`} className={`envelope-drawn is-${which}`}
+        decoding="async" fetchPriority={which === "closed" ? "high" : "low"} draggable={false} />
+    </picture>
+  )
+}
+
 export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { enabled: boolean; onOpened?: () => void; children: ReactNode; sealedAgain?: boolean }) {
   const { t } = useLang()
   const { household } = useHousehold()
@@ -123,10 +137,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
             {painted && <><span aria-hidden className="envelope-pencil" /><span aria-hidden className="envelope-paint" /></>}
             <span aria-hidden className="envelope-flap" />
             <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
-            {drawn && <>
-              <img aria-hidden alt="" src={`${import.meta.env.BASE_URL}art/envelope/drawn-open.webp`} className="envelope-drawn is-open" decoding="async" />
-              <img aria-hidden alt="" src={`${import.meta.env.BASE_URL}art/envelope/drawn-closed.webp`} className="envelope-drawn is-closed" decoding="async" fetchPriority="high" />
-            </>}
+            {drawn && <><DrawnEnvelope which="open" /><DrawnEnvelope which="closed" /></>}
           </button>
         )}
         {loupe && !noren && phase === "sealed" && <Suspense><EnvelopeLoupe envelope={button} stage={stage} /></Suspense>}

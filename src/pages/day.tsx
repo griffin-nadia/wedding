@@ -1,3 +1,4 @@
+import { ART } from "@/lib/art"
 import { useEffect, useRef, useState } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
@@ -125,7 +126,9 @@ export function DayPage() {
         <h1 className="heading">{t.day.title}</h1>
         <p className="lead">{t.day.dateLong}</p>
       </header>
-      {garden && <div role="img" aria-label={t.day.gardenAlt} className="garden-art" style={{ ["--garden" as string]: `url(${import.meta.env.BASE_URL}art/garden/garden-ink.webp)` }} />}
+      {garden && (ART.garden.kind === "ink"
+        ? <div role="img" aria-label={t.day.gardenAlt} className="garden-art" style={{ ["--garden" as string]: `url(${import.meta.env.BASE_URL}${ART.garden.src})` }} />
+        : <img src={`${import.meta.env.BASE_URL}${ART.garden.src}`} alt={t.day.gardenAlt} className="garden-art is-colour" decoding="async" />)}
       <Details />
       {timeline}
       <div className="no-print flex flex-col gap-4">
