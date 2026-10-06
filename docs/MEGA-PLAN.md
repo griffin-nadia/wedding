@@ -14,6 +14,13 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 
 ## 2. Right now (6 Oct, evening)
 
+**Latest (6 Oct, late):** #29, #27, #31 and #28 are merged. Claude Code is on Step 2 (branch `mode-switch-origin`).
+- Send date may slip a week to **Thu 22 Oct** if content isn't ready (Nadia). Decide by Sun 11 Oct; §7 has both timelines.
+- Guest emails: all in except Uncle Shuji (can get his link later). Afiq and Alif still being decided with their dad.
+- Story photos: 8 arrived by email on 6 Oct, one or two per year from 2017 to 2025, file names are N&G's working titles. Save to `photos-private/story/` (never committed). Captions only from what N&G write.
+- Name order: the planner's Q&A answer is "Griffin and Nadia". Confirm the title and invite email switch with Nadia before changing any copy.
+- Planner sheet tidied: Overview "Still need" is the single list for N&G, Q&A split into Still open / Already sorted, the Figma password removed from the sheet.
+
 **Live on main:** everything through #24: review fixes, QA pass (sage nav pill, `npm test`), sharper phone photos. #4 is superseded (already on main); close it.
 
 **Not live yet:** #25 (fortune on springs) and #26 (journey map) were merged into their stack branches, not main. **#29** brings both to main (still off behind Options). Lesson: after merging a stacked PR, retarget the next one to main (or delete the merged branch) before merging it.
@@ -116,6 +123,8 @@ No cursor trails (ruled out by the site's ethos).
 | Wed 14 Oct | Sync guest list, make every link, delete test rows, final read-through |
 | **Thu 15 Oct** | **Send invites** |
 
+**If the send slips a week:** everything from Sun 11 shifts by 7 days: Sun 18 drop art in and check every screen, Mon 19 – Tue 20 test, Wed 21 links, **Thu 22 Oct send**.
+
 **Fallback rule:** painting, lettering, fortunes, story and Noya each have a live fallback, so none of them block the 15th.
 
 ## 8. Stress-test matrix (run for every PR)
@@ -152,6 +161,7 @@ Nadia's drawings: art files from nadia-art-images, AVIF + WebP at 1x/2x, the for
 
 ## Step 2: Mode switch grows from the button
 The sun/moon switch should reveal the new mode in a circle growing from the centre of the button that was tapped (top bar on laptops, top-right corner chip on phones), not from the top centre. lantern-toggle.tsx sets --vt-x/--vt-y; check the keyframe in index.css actually reads them at every width and on the sealed envelope, fix whatever makes it start elsewhere, and keep the cross-fade fallback and the instant change under reduced motion. Frame-by-frame screenshots in the PR.
+The button itself: a hover circle behind the sun/moon is fine (match あ/A), but nothing should stay filled after it's tapped, and the sun and あ/A should look the same at rest, on hover and on focus in both modes.
 
 ## Step 3: Journey map, aligned to the Figma hi-fi
 Compare what's built (#26 / #29, Options → Journey map) with Figma "Journey map · hi-fi concept" (file s23BmyKLaYjCzT97QVFXQZ, node 273:311, page 08) and "3 · Final flow · the journey" (node 360:56, page 10). Match: Kyoto as the 京 seal with "KYOTO · 15 OCT 2027", Canada and Brisbane labels, Nadia's line rust from Brisbane and Griffin's moss from Canada (dotted, drawn in), guests' lines faint gold, the Nadia / Griffin / Guests legend, "17 of 40 lines drawn so far" count line, "See as a list", desktop split (map left, story cards right) and the Lantern version (lines softly glow, no lanterns on the map). Make the land a slot: ART.mapLand (off until Nadia's painted land lands; the SVG land stays the fallback), placed with the template's 400 × 320 viewBox so her painting lines up. List every gap you find before changing anything, then fix them behind Options → Journey map. Don't invent story content.
@@ -168,7 +178,7 @@ Each behind an Option unless it's a plain fix; list before/after with screenshot
 2. Envelope note. On hover the letter peeks up and crosses the note's line: give the note enough clearance for the peek at every width. Keep "open your invite" as the default copy; add an Option for a phone variant that hints the pull ("tap, or pull the letter up"). Redraw the arrow so it comes in from the upper-left at an angle, one loose loop, and a cleaner arrowhead (two short strokes of slightly different length, round caps); a touch of hand-drawn wobble is fine, nothing mechanical.
 3. Background music, opt-in only. A small music toggle (top bar / corner chip, same style as the sun), off by default, 20% volume, fades in over 2s and out on pause, remembers the choice on the device, pauses when the tab is hidden, never autoplays with sound. Placeholder track: "among the clouds" by aqualina (2023). Do NOT commit the audio file until Jehan confirms permission from the artist; build it against a silent placeholder file and a config entry in src/lib/art.ts (src, title, artist, credit line shown in FAQs or the footer).
 4. Countdown. The count-in plays when the site is opened or refreshed, or when you come back to the tab after a while (5+ minutes away), not on every page change. Session-scoped flag plus visibilitychange.
-5. The day timeline. The scroll-linked line must be able to reach the bottom: finish when the timeline's end reaches about 60% of the viewport height (not the viewport bottom), and snap to full when the page can't scroll any further. Same for the CSS scroll-timeline path and the JS fallback. Check on a short laptop (1280×720) and a phone.
+5. The day timeline. The scroll-linked line must be able to reach the bottom: finish when the timeline's end reaches about 60% of the viewport height (not the viewport bottom), and snap to full when the page can't scroll any further. Same for the CSS scroll-timeline path and the JS fallback. Check on a short laptop (1280×720) and a phone. Jehan has seen a line stop short in another spot too, so check every scroll-linked line on the site (The day, Home, the journey/story bits), not only The day, and fix them the same way.
 
 ## When you finish
 Tell me in plain language what changed, the PR links, and exactly where to check (page, width, mode, which Option to switch on). Short.
