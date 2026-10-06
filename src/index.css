@@ -1193,8 +1193,6 @@ svg.lucide { stroke-width: 1.5; }
   [data-slot="checkbox"]:not([data-state="checked"], :disabled):hover { border-color: var(--sys-ink-soft); }
 }
 :root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):active::before { opacity: 1; background: color-mix(in oklab, var(--sys-ink) var(--row-press-mix, 8%), transparent); }
-/* An open question keeps a faint tint on its row, so you can see which one you are reading */
-:root:not([data-opt-rowhover="off"]) [data-slot="accordion-trigger"][data-state="open"]::before { opacity: 0.6; }
 @media (prefers-reduced-motion: reduce) { :root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row)::before { transition: none; } }
 
 /* Omikuji (v3 V, Nadia: "prioritise the fortunes, no branch"). The tin is the button; it shakes, its stick rises,
