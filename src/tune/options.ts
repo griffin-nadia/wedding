@@ -54,6 +54,7 @@ export const OPTIONS: Option[] = [
   { key: "stamps", label: "Stamp book", flow: "Scene", note: "Walk scene only: a stamp for each page visited, in the top bar.", values: [["off", "Off"], ["on", "On"]], when: (o) => o.scene === "walk" },
   { key: "density", label: "Density", flow: "Theme", note: "Field heights and the letter's padding.", values: [["auto", "Theme"], ["compact", "Compact"], ["comfortable", "Comfortable"], ["roomy", "Roomy"]] },
   { key: "round", label: "Roundness", flow: "Theme", note: "Every control, the nav, sections and the letter together (8 / 16 / 24 scaled).", values: [["auto", "Theme"], ["sharp", "Sharp"], ["soft", "Soft"], ["round", "Round"]] },
+  { key: "navtint", label: "Nav pill", flow: "Theme", note: "Laptop top bar: the current page on a sage tint with a fine sage line, and a lighter tint under the pointer. Paper: the old pale marker, no hover fill.", values: [["sage", "Sage"], ["paper", "Paper"]] },
   { key: "navigation", label: "Navigation", flow: "Theme", note: "Pages: swipe between letters on phones, the top bar on a laptop. Desk (preview, laptop): the other letters peek out from behind this one as paper tabs; click one to bring it forward.", values: [["pages", "Pages"], ["desk", "Desk (preview)"]] },
 ]
 
