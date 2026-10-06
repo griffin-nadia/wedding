@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { FORTUNES } from "@/content/en"
 import { getFortunes } from "@/lib/api"
 import { useLang } from "@/lib/lang"
-import { toast } from "@/components/toast"
-import { copyText } from "@/lib/copy"
+import { canShake, drawnKey, saveFortune } from "@/lib/fortune"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useOption } from "@/lib/options"
+
+const FortuneSpring = lazy(() => import("@/components/fortune-spring"))
 
 /** The same fortune for a household on any device: picked from its token. */
 export function fortuneIndex(token: string, of = 12) {
@@ -14,7 +16,6 @@ export function fortuneIndex(token: string, of = 12) {
   return h % of
 }
 
-const drawnKey = (token: string) => `ng-fortune-${token}`
 const KANJI = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 /** 1 → 一, 12 → 十二: the slip's number, as on a real omikuji (第七番) */
 export const kanjiNumber = (n: number) => (n <= 10 ? KANJI[n] : `十${KANJI[n - 10]}`)
@@ -27,13 +28,9 @@ export function useFortune(token: string) {
   return { i, of: tips.length, text: tips[i], drawn: () => { try { localStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ } } }
 }
 
-/** Android lets a page read a shake without asking; iPhones need a permission prompt, so there it's tap only. */
-const canShake = () => typeof window !== "undefined" && "DeviceMotionEvent" in window
-  && typeof (DeviceMotionEvent as unknown as { requestPermission?: unknown }).requestPermission !== "function"
-  && window.matchMedia("(pointer: coarse)").matches
 
 /** The box: a hexagonal 御籤 tin in rust with a cream label; its stick rises as the fortune comes out. */
-function Box({ drawing }: { drawing: boolean }) {
+export function Box({ drawing }: { drawing: boolean }) {
   return (
     <svg viewBox="0 0 64 96" className={cn("omikuji-tin", drawing && "is-drawing")} aria-hidden>
       <rect className="omikuji-stick" x="29" y="2" width="6" height="34" rx="1.5" />
@@ -52,7 +49,7 @@ function Box({ drawing }: { drawing: boolean }) {
  * takes focus. Android phones can shake to draw. Reduced motion: no shake, the slip fades in. Return visits
  * open on the slip. The fortune is the household's for good, on any device.
  */
-export function FortuneCard({ token, className }: { token: string; className?: string }) {
+export function FortuneCard({ token, className, onMap }: { token: string; className?: string; onMap?: () => void }) {
   const { t } = useLang()
   const [tips, setTips] = useState(FORTUNES)
   const [state, setState] = useState<"closed" | "drawing" | "open">(() => {
@@ -60,6 +57,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   })
   const slip = useRef<HTMLDivElement>(null)
   const shaky = useRef(canShake())
+  const spring = useOption("fortune") === "spring"
   useEffect(() => { getFortunes().then((f) => f && f.length === 12 && setTips(f)) }, [])
   const i = fortuneIndex(token, tips.length)
   const text = tips[i]
@@ -85,14 +83,10 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     window.addEventListener("devicemotion", on)
     return () => window.removeEventListener("devicemotion", on)
   })
-  async function save() {
-    const words = `${t.fortune.blessing} ${t.fortune.blessingEn}. ${text}`
-    try {
-      if (navigator.share) await navigator.share({ title: t.fortune.title, text: words })
-      else if (await copyText(words)) toast(t.fortune.copied)
-    } catch { /* cancelled */ }
-  }
+  const save = () => saveFortune(t, text)
 
+  // Options → Fortune → Springs: the Motion version, loaded only when it's on
+  if (spring) return <Suspense fallback={null}><FortuneSpring token={token} className={className} onMap={onMap} /></Suspense>
   if (state !== "open") {
     return (
       <section aria-labelledby="fortune" className={cn("omikuji flex items-center gap-5 rounded-md border bg-card p-4", className)}>
@@ -109,14 +103,24 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   }
   return (
     <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip", className)}>
+      <SlipWords i={i} of={tips.length} text={text} />
+      <button type="button" onClick={save} className="omikuji-save">{t.fortune.save}</button>
+    </div>
+  )
+}
+
+/** The words on the slip: 第七番, 大吉 / Great blessing, the line, No. 7 of 12. Shared by both reveals. */
+export function SlipWords({ i, of, text }: { i: number; of: number; text: string }) {
+  const { t } = useLang()
+  return (
+    <>
       <p lang="ja" className="omikuji-no font-ja" aria-hidden>第{kanjiNumber(i + 1)}番</p>
       <p id="fortune-head" className="flex flex-col items-center gap-1">
         <span lang="ja" className="omikuji-kichi font-ja">{t.fortune.blessing}</span>
         <span className="label-caps">{t.fortune.blessingEn}</span>
       </p>
       <p className="omikuji-text">{text}</p>
-      <p className="label-caps omikuji-count">{t.fortune.number(i + 1, tips.length)}</p>
-      <button type="button" onClick={save} className="omikuji-save">{t.fortune.save}</button>
-    </div>
+      <p className="label-caps omikuji-count">{t.fortune.number(i + 1, of)}</p>
+    </>
   )
 }

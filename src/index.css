@@ -1224,6 +1224,10 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-count { opacity: 0.8; }
 .omikuji-save { min-height: 44px; color: var(--brand-doro); text-decoration: underline; text-underline-offset: 4px; outline: 2px solid transparent; outline-offset: 2px; border-radius: var(--radius-control); }
 .omikuji-save:focus-visible { outline-color: var(--brand-doro); }
+/* Springs (Options → Fortune): Motion moves the tin, the stick and the slip, so their CSS animations stand down */
+.omikuji-slip.is-spring { animation: none; }
+.omikuji-tin-spring { display: block; transform-origin: 50% 90%; }
+.omikuji-slip.is-spring .omikuji-save { min-height: 44px; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }
   .omikuji-stick { transition: none; }

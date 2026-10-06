@@ -93,7 +93,7 @@ export const en = {
     reply: "Your reply", full: "A full book. A note from us is coming here.",
   },
   flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (city: string) => `Your line is drawn from ${city}.`, change: "Change" },
-  fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes.", hint: "Tap the box to draw one.", hintShake: "Tap the box, or give your phone a little shake.", boxLabel: "The fortune box. Draw a fortune", drawing: "Shaking the box…" },
+  fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes.", hint: "Tap the box to draw one.", hintShake: "Tap the box, or give your phone a little shake.", boxLabel: "The fortune box. Draw a fortune", drawing: "Shaking the box…", onMap: "See your line on the map" },
   driver: { label: "Taxi from Kyoto Station", fare: "Around ¥2,000, 15 to 20 minutes.", show: "Show the driver", maps: "Directions in Google Maps", mapsOpens: "opens Google Maps", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
   countdownMore: {
     until: "until we see you in Kyoto", tomorrow: "Tomorrow", today: "Today's the day", married: "Married",
