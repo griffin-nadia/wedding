@@ -206,3 +206,18 @@ html { scrollbar-gutter: stable; }
 .sent-next { animation: sent-next var(--duration-settle) var(--ease-paper) calc(var(--duration-stamp) + 450ms) both; }
 @keyframes sent-next { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .sent-next { animation: none; } }
+
+/* The note under the envelope (Options → Arrival): the arrow points up at it. A full note stacks arrow over words;
+   the one-line version is the words then a small upward arrow */
+.arrival-note[data-side="below"] { flex-direction: column-reverse; justify-content: flex-end; }
+.arrival-note[data-side="below"] .arrival-note-arrow { scale: 1 -1; }
+.arrival-note[data-side="below"][data-row] { flex-direction: row; align-items: center; justify-content: center; }
+.arrival-note[data-side="below"][data-row] .arrival-note-arrow { width: 40px; height: 28px; margin-top: 0; scale: 1 -1; }
+.arrival-note[data-side="below"] .arrival-note-words { rotate: -2deg; }
+
+/* Phones (Options → The day → Garden on phones → Short band, default): the garden as a band about 140px tall, the
+   drawing scaled so the pagoda and the start of the aisle both sit in it, so the timeline starts higher */
+@media (max-width: 767px) {
+  :root:not([data-opt-gardenband="tall"]) .garden-art { aspect-ratio: auto; height: 140px; -webkit-mask-size: auto 196px; mask-size: auto 196px; -webkit-mask-position: 50% 0%; mask-position: 50% 0%; }
+  :root:not([data-opt-gardenband="tall"]) .garden-art.is-colour { object-fit: cover; object-position: 50% 20%; }
+}
