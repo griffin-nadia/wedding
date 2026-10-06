@@ -17,7 +17,7 @@ import { Chip, FieldError, ReviewRow, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard, useFortune } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
-import { JourneyMini } from "@/components/journey-mini"
+import { GuestMap, JourneyLegend, JourneyMini } from "@/components/journey-mini"
 import { keepFlying, readFlying } from "@/lib/journey"
 import { FlyingFrom } from "@/components/flying-from"
 import { answerOf, ApiError, FLYING, getFlying, setFlying, type Flying, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
@@ -384,7 +384,10 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                   <div className="flex flex-wrap gap-2">
                     {FLYING.map((c) => <Chip key={c} on={flying === c} onClick={() => setFlyingPick(flying === c ? null : c)}>{t.flying.cities[c] ?? c}</Chip>)}
                   </div>
-                  <JourneyMini you={flying} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} className="max-w-64" />
+                  <div className="flex max-w-64 flex-col gap-2">
+                    <JourneyMini you={flying} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} />
+                    <JourneyLegend you={Boolean(flying)} />
+                  </div>
                 </section>
                 {datesBlock}
               </>
@@ -475,8 +478,7 @@ function Done({ result, confirm, titleRef, journey = false, flying = null, onFly
       {journey && map && (
         <section aria-labelledby="map-head" className="flex flex-col gap-3">
           <h3 id="map-head" ref={mapHead} tabIndex={-1} className="font-medium text-foreground outline-none">{t.journey.onMap}</h3>
-          <JourneyMini you={flying} counts={counts?.counts} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} />
-          {counts && counts.told > 0 && <p className="text-sm text-muted-foreground">{t.story.flyingFrom(counts.told, counts.households)}</p>}
+          <GuestMap you={flying} flying={counts} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} />
           {changing || !flying
             ? <><p className="text-sm text-muted-foreground">{!flying && t.journey.notPicked}</p><FlyingFrom token={h.token} initial={flying} onSaved={(c) => { onFlying?.(c); setChanging(false) }} /></>
             : <p className="text-sm text-muted-foreground">{t.flying.yours(t.flying.cities[flying] ?? flying)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}

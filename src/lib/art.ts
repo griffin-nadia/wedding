@@ -25,4 +25,10 @@ export const ART = {
    * swap the file and the kind. Either way it's cropped to the pagoda and the aisle.
    */
   garden: { src: "art/garden/garden-ink.webp", kind: "ink" as "ink" | "colour" },
+  /**
+   * Nadia's painted land for the journey map: one image painted on the map template (photos-private/art/templates),
+   * covering exactly the template's dashed box, which is the map's 400 × 320 viewBox. Empty until it lands; the
+   * drawn SVG land shows meanwhile. Put the file in public/art/map/ and set its path here (e.g. "art/map/land.webp").
+   */
+  mapLand: "",
 }
