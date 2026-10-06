@@ -4,7 +4,7 @@ import { ART } from "@/lib/art"
 import { useLang } from "@/lib/lang"
 
 const KEY = "ng-music"
-/** One level for every sound on the site (the music and the envelope's paper sound). */
+/** The site's only sound is the music, at this level. */
 export const SITE_VOLUME = 0.3
 const FADE_IN = 2500
 /** After the first tap anywhere (usually opening the envelope) wait this long, so the song arrives with the letter. */
@@ -32,6 +32,11 @@ let fade = 0
 let on = (() => { try { return localStorage.getItem(KEY) !== "off" } catch { return true } })()
 let armed = false
 const subs = new Set<() => void>()
+// One player across browser tabs too: when this tab starts the song, any other open tab of the site fades out.
+const tab = Math.random().toString(36).slice(2)
+let channel: BroadcastChannel | null = null
+try { channel = new BroadcastChannel("ng-music") } catch { /* older browsers: one tab is the norm anyway */ }
+channel?.addEventListener("message", (e: MessageEvent) => { if (e.data?.playing && e.data.tab !== tab) pause() })
 const emit = () => subs.forEach((f) => f())
 
 function el() {
@@ -54,6 +59,7 @@ function ramp(to: number, ms: number, then?: () => void) {
   fade = requestAnimationFrame(step)
 }
 function play() {
+  channel?.postMessage({ playing: true, tab })
   const a = el()
   if (!a.paused) { ramp(SITE_VOLUME, FADE_IN); return }
   void a.play().then(() => ramp(SITE_VOLUME, FADE_IN)).catch(() => {})

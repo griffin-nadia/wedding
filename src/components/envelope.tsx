@@ -4,7 +4,6 @@ import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "rea
 import { COUPLE } from "@/content/en"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
-import { playPaper } from "@/lib/sound"
 import { cn } from "@/lib/utils"
 import { useOption } from "@/lib/options"
 
@@ -98,7 +97,6 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   }
   const open = () => {
     if (phase !== "sealed") return finish()
-    playPaper()
     setPhase("opening")
     timer.current = window.setTimeout(finish, 900)
   }
