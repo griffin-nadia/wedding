@@ -54,8 +54,14 @@ export default function MusicToggle() {
   // Remembered as on: wait for their first tap anywhere (browsers never allow sound before one), then fade in
   useEffect(() => {
     if (!on) return
-    const first = () => play()
-    addEventListener("pointerdown", first, { once: true })
+    // A tap on the toggle itself is handled by toggle(); counting it here too would start the music and then
+    // immediately pause it, so the first tap on the speaker seemed to do nothing.
+    const first = (e: PointerEvent) => {
+      if ((e.target as Element | null)?.closest?.("[data-music-toggle]")) return
+      removeEventListener("pointerdown", first)
+      play()
+    }
+    addEventListener("pointerdown", first)
     return () => removeEventListener("pointerdown", first)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -75,7 +81,7 @@ export default function MusicToggle() {
     if (next) play(); else pause()
   }
   return (
-    <button type="button" onClick={toggle} aria-pressed={on} className="utility-btn press" title={on ? t.music.off : t.music.on} aria-label={on ? t.music.off : t.music.on}>
+    <button type="button" data-music-toggle onClick={toggle} aria-pressed={on} className="utility-btn press" title={on ? t.music.off : t.music.on} aria-label={on ? t.music.off : t.music.on}>
       {on ? <Volume2 className="size-5" aria-hidden /> : <VolumeX className="size-5" aria-hidden />}
     </button>
   )
