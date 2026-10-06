@@ -3,7 +3,7 @@ import { SCENES, type SceneSource } from "@/lib/scenes"
 import { cn } from "@/lib/utils"
 
 const base = import.meta.env.BASE_URL
-const set = (name: string, fmt: string) => [800, 1200, 1600].map((w) => `${base}scenes/${name}-${w}.${fmt} ${w}w`).join(", ")
+const set = (name: string, fmt: string) => [800, 1200, 1600, 2000, 2400].map((w) => `${base}scenes/${name}-${w}.${fmt} ${w}w`).join(", ")
 // From 1280: the 16:9 version (extended in Photoshop) with them in the right third, so it can fill the screen
 const wideSet = (name: string, fmt: string) => [1600, 2400].map((w) => `${base}scenes/${name}-wide-${w}.${fmt} ${w}w`).join(", ")
 const WIDE = "(min-width: 1280px)"

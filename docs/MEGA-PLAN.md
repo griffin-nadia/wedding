@@ -12,9 +12,23 @@ Every guest gets a personal invitation that knows who they are, what they're inv
 - **Nav:** Home · The day · Travel · FAQs (+ Our story once its three chapters exist). No login, no hamburger, personal link or short code only
 - **Guardrails:** one chosen interaction moment per screen, everything else quiet. Kit states stay canonical (default, hover, focus, pressed, selected, disabled, error, loading). CSS/SVG first, Motion only where spring physics materially improve feel. 60fps on a mid-range phone, transform-only where possible. Reduced motion gets a complete still state, never a broken one. No scroll hijacking, no three.js, no smooth-scroll library. Japanese and Lantern switches are first-class site controls.
 
-## 2. Right now
+## 2. Right now (6 Oct)
 
-- #19 and #20 are merged; #22 fixes what the review of them found (FAQ and tilt defaults, あ/A state, envelope photo alignment, the arrival note). Then visual-check: FAQs in English/Japanese, Autumn/Lantern, phone and desktop, reduced motion on/off.
+**Live on main:** everything up to #21 (wide laptop photos, #19 polish, #20 nav and mode fixes, this plan).
+
+**Open, merge in this order** (each is stacked on the one before, except #23):
+1. #22 review-fixes: FAQ and tilt defaults, あ/A state, envelope photo framed like every page, hand-written arrival note
+2. #24 qa-pass: clearer nav pill, sealed envelope no longer scrolls, FAQ hover, `npm test` for option defaults
+3. #23 photo-hq: sharper phone photos, 2000 and 2400 sizes
+4. #25 fortune-spring: fortune on Motion springs, behind Options → Fortune
+5. #26 journey-map: Your journey step, map after the fortune, Home card, behind Options → Journey map
+
+**Nadia's art arrived (6 Oct)**, a 200 dpi scan: closed envelope (maple leaf, gum leaf, wax seal), open envelope (flap up), garden line drawing (pagoda, benches, aisle; coloured version still to come). Copy in `photos-private/art/` (never committed). Rescan requested at 600 dpi PNG, one piece per scan, plus the seal and leaves on their own.
+
+**The seal reads "G·N".** That matches their Q&A answer ("Griffin and Nadia") but not the site (Nadia & Griffin, N&G everywhere, the #12 link preview). Waiting on their answer; don't build the lettering or change names until it's settled.
+
+**Waiting on Jehan:** paste `apps-script/Code.gs` into the Site-Data script and deploy (for "Already in Japan"); re-export the day PSD at 3840 × 2160 for a sharper laptop photo.
+
 - Do not reopen the loupe, postcard flip, shared branch, stamp book, keepsake, or colour transition unless Nadia explicitly says they were scope cuts, not taste cuts.
 
 ## 3. What N&G owe us (Mon 5 – Wed 7 Oct)
@@ -103,22 +117,31 @@ No cursor trails (ruled out by the site's ethos).
 ## 9. The prompt (hand this to the next build session)
 
 ```text
-You're continuing work on a private wedding website + RSVP (React + TypeScript, repo: griffin-nadia/wedding). Read docs/MEGA-PLAN.md first — it is the source of truth for scope, guardrails and the stress-test matrix.
+You're picking up the wedding site for Nadia and Griffin (Fri 15 Oct 2027, The Sodoh Higashiyama, Kyoto). Repo: github.com/griffin-nadia/wedding (PUBLIC), live at griffin-nadia.github.io/wedding. Local copy: ~/_Workspace/Personal/nadia-griffin-wedding. Vite, React 19, TypeScript, Tailwind v4, Motion (lazy), GitHub Pages; Apps Script back end in apps-script/. Invites go out Thu 15 Oct 2026. Read docs/MEGA-PLAN.md (§2 is the current state), README.md and docs/system.md first.
 
-Context: PR #20 (state alignment + image quality) is merged. Build the next PR in the queue: PR 1 · Fortune reveal, unless I say otherwise.
+## Rules
+- Branch per change, open a PR, never merge. I merge.
+- No AI attribution anywhere: no Co-Authored-By, no "Generated with", no tool names in commits, PRs, code, comments or committed files (no CLAUDE.md or AGENTS.md in the repo; private notes go in .brief/, which is gitignored). Don't publish artifacts or share links.
+- Commit messages are plain sentences like the rest of the history, no feat:/fix: prefixes.
+- Australian English, sentence case. Guests never see back-end words. Don't invent content; placeholders stay clearly marked.
+- Nothing private in the repo: no guest data, tokens, .env, .brief/, photos-private/. Test mode only, never send real invites.
+- New looks go behind an Option (src/tune/options.ts + OPTION_DEFAULTS in src/tune/store.ts); the first listed value and the stored default must match (npm test checks this).
+- Every motion has a still version under prefers-reduced-motion. Desktop-only effects gated to (hover: hover) and (pointer: fine). No cursor trails, smooth-scroll libraries or three.js. Faces stay sharp.
+- Before every PR: npm run build, npm run lint (no new errors), npm test, then look at it in a browser at 390, 768, 1024, 1280, 1440 and 1920, in Autumn and Lantern, English and Japanese, reduced motion on and off.
 
-Hard rules:
-- One interaction moment per screen; everything else stays quiet.
-- Kit states stay canonical: default, hover, focus, pressed, selected, disabled, error, loading.
-- CSS/SVG first; Motion only where spring physics materially improve the feel.
-- 60fps on a mid-range phone; transform-only motion where possible.
-- Reduced motion gets a complete still state, never a broken or missing state.
-- No scroll hijacking, no three.js, no smooth-scroll library.
-- Faces in photos stay sharp; no global blur on final images.
-- Japanese and Autumn/Lantern switches must keep working as first-class controls.
-- Do not reopen cut explorations (loupe, postcard flip, shared branch, stamp book, keepsake, colour transition).
+## Step 1: Check the stack
+#22, #24, #23, #25, #26 are open (merge order in MEGA-PLAN §2). If any no longer merges cleanly after I merge the one before, rebase it and tell me. Don't start new work on top of an unmerged branch without saying which one.
 
-PR 1 spec: tap-first omikuji fortune (shake is progressive enhancement). Spring-driven sequence: tin shakes → stick rises → paper slip unfolds. One numbered 大吉 slip per reply (e.g. No. 7 of 12) with 大吉 / GREAT BLESSING, a fortune line, and "Save to my phone". Next action: "See your line on the map" (may deep-link to the existing journey foundation). Reduced motion shows a static opened slip. Use the 12 travel tips as placeholder fortune content behind a single content file so Griffin's real lines drop in without code changes.
+## Step 2: Nadia's painted envelope (behind Options → Envelope art, off by default)
+Source: photos-private/art/nadia-scans-2026-10-06.pdf (200 dpi; page 1 garden, page 2 open envelope, page 3 closed envelope). Use it now as a stand-in; a 600 dpi PNG rescan will replace it with no code change.
+- Cut the closed and open envelopes from the paper (transparent PNG, then AVIF/WebP at 1x and 2x of the rendered size, about 380px wide on laptops) into public/art/envelope/. Keep the hand-drawn edge; no clean vector redraw.
+- Sealed state: her closed envelope replaces the CSS one, same size, position and tilt. Opening: cross-fade to her open envelope as the flap lifts, then the letter rises out of it as now. The existing art slots (src/lib/art.ts, envelope.tsx) are where this plugs in.
+- The seal on her drawing reads "G·N". Do not change any names, the CSS seal or the link preview; the name order is still being decided.
+- Lantern: her envelope stays cream (it's paper under a lamp).
 
-Before opening the PR: npm run build passes, npm run lint has no new warnings, git diff --check passes, and walk the stress-test matrix in docs/MEGA-PLAN.md §8. Report what you checked and what you couldn't.
+## Step 3: Garden drawing on The day (behind Options → Garden drawing, off by default)
+Her ink drawing as a header above the timeline on The day. Day mode: ink on paper, multiply into the letter. Lantern: lines inverted to cream on the dark letter. Crop to the pagoda and aisle on phones. It's line art now; a coloured version may replace it later, so keep the slot format-agnostic.
+
+## When you finish
+Tell me in plain language what changed, the PR links, and exactly where to check (page, width, mode, which Option to switch on). Short.
 ```
