@@ -34,6 +34,20 @@ export function firstPhase(enabled: boolean): Phase {
 /** Put the letter back in the envelope (v3 S): the next render shows it sealed again, even under reduced motion. */
 export function resetArrival() { try { localStorage.removeItem(KEY) } catch { /* fine */ } }
 
+/** One of Nadia's two drawn envelopes, at the size the envelope renders (410 on laptops, 260 on phones). */
+function DrawnEnvelope({ which }: { which: "closed" | "open" }) {
+  const b = `${import.meta.env.BASE_URL}${ART.drawnEnvelope[which]}`
+  const set = (fmt: string) => ART.drawnEnvelope.widths.map((w) => `${b}-${w}.${fmt} ${w}w`).join(", ")
+  const sizes = "(min-width: 768px) 410px, 260px"
+  return (
+    <picture className="contents">
+      <source type="image/avif" sizes={sizes} srcSet={set("avif")} />
+      <img aria-hidden alt="" sizes={sizes} srcSet={set("webp")} src={`${b}-760.webp`} className={`envelope-drawn is-${which}`}
+        decoding="async" fetchPriority={which === "closed" ? "high" : "low"} draggable={false} />
+    </picture>
+  )
+}
+
 export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { enabled: boolean; onOpened?: () => void; children: ReactNode; sealedAgain?: boolean }) {
   const { t } = useLang()
   const { household } = useHousehold()
@@ -42,6 +56,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const hint = useOption("arrivalhint")
   // Nadia's painted envelope (a placeholder until her scan), its colour bleeding in, and a loupe to lean in on it
   // Real painting (ART.envelope): on for everyone unless crew switch it off. Placeholder: crew-only preview.
+  const drawn = useOption("envart") === "drawn" // Nadia's drawn envelope (6 Oct scan), closed then open
   const envOpt = useOption("envpaint")
   const painted = ART.envelope ? envOpt !== "off" : envOpt === "on"
   const loupeOn = useOption("loupe") === "on"
@@ -115,13 +130,14 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
             <span aria-hidden className="noren-panel noren-right"><span>{COUPLE.second[0]}</span></span>
           </button>
         ) : (
-          <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper">
+          <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className={cn("envelope paper", drawn && "is-drawn")}>
             <span aria-hidden className="envelope-back" />
             <span aria-hidden className="envelope-paper" />
             <span aria-hidden className="envelope-front" />
             {painted && <><span aria-hidden className="envelope-pencil" /><span aria-hidden className="envelope-paint" /></>}
             <span aria-hidden className="envelope-flap" />
             <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
+            {drawn && <><DrawnEnvelope which="open" /><DrawnEnvelope which="closed" /></>}
           </button>
         )}
         {loupe && !noren && phase === "sealed" && <Suspense><EnvelopeLoupe envelope={button} stage={stage} /></Suspense>}

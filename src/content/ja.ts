@@ -122,6 +122,7 @@ export const ja: DeepPartial<Content> = {
   },
   day: {
     title: "当日",
+    gardenAlt: "ナディアが描いたザ・ソウドウの庭のスケッチ。木々の上に五重塔、通路の両側にベンチが並ぶ",
     date: DAY,
     venue: "ザ・ソウドウ 東山 京都",
     addressLines: ["〒605-0827", "京都府京都市東山区八坂上町366"],

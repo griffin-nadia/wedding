@@ -9,6 +9,8 @@ export type Option = { key: string; label: string; flow: (typeof FLOWS)[number];
  */
 export const OPTIONS: Option[] = [
   { key: "arrivalhint", label: "Envelope hint", flow: "Arrival", note: "A handwritten \u201copen your invite\u201d with an arrow, placed clear of their faces, or the small \u201cTap to open\u201d pill.", values: [["note", "Handwritten arrow"], ["pill", "Pill"]] },
+  { key: "envart", label: "Nadia's envelope drawing", flow: "Arrival", note: "Her drawn envelope (maple leaf, gum leaf, wax seal) instead of the paper one; it opens to her drawing of the open envelope as the letter rises. A 200 dpi stand-in until her 600 dpi rescan.", values: [["off", "Paper envelope"], ["drawn", "Her drawing"]] },
+  { key: "garden", label: "Garden drawing", flow: "The day", note: "Nadia's ink drawing of the garden (pagoda, benches, the aisle) above the timeline. Ink on paper by day, cream lines in Lantern.", values: [["off", "Off"], ["on", "On"]] },
   { key: "envpaint", label: "Painted envelope", flow: "Arrival", note: "Nadia's painted envelope on the front (a placeholder painting until her scan is in public/art/envelope).", values: [["off", "Plain paper"], ["on", "Painted"]] },
   { key: "bleed", label: "Colour bleeds in", flow: "Arrival", note: "Painted envelope only: the pencil sketch shows first, then the colour spreads over it from a wet, ragged edge.", values: [["off", "Off"], ["on", "On"]], when: (o) => o.envpaint === "on" },
   { key: "loupe", label: "Loupe", flow: "Arrival", note: "Painted envelope only: a glass lens shows the brushwork three times over. Laptop: hover. Phones: press and hold still (moving first still pulls it open).", values: [["off", "Off"], ["on", "On"]], when: (o) => o.envpaint === "on" },
