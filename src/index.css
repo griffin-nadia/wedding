@@ -1147,6 +1147,8 @@ svg.lucide { stroke-width: 1.5; }
 .journey-card-home { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding-block: var(--space-1); text-align: left; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
 .journey-card-home:focus-visible { outline-color: var(--input-focus); }
 .journey-card-thumb { flex: none; width: 72px; border-radius: var(--radius-control); }
+/* The thumbnail is a still picture of their line: the countdown is Home's one moving thing */
+.journey-card-thumb .journey-you, .journey-card-thumb .journey-reveal { animation: none; stroke-dashoffset: 0; }
 .journey-print { position: absolute; z-index: 2; width: 160px; padding: var(--space-4) var(--space-3) var(--space-5); border-radius: 4px; background: var(--brand-paper-bright); box-shadow: 0 10px 24px -12px rgb(var(--sys-shadow-tint) / 0.4); font-family: var(--font-hand); font-size: 16px; color: var(--sys-ink); text-align: center; pointer-events: none; opacity: 0; rotate: 2deg; translate: 0 8px; transition: opacity var(--duration-quick), translate var(--duration-settle) var(--ease-paper); }
 .journey-print[data-from="left"] { rotate: -2deg; translate: -12px 8px; }
 .journey-print[data-from="right"] { translate: 12px 8px; }
