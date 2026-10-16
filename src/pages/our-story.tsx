@@ -6,6 +6,7 @@ import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
 import { StoryJourney } from "@/components/story-journey"
 import { cn } from "@/lib/utils"
+import { PlaceholderTag } from "@/components/placeholder-tag"
 
 /** Journey A · the letter continues (default): chapters as pages of the letter. Swipe or arrows on phones, side by side from 1024. No photos. */
 function StoryLetter({ chapters }: { chapters: Chapter[] }) {
@@ -158,7 +159,7 @@ export function StoryPage() {
   if (ready && crew && !story.length && (!view || view === "b") && journey) {
     return (
       <>
-        <h1 className="heading">{t.story.title}</h1>
+        <div className="relative"><h1 className="heading">{t.story.title}</h1><PlaceholderTag id="storyCaptions" done={story.length > 0} className="at-bottom at-start" /></div>
         <StoryJourney chapters={[]} showFlying={flying} drag={mapDrag} token={household?.token} replied={Boolean(household?.respondedAt)} />
       </>
     )

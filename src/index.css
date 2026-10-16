@@ -1301,3 +1301,19 @@ svg.lucide { stroke-width: 1.5; }
 .kmap-key { display: inline-block; width: 20px; border-top: 2px dashed; }
 .kmap-key-taxi { color: var(--brand-sabi); } .kmap-key-walk { color: var(--brand-sage-ink); margin-left: 8px; }
 @media (prefers-reduced-motion: reduce) { .kmap-card { animation: none; } .kmap-dot { transition: none; } }
+
+/* Crew-only Placeholder tag (src/lib/placeholders.ts): an amber pill straddling the top edge at the end corner;
+   hover, focus or tap shows one line under it. 24px tall (target size), no motion under reduced motion. */
+.placeholder-tag { position: absolute; z-index: 30; top: -12px; inset-inline-end: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; pointer-events: none; }
+.placeholder-tag.at-bottom { top: auto; bottom: -12px; flex-direction: column-reverse; }
+.placeholder-tag.at-start { inset-inline: 16px auto; align-items: flex-start; }
+.placeholder-tag-pill { pointer-events: auto; min-height: 24px; padding: 0 10px; border-radius: 999px; background: var(--placeholder-tag-fill); color: var(--placeholder-tag-ink); font: 500 var(--type-label-size) / var(--type-label-leading) var(--font-label); box-shadow: 0 0 0 1px color-mix(in oklab, var(--placeholder-tag-ink) 20%, transparent); outline: 2px solid transparent; outline-offset: 2px; cursor: help; }
+.placeholder-tag-pill:focus-visible { outline-color: var(--input-focus); }
+.placeholder-tag-line { pointer-events: auto; width: max-content; max-width: min(260px, 80vw); padding: 6px 10px; border-radius: var(--radius-control); background: var(--placeholder-tag-line-fill); color: var(--placeholder-tag-ink); font: 400 14px / 20px var(--font-label); text-align: start; box-shadow: var(--letter-shadow); visibility: hidden; opacity: 0; }
+.placeholder-tag.is-open .placeholder-tag-line, .placeholder-tag-pill:focus-visible + .placeholder-tag-line { visibility: visible; opacity: 1; }
+@media (hover: hover) { .placeholder-tag-pill:hover + .placeholder-tag-line { visibility: visible; opacity: 1; } }
+@media (prefers-reduced-motion: no-preference) { .placeholder-tag-line { transition: opacity var(--duration-quick) var(--ease-paper), visibility var(--duration-quick); } }
+.placeholder-tag.inside { top: 8px; inset-inline-end: 8px; }
+/* The あ / A switch: above it on phones (the letter's top edge, clear of the names), under it in the laptop top bar */
+.placeholder-tag.on-switch { top: -20px; inset-inline-end: -8px; }
+@media (min-width: 768px) { .placeholder-tag.on-switch { top: calc(100% - 6px); } }
