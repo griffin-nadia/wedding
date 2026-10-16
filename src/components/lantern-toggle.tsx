@@ -5,6 +5,7 @@ import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { cn } from "@/lib/utils"
 import { useOption } from "@/lib/options"
+import { PlaceholderTag } from "@/components/placeholder-tag"
 import { photoFor } from "@/lib/scenes"
 
 const warmPhoto = (name: string) => {
@@ -73,11 +74,14 @@ export function LangToggle() {
   if (!show) return null
   const ja = lang === "ja"
   return (
-    <button type="button" onClick={() => setLang(ja ? "en" : "ja")} className="utility-btn press font-label text-(length:--type-ui-size) font-medium"
-      title={ja ? "Switch to English" : "日本語に切り替える"}
-      aria-label={ja ? "Switch to English" : "日本語に切り替える"} lang={ja ? "en" : "ja"}>
-      <span aria-hidden>{ja ? "A" : "あ"}</span>
-    </button>
+    <span className="relative inline-flex">
+      <button type="button" onClick={() => setLang(ja ? "en" : "ja")} className="utility-btn press font-label text-(length:--type-ui-size) font-medium"
+        title={ja ? "Switch to English" : "日本語に切り替える"}
+        aria-label={ja ? "Switch to English" : "日本語に切り替える"} lang={ja ? "en" : "ja"}>
+        <span aria-hidden>{ja ? "A" : "あ"}</span>
+      </button>
+      <PlaceholderTag id="japanese" className="on-switch" />
+    </span>
   )
 }
 

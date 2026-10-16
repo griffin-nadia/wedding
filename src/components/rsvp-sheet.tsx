@@ -419,7 +419,10 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                 </label>
               </>
             )}
-            {error && <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>}
+            {/* A paused back end is a calm note on paper, not an error: nothing the guest did, nothing lost */}
+            {error && (error === t.rsvp.errors.paused
+              ? <p role="status" className="rounded-md bg-section-alt px-4 py-3 text-foreground">{error}</p>
+              : <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>)}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
             {step === total && <p className="text-sm text-muted-foreground">{t.rsvp.privacy}</p>}
           </div>

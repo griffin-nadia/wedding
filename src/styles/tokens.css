@@ -208,6 +208,9 @@
   --pill-good-bg: color-mix(in oklab, var(--sys-moss) 15%, transparent);
   --pill-warn-bg: color-mix(in oklab, var(--sys-highlight) 25%, transparent);
   --pill-accent-bg: color-mix(in oklab, var(--sys-accent) 12%, transparent);
+  --placeholder-tag-fill: var(--brand-hachimitsu);    /* crew-only Placeholder tag: amber in both modes */
+  --placeholder-tag-ink: var(--brand-ink-deep);
+  --placeholder-tag-line-fill: var(--brand-paper-bright);
   /* Top bar (from 768): the current page sits on a sage tint with a sage hairline; hover is the same tint, lighter */
   --nav-mark-bg: color-mix(in oklab, var(--sys-accent) 16%, transparent);
   --nav-mark-line: color-mix(in oklab, var(--sys-accent) 40%, transparent);

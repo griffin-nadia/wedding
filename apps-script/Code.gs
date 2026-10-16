@@ -87,6 +87,13 @@ const ERRORS = {
   search_failed: "Song search isn't working right now. Just type the song instead.",
 }
 
+// Where a reply can still be changed: until the lock, then their "life happens" line (planner, 7 to 11 Oct)
+function changeLine_() {
+  return isLocked_()
+    ? "We know that life happens, so if you need to make any changes after the 30th of April please contact us directly."
+    : "You can change your reply until " + longDate_(prop_("CHANGES_LOCK")) + "."
+}
+
 // Invite and reminder wording. The Emails tab overrides these, so Nadia can edit without code.
 // {household}, {rsvp_by}, {lock}, {date} and {venue} are filled in when sending.
 const COPY = {
@@ -1130,7 +1137,7 @@ function sendConfirmation_(h, changes) {
     list: changes && changes[0] !== "No changes" ? { title: "What changed", items: changes } : null,
     rows: rows,
     button: { label: "See or change your reply", url: linkFor_(h.token) },
-    notes: ["You can change your reply until " + longDate_(prop_("CHANGES_LOCK")) + ".", "This link is just for your household, so please don't share it."],
+    notes: [changeLine_(), "This link is just for your household, so please don't share it."],
   })
   MailApp.sendEmail({
     to: emails.join(","),

@@ -132,7 +132,13 @@ export function HomePage() {
       {mode !== "invite" ? null : !household ? (
         <div role="status"><span className="sr-only">{t.loading}</span><Skeleton className="h-13 w-full rounded-lg! sm:w-64" /></div>
       ) : locked ? (
-        <p>{t.home.rsvpClosed}</p>
+        // After the changes lock: a reply stays marked, with their "life happens" line where the change-by line was
+        done ? (
+          <div className="flex flex-col gap-2">
+            <Pill tone="good" className="self-start">{t.home.pills.replied}</Pill>
+            <p className="text-sm text-muted-foreground">{t.home.changeAfter}</p>
+          </div>
+        ) : <p>{t.home.rsvpClosed}</p>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">

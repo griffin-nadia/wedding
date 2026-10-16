@@ -6,6 +6,10 @@ import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
 import { StoryJourney } from "@/components/story-journey"
 import { cn } from "@/lib/utils"
+import { PlaceholderTag } from "@/components/placeholder-tag"
+import { Photo } from "@/components/photo"
+import photos from "@/content/photos.json"
+import { useShowPlaceholders } from "@/lib/placeholders"
 
 /** Journey A · the letter continues (default): chapters as pages of the letter. Swipe or arrows on phones, side by side from 1024. No photos. */
 function StoryLetter({ chapters }: { chapters: Chapter[] }) {
@@ -133,6 +137,25 @@ function StoryStack({ chapters }: { chapters: Chapter[] }) {
   )
 }
 
+/**
+ * The opener (Figma 3b): one kid photo each, Griffin then Nadia, above the map. The photos stay in photos-private/
+ * until Our story is switched on. Guests see the opener only once both exist; crew see it as soon as Nadia's does,
+ * with Griffin's slot as a tagged placeholder.
+ */
+function StoryOpener() {
+  const crew = useShowPlaceholders()
+  const has = (name: string) => name in photos
+  if (!has("kid-nadia") || (!has("kid-griffin") && !crew)) return null
+  return (
+    <div className="story-kids">
+      {has("kid-griffin")
+        ? <Photo name="kid-griffin" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
+        : <div className="story-kid-slot"><PlaceholderTag id="kidGriffin" className="inside" /></div>}
+      <Photo name="kid-nadia" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
+    </div>
+  )
+}
+
 /** Our story (hidden until the story text exists in the Content tab): the journey map (their Figma plan) by default; the card stack, letter pages and timeline as options. */
 export function StoryPage() {
   const { t } = useLang()
@@ -146,6 +169,7 @@ export function StoryPage() {
     return (
       <>
         <h1 className="heading">{t.story.title}</h1>
+        <StoryOpener />
         {view === "d" ? <StoryStack chapters={story} /> : !view || view === "b" ? (journey
           ? <StoryJourney chapters={story} showFlying={flying} drag={mapDrag} token={household?.token} replied={Boolean(household?.respondedAt)} />
           : <StoryMap chapters={story} />) : view === "c" ? <StoryTimeline chapters={story} /> : <StoryLetter chapters={story} />}
@@ -158,7 +182,8 @@ export function StoryPage() {
   if (ready && crew && !story.length && (!view || view === "b") && journey) {
     return (
       <>
-        <h1 className="heading">{t.story.title}</h1>
+        <div className="relative"><h1 className="heading">{t.story.title}</h1><PlaceholderTag id="storyCaptions" done={story.length > 0} className="at-bottom at-start" /></div>
+        <StoryOpener />
         <StoryJourney chapters={[]} showFlying={flying} drag={mapDrag} token={household?.token} replied={Boolean(household?.respondedAt)} />
       </>
     )

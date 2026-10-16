@@ -1,4 +1,7 @@
 import { config } from "./config"
+import { ApiError, call, isRetryable, type ErrorCode } from "./call"
+
+export { ApiError, type ErrorCode }
 
 export type Attending = "yes" | "no" | null
 
@@ -27,19 +30,6 @@ export type RsvpPayload = Pick<Household, "guests" | "songs" | "arrival" | "depa
 
 export type SaveResult = { household: Household; updated: boolean; changes: string[] }
 
-/** Error codes from the back end, plus "network" when it couldn't be reached at all. */
-export type ErrorCode =
-  | "bad_request" | "not_found" | "bad_guest" | "bad_attending" | "bad_date"
-  | "closed" | "busy" | "server" | "network" | "bad_email"
-
-export class ApiError extends Error {
-  code: ErrorCode
-  constructor(code: ErrorCode, message?: string) {
-    super(message ?? code)
-    this.code = code
-  }
-}
-
 // Without VITE_API_URL the site runs on this sample household, so pages can be
 // designed and tested before the Apps Script back end is deployed.
 const sample: Household = {
@@ -56,21 +46,6 @@ const sample: Household = {
   departure: "",
   message: "",
   respondedAt: null,
-}
-
-async function call(input: string, init?: RequestInit) {
-  let res: Response
-  try {
-    res = await fetch(input, init)
-  } catch {
-    throw new ApiError("network")
-  }
-  if (!res.ok) throw new ApiError(res.status >= 500 ? "server" : "network")
-  try {
-    return await res.json()
-  } catch {
-    throw new ApiError("server")
-  }
 }
 
 export async function getHousehold(token: string): Promise<Household | null> {
@@ -191,8 +166,7 @@ export async function saveRsvpWithRetry(token: string, payload: RsvpPayload, bef
       return await saveRsvp(token, payload, before, id)
     } catch (err) {
       const code = err instanceof ApiError ? err.code : "network"
-      const retryable = code === "busy" || code === "network" || code === "server"
-      if (!retryable || attempt >= tries) throw err
+      if (!isRetryable(code) || attempt >= tries) throw err
       await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)))
     }
   }
