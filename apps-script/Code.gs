@@ -36,8 +36,8 @@
  */
 
 // The couple's names, once. Swapping the order is this one line (and COUPLE in src/content/en.ts).
-const FIRST = "Nadia"
-const SECOND = "Griffin"
+const FIRST = "Griffin"
+const SECOND = "Nadia"
 const COUPLE = FIRST + " & " + SECOND
 
 const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", emails: "Emails" }

@@ -11,7 +11,7 @@ const LOCK = fmtDay(DATES.changesLock)
 const CHANGE_BY = `You can change your reply until ${LOCK}.`
 
 // The couple's names live here once. Swapping the order is this one line.
-export const COUPLE = { first: "Nadia", second: "Griffin" }
+export const COUPLE = { first: "Griffin", second: "Nadia" }
 
 // The venue for taxi drivers, in one place (Show the driver, the day sheet, Details).
 export const VENUE = {
@@ -38,6 +38,9 @@ export const FORTUNES = [
 ]
 const A = COUPLE.first
 const B = COUPLE.second
+// Lines about one of them (their photo, their line on the map) name that person, whatever the order
+const NADIA = "Nadia"
+const GRIFFIN = "Griffin"
 const BOTH = `${A} & ${B}`
 
 export const en = {
@@ -45,11 +48,11 @@ export const en = {
     shortTitle: `${A[0]}&${B[0]}`,
     title: `${BOTH}`,
     eyebrow: "The Super Duper Wedding Extravaganza",
-    fullTitle: `Nadia Baguley and Griffin Suddaby Super Duper Wedding Extravaganza`,
+    fullTitle: `Griffin Suddaby and Nadia Baguley Super Duper Wedding Extravaganza`,
   },
   nav: { home: "Home", day: "The day", travel: "Travel", faqs: "FAQs", story: "Our story", rsvp: "RSVP" },
   letter: {
-    signOff: "With love, N & G",
+    signOff: "With love, G & N",
     credit: "Site by Jehan Baguley",
     skip: "Skip to the letter",
     open: "Tap to open",
@@ -69,7 +72,7 @@ export const en = {
     "couple-dog-jumper": { alt: `${A} and ${B} with a dog in a jumper`, caption: "A fun one" },
     "trio-mountain-town": { alt: `${A} and ${B} with family in a mountain town`, caption: "A trip with family" },
     "torii-mist": { alt: "A red torii gate in the mist", caption: "Misty torii on the way" },
-    "griffin-cedar-forest": { alt: `${B} among tall cedar trees`, caption: `${B} in the cedars` },
+    "griffin-cedar-forest": { alt: `${GRIFFIN} among tall cedar trees`, caption: `${GRIFFIN} in the cedars` },
     "couple-osaka-castle": { alt: `${A} and ${B} in front of Osaka Castle`, caption: "If you fly into Osaka, the castle's worth a stop" },
     "yasaka-gate-shijo": { alt: "Looking down Shijo-dori from the gate of Yasaka Shrine", caption: "Looking down Shijo-dori from Yasaka Shrine, 10 minutes' walk from the venue" },
     "higashiyama-bookshop": { alt: "A quiet street and bookshop in Higashiyama", caption: "Higashiyama, the venue's neighbourhood. Kiyomizu-dera is up the hill" },
@@ -101,10 +104,10 @@ export const en = {
     review: "Flying from", notSaying: "Not saying",
     onMap: "Your line's on the map", seeIt: "See the map", notPicked: "Pick where you're flying from and your line joins the map.", pick: "Pick a city",
     kyoto: "Kyoto · 15 Oct 2027", brisbane: "Brisbane", canada: "Canada",
-    legend: { nadia: A, griffin: B, guests: "Guests", you: "Your line" },
+    legend: { nadia: NADIA, griffin: GRIFFIN, guests: "Guests", you: "Your line" },
     count: (n: number, of: number) => `${n} of ${of} lines drawn so far`,
     backToFortune: "Back to your fortune", seeList: "See as a list", seeMap: "See the map",
-    list: { nadia: `${A}: Brisbane to Kyoto`, griffin: `${B}: Canada to Kyoto`, you: (city: string) => `Your line: ${city} to Kyoto`, city: (city: string, n: number) => `${city}: ${n} ${n === 1 ? "line" : "lines"}` },
+    list: { nadia: `${NADIA}: Brisbane to Kyoto`, griffin: `${GRIFFIN}: Canada to Kyoto`, you: (city: string) => `Your line: ${city} to Kyoto`, city: (city: string, n: number) => `${city}: ${n} ${n === 1 ? "line" : "lines"}` },
   },
   fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes.", hint: "Tap the box to draw one.", hintShake: "Tap the box, or give your phone a little shake.", boxLabel: "The fortune box. Draw a fortune", drawing: "Shaking the box…", onMap: "See your line on the map" },
   driver: { label: "Taxi from Kyoto Station", fare: "15 to 20 minutes. Free in an MK Taxi with a ticket from the venue.", show: "Show the driver", maps: "Directions in Google Maps", mapsOpens: "opens Google Maps", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },

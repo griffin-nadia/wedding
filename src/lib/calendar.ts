@@ -15,7 +15,7 @@ export const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination
 
 const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/[,;]/g, (c) => `\\${c}`).replace(/\n/g, "\\n")
 
-const title = "Nadia & Griffin's wedding"
+const title = "Griffin & Nadia's wedding"
 const details = `Ceremony 11:00 am in the garden (Japan time).\nMap: ${mapUrl}`
 
 /** Google Calendar's "add event" page, prefilled. Opens Google only when the guest taps it. */
@@ -27,7 +27,7 @@ export const googleCalendarUrl =
 /** An .ics file for the day: 11:00 am to 3:30 pm Japan time, with the venue and map link. */
 export function icsHref() {
   const ics = [
-    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//N&G//Wedding//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//G&N//Wedding//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
     "UID:nadia-griffin-2027@griffin-nadia.github.io", `DTSTAMP:${INVITED}`,
     `DTSTART:${START}`, `DTEND:${END}`,
     `SUMMARY:${esc(title)}`,
