@@ -39,6 +39,39 @@ function useTicks(token: string | undefined) {
   return [ticks, set] as const
 }
 
+/** Their picks under the three areas: hotels, then Airbnbs, each row opening its own site. Rough prices a night. */
+function Picks() {
+  const { t } = useLang()
+  const p = t.stay.picks
+  const row = (key: string, href: string, title: string, lines: string[], opens: string) => (
+    <li key={key} className="border-b border-border last:border-b-0">
+      <a href={href} target="_blank" rel="noreferrer" className="stay-row">
+        <span className="flex min-w-0 flex-1 flex-col">
+          <span className="font-medium text-foreground">{title}</span>
+          {lines.filter(Boolean).map((l) => <span key={l} className="text-sm">{l}</span>)}
+        </span>
+        <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="sr-only">, {opens}</span>
+      </a>
+    </li>
+  )
+  return (
+    <div id="picks" className="flex scroll-mt-24 flex-col gap-4 pt-4">
+      <h3 className="font-display text-xl text-foreground">{p.title}</h3>
+      <p className="text-sm text-muted-foreground">{p.note}</p>
+      <h4 className="font-medium text-foreground">{p.hotelsTitle}</h4>
+      <ul className="flex flex-col border-y border-border">
+        {p.hotels.map((h) => row(h.href, h.href, h.name, [`${h.area} · ${p.perNight(h.price)}`, h.note], p.opensHotel))}
+      </ul>
+      <h4 className="font-medium text-foreground">{p.airbnbsTitle}</h4>
+      <p className="text-sm text-muted-foreground">{p.airbnbsNote}</p>
+      <ul className="flex flex-col border-y border-border">
+        {p.airbnbs.map((a) => row(a.href, a.href, a.area, [`${p.sleeps(a.sleeps)} · ${p.perNight(a.price)}`, a.note], p.opensAirbnb))}
+      </ul>
+    </div>
+  )
+}
+
 /**
  * Travel (v3 S): in the order a guest needs it. Getting there (one paragraph, then the venue card with
  * Google Maps directions first, Show the driver and Copy address beside it, then the trail), Where to stay
@@ -105,6 +138,7 @@ export function TravelPage() {
             </li>
           ))}
         </ol>
+        <Picks />
       </section>
 
       <section id="before" aria-labelledby="before-title" className="flex scroll-mt-24 flex-col gap-4">

@@ -9,6 +9,8 @@ const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
 const LOCK = fmtDay(DATES.changesLock)
 // The one change-by line (v3 Q7): Home under the Replied pill, the success screen and the confirmation email
 const CHANGE_BY = `You can change your reply until ${LOCK}.`
+// After the changes lock, in the same places (their wording, planner 7 to 11 Oct)
+const CHANGE_AFTER = "We know that life happens, so if you need to make any changes after the 30th of April please contact us directly."
 
 // The couple's names live here once. Swapping the order is this one line.
 export const COUPLE = { first: "Nadia", second: "Griffin" }
@@ -139,6 +141,7 @@ export const en = {
     rsvpBy: `RSVP by ${fmtDay(DATES.rsvpBy)}`,
     changeReply: "Change my reply",
     changeBy: CHANGE_BY,
+    changeAfter: CHANGE_AFTER,
     reseal: "Seal it again",
     week: { greeting: "it's nearly here. Everything for Friday is on The day, and the easiest way there is below. We can't wait to see you.", day: "The day", directions: "Directions in Google Maps" },
     keepsake: { badge: "Married, Fri 15 Oct 2027, Kyoto", greeting: "thank you for coming all this way and for being part of our day. We'll add photos from the day here soon.", story: "Read our story" },
@@ -252,9 +255,38 @@ export const en = {
   },
   stay: {
     title: "Where to stay",
-    intro: "Book early: mid October is busy in Kyoto. Hotels here are small and tidy, and Kyoto adds a small accommodation tax per person per night. Sharing with other guests? Go for it.",
+    intro: "Book early: mid October is busy in Kyoto. Hotels here are small and tidy, and Kyoto adds a small accommodation tax per person per night. Sharing with other guests? Go for it. If you feel stuck, reach out to us!",
     mapLink: "See the three areas on a map",
     mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
+    // Their picks (planner, 7 to 11 Oct): rough prices per night
+    picks: {
+      title: "Our picks",
+      note: "Links go to each hotel's own site, but compare other booking sites too. Prices change.",
+      hotelsTitle: "Hotels",
+      airbnbsTitle: "Airbnbs",
+      airbnbsNote: "Cheaper per person when you split one.",
+      perNight: (price: string) => `${price} a night`,
+      sleeps: (n: string) => `Sleeps ${n}`,
+      opensHotel: "opens the hotel's site",
+      opensAirbnb: "opens Airbnb",
+      hotels: [
+        { name: "Kyoto Century Hotel", area: "Kyoto Station", price: "~$150 AUD", note: "", href: "https://www.kyotocenturyhotel.jp/" },
+        { name: "Mercure Kyoto Station", area: "Kyoto Station", price: "~$150–180 AUD", note: "", href: "https://all.accor.com/hotel/B4F4/index.en.shtml" },
+        { name: "Daiwa Roynet Hotel Kyoto Ekimae PREMIER", area: "Kyoto Station", price: "~$110 AUD", note: "", href: "https://www.daiwaroynet.jp/en/kyoto-ekimae/" },
+        { name: "ASAI Kyoto Shijo", area: "Gojo", price: "from ~$100 AUD", note: "Between Kyoto Station and Gion-Shijo", href: "https://www.dusit.com/asai-kyoto/" },
+        { name: "Rinn Kitagomon", area: "Kiyomizu-Gojo", price: "from ~$150 AUD", note: "Closer to the venue", href: "https://rinn-kyomachi.com/en/list/rinn-kitagomon/" },
+        { name: "DoubleTree by Hilton Kyoto Higashiyama", area: "Kiyomizu-Gojo", price: "from ~$200 AUD", note: "Next to a station", href: "https://www.hilton.com/en/hotels/itmhadi-doubletree-kyoto-higashiyama/" },
+      ],
+      airbnbs: [
+        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$320", note: "Not right next to a station", href: "https://www.airbnb.com.au/rooms/32966481" },
+        { area: "Kiyomizu-Gojo", sleeps: "4", price: "~$400", note: "", href: "https://www.airbnb.com.au/rooms/1682420188495547858" },
+        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$400", note: "Not right next to a station", href: "https://www.airbnb.com.au/rooms/1541783233800920181" },
+        { area: "Kiyomizu-Gojo", sleeps: "4 to 5", price: "~$450", note: "", href: "https://www.airbnb.com.au/rooms/1735167450296336070" },
+        { area: "Higashiyama", sleeps: "4", price: "~$450", note: "", href: "https://www.airbnb.com.au/rooms/29807727" },
+        { area: "Near The Sodoh", sleeps: "6", price: "~$460", note: "Very close to the venue, not close to a station", href: "https://www.airbnb.com.au/rooms/15104813" },
+        { area: "Sanjo", sleeps: "9", price: "~$660", note: "", href: "https://www.airbnb.com.au/rooms/1456233517873267728" },
+      ],
+    },
   },
   qa: {
     title: "FAQs",
