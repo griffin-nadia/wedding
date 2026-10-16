@@ -65,6 +65,7 @@ export function TravelPage() {
       <div className="flex flex-wrap gap-x-4"><Ext href={g.links.haruka.href}>{g.links.haruka.label}</Ext><Ext href={g.links.flights.href}>{g.links.flights.label}</Ext><Ext href={g.links.trains.href}>{g.links.trains.label}</Ext></div>
       {household && coming && flyingOn && <FlyingFrom token={household.token} />}
     </>],
+    ["insurance", g.rows.insurance, <><p>{g.insuranceBody}</p><Ext href={g.links.smartraveller.href}>{g.links.smartraveller.label}</Ext></>],
     ["booking", g.rows.booking, <p>{t.travel.items[2].body}</p>],
     ["phones", g.rows.phones, <>
       <p>{t.travel.items[3].body}</p><p>{g.tips[1]}</p>
