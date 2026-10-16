@@ -70,6 +70,7 @@ export const en = {
     "trio-mountain-town": { alt: `${A} and ${B} with family in a mountain town`, caption: "A trip with family" },
     "torii-mist": { alt: "A red torii gate in the mist", caption: "Misty torii on the way" },
     "griffin-cedar-forest": { alt: `${B} among tall cedar trees`, caption: `${B} in the cedars` },
+    "kid-nadia": { alt: "Nadia as a little girl in the back seat of a car, in a cap, smiling", caption: "" },
     "couple-osaka-castle": { alt: `${A} and ${B} in front of Osaka Castle`, caption: "If you fly into Osaka, the castle's worth a stop" },
     "yasaka-gate-shijo": { alt: "Looking down Shijo-dori from the gate of Yasaka Shrine", caption: "Looking down Shijo-dori from Yasaka Shrine, 10 minutes' walk from the venue" },
     "higashiyama-bookshop": { alt: "A quiet street and bookshop in Higashiyama", caption: "Higashiyama, the venue's neighbourhood. Kiyomizu-dera is up the hill" },
