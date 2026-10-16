@@ -74,6 +74,7 @@ export const ja: DeepPartial<Content> = {
     title: "ふたりのこと",
     prevChapter: "前の章", nextChapter: "次の章",
     page: (n: number, of: number) => `第${n}章（全${of}章）`,
+    slide: (n: number, of: number) => `${of}枚中${n}枚目`,
     kyoto: "京都", brisbane: "ブリスベン", canada: "カナダ",
     seeList: "リストで見る", seeMap: "地図で見る", next: "次へ", done: "閉じる",
   },

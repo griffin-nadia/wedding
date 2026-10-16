@@ -7,11 +7,11 @@ import photos from "@/content/photos.json"
 import { STORY_PLAN } from "@/content/story-plan"
 
 /**
- * The opener (Figma 3b): one kid photo each, Griffin then Nadia, above the map. The photos stay in photos-private/
+ * The opener (Figma 3b): one kid photo each, Griffin then Nadia, as the first slide. The photos stay in photos-private/
  * until Our story is switched on. Guests see the opener only once both exist; crew see it as soon as Nadia's does,
  * with Griffin's slot as an empty paper frame.
  */
-function StoryOpener() {
+function useOpener() {
   const [crew] = useState(() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })
   const has = (name: string) => name in photos
   if (!has("kid-nadia") || (!has("kid-griffin") && !crew)) return null
@@ -29,12 +29,12 @@ function StoryOpener() {
 export function StoryPage() {
   const { t } = useLang()
   const { story, ready } = useContent()
+  const opener = useOpener()
   if (ready && story.length) {
     return (
       <>
         <h1 className="heading">{t.story.title}</h1>
-        <StoryOpener />
-        <StoryJourney chapters={story} />
+        <StoryJourney chapters={story} opener={opener} />
       </>
     )
   }
@@ -45,8 +45,7 @@ export function StoryPage() {
     return (
       <>
         <h1 className="heading">{t.story.title}</h1>
-        <StoryOpener />
-        <StoryJourney chapters={STORY_PLAN} />
+        <StoryJourney chapters={STORY_PLAN} opener={opener} />
       </>
     )
   }
