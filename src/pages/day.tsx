@@ -7,6 +7,7 @@ import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { jstLabel, kyotoNow } from "@/lib/time"
 import { cn } from "@/lib/utils"
+import { onScroll } from "@/lib/scroll"
 
 const ICONS = [Flower2, Wine, UtensilsCrossed]
 
@@ -51,21 +52,14 @@ function Timeline({ now }: { now: Date }) {
     const el = ref.current
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     el.classList.add("timeline-js")
-    let raf = 0
     const tick = () => {
-      raf = 0
       const r = el.getBoundingClientRect(), vh = window.innerHeight
       const atEnd = window.scrollY + vh >= document.documentElement.scrollHeight - 2
       const p = atEnd ? 1 : Math.min(1, Math.max(0, (vh * 0.6 - r.top) / r.height))
       el.style.setProperty("--fill", p.toFixed(3))
-      // Times tick in (Options): a row has been reached once the line's tip (p of the timeline's height) passes it
-      const tip = r.top + r.height * p
-      el.querySelectorAll<HTMLElement>(".timeline-row").forEach((row) => row.classList.toggle("is-past", row.getBoundingClientRect().top + 20 <= tip))
     }
-    const on = () => { if (!raf) raf = requestAnimationFrame(tick) }
     tick()
-    window.addEventListener("scroll", on, { passive: true }); window.addEventListener("resize", on)
-    return () => { window.removeEventListener("scroll", on); window.removeEventListener("resize", on); if (raf) cancelAnimationFrame(raf) }
+    return onScroll(tick)
   }, [])
   return (
     <ol ref={ref} className="timeline" aria-label={t.day.timelineLabel}>

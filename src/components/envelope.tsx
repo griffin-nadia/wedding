@@ -82,6 +82,8 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   }
   const open = () => {
     if (phase !== "sealed") return finish()
+    // A tiny tick as the flap opens, Android only (iPhones have no vibrate); none under reduced motion
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) navigator.vibrate?.(8)
     setPhase("opening")
     timer.current = window.setTimeout(finish, 900)
   }

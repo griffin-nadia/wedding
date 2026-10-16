@@ -53,7 +53,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     if (state !== "closed") return
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     setState("drawing")
-    if (!still) navigator.vibrate?.(12)
+    if (!still) navigator.vibrate?.(8) // a tiny tick on Android (iPhones have no vibrate); none under reduced motion
     window.setTimeout(() => {
       setState("open")
       try { localStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ }
