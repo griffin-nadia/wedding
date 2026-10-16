@@ -42,7 +42,7 @@ const svg = (text) => {
   return `<svg viewBox="-2 -2 ${n + 4} ${n + 4}" shape-rendering="crispEdges"><path d="${d}" fill="#421a05"/></svg>`
 }
 
-const cards = [...seen].map(([link, name]) => `<div class="card"><p class="eyebrow">Nadia &amp; Griffin · Kyoto · Fri 15 Oct 2027</p><h2>${esc(name)}</h2>${svg(link)}<p class="note">Scan to open your invite and RSVP</p></div>`).join("\n")
+const cards = [...seen].map(([link, name]) => `<div class="card"><p class="eyebrow">Griffin &amp; Nadia · Kyoto · Fri 15 Oct 2027</p><h2>${esc(name)}</h2>${svg(link)}<p class="note">Scan to open your invite and RSVP</p></div>`).join("\n")
 const html = `<!doctype html><meta charset="utf-8"><title>QR cards</title><style>
 @page{size:A4;margin:10mm}body{margin:0;font-family:Georgia,serif;color:#421a05}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:6mm}

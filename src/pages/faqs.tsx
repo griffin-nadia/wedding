@@ -6,7 +6,7 @@ import { useOption } from "@/lib/options"
 import { ART } from "@/lib/art"
 
 /** FAQs: one numbered accordion (numbers help guests point to a question when they message). Answers are body.
- * Who to contact on the day appears once Nadia and Griffin fill contact_day in the Content tab. */
+ * Who to contact on the day appears once Griffin and Nadia fill contact_day in the Content tab. */
 export function FaqsPage() {
   const { t } = useLang()
   const music = useOption("music") !== "off" // Options → Music toggle: the track's credit line

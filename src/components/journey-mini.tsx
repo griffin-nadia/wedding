@@ -53,10 +53,10 @@ export function CoupleLines({ id }: { id: string }) {
   )
 }
 
-/** Nadia / Griffin / Guests (and Your line when there is one): what each colour of line means. */
+/** Griffin / Nadia / Guests (and Your line when there is one): what each colour of line means. */
 export function JourneyLegend({ you = false }: { you?: boolean }) {
   const { t } = useLang()
-  const items = [["nadia", t.journey.legend.nadia], ["griffin", t.journey.legend.griffin], ["guests", t.journey.legend.guests], ...(you ? [["you", t.journey.legend.you]] : [])]
+  const items = [["griffin", t.journey.legend.griffin], ["nadia", t.journey.legend.nadia], ["guests", t.journey.legend.guests], ...(you ? [["you", t.journey.legend.you]] : [])]
   return (
     <ul className="journey-legend" aria-hidden>
       {items.map(([k, label]) => <li key={k}><span className={`journey-key journey-key-${k}`} />{label}</li>)}
@@ -109,8 +109,8 @@ export function GuestMap({ you, flying, label }: { you: Flying | null; flying: {
     <div className="flex flex-col gap-3">
       {list
         ? <ul className="flex flex-col gap-1">
-            <li>{t.journey.list.nadia}</li>
             <li>{t.journey.list.griffin}</li>
+            <li>{t.journey.list.nadia}</li>
             {you && <li className="font-medium text-foreground">{t.journey.list.you(name(you))}</li>}
             {cities.map(([c, n]) => <li key={c}>{t.journey.list.city(name(c), n)}</li>)}
           </ul>

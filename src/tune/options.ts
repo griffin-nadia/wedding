@@ -3,7 +3,7 @@ export const FLOWS = ["Arrival", "Home", "RSVP", "The day", "Travel", "FAQs", "O
 export type Option = { key: string; label: string; flow: (typeof FLOWS)[number]; note: string; values: [string, string][]; when?: (o: Record<string, string>) => boolean }
 
 /**
- * Prototype switches to try with Nadia and Griffin. The first value is what ships. Grouped by the flow
+ * Prototype switches to try with Griffin and Nadia. The first value is what ships. Grouped by the flow
  * they change; an option shows only when its flow makes it meaningful (`when`). Anything settled in
  * v3 section A is gone from here, not hidden.
  */
@@ -34,10 +34,10 @@ export const OPTIONS: Option[] = [
   { key: "postcard", label: "After sending", flow: "RSVP", note: "Draw a fortune from the omikuji box, or a postcard: Sent on the front, turn it over for Griffin's fortune on the back.", values: [["off", "Omikuji box"], ["on", "Postcard"]] },
   { key: "sheetdrag", label: "Closing the sheet (phones)", flow: "RSVP", note: "X, Esc and Back to your invite always work; this adds a grab bar to drag the sheet down.", values: [["buttons", "Buttons only"], ["drag", "Drag down too"]] },
   { key: "datestyle", label: "Date", flow: "Home", note: "Under the names: the date and place as a sage badge, or as a second display line.", values: [["badge", "Badge"], ["line", "Display line"]] },
-  { key: "names", label: "Names on desktop", flow: "Home", note: "From 1024: Nadia & Griffin on two lines at 88, or on one line at 56.", values: [["two", "Two lines"], ["one", "One line"]] },
+  { key: "names", label: "Names on desktop", flow: "Home", note: "From 1024: Griffin & Nadia on two lines at 88, or on one line at 56.", values: [["two", "Two lines"], ["one", "One line"]] },
   { key: "count", label: "Countdown", flow: "Home", note: "Boxes sit inside the letter (Home stays one card) and flip only when a number changes; seconds sit in a box like the rest. The strip and tiles sit under the card.", values: [["boxes", "Boxes: days to seconds"], ["boxes-nosecs", "Boxes, no seconds"], ["days", "Days only"], ["strip", "Strip under the card"], ["tiles", "Tiles under the card"]] },
   { key: "ticks", label: "What's left, once done", flow: "Home", note: "After everything's ticked: keep the three ticked rows (a returning guest sees it's done), or hide them.", values: [["stay", "Keep"], ["hide", "Hide"]] },
-  { key: "signoff", label: "Sign-off", flow: "Home", note: "\u201cWith love, N & G\u201d on Home only, or at the end of every page.", values: [["home", "Home only"], ["all", "Every page"]] },
+  { key: "signoff", label: "Sign-off", flow: "Home", note: "\u201cWith love, G & N\u201d on Home only, or at the end of every page.", values: [["home", "Home only"], ["all", "Every page"]] },
   { key: "toggle", label: "Evening mode switch (phones)", flow: "Home", note: "Phones: in the letter's top corner (no gap at the top), or fixed in the screen corner.", values: [["card", "In the letter"], ["corner", "Screen corner"]] },
   { key: "daytick", label: "Times tick in", flow: "The day", note: "Each time on the timeline darkens and settles as the line reaches it.", values: [["off", "Off"], ["on", "On"]] },
   { key: "thread", label: "Line as a thread", flow: "The day", note: "The line trails you a little as you scroll, like a thread being pulled, and still finishes at the bottom.", values: [["off", "Scroll-linked"], ["on", "Thread"]] },

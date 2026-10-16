@@ -13,15 +13,18 @@ const TRAVEL_FROM = "2027年9月1日（水）"
 const TRAVEL_TO = "2027年11月30日（火）"
 const CHANGE_BY = `${LOCK}まで、お返事は変更できます。`
 const CHANGE_AFTER = "予定が変わることもありますよね。4月30日以降に変更が必要になったら、直接ご連絡ください。"
-const A = "ナディア"
-const B = "グリフィン"
+const A = "グリフィン"
+const B = "ナディア"
+// Lines about one of them name that person, whatever the order
+const NADIA = "ナディア"
+const GRIFFIN = "グリフィン"
 const BOTH = `${A} & ${B}`
 
 export const ja: DeepPartial<Content> = {
-  meta: { shortTitle: "N&G", title: BOTH, eyebrow: "スーパーデューパー・ウェディング・エクストラバガンザ", fullTitle: "ナディア・バグリー & グリフィン・サダビー スーパーデューパー・ウェディング・エクストラバガンザ" },
+  meta: { shortTitle: "G&N", title: BOTH, eyebrow: "スーパーデューパー・ウェディング・エクストラバガンザ", fullTitle: "グリフィン・サダビー & ナディア・バグリー スーパーデューパー・ウェディング・エクストラバガンザ" },
   nav: { home: "ホーム", day: "当日", travel: "アクセス", faqs: "よくある質問", story: "ふたりのこと", rsvp: "出欠のお返事" },
   letter: {
-    signOff: "愛をこめて、N & G",
+    signOff: "愛をこめて、G & N",
     credit: "サイト制作：Jehan Baguley",
     skip: "本文へ移動",
     open: "タップしてひらく",
@@ -40,7 +43,7 @@ export const ja: DeepPartial<Content> = {
     "couple-dog-jumper": { alt: `セーターを着た犬と${A}と${B}`, caption: "お気に入りの一枚" },
     "trio-mountain-town": { alt: `山あいの町で家族と${A}と${B}`, caption: "家族との旅" },
     "torii-mist": { alt: "霧の中の赤い鳥居", caption: "道すがらの霧の鳥居" },
-    "griffin-cedar-forest": { alt: `杉の大木の間に立つ${B}`, caption: `杉林の${B}` },
+    "griffin-cedar-forest": { alt: `杉の大木の間に立つ${GRIFFIN}`, caption: `杉林の${GRIFFIN}` },
     "kid-nadia": { alt: "幼い頃のナディア。帽子をかぶって車の後部座席で笑っている", caption: "" },
     "couple-osaka-castle": { alt: `大阪城の前に立つ${A}と${B}`, caption: "大阪に着くなら、お城も立ち寄る価値あり" },
     "yasaka-gate-shijo": { alt: "八坂神社の門から四条通を見下ろす", caption: "八坂神社から四条通を望む。会場から徒歩10分" },
@@ -88,10 +91,10 @@ export const ja: DeepPartial<Content> = {
     review: "出発地", notSaying: "未回答",
     onMap: "あなたの線が地図に加わりました", seeIt: "地図を見る", notPicked: "出発地を選ぶと、あなたの線が地図に加わります。", pick: "都市を選ぶ",
     kyoto: "京都・2027年10月15日", brisbane: "ブリスベン", canada: "カナダ",
-    legend: { nadia: A, griffin: B, guests: "ゲスト", you: "あなたの線" },
+    legend: { nadia: NADIA, griffin: GRIFFIN, guests: "ゲスト", you: "あなたの線" },
     count: (n: number, of: number) => `${of}本中${n}本の線が描かれました`,
     backToFortune: "おみくじに戻る", seeList: "リストで見る", seeMap: "地図で見る",
-    list: { nadia: `${A}：ブリスベンから京都へ`, griffin: `${B}：カナダから京都へ`, you: (city: string) => `あなたの線：${city}から京都へ`, city: (city: string, n: number) => `${city}：${n}本` },
+    list: { nadia: `${NADIA}：ブリスベンから京都へ`, griffin: `${GRIFFIN}：カナダから京都へ`, you: (city: string) => `あなたの線：${city}から京都へ`, city: (city: string, n: number) => `${city}：${n}本` },
   },
   flying: { cities: { Brisbane: "ブリスベン", Melbourne: "メルボルン", Sydney: "シドニー", Perth: "パース", Adelaide: "アデレード", "Elsewhere in Australia": "オーストラリアのその他の地域", Canada: "カナダ", "Already in Japan": "日本国内から", "Somewhere else": "その他" }, title: "どちらから来られますか？", hint: "任意です。人数のみ表示し、お名前は表示しません。", thanks: "ありがとうございます。", yours: (city: string) => `${city}からの線を描きました。`, change: "変更" },
   fortune: { title: "旅のささやかなおみくじ", draw: "ひく", blessing: "大吉", blessingEn: "大吉", number: (n: number, of: number) => `第${n}番（全${of}番）`, save: "スマホに保存", copied: "コピーしました。メモに貼り付けてください。", hint: "箱をタップしてひいてください。", hintShake: "箱をタップするか、スマホを軽く振ってください。", boxLabel: "おみくじの箱。おみくじをひく", drawing: "箱を振っています…", onMap: "地図であなたの線を見る" },
