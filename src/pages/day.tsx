@@ -8,7 +8,7 @@ import { useOption } from "@/lib/options"
 import { DATES } from "@/lib/wedding-dates"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
-import { jstLabel, kyotoNow, localTimeParts } from "@/lib/time"
+import { jstLabel, kyotoNow } from "@/lib/time"
 import { cn } from "@/lib/utils"
 
 const ICONS = [Flower2, Wine, UtensilsCrossed]
@@ -79,7 +79,7 @@ function Timeline({ now }: { now: Date }) {
           <span className="label-caps rounded-full bg-primary px-3 py-1 text-primary-foreground">{t.day.now}</span>
         </li>
       )}
-      {t.day.schedule.map((s, i) => <Row key={s.time} i={i} time={jstLabel(s.time, lang)} label={s.label} where={s.where} local={(() => { const p = localTimeParts(s.time, lang); return p && t.day.localLine(p.time, p.day, p.city) })()} />)}
+      {t.day.schedule.map((s, i) => <Row key={s.time} i={i} time={jstLabel(s.time, lang)} label={s.label} where={s.where} local={null} />)}
     </ol>
   )
 }
