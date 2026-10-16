@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ChevronRight } from "lucide-react"
-import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { ArrowUpRight, ChevronRight } from "lucide-react"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Disclosure } from "@/components/disclosure"
 import { DriverCard } from "@/components/driver-card"
 import { FlyingFrom } from "@/components/flying-from"
@@ -10,6 +11,9 @@ import { KyotoMap } from "@/components/kyoto-map"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { useOption } from "@/lib/options"
+import { getStayPicks } from "@/lib/api"
+import { areasOf, pickList, type Pick, type Picks } from "@/lib/stay"
+import { Segmented } from "@/components/segmented"
 
 function Ext({ href, children }: { href: string; children: React.ReactNode }) {
   return <a href={href} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{children}</a>
@@ -39,43 +43,82 @@ function useTicks(token: string | undefined) {
   return [ticks, set] as const
 }
 
-/** Their picks under the three areas: hotels, then Airbnbs, each row opening its own site. Rough prices a night. */
+// The planner's answer, once per visit (the back end caches it for 6 hours too)
+let livePicks: unknown = null
+let livePicksLoaded = false
+
+/**
+ * Their picks under the areas: a note, area chips (toggle buttons) and two collapsed groups, Hotels and Airbnbs. Each
+ * compact row opens its own site. Rows come from the planner's Accommodation Options tab, or the list in en.ts.
+ */
 function Picks() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const p = t.stay.picks
-  const row = (key: string, href: string, title: string, lines: string[], opens: string) => (
-    <li key={key} className="border-b border-border last:border-b-0">
-      <a href={href} target="_blank" rel="noreferrer" className="stay-row">
+  const fallback: Picks = { note: p.note, hotels: p.hotels, airbnbs: p.airbnbs }
+  const [live, setLive] = useState<unknown>(livePicks)
+  const [area, setArea] = useState("")
+  useEffect(() => {
+    if (livePicksLoaded) return
+    let on = true
+    void getStayPicks().then((d) => { livePicks = d; livePicksLoaded = true; if (on) setLive(d) })
+    return () => { on = false }
+  }, [])
+  const picks = pickList(live, fallback)
+  // Her note in English; the translated note in Japanese
+  const note = lang === "ja" ? p.note : picks.note
+  const areas = areasOf(picks)
+  const shown = (list: Pick[]) => list.filter((x) => !area || x.area === area)
+  const hotels = shown(picks.hotels), airbnbs = shown(picks.airbnbs)
+  const row = (x: Pick, airbnb: boolean) => (
+    <li key={x.href} className="border-b border-border last:border-b-0">
+      <a href={x.href} target="_blank" rel="noreferrer" className="stay-row stay-pick">
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="font-medium text-foreground">{title}</span>
-          {lines.filter(Boolean).map((l) => <span key={l} className="text-sm">{l}</span>)}
+          <span className="font-medium text-foreground">{airbnb ? x.area : x.name}</span>
+          <span className="text-sm">{[airbnb ? (x.sleeps ? p.sleeps(x.sleeps) : "") : x.area, x.price ? p.perNight(x.price) : ""].filter(Boolean).join(" · ")}</span>
+          {x.note && <span className="text-sm text-muted-foreground">{x.note}</span>}
         </span>
-        <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-        <span className="sr-only">, {opens}</span>
+        <ArrowUpRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="sr-only">, {airbnb ? p.opensAirbnb : p.opensHotel}</span>
       </a>
     </li>
   )
+  const group = (key: string, title: string, list: Pick[], airbnb: boolean, extra?: string) => (
+    <AccordionItem value={key}>
+      <AccordionTrigger><span>{title} <span className="text-muted-foreground">· {list.length}</span></span></AccordionTrigger>
+      <AccordionContent>
+        <div className="flex flex-col gap-2">
+          {extra && <p className="text-sm text-muted-foreground">{extra}</p>}
+          {list.length ? <ul className="flex flex-col">{list.map((x) => row(x, airbnb))}</ul> : <p className="text-sm text-muted-foreground">{p.none}</p>}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  )
   return (
-    <div id="picks" className="flex scroll-mt-24 flex-col gap-4 pt-4">
+    <div id="picks" className="flex scroll-mt-40 flex-col gap-3">
       <h3 className="font-display text-xl text-foreground">{p.title}</h3>
-      <p className="text-sm text-muted-foreground">{p.note}</p>
-      <h4 className="font-medium text-foreground">{p.hotelsTitle}</h4>
-      <ul className="flex flex-col border-y border-border">
-        {p.hotels.map((h) => row(h.href, h.href, h.name, [`${h.area} · ${p.perNight(h.price)}`, h.note], p.opensHotel))}
-      </ul>
-      <h4 className="font-medium text-foreground">{p.airbnbsTitle}</h4>
-      <p className="text-sm text-muted-foreground">{p.airbnbsNote}</p>
-      <ul className="flex flex-col border-y border-border">
-        {p.airbnbs.map((a) => row(a.href, a.href, a.area, [`${p.sleeps(a.sleeps)} · ${p.perNight(a.price)}`, a.note], p.opensAirbnb))}
-      </ul>
+      <p className="text-sm text-muted-foreground">{note}</p>
+      {areas.length > 1 && (
+        <div role="group" aria-label={p.filterLabel} className="chip-row">
+          {["", ...areas].map((a) => (
+            <button key={a || "all"} type="button" aria-pressed={area === a} onClick={() => setArea(a)} className="chip-filter">{a || p.allAreas}</button>
+          ))}
+        </div>
+      )}
+      <Accordion type="multiple" aria-label={p.title}>
+        {group("hotels", p.hotelsTitle, hotels, false)}
+        {group("airbnbs", p.airbnbsTitle, airbnbs, true, p.airbnbsNote)}
+      </Accordion>
     </div>
   )
 }
 
+type Part = "getting" | "stay"
+const partOf = (hash: string): Part => (/^#?(stay|picks)$/.test(hash) ? "stay" : "getting")
+
 /**
- * Travel (v3 S): in the order a guest needs it. Getting there (one paragraph, then the venue card with
- * Google Maps directions first, Show the driver and Copy address beside it, then the trail), Where to stay
- * (three rows, the whole row opens the place in Maps), Before you fly (a checklist in one accordion).
+ * Travel, in two parts behind a sticky switch (tabs): Getting there (the venue card with directions, Show the driver
+ * and Copy address, the trail, the map, then Before you fly as a checklist) and Where to stay (the three areas as
+ * short cards, then their picks). /travel#stay opens Where to stay; #before and #getting-there open Getting there.
  */
 export function TravelPage() {
   const { t } = useLang()
@@ -86,11 +129,21 @@ export function TravelPage() {
   // v3 P: "Flying from" exists only when the story map (Our story B) and its Flying from option are on
   const storyOpt = useOption("story"), flyingOpt = useOption("flying")
   const flyingOn = (storyOpt ?? "b") === "b" && flyingOpt === "on"
-  // /travel#stay and #before scroll to their section once the page is in
+  const { hash } = useLocation()
+  const navigate = useNavigate()
+  const part = partOf(hash)
+  const switcher = useRef<HTMLDivElement>(null)
+  // #before (and any other section) scrolls into view once its part is showing
   useEffect(() => {
-    const id = location.hash.slice(1)
-    if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView())
-  }, [])
+    const id = hash.slice(1)
+    if (id && id !== "stay" && id !== "getting-there") requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView())
+  }, [hash])
+  const choose = (p: Part) => {
+    navigate({ hash: p === "stay" ? "stay" : "getting-there" }, { replace: true })
+    // Keep the switch where it is: if the page was scrolled past it, bring the new part's top to it
+    const el = switcher.current
+    if (el && el.getBoundingClientRect().top <= parseFloat(getComputedStyle(el).top) + 1) requestAnimationFrame(() => el.scrollIntoView({ block: "start" }))
+  }
   const rows: [string, string, React.ReactNode][] = [
     ["passport", g.rows.passport, <p>{t.travel.items[0].body}</p>],
     ["flights", g.rows.flights, <>
@@ -99,7 +152,7 @@ export function TravelPage() {
       {household && coming && flyingOn && <FlyingFrom token={household.token} />}
     </>],
     ["insurance", g.rows.insurance, <><p>{g.insuranceBody}</p><Ext href={g.links.smartraveller.href}>{g.links.smartraveller.label}</Ext></>],
-    ["booking", g.rows.booking, <p>{t.travel.items[2].body}</p>],
+    ["booking", g.rows.booking, <><p>{t.travel.items[2].body}</p><button type="button" className="btn-text inline-flex min-h-11 items-center self-start" onClick={() => choose("stay")}>{g.seeStay}</button></>],
     ["phones", g.rows.phones, <>
       <p>{t.travel.items[3].body}</p><p>{g.tips[1]}</p>
       <div className="flex flex-wrap gap-x-4">{("links" in t.travel.items[3] ? t.travel.items[3].links ?? [] : []).map((l) => <Ext key={l.href} href={l.href}>{l.label}</Ext>)}</div>
@@ -112,42 +165,48 @@ export function TravelPage() {
     <>
       <h1 className="heading">{t.nav.travel}</h1>
 
-      <section id="getting-there" aria-labelledby="getting-title" className="flex scroll-mt-24 flex-col gap-4">
-        <h2 id="getting-title" className="font-display text-2xl text-foreground">{g.title}</h2>
-        <p>{g.intro}</p>
-        <DriverCard />
-        <Trail />
-        <KyotoMap />
-      </section>
+      <div ref={switcher} className="travel-switch">
+        <Segmented role="tablist" idPrefix="travel" label={g.partsLabel} value={part} onChange={choose}
+          items={[{ value: "getting" as Part, label: g.title }, { value: "stay" as Part, label: t.stay.title }]} />
+      </div>
 
-      <section id="stay" aria-labelledby="stay-title" className="flex scroll-mt-24 flex-col gap-4">
-        <h2 id="stay-title" className="font-display text-2xl text-foreground">{t.stay.title}</h2>
-        <p>{t.stay.intro}</p>
-        <ol className="flex flex-col border-y border-border">
-          {t.day.stay.map((a) => (
-            <li key={a.label} className="border-b border-border last:border-b-0">
-              <a href={a.maps} target="_blank" rel="noreferrer" className="stay-row">
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="font-medium text-foreground">{a.label}</span>
-                  <span className="text-sm">{t.day.stayGood}: {a.good}</span>
-                  <span className="text-sm text-muted-foreground">{t.day.stayWatch}: {a.watch}</span>
-                </span>
-                <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-                <span className="sr-only">, {g.stayOpens}</span>
-              </a>
-            </li>
-          ))}
-        </ol>
-        <Picks />
-      </section>
+      {part === "getting" ? (
+        <div id="travel-panel-getting" role="tabpanel" aria-labelledby="travel-tab-getting" className="flex flex-col gap-8">
+          <section id="getting-there" className="flex scroll-mt-32 flex-col gap-4">
+            <p>{g.intro}</p>
+            <DriverCard />
+            <Trail />
+            <KyotoMap />
+          </section>
 
-      <section id="before" aria-labelledby="before-title" className="flex scroll-mt-24 flex-col gap-4">
-        <h2 id="before-title" className="font-display text-2xl text-foreground">{g.beforeTitle}</h2>
-        <p className="text-sm text-muted-foreground" aria-live="polite">{g.ticked(rows.filter(([v]) => ticks[v]).length, rows.length)}</p>
-        <Disclosure label={g.beforeTitle}>
-          {rows.map(([value, title, body]) => <Row key={value} value={value} title={title} done={Boolean(ticks[value])} onTick={(v) => setTick(value, v)} tickLabel={g.tick(title)}>{body}</Row>)}
-        </Disclosure>
-      </section>
+          <section id="before" aria-labelledby="before-title" className="flex scroll-mt-32 flex-col gap-4">
+            <h2 id="before-title" className="font-display text-2xl text-foreground">{g.beforeTitle}</h2>
+            <p className="text-sm text-muted-foreground" aria-live="polite">{g.ticked(rows.filter(([v]) => ticks[v]).length, rows.length)}</p>
+            <Disclosure label={g.beforeTitle}>
+              {rows.map(([value, title, body]) => <Row key={value} value={value} title={title} done={Boolean(ticks[value])} onTick={(v) => setTick(value, v)} tickLabel={g.tick(title)}>{body}</Row>)}
+            </Disclosure>
+          </section>
+        </div>
+      ) : (
+        <div id="travel-panel-stay" role="tabpanel" aria-labelledby="travel-tab-stay" className="flex flex-col gap-6">
+          <section id="stay" className="flex scroll-mt-32 flex-col gap-4">
+            <p>{t.stay.intro}</p>
+            <ul className="stay-areas">
+              {t.day.stay.map((a) => (
+                <li key={a.label}>
+                  <a href={a.maps} target="_blank" rel="noreferrer" className="stay-area">
+                    <span className="flex items-center justify-between gap-2 font-medium text-foreground">{a.label}<ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden /></span>
+                    <span className="text-sm">{t.day.stayGood}: {a.good}</span>
+                    <span className="text-sm text-muted-foreground">{t.day.stayWatch}: {a.watch}</span>
+                    <span className="sr-only">, {g.stayOpens}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+          <Picks />
+        </div>
+      )}
     </>
   )
 }

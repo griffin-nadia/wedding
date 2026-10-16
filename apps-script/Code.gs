@@ -30,6 +30,7 @@
  *   TEST_EMAIL      where test invites go (asked for the first time you send a test)
  *   NOTIFY_CHANGES  "yes" to email REPLY_TO when someone changes from coming to not coming
  *   RESEND_LIVE     "yes" to let "Can't find your invite?" email real guests (test households only until then)
+ *   PLANNER_ID      the planner sheet's ID, so Travel can read its Accommodation Options tab (kept out of the repo)
  *   REMINDER_AT     when the gentle reminder goes, e.g. 2027-02-01T10:00:00+11:00 (off until you turn it on)
  *   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET   optional: Spotify for song search (needs a Premium
  *                   app owner). Without them, or if Spotify says no, search uses iTunes.
@@ -150,6 +151,7 @@ function doGet(e) {
     }
     if (action === "flying") return json_(flyingCounts_())
     if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_() })
+    if (action === "stay") return json_(stayPicks_())
     if (action === "content") return json_(content_())
     if (action === "crew") return json_(crew_(p.token))
     if (action === "ping") {
@@ -473,6 +475,67 @@ function onEdit() {
   forgetAllHouseholds_()
   // Edits to the Content tab show on the site straight away (fortunes, story, mode)
   CacheService.getScriptCache().removeAll(["fortunes", "content"])
+}
+
+// ---------- stay picks (Travel → Where to stay) ----------
+
+/**
+ * Their hotel and Airbnb picks, read from the planner's Accommodation Options tab so Nadia's edits reach the site.
+ * Read-only, cached 6 hours. Columns are found by header (Location, Hotel Name, Avg room price, Link, Comments, and
+ * Sleeps if there is one); merged Location cells carry down; a row is an Airbnb when its link is. The note above the
+ * table is theirs ("compare other booking sites"). Tracking bits are taken off every link.
+ */
+function stayPicks_() {
+  const cache = CacheService.getScriptCache()
+  const hit = cache.get("stay_picks")
+  if (hit) return JSON.parse(hit)
+  const id = prop_("PLANNER_ID")
+  if (!id) return { ok: false, code: "not_configured" }
+  const sheet = SpreadsheetApp.openById(id).getSheetByName("Accommodation Options")
+  if (!sheet) return { ok: false, code: "not_found" }
+  const out = { ok: true, note: "", hotels: [], airbnbs: [] }
+  let col = null, area = ""
+  sheet.getDataRange().getDisplayValues().forEach((r) => {
+    const cells = r.map((c) => String(c).replace(/\s+/g, " ").trim())
+    const low = cells.map((c) => c.toLowerCase())
+    if (low.some((c) => /^links?$/.test(c))) {
+      col = {}
+      low.forEach((c, i) => {
+        if (/location|area/.test(c)) col.area = i
+        else if (/sleep|guests|people|pax/.test(c)) col.sleeps = i
+        else if (/price|cost/.test(c)) col.price = i
+        else if (/^links?$/.test(c)) col.link = i
+        else if (/comment|note/.test(c)) col.note = i
+        else if (/name|hotel|airbnb|place/.test(c)) col.name = i
+      })
+      area = ""
+      return
+    }
+    if (!col) { if (!out.note && cells[0]) out.note = cells[0]; return }
+    const href = cleanLink_(cells[col.link] || "")
+    if (col.area != null && cells[col.area]) area = cells[col.area]
+    if (!href) return
+    const note = col.note != null && cells[col.note] !== "-" ? cells[col.note] : ""
+    const row = {
+      name: col.name != null ? cells[col.name] : "",
+      area: area,
+      price: (col.price != null ? cells[col.price] : "").replace(/~\s+/, "~").replace(/\s*\/\s*night/i, "").replace(/\s*\([^)]*\)\s*$/, "").trim(),
+      note: note,
+      sleeps: col.sleeps != null ? cells[col.sleeps] : (note.match(/(?:sleeps\s*)(\d+(?:\s*(?:to|-|–)\s*\d+)?)/i) || [])[1] || "",
+      href: href,
+    }
+    ;(/airbnb\./i.test(href) ? out.airbnbs : out.hotels).push(row)
+  })
+  if (out.hotels.length || out.airbnbs.length) cache.put("stay_picks", JSON.stringify(out), 21600)
+  return out
+}
+
+/** https only, without ad and search tracking (gclid, utm_…, gad_…, Airbnb's search context). */
+function cleanLink_(u) {
+  if (!/^https:\/\//i.test(u)) return ""
+  const parts = u.split("#")[0].split("?")
+  const keep = (parts[1] || "").split("&").filter((p) => p && !/^(utm_|gclid|gad_|gbraid|wbraid|fbclid|msclkid|srsltid|_gl=|mc_|source_impression_id|check_in|check_out|adults|children|infants|pets|guests|search_mode|previous_page_section_name|federated_search_id)/i.test(p))
+  return parts[0] + (keep.length ? "?" + keep.join("&") : "")
 }
 
 // ---------- queue (sent by flushQueue every minute) ----------

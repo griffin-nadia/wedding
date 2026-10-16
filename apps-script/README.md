@@ -41,6 +41,7 @@ still point at the old one.
 | `GET ?action=started&token=…` | Records "Started RSVP" once |
 | `GET ?action=songs&q=…` | Up to 6 Spotify matches, or `not_configured` |
 | `GET ?action=check&token=…` | That household's own saved rows, for testing (plus how many of its rows carry the duplicate flag) |
+| `GET ?action=stay` | Their hotel and Airbnb picks from the planner's Accommodation Options tab (`PLANNER_ID` script property), links without tracking, cached 6 hours |
 | `GET ?action=content` | Our story chapters (Content tab: `story_1_title`, `story_1_year`, `story_1_body`… up to 6), `mode` (invite, week-of, keepsake) and `contact_day` (shown under the FAQs) |
 | `GET ?action=crew&token=…` | `{ok:true, name}` only for a token in the Crew tab |
 | `POST {action:"stamps", token, stamps}` | Saves the stamp book (fixed list) to the Guests "Stamps" column |
