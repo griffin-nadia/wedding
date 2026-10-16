@@ -7,7 +7,7 @@ import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { pageOf, sceneFor } from "@/lib/scenes"
-import { setStoryLetter, usePageTurn, usePaperScroll } from "@/lib/page-turn"
+import { setStoryLetter, usePageTurn } from "@/lib/page-turn"
 import { ModeSwitches } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
@@ -101,7 +101,6 @@ export function Layout() {
   // Sealed envelope on a first visit: their photo behind it, the dock and top bar hidden until it opens
   const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
   usePageTurn(!sealed)
-  usePaperScroll()
   // "Put it back in the envelope" (Home): seal it again; tapping opens it as on the first visit
   const [resealed, setResealed] = useState(0)
   useEffect(() => {

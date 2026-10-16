@@ -466,7 +466,7 @@
   border: 1px solid color-mix(in oklab, var(--sys-line) 60%, transparent);
   border-radius: var(--letter-radius);
   background:
-    radial-gradient(120% 80% at calc(var(--paper-turn, 0) * -20%) calc(var(--paper-scroll, 0) * 20%), color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
+    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
     radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
     var(--letter-bg);
   color: var(--letter-ink);
@@ -484,7 +484,7 @@
 .site-bar > * { pointer-events: auto; }
 .site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--sys-ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
-.site-nav { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); border-radius: calc(var(--radius-control) + 4px); background: color-mix(in oklab, var(--letter-bg) 94%, transparent); border: 1px solid var(--sys-line); box-shadow: var(--letter-shadow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.site-nav { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); border-radius: calc(var(--radius-control) + 4px); background: color-mix(in oklab, var(--letter-bg) 98%, transparent); border: 1px solid var(--sys-line); box-shadow: var(--letter-shadow); } /* no backdrop blur on phones: re-blurring the page under it cost a frame on every scroll */
 .site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px; }
 .site-nav li { display: flex; position: relative; }
 .nav-mark { position: absolute !important; left: 0; top: 0; border-radius: var(--radius-control); background: var(--sys-surface-alt); transition: transform var(--duration-slide) var(--ease-paper), width var(--duration-slide) var(--ease-paper), height var(--duration-slide) var(--ease-paper); pointer-events: none; }

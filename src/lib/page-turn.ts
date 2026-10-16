@@ -139,18 +139,3 @@ export function usePageTurn(enabled: boolean) {
   }, [enabled, nav])
 }
 
-/** The paper light moves with the scroll (2%), on the letter and the scene. */
-export function usePaperScroll() {
-  useEffect(() => {
-    let raf = 0
-    const on = () => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(() => {
-        const max = Math.max(1, document.documentElement.scrollHeight - innerHeight)
-        document.documentElement.style.setProperty("--paper-scroll", (scrollY / max).toFixed(3))
-      })
-    }
-    on(); window.addEventListener("scroll", on, { passive: true })
-    return () => { window.removeEventListener("scroll", on); cancelAnimationFrame(raf) }
-  }, [])
-}
