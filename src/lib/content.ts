@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { config } from "@/lib/config"
 
-export type Chapter = { key: string; title: string; year: string; body: string[] }
+/** A story stop. place, photo and at (a spot on the map's 400 × 320 viewBox) come from the planner for the crew preview. */
+export type Chapter = { key: string; title: string; year: string; body: string[]; place?: string; photo?: string; at?: [number, number] }
 export type SiteMode = "invite" | "week-of" | "keepsake"
 export type SiteContent = { story: Chapter[]; mode: SiteMode; contactDay?: string }
 

@@ -130,6 +130,8 @@ function onOpen() {
     .addItem("Set up the Content tab (fortunes)", "setupContentTab")
     .addItem("Check song search", "checkSongSearch")
     .addItem("Turn on the fast email queue", "setupQueue")
+    .addItem("Check the email queue…", "checkQueue")
+    .addItem("Clear queued items for test households…", "clearTestQueue")
     .addItem("Reset test households…", "resetTestHouseholds")
     .addItem("Make crew links", "makeCrewLinks")
     .addSeparator()
@@ -158,7 +160,10 @@ function doGet(e) {
       // Health check: is the minute trigger set up? (No guest data here.)
       const props = PropertiesService.getScriptProperties()
       const pending = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0).length
-      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", pending: pending, lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: CacheService.getScriptCache().get("last_flush") || null })
+      let trigger = null
+      try { trigger = hasFlushTrigger_() } catch (err) { trigger = null }
+      const lastAt = Number(props.getProperty("last_flush_at") || 0)
+      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", trigger: trigger, pending: pending, kinds: queueKinds_(), lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: lastAt ? new Date(lastAt).toISOString() : CacheService.getScriptCache().get("last_flush") || null })
     }
     if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
@@ -577,17 +582,36 @@ function queueMail_(b, a, changes) {
 
 function flushTriggerReady_() {
   const props = PropertiesService.getScriptProperties()
-  if (props.getProperty("flush_trigger") === "1") return true
+  // The stored flag alone isn't proof: in October the trigger stopped while the flag still said on, so replies and
+  // emails queued with nothing to send them. Trust it only while flushes are actually running (one in the last
+  // 5 minutes); otherwise check the trigger, recreate it if it's gone, and send inline until it runs again.
+  const last = Number(props.getProperty("last_flush_at") || 0)
+  if (props.getProperty("flush_trigger") === "1" && Date.now() - last < 5 * 60 * 1000) return true
   try {
-    if (!ScriptApp.getProjectTriggers().some((t) => t.getHandlerFunction() === "flushQueue")) {
+    if (!hasFlushTrigger_()) {
       ScriptApp.newTrigger("flushQueue").timeBased().everyMinutes(1).create()
+      props.setProperty("flush_trigger", "1")
+      props.setProperty("last_flush_at", String(Date.now())) // give the new trigger its first minute
+      return true
     }
     props.setProperty("flush_trigger", "1")
-    return true
+    return false // the trigger exists but hasn't run lately: don't queue behind it
   } catch (err) {
     CacheService.getScriptCache().put("trigger_err", String(err).slice(0, 300), 21600)
     return false
   }
+}
+
+function hasFlushTrigger_() {
+  return ScriptApp.getProjectTriggers().some((t) => t.getHandlerFunction() === "flushQueue")
+}
+
+/** What's waiting, by kind (save, mail, open, started). Counts only, no tokens. */
+function queueKinds_() {
+  const kinds = {}
+  Object.keys(PropertiesService.getScriptProperties().getProperties()).filter((k) => k.indexOf("q:") === 0)
+    .forEach((k) => (kinds[k.split(":")[1]] = (kinds[k.split(":")[1]] || 0) + 1))
+  return kinds
 }
 
 /** Every minute: write queued visits, send queued confirmation emails, keep warm in invite week. */
@@ -596,6 +620,7 @@ function flushQueue() {
   if (!lock.tryLock(20000)) return
   CacheService.getScriptCache().put("last_flush", new Date().toISOString(), 21600)
   const props = PropertiesService.getScriptProperties()
+  props.setProperty("last_flush_at", String(Date.now()))
   let mails = []
   try {
     const all = props.getProperties()
@@ -1476,6 +1501,52 @@ function emailCopy_() {
   return copy
 }
 
+// ---------- queue check ----------
+
+/** What's queued, by household (test or not), before anything is sent. Optionally writes and sends it now. */
+function checkQueue() {
+  const ui = SpreadsheetApp.getUi()
+  const all = PropertiesService.getScriptProperties().getProperties()
+  const keys = Object.keys(all).filter((k) => k.indexOf("q:") === 0)
+  if (!keys.length) return ui.alert("The queue is empty.")
+  const names = {}
+  households_().forEach((h) => (names[h.token] = h.name))
+  const lines = { save: [], mail: [], open: 0, started: 0 }
+  let real = 0
+  keys.forEach((k) => {
+    const kind = k.split(":")[1], token = k.split(":")[2], name = names[token] || "Unknown link"
+    if (kind === "open" || kind === "started") return lines[kind]++
+    const test = TEST_HOUSEHOLD.test(name)
+    if (!test) real++
+    lines[kind].push(name + (test ? "" : "  (not a test household)"))
+  })
+  let trigger = "unknown"
+  try { trigger = hasFlushTrigger_() ? "set up" : "missing" } catch (err) { trigger = "can't check: " + err }
+  const last = Number(PropertiesService.getScriptProperties().getProperty("last_flush_at") || 0)
+  const text = "Replies waiting to be written: " + lines.save.length + (lines.save.length ? "\n  " + lines.save.join("\n  ") : "") +
+    "\nConfirmation emails waiting: " + lines.mail.length + (lines.mail.length ? "\n  " + lines.mail.join("\n  ") : "") +
+    "\nVisit counts waiting: " + lines.open + " opens, " + lines.started + " started" +
+    "\n\nMinute trigger: " + trigger + ". Last run: " + (last ? new Date(last).toString() : "not recorded") +
+    (real ? "\n\n" + real + " item(s) are for households that aren't test households. Sending will email them." : "") +
+    "\n\nWrite the replies and visits and send the emails now?"
+  if (ui.alert("Email queue", text, ui.ButtonSet.YES_NO) !== ui.Button.YES) return
+  flushQueue()
+  ui.alert("Done. " + Object.keys(PropertiesService.getScriptProperties().getProperties()).filter((k) => k.indexOf("q:") === 0).length + " left in the queue.")
+}
+
+/** Deletes queued replies, emails and visits for test households only. Nothing is written or sent. */
+function clearTestQueue() {
+  const ui = SpreadsheetApp.getUi()
+  const props = PropertiesService.getScriptProperties()
+  const tests = {}
+  households_().filter((h) => TEST_HOUSEHOLD.test(h.name)).forEach((h) => (tests[h.token] = h.name))
+  const keys = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0 && tests[k.split(":")[2]])
+  if (!keys.length) return ui.alert("Nothing queued for test households.")
+  if (ui.alert("Clear test items", "Delete " + keys.length + " queued item(s) for test households without writing or sending them?", ui.ButtonSet.OK_CANCEL) !== ui.Button.OK) return
+  keys.forEach((k) => props.deleteProperty(k))
+  ui.alert("Cleared " + keys.length + ".")
+}
+
 // ---------- test data ----------
 
 // Households named like "Jehan (Test)" or "Test · Family". Real households never match.
@@ -1527,6 +1598,8 @@ function setupQueue() {
   // Google's consent screen lets people untick single permissions. This asks again for the one the
   // queue needs ("run when you are not present", i.e. triggers) if it was left unticked.
   ScriptApp.requireScopes(ScriptApp.AuthMode.FULL, ["https://www.googleapis.com/auth/script.scriptapp"])
+  // Start clean: a trigger that stopped running stays listed, so remove any old one and make a fresh one
+  ScriptApp.getProjectTriggers().filter((t) => t.getHandlerFunction() === "flushQueue").forEach((t) => ScriptApp.deleteTrigger(t))
   PropertiesService.getScriptProperties().deleteProperty("flush_trigger")
   const ok = flushTriggerReady_()
   SpreadsheetApp.getUi().alert(ok ? "The email queue is on. Saves are faster, and visits are written every minute." : "Couldn't turn it on: " + (CacheService.getScriptCache().get("trigger_err") || "unknown error"))

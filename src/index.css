@@ -1340,3 +1340,5 @@ svg.lucide { stroke-width: 1.5; }
 .chip-filter[aria-pressed="true"] { border-color: var(--input-selected-line); box-shadow: inset 0 0 0 1px var(--input-selected-line); background: var(--input-selected-bg); color: var(--sys-ink); }
 .chip-filter:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .chip-filter:hover { border-color: var(--sys-line-strong); color: var(--sys-ink); } }
+/* A story stop's photo (crew preview for now): a small print above the stop's words */
+.journey-stop-photo { width: min(220px, 55%); margin-bottom: var(--space-2); }

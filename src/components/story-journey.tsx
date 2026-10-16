@@ -9,9 +9,11 @@ import { FLY, KYOTO, PLACES, arc } from "@/lib/journey"
 import { JourneyLand, JourneyLegend, JourneyPlaces } from "@/components/journey-mini"
 import { PlaceholderTag } from "@/components/placeholder-tag"
 import { useOption } from "@/lib/options"
+import { Photo } from "@/components/photo"
 
-/** Where a chapter sits: its title if it names a place, otherwise spread along Nadia's line. */
+/** Where a chapter sits: its own spot (the planner's places), its title if it names a place, otherwise along Nadia's line. */
 function placeOf(c: Chapter, i: number, n: number): [number, number] {
+  if (c.at) return c.at
   const k = c.title.toLowerCase().split(/[ ,]/)[0]
   if (PLACES[k]) return PLACES[k]
   const t = n > 1 ? i / (n - 1) : 1, [x1, y1] = PLACES.brisbane
@@ -69,7 +71,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
   )
   return (
     <div className={cn("journey relative", inView && "is-in", hifi && "journey-hifi")} onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
-      <PlaceholderTag id="mapLand" className="inside" />
+      <PlaceholderTag id="mapLand" className="inside at-start" />
       <svg ref={svg} viewBox="0 0 400 320" className="journey-map" role="group" aria-label={t.story.title} style={drag ? { touchAction: "none" } : undefined}>
         <JourneyLand />
         {/* Each line is revealed by a mask whose solid copy draws in (dotted strokes can't draw with dashoffset alone) */}
@@ -95,7 +97,8 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
             onClick={() => setOn(i)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOn(i) } }}>
             <circle r="16" className="journey-hit" />
             <circle r="5" className="journey-dot" />
-            <text y="-12" textAnchor="middle" className="journey-label">{chapters[i].title}</text>
+            {/* Stops on or beside the 京 seal label below the dot, so the seal never covers the words */}
+            <text y={Math.hypot(x - KYOTO[0], y - KYOTO[1]) < 30 ? 28 : -12} textAnchor="middle" className="journey-label">{chapters[i].title}</text>
           </g>
         ))}
         {/* Drag the seal (Options → Our story): it follows the finger and the nearest chapter opens as it passes */}
@@ -133,8 +136,11 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
           ))}
         </ol>
         {c ? (
-        <section className="journey-stopcard" aria-live="polite">
-          <p className="text-sm text-muted-foreground">{t.story.page(on + 1, n)}, {c.year}</p>
+        <section className="journey-stopcard relative" aria-live="polite">
+          {/* Their line goes here: tagged for crew until they write it, never filler text */}
+          {!c.body.length && <PlaceholderTag id="storyCaptions" className="inside" />}
+          {c.photo && <Photo key={c.photo} name={c.photo} treatment="print" sizes="(min-width: 1024px) 240px, 60vw" alt={`${c.title}, ${c.year}`} className="journey-stop-photo" />}
+          <p className="text-sm text-muted-foreground">{t.story.page(on + 1, n)}, {c.year}{c.place ? ` · ${c.place}` : ""}</p>
           <h2 className="font-display text-2xl text-foreground">{c.title}</h2>
           {c.body.map((p, k) => <p key={k}>{p}</p>)}
           <div className="flex items-center justify-between">
