@@ -111,6 +111,22 @@
   "width": 1600,
   "height": 2133
  },
+ "kid-nadia": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "kid-nadia-lqip.webp",
+  "width": 800,
+  "height": 1206
+ },
  "kyoto-night": {
   "formats": {
    "avif": [

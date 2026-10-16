@@ -6,6 +6,7 @@ import { canShake, drawnKey, saveFortune } from "@/lib/fortune"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useOption } from "@/lib/options"
+import { PlaceholderTag } from "@/components/placeholder-tag"
 
 const FortuneSpring = lazy(() => import("@/components/fortune-spring"))
 
@@ -86,10 +87,13 @@ export function FortuneCard({ token, className, onMap }: { token: string; classN
   const save = () => saveFortune(t, text)
 
   // Options → Fortune → Springs: the Motion version, loaded only when it's on
-  if (spring) return <Suspense fallback={null}><FortuneSpring token={token} className={className} onMap={onMap} /></Suspense>
+  // Crew: tagged until Griffin's own lines replace the travel tips (the Content tab's 12 lines)
+  const tag = <PlaceholderTag id="fortunes" done={tips !== FORTUNES} />
+  if (spring) return <div className="relative"><Suspense fallback={null}><FortuneSpring token={token} className={className} onMap={onMap} /></Suspense>{tag}</div>
   if (state !== "open") {
     return (
-      <section aria-labelledby="fortune" className={cn("omikuji flex items-center gap-5 rounded-md border bg-card p-4", className)}>
+      <section aria-labelledby="fortune" className={cn("omikuji relative flex items-center gap-5 rounded-md border bg-card p-4", className)}>
+        {tag}
         <button type="button" onClick={draw} disabled={state === "drawing"} aria-label={t.fortune.boxLabel} className="omikuji-hit">
           <Box drawing={state === "drawing"} />
         </button>
@@ -102,7 +106,8 @@ export function FortuneCard({ token, className, onMap }: { token: string; classN
     )
   }
   return (
-    <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip", className)}>
+    <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip relative", className)}>
+      {tag}
       <SlipWords i={i} of={tips.length} text={text} />
       <button type="button" onClick={save} className="omikuji-save">{t.fortune.save}</button>
       {onMap && <Button variant="outline" onClick={onMap}>{t.fortune.onMap}</Button>}

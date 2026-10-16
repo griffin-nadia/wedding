@@ -4,6 +4,7 @@ import { ART } from "@/lib/art"
 import { FROM, KYOTO, PLACES, arc } from "@/lib/journey"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
+import { PlaceholderTag } from "@/components/placeholder-tag"
 
 /**
  * The land on every map: Nadia's painting once ART.mapLand is set (painted on the template, so its dashed box is
@@ -113,7 +114,7 @@ export function GuestMap({ you, flying, label }: { you: Flying | null; flying: {
             {you && <li className="font-medium text-foreground">{t.journey.list.you(name(you))}</li>}
             {cities.map(([c, n]) => <li key={c}>{t.journey.list.city(name(c), n)}</li>)}
           </ul>
-        : <><JourneyMini you={you} counts={flying?.counts} label={label} /><JourneyLegend you={Boolean(you)} /></>}
+        : <><div className="relative"><JourneyMini you={you} counts={flying?.counts} label={label} /><PlaceholderTag id="mapLand" className="inside" /></div><JourneyLegend you={Boolean(you)} /></>}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         {flying && flying.households > 0 ? <p className="text-sm text-muted-foreground">{t.journey.count(flying.told, flying.households)}</p> : <span />}
         <button type="button" className="btn-text min-h-11" onClick={() => setList((v) => !v)}>{list ? t.journey.seeMap : t.journey.seeList}</button>

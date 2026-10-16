@@ -12,6 +12,7 @@ const LOCK = "2027年4月30日（金）"
 const TRAVEL_FROM = "2027年9月1日（水）"
 const TRAVEL_TO = "2027年11月30日（火）"
 const CHANGE_BY = `${LOCK}まで、お返事は変更できます。`
+const CHANGE_AFTER = "予定が変わることもありますよね。4月30日以降に変更が必要になったら、直接ご連絡ください。"
 const A = "ナディア"
 const B = "グリフィン"
 const BOTH = `${A} & ${B}`
@@ -40,6 +41,7 @@ export const ja: DeepPartial<Content> = {
     "trio-mountain-town": { alt: `山あいの町で家族と${A}と${B}`, caption: "家族との旅" },
     "torii-mist": { alt: "霧の中の赤い鳥居", caption: "道すがらの霧の鳥居" },
     "griffin-cedar-forest": { alt: `杉の大木の間に立つ${B}`, caption: `杉林の${B}` },
+    "kid-nadia": { alt: "幼い頃のナディア。帽子をかぶって車の後部座席で笑っている", caption: "" },
     "couple-osaka-castle": { alt: `大阪城の前に立つ${A}と${B}`, caption: "大阪に着くなら、お城も立ち寄る価値あり" },
     "yasaka-gate-shijo": { alt: "八坂神社の門から四条通を見下ろす", caption: "八坂神社から四条通を望む。会場から徒歩10分" },
     "higashiyama-bookshop": { alt: "東山の静かな通りと本屋", caption: "会場のある東山。坂を上れば清水寺" },
@@ -123,6 +125,7 @@ export const ja: DeepPartial<Content> = {
     rsvpBy: `${RSVP_BY}までにお返事を`,
     changeReply: "お返事を変更する",
     changeBy: CHANGE_BY,
+    changeAfter: CHANGE_AFTER,
     reseal: "封筒に戻す",
     week: { greeting: "いよいよ今週です。金曜日のことはすべて「当日」のページに、いちばん簡単な行き方は下にあります。お会いできるのを楽しみにしています。", day: "当日", directions: "Googleマップで道順を見る" },
     keepsake: { badge: "2027年10月15日（金）、京都にて結婚しました", greeting: "遠くまで来てくださり、私たちの一日を一緒に過ごしてくださって、ありがとうございました。当日の写真は近日ここに掲載します。", story: "ふたりのことを読む" },
@@ -220,9 +223,35 @@ export const ja: DeepPartial<Content> = {
   },
   stay: {
     title: "宿泊について",
-    intro: "早めの予約を。10月中旬の京都は混み合います。ホテルは小さく整っていて、京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと一緒に泊まるのも大歓迎です。",
+    intro: "早めの予約を。10月中旬の京都は混み合います。ホテルは小さく整っていて、京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと一緒に泊まるのも大歓迎です。迷ったら、気軽にご相談ください！",
     mapLink: "3つのエリアを地図で見る",
     mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
+    picks: {
+      title: "おすすめの宿",
+      note: "リンク先は各ホテルの公式サイトです。ほかの予約サイトとも比べてみてください。料金は変わります。",
+      hotelsTitle: "ホテル",
+      airbnbsTitle: "Airbnb",
+      airbnbsNote: "人数で割ると1人あたりは安くなります。",
+      perNight: (price: string) => `1泊${price}`,
+      sleeps: (n: string) => `${n.replace(" to ", "〜")}名まで`,
+      opensHotel: "ホテルのサイトがひらきます",
+      opensAirbnb: "Airbnbがひらきます",
+      hotels: [
+        { area: "京都駅" }, { area: "京都駅" }, { area: "京都駅" },
+        { area: "五条", price: "~$100 AUD〜", note: "京都駅と祇園四条のあいだ" },
+        { area: "清水五条", price: "~$150 AUD〜", note: "会場に近め" },
+        { area: "清水五条", price: "~$200 AUD〜", note: "駅のすぐそば" },
+      ],
+      airbnbs: [
+        { area: "清水五条", note: "駅のすぐそばではありません" },
+        { area: "清水五条" },
+        { area: "清水五条", note: "駅のすぐそばではありません" },
+        { area: "清水五条" },
+        { area: "東山" },
+        { area: "ザ・ソウドウの近く", note: "会場のすぐ近く、駅からは離れています" },
+        { area: "三条" },
+      ],
+    },
   },
   qa: {
     title: "よくある質問",
@@ -304,6 +333,7 @@ export const ja: DeepPartial<Content> = {
       busy: "今は送信できませんでした。入力内容は残っていますので、もう一度お試しください。",
       network: "接続できませんでした。通信環境を確認して、もう一度お試しください。",
       not_found: `この招待状が見つかりませんでした。${A}か${B}にご連絡ください。`,
+      paused: "お返事の受付を少しお休みしています。時間をおいて、もう一度お試しください。",
       other: `送信できませんでした。入力内容は残っていますので、もう一度お試しいただくか、${A}か${B}にご連絡ください。`,
     },
     tryAgain: "もう一度",
@@ -326,6 +356,7 @@ export const ja: DeepPartial<Content> = {
     title: "このリンクは正しくないようです",
     body: `このリンクの招待状が見つかりませんでした。メールのリンクをすべてコピーしたか確認いただくか、${A}か${B}にご連絡いただければ再送します。`,
   },
+  paused: { title: "お返事の受付を少しお休みしています", body: "時間をおいて、もう一度お試しください。", retry: "もう一度", line: "お返事の受付を少しお休みしています。時間をおいて、もう一度お試しください。" },
   offline: {
     title: "招待状をひらけませんでした",
     body: "通信環境のせいかもしれません。少し待ってからもう一度お試しください。",
