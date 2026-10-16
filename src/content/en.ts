@@ -259,10 +259,10 @@ export const en = {
     title: "FAQs",
     items: [
       { q: "Gifts?", a: "No gifts, truly. Getting to Kyoto is a big ask already, so you being there is the present." },
-      { q: "Can I bring someone?", a: `Your invite is for the people named on it. If there's room for a plus one, your reply will ask "Bringing someone?" so you can add their name. If not, it's just you. Message ${A} or ${B} if you're unsure.` },
-      { q: "What should I wear?", a: "There's no dress code. Wear what makes you feel like your best self, with shoes that grip on stone." },
+      { q: "Can I bring someone?", a: `Your invite is for the people named on it. If there's room for a plus one, your reply will ask "Bringing someone?" so you can add their name. If not, it's just you. You can send us a message directly or send an email to griffinandnadia@gmail.com if you're unsure.` },
+      { q: "What should I wear?", a: "There's no dress code. Wear what makes you feel like your best self. Please keep in mind that the area around the venue has cobblestone streets, so please bring appropriate footwear." },
       { q: "What about food?", a: "Lunch is catered, and we'll set the menu a few months before. Tell us about any dietary needs in your reply." },
-      { q: "What happens to my details?", a: `Your reply goes straight to ${A} and ${B} and no one else sees it. They'll delete it a few months after the wedding.` },
+      { q: "What happens to my details?", a: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding." },
       { q: "Is it a traditional Japanese wedding?", a: "No, it's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are." },
     ],
     onTheDay: "On the day, contact",
