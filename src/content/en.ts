@@ -92,7 +92,7 @@ export const en = {
     kyoto: "Kyoto", brisbane: "Brisbane", canada: "Canada",
     seeList: "See as a list", seeMap: "See the map", next: "Next", done: "Done",
   },
-  flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (city: string) => `Your line is drawn from ${city}.`, change: "Change" },
+  flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", endTitle: "Where are you flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (city: string) => `Your line is drawn from ${city}.`, change: "Change" },
   music: { on: "Play music", off: "Pause music", credit: (title: string, artist: string, year?: number) => `Music: “${title}” by ${artist}${year ? ` (${year})` : ""}` },
   journey: {
     title: "Your journey",

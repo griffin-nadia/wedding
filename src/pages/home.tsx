@@ -18,6 +18,7 @@ import type { Household } from "@/lib/api"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
+const JourneyCard = lazy(() => import("@/components/journey-card"))
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
 
 // The names reveal once, letter by letter, the first time the letter is opened (v3 L). Never again.
@@ -137,6 +138,8 @@ export function HomePage() {
             {done && <p className="text-sm text-muted-foreground">{t.home.changeBy}</p>}
           </div>
           {done && <YourReply h={household} open={openAt} />}
+          {/* Their line on the map, once they've said where they're flying from (after the fortune) */}
+          {done && <Suspense><JourneyCard token={household.token} /></Suspense>}
         </div>
       )}
       <HomeCountdown />
