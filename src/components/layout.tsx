@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
-import { BookOpen, CalendarDays, CircleHelp, Home, TrainFront } from "lucide-react"
+import { BookOpen, CalendarDays, CircleHelp, Home, SlidersHorizontal, TrainFront } from "lucide-react"
 import { useContent } from "@/lib/content"
 import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
@@ -12,7 +12,7 @@ import { ModeSwitches } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
-import { SiteTune } from "@/tune/launcher"
+import { SiteTune, openTune, tuneEnabled } from "@/tune/launcher"
 // Desktop only, so they load after the first screen: the credit mark and the phone QR
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
@@ -30,10 +30,11 @@ function Nav() {
   const { t } = useLang()
   const { story } = useContent()
   // Crew devices see Our story (the base map, no invented chapters) before the words exist; guests only once they do
-  const crew = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
+  const [crew, setCrew] = useState(() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })
+  useEffect(() => { const on = () => setCrew(true); window.addEventListener("ng-crew", on); return () => window.removeEventListener("ng-crew", on) }, [])
   const hasStory = story.length > 0 || crew
   const links = hasStory ? [...baseLinks, storyLink] : baseLinks
-  const linksKey = links.map((l) => `${l.to}:${t.nav[l.key]}`).join("|")
+  const linksKey = links.map((l) => `${l.to}:${t.nav[l.key]}`).join("|") + (crew ? "|options" : "")
   useEffect(() => { setStoryLetter(hasStory) }, [hasStory])
   const { pathname } = useLocation()
   const list = useRef<HTMLUListElement>(null)
@@ -68,6 +69,15 @@ function Nav() {
             </NavLink>
           </li>
         ))}
+        {/* Crew only: Options as the last item, so it never sits over the page */}
+        {crew && tuneEnabled && (
+          <li>
+            <button type="button" onClick={openTune} className="site-nav-link site-nav-options" aria-label="Options (crew only)">
+              <SlidersHorizontal className="size-5" aria-hidden />
+              <span className="md:sr-only">Options</span>
+            </button>
+          </li>
+        )}
       </ul>
     </nav>
   )

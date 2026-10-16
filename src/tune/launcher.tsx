@@ -36,14 +36,22 @@ export function TuneLauncher() {
   )
 }
 
+/** Opens the panel over the page: the Options item at the end of the nav (crew only) calls this. */
+export const openTune = () => window.dispatchEvent(new Event("ng-open-tune"))
+
 /**
  * On the site itself, for crew only (v3 S): once a crew link has been opened on this device (or ?c=<crew
- * token> on any page), a small Options button appears in the corner and opens the panel on its Options tab,
- * over the real page. ?tune=1 still opens it for this visit. Guests never have a crew token, so never see it.
+ * token> on any page), Options shows as the last item in the nav (the dock on phones, the top bar on laptops), so it
+ * never sits over the page, and opens the panel on its Options tab. ?tune=1 still opens it for this visit.
+ * Guests never have a crew token, so never see it.
  */
 export function SiteTune() {
-  const [crew, setCrew] = useState(false)
   const [open, setOpen] = useState(false)
+  useEffect(() => {
+    const on = () => setOpen(true)
+    window.addEventListener("ng-open-tune", on)
+    return () => window.removeEventListener("ng-open-tune", on)
+  }, [])
   useEffect(() => {
     if (!tuneEnabled) return
     try {
@@ -52,19 +60,13 @@ export function SiteTune() {
       if (q.get("tune") === "0") sessionStorage.removeItem("ng-tune-open")
       setOpen(sessionStorage.getItem("ng-tune-open") === "1")
       const given = q.get("c")
-      if (given) void checkCrew(given).then((r) => { if (r === "yes") { try { localStorage.setItem("ng-crew", given) } catch { /* fine */ } setCrew(true) } })
-      else if (localStorage.getItem("ng-crew")) setCrew(true)
+      if (given) void checkCrew(given).then((r) => { if (r === "yes") { try { localStorage.setItem("ng-crew", given) } catch { /* fine */ } window.dispatchEvent(new Event("ng-crew")) } })
     } catch { /* ignore */ }
   }, [])
   if (!Panel) return null
   const close = () => { setOpen(false); try { sessionStorage.removeItem("ng-tune-open") } catch { /* ignore */ } }
   return (
     <>
-      {crew && !open && (
-        <button type="button" onClick={() => setOpen(true)} aria-label="Options (crew only)" title="Options (crew only)" className="crew-options press">
-          <SlidersHorizontal className="size-5" aria-hidden />
-        </button>
-      )}
       {open && createPortal(<Suspense><Panel onClose={close} startTab="options" /></Suspense>, document.body)}
     </>
   )

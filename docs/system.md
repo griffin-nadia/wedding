@@ -67,7 +67,7 @@ Three families, nothing else: **Oranienbaum** (serif display), **Inter** (sans b
 - **Letter:** 740 wide from 1024, 48 to 180 from the left (scales so the photo keeps room); texture on the card, a 1px line, no top bar, no blur ring.
 - **Nav:** four items rendered once. Dock on phones, thin top bar from 768 with RSVP as a button. No footer, no tabs.
 - **Home:** the letterhead, greeting, RSVP or the Replied pill, then the countdown row under the card (outside the letter).
-- **Fits:** Home fits 390×844 and 1440×900. Every page ends 16px clear of the dock.
+- **Fits:** Home fits 390×844 and 1440×900. Every page ends the same distance above the dock: the dock, the safe area and 8px (`--dock-band`); 64px clear on laptops. Crew Options is the last nav item, never over the page.
 
 ## States: one system
 

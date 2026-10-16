@@ -300,7 +300,7 @@
   main { max-width: none !important; padding: 0 !important; }
   /* Print (v3 S): just the letter, at the letter's width, on white, in the light palette */
   :root, [data-theme] { --letter-bg: #fff; --sys-ink: #421a05; --sys-ink-soft: #754b38; --sys-ink-muted: #8b5a3c; --sys-line: #e5d0a8; --sys-moss: #727354; --sys-accent: #a84f32; --sys-link: #3e4a26; --sys-surface-raised: #fff; --sys-surface-alt: #f3efe2; }
-  .scene, .scene-layer, .site-bar, .site-nav, .phone-qr, .credit-mark, .chrome-lantern, .letter-lantern, .crew-options, .letter-end button, .skip-link { display: none !important; }
+  .scene, .scene-layer, .site-bar, .site-nav, .phone-qr, .credit-mark, .chrome-lantern, .letter-lantern, .letter-end button, .skip-link { display: none !important; }
   .letter-wrap { padding: 0 !important; min-height: 0 !important; }
   .letter { max-width: var(--letter-width) !important; margin: 0 auto !important; box-shadow: none !important; border: 0 !important; background: #fff !important; padding: 0 !important; }
   .letter::before { display: none !important; }
@@ -741,12 +741,6 @@ svg.lucide { stroke-width: 1.5; }
 /* Step 1 on phones: the name on its own line, the choice centred under it (v3 R) */
 @media (max-width: 767px) { .choice-row { flex-direction: column; align-items: stretch; } .choice-row .segmented { align-self: center; } }
 /* Crew-only Options button (v3 S): bottom left, above the dock on phones and above the credit on desktop */
-.crew-options { position: fixed; z-index: 45; left: 12px; bottom: calc(66px + 12px + env(safe-area-inset-bottom) + 12px); display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); border: 1px solid var(--sys-line); background: var(--letter-bg); color: var(--sys-ink); box-shadow: var(--letter-shadow); outline: 2px solid transparent; outline-offset: 2px; }
-.crew-options:focus-visible { outline-color: var(--input-focus); }
-@media (hover: hover) { .crew-options:hover { border-color: var(--sys-line-strong); } }
-@media (min-width: 768px) { .crew-options { bottom: 24px; } }
-@media (min-width: 1024px) { .crew-options { bottom: 76px; left: 22px; } }
-[data-sealed] .crew-options, [data-sheet] .crew-options, [data-modal] .crew-options { display: none; }
 /* Arrival on desktop (v3 S): warm paper on the left where the envelope sits (no blurred copy of the photo),
    the sharp photo as a full-height panel on the right, cropped per photo so their faces sit in view */
 @media (min-width: 1024px) {
@@ -1121,3 +1115,5 @@ svg.lucide { stroke-width: 1.5; }
 /* The hanko's 京 is part of the seal's drawing, sized to its circle (not a text role) */
 .hanko-sm { font-size: 20px; }
 .hanko-lg { font-size: 40px; }
+/* Crew Options in the nav: an icon in the top bar from 768 (its name stays for screen readers), a cell in the dock */
+@media (min-width: 768px) { .site-nav-options { padding-inline: var(--space-3); } }
