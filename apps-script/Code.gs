@@ -163,7 +163,7 @@ function doGet(e) {
       let trigger = null
       try { trigger = hasFlushTrigger_() } catch (err) { trigger = null }
       const lastAt = Number(props.getProperty("last_flush_at") || 0)
-      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", trigger: trigger, pending: pending, kinds: queueKinds_(), lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: lastAt ? new Date(lastAt).toISOString() : CacheService.getScriptCache().get("last_flush") || null })
+      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", trigger: trigger, pending: pending, kinds: queueKinds_(), queueAccount: props.getProperty("queue_account") || "unknown", lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: lastAt ? new Date(lastAt).toISOString() : CacheService.getScriptCache().get("last_flush") || null })
     }
     if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
@@ -1593,16 +1593,29 @@ function resetHouseholds_(tokens) {
   forgetAllHouseholds_()
 }
 
-/** Creates the 1-minute trigger that sends confirmation emails and writes visit counts. */
+/**
+ * Creates the 1-minute trigger that sends confirmation emails and writes visit counts. A trigger runs as whoever
+ * made it, and its emails come from that account, so this only runs signed in as the wedding account (REPLY_TO).
+ * On 16 Oct it was turned on from Jehan's own account and guests' confirmations would have come from his Gmail.
+ */
 function setupQueue() {
-  // Google's consent screen lets people untick single permissions. This asks again for the one the
-  // queue needs ("run when you are not present", i.e. triggers) if it was left unticked.
-  ScriptApp.requireScopes(ScriptApp.AuthMode.FULL, ["https://www.googleapis.com/auth/script.scriptapp"])
+  // Google's consent screen lets people untick single permissions. This asks again for the ones the queue needs:
+  // triggers ("run when you are not present") and the signed-in address, to check it's the wedding account.
+  ScriptApp.requireScopes(ScriptApp.AuthMode.FULL, ["https://www.googleapis.com/auth/script.scriptapp", "https://www.googleapis.com/auth/userinfo.email"])
+  const ui = SpreadsheetApp.getUi()
+  const me = String(Session.getEffectiveUser().getEmail() || "").toLowerCase()
+  const wedding = String(prop_("REPLY_TO")).toLowerCase()
+  const props = PropertiesService.getScriptProperties()
+  if (me !== wedding) {
+    props.setProperty("queue_account", "other")
+    return ui.alert("Sign in as the wedding account", "You're signed in as " + (me || "an unknown account") + ". Emails from the queue come from whoever turns it on, so open this sheet signed in as " + wedding + " and run this again.\n\nIf you turned it on from this account before, remove that one: Extensions → Apps Script → Triggers (the clock), then delete flushQueue.", ui.ButtonSet.OK)
+  }
   // Start clean: a trigger that stopped running stays listed, so remove any old one and make a fresh one
   ScriptApp.getProjectTriggers().filter((t) => t.getHandlerFunction() === "flushQueue").forEach((t) => ScriptApp.deleteTrigger(t))
-  PropertiesService.getScriptProperties().deleteProperty("flush_trigger")
+  props.deleteProperty("flush_trigger")
   const ok = flushTriggerReady_()
-  SpreadsheetApp.getUi().alert(ok ? "The email queue is on. Saves are faster, and visits are written every minute." : "Couldn't turn it on: " + (CacheService.getScriptCache().get("trigger_err") || "unknown error"))
+  if (ok) props.setProperty("queue_account", "wedding")
+  ui.alert(ok ? "The email queue is on, sending from " + wedding + ". If you ever turned it on from another account, delete that trigger there (Extensions → Apps Script → Triggers)." : "Couldn't turn it on: " + (CacheService.getScriptCache().get("trigger_err") || "unknown error"))
 }
 
 function checkSongSearch() {
