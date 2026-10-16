@@ -3,7 +3,7 @@ import { faceRect } from "@/lib/face"
 import { useTheme } from "@/lib/theme"
 
 /**
- * Light, not a glow (Options → Light). Laptops with a fine pointer only; lazy-loaded.
+ * Light, not a glow (Options → Scene → Ambient). Laptops with a fine pointer only; lazy-loaded.
  * - Day: komorebi, soft dappled light through leaves, drifting very slowly over the photo and the paper.
  * - Night: a warm lantern pool that drifts and breathes with a slight flicker, a few out-of-focus lantern bokeh far
  *   back, and the paper grain catching the light.
