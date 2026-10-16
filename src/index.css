@@ -1321,3 +1321,5 @@ svg.lucide { stroke-width: 1.5; }
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
 .story-kids { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: var(--space-4); align-items: start; }
 .story-kid-slot { position: relative; aspect-ratio: 2 / 3; border: 1px dashed var(--sys-line-strong); border-radius: var(--radius-control); background: var(--sys-surface-alt); }
+/* A story stop's photo (crew preview for now): a small print above the stop's words */
+.journey-stop-photo { width: min(220px, 55%); margin-bottom: var(--space-2); }

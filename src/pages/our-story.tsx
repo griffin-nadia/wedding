@@ -10,6 +10,7 @@ import { PlaceholderTag } from "@/components/placeholder-tag"
 import { Photo } from "@/components/photo"
 import photos from "@/content/photos.json"
 import { useShowPlaceholders } from "@/lib/placeholders"
+import { STORY_PLAN } from "@/content/story-plan"
 
 /** Journey A · the letter continues (default): chapters as pages of the letter. Swipe or arrows on phones, side by side from 1024. No photos. */
 function StoryLetter({ chapters }: { chapters: Chapter[] }) {
@@ -176,15 +177,15 @@ export function StoryPage() {
       </>
     )
   }
-  // Crew devices: the base map with no chapters (nothing invented), so the map and guests' lines can be judged
-  // before Griffin and Nadia's words are in the Content tab. Guests never reach this page while it's empty.
+  // Crew devices: the whole flow from the planner's Photos + story tab (kid opener, the eight photo stops, Kyoto),
+  // with tags where their words will go. Guests never reach this page while the Content tab is empty.
   const crew = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
   if (ready && crew && !story.length && (!view || view === "b") && journey) {
     return (
       <>
         <div className="relative"><h1 className="heading">{t.story.title}</h1><PlaceholderTag id="storyCaptions" done={story.length > 0} className="at-bottom at-start" /></div>
         <StoryOpener />
-        <StoryJourney chapters={[]} showFlying={flying} drag={mapDrag} token={household?.token} replied={Boolean(household?.respondedAt)} />
+        <StoryJourney chapters={STORY_PLAN} showFlying={flying} drag={mapDrag} token={household?.token} replied={Boolean(household?.respondedAt)} />
       </>
     )
   }
