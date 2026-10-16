@@ -7,7 +7,6 @@ import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
 import { FLY, KYOTO, PLACES, arc } from "@/lib/journey"
 import { JourneyLand, JourneyLegend, JourneyPlaces } from "@/components/journey-mini"
-import { PlaceholderTag } from "@/components/placeholder-tag"
 import { useOption } from "@/lib/options"
 import { Photo } from "@/components/photo"
 
@@ -70,8 +69,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
     </div>
   )
   return (
-    <div className={cn("journey relative", inView && "is-in", hifi && "journey-hifi")} onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
-      <PlaceholderTag id="mapLand" className="inside at-start" />
+    <div className={cn("journey", inView && "is-in", hifi && "journey-hifi")} onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
       <svg ref={svg} viewBox="0 0 400 320" className="journey-map" role="group" aria-label={t.story.title} style={drag ? { touchAction: "none" } : undefined}>
         <JourneyLand />
         {/* Each line is revealed by a mask whose solid copy draws in (dotted strokes can't draw with dashoffset alone) */}
@@ -136,9 +134,7 @@ export function StoryJourney({ chapters, showFlying = false, drag = false, token
           ))}
         </ol>
         {c ? (
-        <section className="journey-stopcard relative" aria-live="polite">
-          {/* Their line goes here: tagged for crew until they write it, never filler text */}
-          {!c.body.length && <PlaceholderTag id="storyCaptions" className="inside" />}
+        <section className="journey-stopcard" aria-live="polite">
           {c.photo && <Photo key={c.photo} name={c.photo} treatment="print" sizes="(min-width: 1024px) 240px, 60vw" alt={`${c.title}, ${c.year}`} className="journey-stop-photo" />}
           <p className="text-sm text-muted-foreground">{t.story.page(on + 1, n)}, {c.year}{c.place ? ` · ${c.place}` : ""}</p>
           <h2 className="font-display text-2xl text-foreground">{c.title}</h2>

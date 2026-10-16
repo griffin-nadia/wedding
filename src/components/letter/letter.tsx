@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
-import { PlaceholderTag } from "@/components/placeholder-tag"
 
 /**
  * The letter: the cream sheet every page is read on. 620px wide from 1024 (180px from the left,
@@ -9,7 +8,7 @@ import { PlaceholderTag } from "@/components/placeholder-tag"
  * scene within 24px of its edge so it reads as paper. The only UI surface on the site.
  */
 export function Letter({ children, className, as: Tag = "article", ...rest }: { children: ReactNode; className?: string; as?: "article" | "div" | "section" } & React.HTMLAttributes<HTMLElement>) {
-  return <Tag className={cn("letter paper", className)} {...rest}>{children}<PlaceholderTag id="paper" className="at-bottom at-start" /></Tag>
+  return <Tag className={cn("letter paper", className)} {...rest}>{children}</Tag>
 }
 
 /** End of every letter: their sign-off and nothing else (Nadia's handwriting replaces Klee One when it arrives). */
