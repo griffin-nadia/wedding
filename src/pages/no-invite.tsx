@@ -10,11 +10,11 @@ import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff } from "@/components/letter/letter"
 
 /** What people see without a working invite: no link, a link we don't know, or no connection. */
-export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "error" }) {
+export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "error" | "paused" }) {
   const { t } = useLang()
   const { retry } = useHousehold()
   const { theme } = useTheme()
-  const copy = reason === "error" ? t.offline : reason === "unknown" ? t.unknown : t.notFound
+  const copy = reason === "paused" ? t.paused : reason === "error" ? t.offline : reason === "unknown" ? t.unknown : t.notFound
   return (
     <>
       <Scene source={sceneFor("home", theme)} />
@@ -24,7 +24,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
             <p className="label-caps text-muted-foreground">{t.home.label}</p>
             <h1 className="heading">{copy.title}</h1>
             <p>{copy.body}</p>
-            {reason === "error" ? <Button size="lg" className="self-start" onClick={retry}>{t.offline.retry}</Button> : <ResendForm />}
+            {reason === "error" || reason === "paused" ? <Button size="lg" className="self-start" onClick={retry}>{reason === "paused" ? t.paused.retry : t.offline.retry}</Button> : <ResendForm />}
           </div>
           <SignOff />
         </Letter>
@@ -37,7 +37,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
 function ResendForm() {
   const { t } = useLang()
   const [email, setEmail] = useState("")
-  const [state, setState] = useState<"idle" | "sending" | "sent" | "bad" | "failed">("idle")
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "bad" | "failed" | "paused">("idle")
   async function send(e?: React.FormEvent) {
     e?.preventDefault()
     if (state === "sending") return
@@ -47,7 +47,7 @@ function ResendForm() {
       await resendLink(email)
       setState("sent")
     } catch (err) {
-      setState(err instanceof ApiError && err.code === "bad_email" ? "bad" : "failed")
+      setState(err instanceof ApiError && err.code === "bad_email" ? "bad" : err instanceof ApiError && err.code === "paused" ? "paused" : "failed")
     }
   }
   if (state === "sent") return <p role="status" className="rounded-md bg-section-alt p-4">{t.notFound.sent}</p>
@@ -55,7 +55,7 @@ function ResendForm() {
     <form onSubmit={send} noValidate>
       <InlineSubmit id="resend-email" type="email" inputMode="email" autoComplete="email" maxLength={120} value={email}
         label={t.notFound.emailLabel} helper={t.notFound.helper} submitLabel={t.notFound.send} busy={state === "sending"}
-        error={state === "bad" ? t.notFound.badEmail : state === "failed" ? t.notFound.failed : undefined}
+        error={state === "bad" ? t.notFound.badEmail : state === "failed" ? t.notFound.failed : state === "paused" ? t.paused.line : undefined}
         onChange={(e) => { setEmail(e.target.value); if (state !== "sending") setState("idle") }}
         onSubmit={() => void send()} fallback={{ label: t.notFound.message, onClick: () => { window.location.href = "mailto:griffinandnadia@gmail.com" } }} />
     </form>

@@ -335,6 +335,7 @@ export const en = {
       busy: "We couldn't send that just now. Your answers are still here, so try again.",
       network: "We couldn't get through. Check your connection and try again.",
       not_found: `We couldn't find this invite. Message ${A} or ${B}.`,
+      paused: "Replies are paused for a moment, try again later.",
       other: `We couldn't send that. Your answers are still here, so try again, or message ${A} or ${B}.`,
     },
     tryAgain: "Try again",
@@ -357,6 +358,8 @@ export const en = {
     title: "That link doesn't look right",
     body: `We couldn't find an invite for this link. Check it's the full link from your email, or message ${A} or ${B} and we'll send it again.`,
   },
+  // The back end is locked or suspended by Google (a calm note, not an error): docs/if-google-locks-it.md
+  paused: { title: "Replies are paused for a moment", body: "Try again later.", retry: "Try again", line: "Replies are paused for a moment, try again later." },
   offline: {
     title: "We couldn't open your invite",
     body: "It might be your connection. Try again in a moment.",
