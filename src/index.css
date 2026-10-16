@@ -534,9 +534,11 @@
 .rsvp-letter {
   --sheet-pad: var(--space-5);
   position: fixed; z-index: 50;
-  top: 12px; left: 12px; right: 12px;
-  max-height: calc(100svh - 24px - env(safe-area-inset-bottom));
-  height: calc(100svh - 24px - env(safe-area-inset-bottom)); /* one height for every step, so Back / Next never move (v3 S) */
+  /* Phones: the visible area (src/lib/keyboard.ts), so with the keyboard up Back / Next sit right on top of it.
+     One height for every step, so Back / Next never move between steps (v3 S). */
+  top: calc(var(--vv-top, 0px) + 12px); left: 12px; right: 12px;
+  max-height: calc(var(--vvh, 100svh) - 24px - env(safe-area-inset-bottom));
+  height: calc(var(--vvh, 100svh) - 24px - env(safe-area-inset-bottom));
   max-width: none; margin: 0; padding: 0; gap: 0;
   display: flex; flex-direction: column; overflow: hidden;
   box-shadow: var(--sheet-shadow);
@@ -1117,3 +1119,8 @@ svg.lucide { stroke-width: 1.5; }
 .hanko-lg { font-size: 40px; }
 /* Crew Options in the nav: an icon in the top bar from 768 (its name stays for screen readers), a cell in the dock */
 @media (min-width: 768px) { .site-nav-options { padding-inline: var(--space-3); } }
+/* Typing on a phone: the sheet runs down to the keyboard, so Back / Next sit right on it; the dock steps aside */
+[data-typing] .rsvp-letter { max-height: calc(var(--vvh, 100svh) - 12px); height: calc(var(--vvh, 100svh) - 12px); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+@media (max-width: 767px) { [data-typing] .site-nav { visibility: hidden; } }
+/* A focused field scrolls to just above the keyboard (and Back / Next), with a little room */
+:is(input, textarea, select) { scroll-margin-block: var(--space-5); }
