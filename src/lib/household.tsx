@@ -31,7 +31,7 @@ function writeCached(h: Household) {
 type State = {
   household: Household | null
   // missing: no link at all · unknown: a link we don't recognise · error: couldn't reach the back end
-  status: "loading" | "ready" | "missing" | "unknown" | "error"
+  status: "loading" | "ready" | "missing" | "unknown" | "error" | "paused"
   setHousehold: (h: Household) => void
   retry: () => void
 }
@@ -70,7 +70,7 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === "not_found") return setStatus("unknown")
-        if (!cached) setStatus("error") // with a saved copy, stay on it and try again next visit
+        if (!cached) setStatus(err instanceof ApiError && err.code === "paused" ? "paused" : "error") // with a saved copy, stay on it and try again next visit
       })
   }, [setHousehold])
 
