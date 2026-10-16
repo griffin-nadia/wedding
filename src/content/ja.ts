@@ -12,6 +12,7 @@ const LOCK = "2027年4月30日（金）"
 const TRAVEL_FROM = "2027年9月1日（水）"
 const TRAVEL_TO = "2027年11月30日（火）"
 const CHANGE_BY = `${LOCK}まで、お返事は変更できます。`
+const CHANGE_AFTER = "予定が変わることもありますよね。4月30日以降に変更が必要になったら、直接ご連絡ください。"
 const A = "ナディア"
 const B = "グリフィン"
 const BOTH = `${A} & ${B}`
@@ -123,6 +124,7 @@ export const ja: DeepPartial<Content> = {
     rsvpBy: `${RSVP_BY}までにお返事を`,
     changeReply: "お返事を変更する",
     changeBy: CHANGE_BY,
+    changeAfter: CHANGE_AFTER,
     reseal: "封筒に戻す",
     week: { greeting: "いよいよ今週です。金曜日のことはすべて「当日」のページに、いちばん簡単な行き方は下にあります。お会いできるのを楽しみにしています。", day: "当日", directions: "Googleマップで道順を見る" },
     keepsake: { badge: "2027年10月15日（金）、京都にて結婚しました", greeting: "遠くまで来てくださり、私たちの一日を一緒に過ごしてくださって、ありがとうございました。当日の写真は近日ここに掲載します。", story: "ふたりのことを読む" },
@@ -220,9 +222,35 @@ export const ja: DeepPartial<Content> = {
   },
   stay: {
     title: "宿泊について",
-    intro: "早めの予約を。10月中旬の京都は混み合います。ホテルは小さく整っていて、京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと一緒に泊まるのも大歓迎です。",
+    intro: "早めの予約を。10月中旬の京都は混み合います。ホテルは小さく整っていて、京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと一緒に泊まるのも大歓迎です。迷ったら、気軽にご相談ください！",
     mapLink: "3つのエリアを地図で見る",
     mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
+    picks: {
+      title: "おすすめの宿",
+      note: "リンク先は各ホテルの公式サイトです。ほかの予約サイトとも比べてみてください。料金は変わります。",
+      hotelsTitle: "ホテル",
+      airbnbsTitle: "Airbnb",
+      airbnbsNote: "人数で割ると1人あたりは安くなります。",
+      perNight: (price: string) => `1泊${price}`,
+      sleeps: (n: string) => `${n.replace(" to ", "〜")}名まで`,
+      opensHotel: "ホテルのサイトがひらきます",
+      opensAirbnb: "Airbnbがひらきます",
+      hotels: [
+        { area: "京都駅" }, { area: "京都駅" }, { area: "京都駅" },
+        { area: "五条", price: "~$100 AUD〜", note: "京都駅と祇園四条のあいだ" },
+        { area: "清水五条", price: "~$150 AUD〜", note: "会場に近め" },
+        { area: "清水五条", price: "~$200 AUD〜", note: "駅のすぐそば" },
+      ],
+      airbnbs: [
+        { area: "清水五条", note: "駅のすぐそばではありません" },
+        { area: "清水五条" },
+        { area: "清水五条", note: "駅のすぐそばではありません" },
+        { area: "清水五条" },
+        { area: "東山" },
+        { area: "ザ・ソウドウの近く", note: "会場のすぐ近く、駅からは離れています" },
+        { area: "三条" },
+      ],
+    },
   },
   qa: {
     title: "よくある質問",
