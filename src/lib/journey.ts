@@ -22,4 +22,5 @@ export function readFlying(token?: string): Flying | null {
 }
 export function keepFlying(token: string, city: Flying) {
   try { localStorage.setItem(flyKey(token), city) } catch { /* private mode */ }
+  window.dispatchEvent(new Event("ng-flying")) // Home's map card shows the moment they pick
 }

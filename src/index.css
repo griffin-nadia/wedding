@@ -1143,3 +1143,7 @@ svg.lucide { stroke-width: 1.5; }
 @media (hover: hover) { .chip-filter:hover { border-color: var(--sys-line-strong); color: var(--sys-ink); } }
 /* A story stop's photo (crew preview for now): a small print above the stop's words */
 .journey-stop-photo { width: min(220px, 55%); margin-bottom: var(--space-2); }
+
+/* After the fortune: the optional flying-from card, the same paper card as the fortune's, the small map under the chips */
+.journey-end { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--sys-line); border-radius: var(--radius-control); background: var(--sys-surface-raised); }
+.journey-end-map { width: 100%; max-width: 280px; }

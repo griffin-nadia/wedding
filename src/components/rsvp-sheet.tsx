@@ -14,6 +14,7 @@ import { SongPicker } from "@/components/song-picker"
 import { FieldError, ReviewRow, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
+import { JourneyEnd } from "@/components/journey-end"
 import { useSceneDim } from "@/components/letter/letter"
 import { answerOf, ApiError, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
@@ -390,7 +391,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
 
 /**
  * Success, on the same letter: the hanko stamps, the words match the answer, one line on the save, then the
- * fortune card once the stamp has landed (one thing moves at a time), add to calendar, and a way to change it.
+ * fortune card once the stamp has landed (one thing moves at a time), then the optional flying-from card, add to
+ * calendar, and a way to change it.
  */
 function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveResult; confirm: "saving" | "saved" | "offline" | null; titleRef: React.RefObject<HTMLHeadingElement | null>; onClose: () => void; onChange: () => void }) {
   const { t } = useLang()
@@ -407,6 +409,7 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
       </header>
       <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
       {answer !== "none" && <div className="sent-next"><FortuneCard token={h.token} /></div>}
+      {answer !== "none" && <div className="sent-next"><JourneyEnd token={h.token} /></div>}
       {answer !== "none" && <AddToCalendar />}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
         <Button size="lg" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
