@@ -54,10 +54,7 @@
 }
 
 /* ─── 2 · System (per mode) ─────────────────────────────────────────────────── */
-:root,
-[data-theme="autumn"],
-.paper:not(.letter),
-[data-opt-letterpaper="cream"] .letter.paper {
+:root, [data-theme="autumn"], .paper:not(.letter) {
   --row-hover-mix: 5%;                             /* row hover tint: this much ink (v3 T) */
   --row-press-mix: 8%;
   /* .paper: the envelope (and the driver card) stays cream in both modes (Jehan, 6 Oct: "only the envelope stays

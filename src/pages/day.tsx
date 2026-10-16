@@ -1,10 +1,7 @@
-import { ART } from "@/lib/art"
 import { useEffect, useRef, useState } from "react"
 import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
-import { Link } from "react-router-dom"
 import { directionsUrl } from "@/lib/calendar"
-import { useOption } from "@/lib/options"
 import { DATES } from "@/lib/wedding-dates"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
@@ -94,9 +91,7 @@ function Details() {
         <p className="font-medium text-foreground">{VENUE.name}</p>
         {t.day.addressLines.map((l) => <p key={l}>{l}</p>)}
       </div>
-      {useOption("getthere") === "driver"
-        ? <Link to="/travel" className="btn-text inline-flex min-h-11 items-center self-start">{t.day.howToGetThere}</Link>
-        : <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{t.day.howToGetThere}<span className="sr-only">, {t.driver.mapsOpens}</span></a>}
+      <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{t.day.howToGetThere}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
     </div>
   )
 }
@@ -115,21 +110,17 @@ export function DayPage() {
   const timeline = (
     <div className="flex flex-col gap-4">
       <Timeline now={now} />
-      {/* The Kyoto minute rolls up into place when it ticks over (Options → Kyoto clock rolls); the key remounts it */}
+      {/* The Kyoto minute rolls up into place when it ticks over; the key remounts it */}
       <p className="text-sm text-muted-foreground">{t.day.japanTime} <span className={rolls ? "no-print clock-roll" : "no-print"} key={kyotoNow(now)}>{t.day.kyotoNow(kyotoNow(now))}</span></p>
       <p>{t.day.rainPlan}</p>
     </div>
   )
-  const garden = useOption("garden") === "on"
   return (
     <>
       <header className="flex flex-col gap-4">
         <h1 className="heading">{t.day.title}</h1>
         <p className="lead">{t.day.dateLong}</p>
       </header>
-      {garden && (ART.garden.kind === "ink"
-        ? <div role="img" aria-label={t.day.gardenAlt} className="garden-art" style={{ ["--garden" as string]: `url(${import.meta.env.BASE_URL}${ART.garden.src})` }} />
-        : <img src={`${import.meta.env.BASE_URL}${ART.garden.src}`} alt={t.day.gardenAlt} className="garden-art is-colour" decoding="async" />)}
       <Details />
       {timeline}
       <div className="no-print flex flex-col gap-4">

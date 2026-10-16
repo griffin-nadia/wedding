@@ -17,7 +17,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
   const copy = reason === "paused" ? t.paused : reason === "error" ? t.offline : reason === "unknown" ? t.unknown : t.notFound
   return (
     <>
-      <Scene source={sceneFor("home", theme)} />
+      <Scene source={sceneFor(theme)} />
       <main className="letter-wrap">
         <Letter id="letter">
           <div className="letter-body">

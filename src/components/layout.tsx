@@ -6,21 +6,16 @@ import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
-import { arrivalScene, pageOf, sceneFor, sceneKind } from "@/lib/scenes"
+import { pageOf, sceneFor } from "@/lib/scenes"
 import { setStoryLetter, usePageTurn, usePaperScroll } from "@/lib/page-turn"
-import { usePaperGL } from "@/components/letter/use-paper-gl"
 import { ModeSwitches } from "@/components/lantern-toggle"
-import { HomeCountdown } from "@/components/home-countdown"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
 import { SiteTune } from "@/tune/launcher"
-// Desktop only, so it loads after the first screen
-// Desktop only too: the credit mark and the Desk preview tabs
+// Desktop only, so they load after the first screen: the credit mark and the phone QR
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
-const DeskTabs = lazy(() => import("@/components/desk-tabs").then((m) => ({ default: m.DeskTabs })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
-import { useOption } from "@/lib/options"
 
 const baseLinks = [
   { to: "/", key: "home", icon: Home },
@@ -28,12 +23,7 @@ const baseLinks = [
   { to: "/travel", key: "travel", icon: TrainFront },
   { to: "/faqs", key: "faqs", icon: CircleHelp },
 ] as const
-// The stamp book (December, walk scene only) loads only when the lab turns it on
-const StampBook = lazy(() => import("@/components/stamp-book").then((m) => ({ default: m.StampBook })))
 const storyLink = { to: "/our-story", key: "story", icon: BookOpen } as const
-const SceneLight = lazy(() => import("@/components/scene-light"))
-const FINE_POINTER = typeof matchMedia !== "undefined" && matchMedia("(hover: hover) and (pointer: fine)").matches
-const MECHANICS = ["inkset", "countin", "thread", "hoverprint", "haptics", "rise", "dockhide"]
 
 /** Four items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
 function Nav() {
@@ -97,17 +87,9 @@ export function Layout() {
   const page = pageOf(pathname)
   const { dim } = useSceneDim()
   const replied = Boolean(household?.respondedAt)
-  const kind = sceneKind(useOption("scene"), useOption("preset"))
-  useOption("photo") // re-render when the Photo option changes (photoFor reads it)
   // Sealed envelope on a first visit: their photo behind it, the dock and top bar hidden until it opens
   const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
   usePageTurn(!sealed)
-  const glOption = useOption("gl")
-  const stampsOn = useOption("stamps") === "on"
-  usePaperGL(!sealed && kind === "paper" && glOption !== "off")
-  // Options → Light: komorebi by day, a lantern pool by night; laptops with a fine pointer only
-  const light = useOption("light")
-  const lightOn = (light === "css" || light === "shader") && FINE_POINTER
   usePaperScroll()
   // "Put it back in the envelope" (Home): seal it again; tapping opens it as on the first visit
   const [resealed, setResealed] = useState(0)
@@ -115,13 +97,6 @@ export function Layout() {
     const on = () => { resetArrival(); window.scrollTo(0, 0); setSealed(true); setResealed((n) => n + 1) }
     window.addEventListener("ng-reseal", on)
     return () => window.removeEventListener("ng-reseal", on)
-  }, [])
-  const signOffEverywhere = useOption("signoff") === "all"
-  // Kit mechanics (v3 U): their code loads only once one of their Options switches is on
-  useEffect(() => {
-    const check = () => { if (MECHANICS.some((k) => document.documentElement.hasAttribute(`data-opt-${k}`))) void import("@/mechanics").then((m) => m.install()) }
-    check(); addEventListener("ng-tune", check)
-    return () => removeEventListener("ng-tune", check)
   }, [])
   // Phones: the strip above the dock follows the visual viewport so it doesn't jump while the browser bar collapses
   // or grows on scroll (100dvh updates late on iOS; visualViewport doesn't). Written in the resize event itself, not
@@ -142,16 +117,14 @@ export function Layout() {
   return (
     <>
       <a href="#letter" className="skip-link">{t.letter.skip}</a>
-      <Scene source={sealed ? arrivalScene(theme) : sceneFor(page, theme, kind)} dim={dim} />
-      {lightOn && <Suspense><SceneLight variant={light as "css" | "shader"} /></Suspense>}
+      <Scene source={sceneFor(theme)} dim={dim} />
       {/* Phones (v3 U): the same scene again, clipped to the strip from 8px above the dock down. The scene never
           moves, so the copy matches it exactly and the letter seems to end 8px above the dock, even on a bounce. */}
-      {!sealed && <Scene source={sceneFor(page, theme, kind)} dim={dim} className="scene-band" />}
+      {!sealed && <Scene source={sceneFor(theme)} dim={dim} className="scene-band" />}
       <header className="site-bar">
         <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
         <Nav />
         {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-(length:--type-ui-size) font-medium md:inline-flex">{t.nav.rsvp}</Link>}
-        {stampsOn && <Suspense><StampBook /></Suspense>}
         <ModeSwitches className="chrome-lantern" />
       </header>
 
@@ -162,18 +135,16 @@ export function Layout() {
             <div key={pathname} className="letter-body">
               <Outlet />
             </div>
-            {(page === "home" || signOffEverywhere) && <SignOff action={page === "home" && !sealed
+            {page === "home" && <SignOff action={page === "home" && !sealed
               // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
               ? <button type="button" className="btn-text -my-3 py-3 text-sm" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
               : null} />}
           </Letter>
         </Arrival>
-        {page === "home" && !sealed && <HomeCountdown />}
         {/* Phones: the made-by mark waits in the hidden strip under the letter. A bounce past the end shows it;
             on a short page it simply sits under the letter. */}
         {!sealed && <Suspense><CreditMark inline /></Suspense>}
       </main>
-      {!sealed && <Suspense><DeskTabs /></Suspense>}
       <Suspense><PhoneQr /></Suspense>
       <Suspense><CreditMark /></Suspense>
       <SiteTune />

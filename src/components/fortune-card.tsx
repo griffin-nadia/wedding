@@ -1,13 +1,10 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { FORTUNES } from "@/content/en"
 import { getFortunes } from "@/lib/api"
 import { useLang } from "@/lib/lang"
 import { canShake, drawnKey, saveFortune } from "@/lib/fortune"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { useOption } from "@/lib/options"
-
-const FortuneSpring = lazy(() => import("@/components/fortune-spring"))
 
 /** The same fortune for a household on any device: picked from its token. */
 export function fortuneIndex(token: string, of = 12) {
@@ -19,15 +16,6 @@ export function fortuneIndex(token: string, of = 12) {
 const KANJI = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
 /** 1 → 一, 12 → 十二: the slip's number, as on a real omikuji (第七番) */
 export const kanjiNumber = (n: number) => (n <= 10 ? KANJI[n] : `十${KANJI[n - 10]}`)
-
-/** This household's fortune: Griffin's lines from the Content tab once they're in, the drafts until then. */
-export function useFortune(token: string) {
-  const [tips, setTips] = useState(FORTUNES)
-  useEffect(() => { getFortunes().then((f) => f && f.length === 12 && setTips(f)) }, [])
-  const i = fortuneIndex(token, tips.length)
-  return { i, of: tips.length, text: tips[i], drawn: () => { try { localStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ } } }
-}
-
 
 /** The box: a hexagonal 御籤 tin in rust with a cream label; its stick rises as the fortune comes out. */
 export function Box({ drawing }: { drawing: boolean }) {
@@ -49,7 +37,7 @@ export function Box({ drawing }: { drawing: boolean }) {
  * takes focus. Android phones can shake to draw. Reduced motion: no shake, the slip fades in. Return visits
  * open on the slip. The fortune is the household's for good, on any device.
  */
-export function FortuneCard({ token, className, onMap }: { token: string; className?: string; onMap?: () => void }) {
+export function FortuneCard({ token, className }: { token: string; className?: string }) {
   const { t } = useLang()
   const [tips, setTips] = useState(FORTUNES)
   const [state, setState] = useState<"closed" | "drawing" | "open">(() => {
@@ -57,7 +45,6 @@ export function FortuneCard({ token, className, onMap }: { token: string; classN
   })
   const slip = useRef<HTMLDivElement>(null)
   const shaky = useRef(canShake())
-  const spring = useOption("fortune") === "spring"
   useEffect(() => { getFortunes().then((f) => f && f.length === 12 && setTips(f)) }, [])
   const i = fortuneIndex(token, tips.length)
   const text = tips[i]
@@ -85,8 +72,6 @@ export function FortuneCard({ token, className, onMap }: { token: string; classN
   })
   const save = () => saveFortune(t, text)
 
-  // Options → Fortune → Springs: the Motion version, loaded only when it's on
-  if (spring) return <Suspense fallback={null}><FortuneSpring token={token} className={className} onMap={onMap} /></Suspense>
   if (state !== "open") {
     return (
       <section aria-labelledby="fortune" className={cn("omikuji flex items-center gap-5 rounded-md border bg-card p-4", className)}>
@@ -105,7 +90,6 @@ export function FortuneCard({ token, className, onMap }: { token: string; classN
     <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip", className)}>
       <SlipWords i={i} of={tips.length} text={text} />
       <button type="button" onClick={save} className="omikuji-save">{t.fortune.save}</button>
-      {onMap && <Button variant="outline" onClick={onMap}>{t.fortune.onMap}</Button>}
     </div>
   )
 }
