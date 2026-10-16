@@ -54,3 +54,6 @@ export function apply(s: TuneState) {
 export function exportJson(s: TuneState) {
   return JSON.stringify({ version: 1, exported: new Date().toISOString(), overrides: s.overrides, options: s.options, notes: s.notes }, null, 2)
 }
+
+/** Opens the tuning panel over the page: the Options item at the end of the nav (crew only) calls this. */
+export const openTune = () => window.dispatchEvent(new Event("ng-open-tune"))

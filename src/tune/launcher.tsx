@@ -36,9 +36,6 @@ export function TuneLauncher() {
   )
 }
 
-/** Opens the panel over the page: the Options item at the end of the nav (crew only) calls this. */
-export const openTune = () => window.dispatchEvent(new Event("ng-open-tune"))
-
 /**
  * On the site itself, for crew only (v3 S): once a crew link has been opened on this device (or ?c=<crew
  * token> on any page), Options shows as the last item in the nav (the dock on phones, the top bar on laptops), so it

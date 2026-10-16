@@ -12,7 +12,8 @@ import { ModeSwitches } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
-import { SiteTune, openTune, tuneEnabled } from "@/tune/launcher"
+import { SiteTune, tuneEnabled } from "@/tune/launcher"
+import { openTune } from "@/tune/store"
 // Desktop only, so they load after the first screen: the credit mark and the phone QR
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
