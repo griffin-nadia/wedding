@@ -23,7 +23,7 @@
   --color-ring: var(--ring);
   --color-highlight: var(--highlight);
   --color-eyebrow: var(--eyebrow);
-  --color-body: var(--body);
+  --color-body-ink: var(--body); /* text-body-ink; text-body is the Body size */
   --color-link: var(--link);
   --color-success: var(--success);
   --color-leaf: var(--leaf);

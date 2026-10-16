@@ -80,7 +80,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
   return (
     <figure className={cn("space-y-3", className)}>
       {frame}
-      {words.caption && __PUBLIC_PHOTOS__ && <figcaption className="text-small text-body">{words.caption}</figcaption>}
+      {words.caption && __PUBLIC_PHOTOS__ && <figcaption className="text-small text-body-ink">{words.caption}</figcaption>}
       {children}
     </figure>
   )
