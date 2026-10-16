@@ -39,7 +39,7 @@ export function Trail({ className }: { className?: string }) {
           {stops.map((s, i) => (
             <li key={s.title} style={{ left: `${(s.x / 600) * 100}%`, transitionDelay: `${300 + i * 300}ms` }} className={cn("trail-stop", drawn && "is-drawn")}>
               <span className="trail-icon"><s.icon className="size-5" aria-hidden /></span>
-              <span className="trail-text"><span className="font-medium text-foreground">{s.title}</span><span className="text-sm">{s.note}</span></span>
+              <span className="trail-text"><span className="font-medium text-foreground">{s.title}</span><span className="text-small">{s.note}</span></span>
             </li>
           ))}
         </ol>

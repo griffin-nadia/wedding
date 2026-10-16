@@ -45,7 +45,7 @@ export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
     <div className="flex flex-col gap-4">
       <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(false)}>{t.story.seeMap}</button>
       <ol className="flex flex-col gap-4">
-        {chapters.map((ch) => <li key={ch.key} className="flex flex-col gap-1"><p className="text-sm text-muted-foreground">{ch.year}</p><p className="font-medium text-foreground">{ch.title}</p>{ch.body.map((p, k) => <p key={k}>{p}</p>)}</li>)}
+        {chapters.map((ch) => <li key={ch.key} className="flex flex-col gap-1"><p className="text-small text-muted-foreground">{ch.year}</p><p className="font-medium text-foreground">{ch.title}</p>{ch.body.map((p, k) => <p key={k}>{p}</p>)}</li>)}
       </ol>
     </div>
   )
@@ -84,7 +84,7 @@ export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
             <li key={ch.key}>
               <button type="button" className={cn("journey-card", on === i && "is-on")} aria-pressed={on === i} onClick={() => setOn(i)}>
                 <span className="journey-num numerals" aria-hidden>{i + 1}</span>
-                <span className="flex min-w-0 flex-col text-left"><span className="font-medium text-foreground">{ch.title}</span><span className="text-sm text-muted-foreground">{ch.year}</span></span>
+                <span className="flex min-w-0 flex-col text-left"><span className="font-medium text-foreground">{ch.title}</span><span className="text-small text-muted-foreground">{ch.year}</span></span>
               </button>
             </li>
           ))}
@@ -92,8 +92,8 @@ export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
         {c ? (
         <section className="journey-stopcard" aria-live="polite">
           {c.photo && <Photo key={c.photo} name={c.photo} treatment="print" sizes="(min-width: 1024px) 240px, 60vw" alt={`${c.title}, ${c.year}`} className="journey-stop-photo" />}
-          <p className="text-sm text-muted-foreground">{t.story.page(on + 1, n)}, {c.year}{c.place ? ` · ${c.place}` : ""}</p>
-          <h2 className="font-display text-2xl text-foreground">{c.title}</h2>
+          <p className="text-small text-muted-foreground">{t.story.page(on + 1, n)}, {c.year}{c.place ? ` · ${c.place}` : ""}</p>
+          <h2 className="font-display text-heading text-foreground">{c.title}</h2>
           {c.body.map((p, k) => <p key={k}>{p}</p>)}
           <div className="flex items-center justify-between">
             <button type="button" className="utility-btn" onClick={() => go(on - 1)} aria-label={t.story.prevChapter}><ChevronLeft className="size-5" aria-hidden /></button>
@@ -103,7 +103,7 @@ export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
         </section>
         ) : (
         <section className="journey-stopcard" aria-live="polite">
-          <h2 className="font-display text-2xl text-foreground">{t.letter.comingSoon}</h2>
+          <h2 className="font-display text-heading text-foreground">{t.letter.comingSoon}</h2>
           <p>{t.story.soonBody}</p>
         </section>
         )}

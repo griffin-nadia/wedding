@@ -7,10 +7,7 @@ const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void; t: ReturnTyp
 // The Japanese font files (hundreds of small subsets) only load when someone picks 日本語.
 let jaFonts: Promise<unknown> | null = null
 function loadJapaneseFonts() {
-  jaFonts ??= Promise.all([
-    import("@fontsource/zen-old-mincho/400.css"),
-    import("@fontsource/klee-one/400.css"),
-  ])
+  jaFonts ??= import("@fontsource/zen-old-mincho/400.css")
 }
 
 export function LangProvider({ children }: { children: ReactNode }) {

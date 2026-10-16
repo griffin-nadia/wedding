@@ -246,37 +246,31 @@
   --space-8: 64px;
   --space-9: 96px;
 
-  /* Type: two faces plus the hand, one scale of six steps (v3 A). Oranienbaum for display and headings,
-     Inter for everything else, Klee One only for the sign-off and the fortune slip. Each component uses
-     at most two steps: 12 label · 14 small · 16 body · 20 lead · 28 heading · 56/88 names. */
+  /* Type: one scale, five roles (docs/system.md). Oranienbaum for Display and Heading, Inter for Body, Small and
+     Label, Zen Old Mincho for Japanese display. Three families, nothing else. Each component uses at most two roles.
+     Display 56/88 · Heading 28 · Body 16 · Small 14 · Label 12. */
   --font-display: "Oranienbaum", "Zen Old Mincho", Georgia, serif;
   --font-label: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: var(--font-label);
-  --font-hand: "Klee One", "Inter", cursive;
   --font-ja: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
 
-  --type-display-names-size: 56px;                                     /* 88 from 1024 (below): two steps, not fluid */
-  --type-display-names-leading: 1;
-  --type-display-names-tracking: -0.02em;
-  --type-display-numerals-size: 28px;                                  /* countdown tiles: the heading step */
-  --type-display-numerals-leading: 36px;
-  --type-heading-size: 28px;
+  --type-display-size: 56px;                                           /* the names; 88 from 1024 (below): two steps */
+  --type-display-leading: 1;
+  --type-display-tracking: -0.02em;
+  --type-heading-size: 28px;                                           /* h1, h2, and the numerals */
   --type-heading-leading: 36px;
   --type-heading-tracking: -0.01em;
-  --type-lead-size: 20px;
-  --type-lead-leading: 28px;
-  --type-body-size: 16px;
+  --type-body-size: 16px;                                              /* body, inputs, buttons, links, item titles (500) */
   --type-body-leading: 24px;
-  --type-note-size: 16px;                                              /* Klee One sign-off and fortune: body step */
-  --type-note-leading: 24px;
-  --type-small-size: 14px;
+  --type-small-size: 14px;                                             /* help, notes, errors, labels (500) */
   --type-small-leading: 20px;
-  --type-label-size: 12px;
+  --type-label-size: 12px;                                             /* tiny labels: countdown units, the status pill */
   --type-label-leading: 16px;
   --type-label-tracking: 0.04em;                                       /* status pill only (caps) */
-  --type-ui-size: 16px;
-  --type-ui-leading: 24px;
-  --type-ui-small-size: 14px;
+  /* Controls use the Body and Small roles */
+  --type-ui-size: var(--type-body-size);
+  --type-ui-leading: var(--type-body-leading);
+  --type-ui-small-size: var(--type-small-size);
 
   --rule-width: 40px;
   --tap-min: 44px;
@@ -315,7 +309,6 @@
   --density-form: var(--space-5);  /* between form blocks */
   --density-letter-pad: var(--space-5);
   --theme-texture: 0.06;
-  --font-heading: var(--font-display);
 }
 @media (min-width: 768px) {
   :root {

@@ -31,19 +31,19 @@ export default function JourneyCard({ token }: { token: string }) {
         <JourneyMini you={city} label="" className="journey-card-thumb" />
         <span className="flex min-w-0 flex-col text-left">
           <span className="font-medium text-foreground">{t.journey.onMap}</span>
-          <span className="text-sm text-muted-foreground">{t.flying.yours(name)}</span>
+          <span className="text-small text-muted-foreground">{t.flying.yours(name)}</span>
         </span>
       </button>
       <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) setChanging(false) }}>
         <SheetContent side="bottom" className="mx-auto max-w-xl gap-4 rounded-t-(--radius-section) bg-background p-6">
-          <SheetTitle className="font-display text-2xl font-normal">{t.journey.onMap}</SheetTitle>
-          <SheetDescription className="text-sm text-muted-foreground">
+          <SheetTitle className="font-display text-heading font-normal">{t.journey.onMap}</SheetTitle>
+          <SheetDescription className="text-small text-muted-foreground">
             {t.flying.hint}
           </SheetDescription>
           {open && <GuestMap you={city} flying={counts} label={t.journey.map(name)} />}
           {changing
             ? <FlyingFrom token={token} initial={city} onSaved={(c) => { keepFlying(token, c); setCity(c); setChanging(false) }} />
-            : <p className="text-sm text-muted-foreground">{t.flying.yours(name)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}
+            : <p className="text-small text-muted-foreground">{t.flying.yours(name)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}
         </SheetContent>
       </Sheet>
     </>

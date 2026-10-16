@@ -265,7 +265,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
       </div>
       {dateError
         ? <FieldError id="date-error" className="mt-(--field-helper-gap)">{dateError}</FieldError>
-        : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-xs text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</p>}
+        : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-small text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</p>}
     </div>
   )
 
@@ -372,7 +372,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
               ? <p role="status" className="rounded-md bg-section-alt px-4 py-3 text-foreground">{error}</p>
               : <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>)}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
-            {step === total && <p className="text-sm text-muted-foreground">{t.rsvp.privacy}</p>}
+            {step === total && <p className="text-small text-muted-foreground">{t.rsvp.privacy}</p>}
           </div>
           </div>
 

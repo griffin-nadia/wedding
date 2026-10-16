@@ -82,7 +82,7 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
                     {o.img !== undefined && (o.img ? <img src={o.img} alt="" className="size-8 shrink-0 rounded-sm object-cover" /> : <span aria-hidden className="size-8 shrink-0 rounded-sm bg-muted" />)}
                     <span className="min-w-0">
                       <span className="block break-words">{o.label}</span>
-                      {o.sub && <span className="block break-words text-xs text-muted-foreground">{o.sub}</span>}
+                      {o.sub && <span className="block break-words text-small text-muted-foreground">{o.sub}</span>}
                     </span>
                   </li>
                 ))}

@@ -193,17 +193,17 @@ export function TunePanel({ onClose, docked = false, startTab = "tokens" }: { on
           </div>
         ) : tab === "options" ? (
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-3">
-            <p className="text-sm">Prototype switches, grouped by the part of the site they change. The first choice in each is what ships; export keeps your picks.</p>
+            <p className="text-small">Prototype switches, grouped by the part of the site they change. The first choice in each is what ships; export keeps your picks.</p>
             {FLOWS.map((flow) => {
               const list = OPTIONS.filter((o) => o.flow === flow && (!o.when || o.when(state.options)))
               if (!list.length) return null
               return (
                 <section key={flow} aria-label={flow} className="flex flex-col gap-4 border-b border-border pb-4">
-                  <h3 className="font-display text-xl text-foreground">{flow}</h3>
+                  <h3 className="font-medium text-foreground">{flow}</h3>
                   {list.map((o) => (
                     <div key={o.key} className="flex flex-col gap-2">
                       <p className="label-caps text-foreground">{o.label}</p>
-                      <p className="text-sm text-muted-foreground">{o.note}</p>
+                      <p className="text-small text-muted-foreground">{o.note}</p>
                       <div className="overflow-x-auto"><Segmented label={o.label} size="sm" value={state.options[o.key] ?? o.values[0][0]}
                         onChange={(v) => update({ ...state, options: { ...state.options, [o.key]: v } })} items={o.values.map(([v, label]) => ({ value: v, label }))} /></div>
                     </div>
@@ -219,7 +219,7 @@ export function TunePanel({ onClose, docked = false, startTab = "tokens" }: { on
             </button>
             <ol className="flex flex-col gap-2">
               {state.notes.map((n, i) => (
-                <li key={n.id} className="flex gap-2 rounded-sm border border-border p-2 text-sm">
+                <li key={n.id} className="flex gap-2 rounded-sm border border-border p-2 text-small">
                   <span className="tune-pin !static">{i + 1}</span>
                   <span className="min-w-0 flex-1"><span className="block text-foreground">{n.text}</span><span className="block break-words text-muted-foreground">{n.path} · {n.viewport.w}×{n.viewport.h} · {n.theme}</span></span>
                   <button type="button" aria-label={`Delete note ${i + 1}`} onClick={() => update({ ...state, notes: state.notes.filter((x) => x.id !== n.id) })} className="press grid size-11 shrink-0 place-items-center rounded-sm"><X className="size-5" aria-hidden /></button>
@@ -231,7 +231,7 @@ export function TunePanel({ onClose, docked = false, startTab = "tokens" }: { on
         <footer className="flex flex-wrap items-center gap-2 border-t border-border p-3">
           <button type="button" onClick={doExport} className="btn-primary inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg"><Download className="size-5" aria-hidden />Export</button>
           <button type="button" onClick={() => { if (confirm("Clear every change and note?")) update(empty()) }} className="state inline-flex min-h-11 items-center gap-2 rounded-sm px-3 text-foreground"><RotateCcw className="size-5" aria-hidden />Reset</button>
-          {msg && <p role="status" className="w-full text-sm text-success">{msg}</p>}
+          {msg && <p role="status" className="w-full text-small text-success">{msg}</p>}
         </footer>
       </div>
     </>
@@ -253,19 +253,19 @@ function TokenRow({ t, value, host, onChange }: { t: Token; value?: string; host
   return (
     <div className={cn("flex items-center gap-2 py-1", value !== undefined && "tune-changed")}>
       <span className="min-w-0 flex-1">
-        <span className="block break-all font-label text-[12px] text-foreground" title={t.name}>{t.name.replace(/^--/, "")}</span>
-        {t.comment && <span className="block break-words text-[12px] text-muted-foreground" title={t.comment}>{t.comment}</span>}
+        <span className="block break-all font-label text-label text-foreground" title={t.name}>{t.name.replace(/^--/, "")}</span>
+        {t.comment && <span className="block break-words text-label text-muted-foreground" title={t.comment}>{t.comment}</span>}
       </span>
       {colour ? (
         <input type="color" aria-label={t.name} value={host.current ? toHex(v, host.current) : "#000000"} onChange={(e) => onChange(e.target.value)} className="h-8 w-10 cursor-pointer rounded-sm border border-border bg-transparent" />
       ) : px || ms ? (
-        <input type="number" aria-label={t.name} value={Number.isNaN(num) ? "" : num} step={px ? 1 : 10} onChange={(e) => onChange(e.target.value === "" ? "" : `${e.target.value}${unit}`)} className="state h-8 w-20 rounded-sm px-2 text-right font-label text-[12px] text-foreground" />
+        <input type="number" aria-label={t.name} value={Number.isNaN(num) ? "" : num} step={px ? 1 : 10} onChange={(e) => onChange(e.target.value === "" ? "" : `${e.target.value}${unit}`)} className="state h-8 w-20 rounded-sm px-2 text-right font-label text-label text-foreground" />
       ) : (
         t.name.startsWith("--font-") ? (
           // Fonts: show the first family, write back the whole chain so fallbacks stay
-          <input type="text" aria-label={t.name} value={firstFamily(v)} title={v} onChange={(e) => onChange(withFirstFamily(t.value, e.target.value))} className="state h-8 w-40 rounded-sm px-2 font-label text-[12px] text-foreground" />
+          <input type="text" aria-label={t.name} value={firstFamily(v)} title={v} onChange={(e) => onChange(withFirstFamily(t.value, e.target.value))} className="state h-8 w-40 rounded-sm px-2 font-label text-label text-foreground" />
         ) : (
-          <input type="text" aria-label={t.name} value={v} onChange={(e) => onChange(e.target.value)} className="state h-8 w-40 rounded-sm px-2 font-label text-[12px] text-foreground" />
+          <input type="text" aria-label={t.name} value={v} onChange={(e) => onChange(e.target.value)} className="state h-8 w-40 rounded-sm px-2 font-label text-label text-foreground" />
         )
       )}
       {value !== undefined && <button type="button" aria-label={`Reset ${t.name}`} onClick={() => onChange("")} className="press grid size-8 place-items-center rounded-sm text-muted-foreground"><RotateCcw className="size-5" aria-hidden /></button>}

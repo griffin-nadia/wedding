@@ -17,7 +17,7 @@ export function Chip({ on, onClick, invalid = false, children }: { on: boolean; 
 /** Error under a field: 14px, danger, announced. Renders nothing when there's no message. */
 export function FieldError({ id, children, className }: { id: string; children?: ReactNode; className?: string }) {
   if (!children) return null
-  return <p id={id} role="alert" className={cn("text-xs text-destructive", className)}>{children}</p>
+  return <p id={id} role="alert" className={cn("text-small text-destructive", className)}>{children}</p>
 }
 
 /** Step progress: three thin bars with real values. */

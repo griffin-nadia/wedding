@@ -21,7 +21,7 @@ export function PhoneQr() {
       <Qr value={url} label={t.letter.phoneTitle} className="size-24 shrink-0 text-foreground" />
       <div className="flex flex-col gap-1">
         <p className="label-caps text-foreground">{t.letter.phoneTitle}</p>
-        <p className="text-sm">{t.letter.phoneBody}</p>
+        <p className="text-small">{t.letter.phoneBody}</p>
       </div>
     </aside>
   )

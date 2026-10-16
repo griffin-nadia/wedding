@@ -22,7 +22,7 @@ export function KyotoMap() {
   const place = m.places.find((p) => p.id === on) ?? m.places[3]
   return (
     <section aria-label={m.title} className="flex flex-col gap-4">
-      <p className="text-sm text-muted-foreground">{m.intro}</p>
+      <p className="text-small text-muted-foreground">{m.intro}</p>
       <div className="kmap">
         <svg viewBox="0 0 360 260" className="kmap-plate" role="img" aria-label={m.label}>
           <rect width="360" height="260" rx="14" className="kmap-land" />
@@ -48,7 +48,7 @@ export function KyotoMap() {
         <p>{place.body}</p>
         <a href={place.maps} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center gap-1 self-start"><MapPin className="size-4" aria-hidden />{m.directions}</a>
       </div>
-      <p className="kmap-legend text-sm text-muted-foreground"><span className="kmap-key kmap-key-taxi" aria-hidden />{m.taxiRoute}<span className="kmap-key kmap-key-walk" aria-hidden />{m.walkRoute}</p>
+      <p className="kmap-legend text-small text-muted-foreground"><span className="kmap-key kmap-key-taxi" aria-hidden />{m.taxiRoute}<span className="kmap-key kmap-key-walk" aria-hidden />{m.walkRoute}</p>
     </section>
   )
 }

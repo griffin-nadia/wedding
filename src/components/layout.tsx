@@ -124,7 +124,7 @@ export function Layout() {
       <header className="site-bar">
         <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
         <Nav />
-        {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-(length:--type-ui-size) font-medium md:inline-flex">{t.nav.rsvp}</Link>}
+        {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-body font-medium md:inline-flex">{t.nav.rsvp}</Link>}
         <ModeSwitches className="chrome-lantern" />
       </header>
 
@@ -137,7 +137,7 @@ export function Layout() {
             </div>
             {page === "home" && <SignOff action={page === "home" && !sealed
               // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
-              ? <button type="button" className="btn-text -my-3 py-3 text-sm" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
+              ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
               : null} />}
           </Letter>
         </Arrival>

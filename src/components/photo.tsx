@@ -46,7 +46,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
     <div role="img" aria-label={words.caption || words.alt} className="photo-placeholder grid size-full place-items-center p-4 text-center">
       <span className="space-y-2">
         <Camera aria-hidden className="mx-auto size-5 text-muted-foreground" />
-        {words.caption && <span className="block text-sm text-muted-foreground">{words.caption}</span>}
+        {words.caption && <span className="block text-small text-muted-foreground">{words.caption}</span>}
       </span>
     </div>
   )
@@ -73,14 +73,14 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
     return (
       <figure className={cn("photo-print", className)}>
         {frame}
-        {words.caption && <figcaption className="mt-2 text-sm text-muted-foreground">{words.caption}</figcaption>}
+        {words.caption && <figcaption className="mt-2 text-small text-muted-foreground">{words.caption}</figcaption>}
       </figure>
     )
   }
   return (
     <figure className={cn("space-y-3", className)}>
       {frame}
-      {words.caption && __PUBLIC_PHOTOS__ && <figcaption className="text-sm text-body">{words.caption}</figcaption>}
+      {words.caption && __PUBLIC_PHOTOS__ && <figcaption className="text-small text-body">{words.caption}</figcaption>}
       {children}
     </figure>
   )
