@@ -220,3 +220,9 @@ export async function checkCrew(token: string): Promise<"yes" | "no" | "error"> 
   if (!token) return "no"
   try { const d = await call(`${config.apiUrl}?action=crew&token=${encodeURIComponent(token)}`); return d.ok === true && typeof d.name === "string" && d.name.length > 0 ? "yes" : "no" } catch { return "error" }
 }
+
+/** Their stay picks from the planner (Accommodation Options), or null if the back end can't say. */
+export async function getStayPicks(): Promise<unknown> {
+  if (!config.apiUrl) return null
+  try { return await call(`${config.apiUrl}?action=stay`) } catch { return null }
+}
