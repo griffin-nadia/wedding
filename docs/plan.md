@@ -1,24 +1,30 @@
 # Build plan
 
-## v1 · live Thu 15 Oct 2026
-- [x] Wedding Gmail `griffinandnadia@gmail.com`, GitHub `griffin-nadia`, repo `wedding`, Apps Script deployed (Fri 2 Oct)
-- [x] Pages source set to GitHub Actions, first push (Fri 2 Oct)
-- [x] Site data sheet + Apps Script deployed, test households (Fri 2 Oct)
-- [x] Readable Log, server checks, plus ones, confirmation emails, invite sender, visit counts (Fri 2 Oct)
-- [x] Answer-aware home and success, error states, add to calendar, small delights, accessibility pass (Fri 2 Oct)
-- [x] Stress test: changes, families, bad input, 5 saves at once, browser at 390/1280, keyboard (Fri 2 Oct)
-- [ ] Test invite send from the sheet menu, Spotify keys
-- [ ] From N&G by Wed 7 Oct: guest list, 1 or 2 photos, web address, yes to Option D + autumn
-- [ ] Final wording from Inv details into `src/content/en.ts` (Fri 9 Oct)
-- [x] Pages: Home, The day, Travel, Q&A, RSVP
-- [ ] Test with 3 people: older relative, phone, someone abroad (Tue 13 Oct)
-- [ ] Tokens + links for every household (Wed 14 Oct)
-- [ ] Send (Thu 15 Oct). Backup: details now, links a little later
+Live status (who owes what, what's next) lives in the planner sheet's **Where we're at** tab. This page is the short version for the repo. The longer plan is `docs/MEGA-PLAN.md`.
 
-## v2 · mid Dec 2026
-- [ ] Their look as a new `data-theme`, hi-fi on Figma page 09
-- [ ] Envelope opening (first visit only, skippable), 2 or 3 delight moments
-- [ ] Song search (built: Spotify via Apps Script, needs keys)
-- [ ] "Booked your flights?" dates card on Home, stays helper
-- [ ] Japanese version (if wanted), checked by a native speaker
-- [ ] Lighthouse + screen reader pass, reduced-motion check
+## Now (16 Oct 2026)
+- **The invite goes out first, next week.** Home, The day, Travel, FAQs and the reply, as they are on main.
+- **Our story stays hidden** until Griffin and Nadia's words are in the Content tab. The map, the kid-photo opener and the photo stops wait for it.
+- Open PRs, waiting for review: #52 Griffin first in the names (confirm with them before merging), #53 placeholder tags for crew, #54 the kid-photo opener (after #53), #55 smaller music file, #56 "replies are paused" if Google locks the script, #57 hotel and Airbnb picks and the line after the changes lock.
+
+## Before the send
+- [ ] Merge the PRs above that are approved, then check the live site on a phone and a laptop, in both modes
+- [ ] Name order confirmed with Griffin and Nadia (#52), Code.gs pasted and the deployment updated
+- [ ] Guest list synced, a token and link for every household, test rows deleted
+- [ ] Test invite from the sheet menu to Jehan only
+- [ ] Download a backup of Site-Data and the planner (`docs/if-google-locks-it.md`)
+- [ ] Send. Backup: the plain details now, links a little later
+
+## Waiting on Griffin and Nadia
+- Griffin's 12 fortune lines (travel tips show until then) and his kid photo
+- A line per story photo in the planner's Photos + story tab
+- Nadia's painted map land, her paper scan, and the 600 dpi rescans
+- A native read of the Japanese
+- Who to call on the day (Noya)
+
+Crew can see every one of these on the site as an amber Placeholder tag (#53).
+
+## Done
+- v1 back end, emails, visit counts, stress tests (2 Oct)
+- Pages: Home, The day, Travel, FAQs, the reply in three steps, Japanese for everyone (#19)
+- Their look, the envelope (Nadia's drawing), the fortune, the journey map, music, Lantern mode (through #51)
