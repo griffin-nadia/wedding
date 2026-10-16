@@ -5,7 +5,7 @@
 export type Pick = { name?: string; area: string; price: string; note: string; href: string; sleeps?: string }
 export type Picks = { note: string; hotels: Pick[]; airbnbs: Pick[] }
 
-const TRACKING = /^(utm_|gclid|gad_|gbraid|wbraid|fbclid|msclkid|srsltid|_gl=|mc_|source_impression_id|check_in|check_out|adults|children|infants|pets|guests|search_mode|previous_page_section_name|federated_search_id)/i
+const TRACKING = /^(utm_|wiz_|gclid|gad_|gbraid|wbraid|fbclid|msclkid|srsltid|_gl=|mc_|s=|unique_share_id|review_page_entrypoint|source_impression_id|check_in|check_out|adults|children|infants|pets|guests|search_mode|previous_page_section_name|federated_search_id)/i
 
 /** https only, without ad and search tracking. Anything else becomes "" and its row is dropped. */
 export function cleanLink(u: string): string {

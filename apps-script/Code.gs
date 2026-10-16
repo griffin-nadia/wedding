@@ -513,15 +513,19 @@ function stayPicks_() {
     }
     if (!col) { if (!out.note && cells[0]) out.note = cells[0]; return }
     const href = cleanLink_(cells[col.link] || "")
-    if (col.area != null && cells[col.area]) area = cells[col.area]
+    if (col.area != null && cells[col.area]) area = tidyArea_(cells[col.area])
     if (!href) return
-    const note = col.note != null && cells[col.note] !== "-" ? cells[col.note] : ""
+    // "Sleeps 8 - not right next to a station" in Comments: the sleeps out front, the rest as the note
+    let note = col.note != null && cells[col.note] !== "-" ? cells[col.note] : ""
+    const sleepsIn = note.match(/^\s*sleeps\s*(\d+(?:\s*(?:to|-|–)\s*\d+)?)\s*[-–:,]?\s*/i)
+    if (sleepsIn) note = note.slice(sleepsIn[0].length).replace(/^\((.*)\)$/, "$1").trim()
+    note = note ? note.charAt(0).toUpperCase() + note.slice(1) : ""
     const row = {
       name: col.name != null ? cells[col.name] : "",
       area: area,
-      price: (col.price != null ? cells[col.price] : "").replace(/~\s+/, "~").replace(/\s*\/\s*night/i, "").replace(/\s*\([^)]*\)\s*$/, "").trim(),
+      price: (col.price != null ? cells[col.price] : "").replace(/~\s+/, "~").replace(/^~from\s+/i, "from ~").replace(/~(\d)/, "~$$$1").replace(/\s*\/\s*night/i, "").replace(/\s*\([^)]*\)\s*$/, "").trim(),
       note: note,
-      sleeps: col.sleeps != null ? cells[col.sleeps] : (note.match(/(?:sleeps\s*)(\d+(?:\s*(?:to|-|–)\s*\d+)?)/i) || [])[1] || "",
+      sleeps: (col.sleeps != null ? cells[col.sleeps] : sleepsIn ? sleepsIn[1] : "").replace(/\s*[-–]\s*/, " to "),
       href: href,
     }
     ;(/airbnb\./i.test(href) ? out.airbnbs : out.hotels).push(row)
@@ -530,11 +534,18 @@ function stayPicks_() {
   return out
 }
 
+/** "Near Kyomizu-Gojo Station" → "Kiyomizu-Gojo", "Near Gojo Station (North of Kyoto Station)" → "Gojo": short chip labels. */
+function tidyArea_(a) {
+  let t = a.replace(/\([^)]*\)/g, "").replace(/^near\s+/i, "").trim()
+  if (!/^kyoto station$/i.test(t)) t = t.replace(/\s+station$/i, "")
+  return t.replace(/^ki?yomizu[\s-]*gojo$/i, "Kiyomizu-Gojo").replace(/^the sodoh$/i, "The Sodoh").trim()
+}
+
 /** https only, without ad and search tracking (gclid, utm_…, gad_…, Airbnb's search context). */
 function cleanLink_(u) {
   if (!/^https:\/\//i.test(u)) return ""
   const parts = u.split("#")[0].split("?")
-  const keep = (parts[1] || "").split("&").filter((p) => p && !/^(utm_|gclid|gad_|gbraid|wbraid|fbclid|msclkid|srsltid|_gl=|mc_|source_impression_id|check_in|check_out|adults|children|infants|pets|guests|search_mode|previous_page_section_name|federated_search_id)/i.test(p))
+  const keep = (parts[1] || "").split("&").filter((p) => p && !/^(utm_|wiz_|gclid|gad_|gbraid|wbraid|fbclid|msclkid|srsltid|_gl=|mc_|s=|unique_share_id|review_page_entrypoint|source_impression_id|check_in|check_out|adults|children|infants|pets|guests|search_mode|previous_page_section_name|federated_search_id)/i.test(p))
   return parts[0] + (keep.length ? "?" + keep.join("&") : "")
 }
 
