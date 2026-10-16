@@ -33,21 +33,26 @@ See it live at `/kit` (every component, Light and Lantern side by side, every st
 
 Components only use system or component tokens; nothing invents a colour or an alpha. shadcn's names (`--background`, `--primary`…) are aliases of the system layer.
 
-## Type: two faces plus the hand, six sizes
+## Type: one scale, five roles
 
-| Role | Face | Size | Weight |
-|---|---|---|---|
-| Names | Oranienbaum | 56 on phones, 88 from 1024 | 400 |
-| Headings (h1, h2), numerals | Oranienbaum | 28 (countdown tiles and phone timeline times 20) | 400 |
-| Lead (greeting, date lines) | Inter | 20 | 400 |
-| Body, inputs, buttons | Inter | 16 | 400 (buttons 500) |
-| Item titles (a venue, a row, a question) | Inter | 16 | **500** |
-| Small, help, errors | Inter | 14 | 400 |
-| Labels | Inter | 14, sentence case | 500 |
-| Tiny labels (countdown units, the status pill) | Inter | 12 | 500 |
-| Sign-off and fortune slip | Klee One | 16 | 400 |
+Three families, nothing else: **Oranienbaum** (serif display), **Inter** (sans body) and **Zen Old Mincho** (Japanese display, loaded only when someone switches to Japanese; Japanese body text uses the device's own Japanese sans).
 
-At most two sizes in any one component. Caps only on the status pill. Semibold and bold aren't used.
+| Role | Class | Face | Size / line | Weight | Used for |
+|---|---|---|---|---|---|
+| Display | `text-display` (`names`) | Oranienbaum | 56/56 on phones, 88/88 from 1024 | 400 | The names on Home, the driver card's address |
+| Heading | `text-heading` (`heading` adds the moss rule) | Oranienbaum | 28/36 | 400 | Page titles (h1), section titles (h2), numerals (countdown, timeline times) |
+| Body | `text-body` | Inter | 16/24 | 400; 500 for item titles | Everything you read, inputs, buttons, links, row titles |
+| Small | `text-small` (`label-caps` is Small at 500) | Inter | 14/20 | 400; 500 for labels | Help, notes, errors, prices, step labels, card labels |
+| Label | `text-label` | Inter | 12/16 | 500 | Countdown units and the status pill (the only caps) |
+
+- **Their voice** (the sign-off, the fortune slip, "open your invite"): `voice`, Oranienbaum at the Body size.
+- Tokens are `--type-{display,heading,body,small,label}-{size,leading}`; controls read `--type-ui-*`, which point at Body and Small.
+- Tailwind's own sizes are switched off (`--text-*: initial`), so `text-sm`, `text-xl` or `text-[13px]` won't build: use a role. The hanko's 京 is part of the seal's drawing (`hanko-sm`, `hanko-lg`), not text.
+- At most two roles in any one component. Sentence case everywhere; caps only on the status pill. Semibold and bold aren't used.
+
+### One link style
+
+`btn-text`: Inter at Body size, 500, the link colour, underlined (1px, 4px offset), 2px on hover, the focus ring like every control. Whole rows that link (stay rows, picks) underline their title on hover instead. The fortune slip's "Save to my phone" is `btn-text` in the slip's own ink, since the slip is always bright paper.
 
 ## Space and shape
 

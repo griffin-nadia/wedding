@@ -7,7 +7,7 @@ type Place = { x: number; y: number; w: number; h: number; side: "centre" | "lef
 const hits = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
 
 /**
- * "open your invite" in Klee One, tilted like a hand-written note, with a hand-drawn arrow that loops once on its way
+ * "open your invite" in the display serif, tilted like a hand-written note, with a hand-drawn arrow that loops once on its way
  * to the envelope (6 Oct): the words write in, the line draws, then its head.
  * Placed by rule: above the envelope, centred; if that would cover a face, slid to the side; if both sides would,
  * the words go and the arrow stays; if even the arrow would, there's no note. Draws in once (600 ms) after the envelope settles; still under reduced motion.

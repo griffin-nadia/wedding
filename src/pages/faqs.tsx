@@ -25,9 +25,9 @@ export function FaqsPage() {
           </AccordionItem>
         ))}
       </Disclosure>
-      <p className="text-sm">{t.qa.contact}</p>
-      {contactDay && <p className="text-sm">{t.qa.onTheDay} {contactDay}</p>}
-      <p className="text-sm text-muted-foreground">{t.music.credit(ART.music.title, ART.music.artist, ART.music.year)}</p>
+      <p className="text-small">{t.qa.contact}</p>
+      {contactDay && <p className="text-small">{t.qa.onTheDay} {contactDay}</p>}
+      <p className="text-small text-muted-foreground">{t.music.credit(ART.music.title, ART.music.artist, ART.music.year)}</p>
     </>
   )
 }

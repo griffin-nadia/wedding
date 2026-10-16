@@ -54,7 +54,7 @@ const GROUPS: Group[] = [
     pages: [
       { id: "overview", name: "Overview", purpose: "Scene behind, letter in front. One surface, two faces plus the hand, six sizes, one state system, paper motion.", render: () => <Overview /> },
       { id: "colour", name: "Colour", purpose: "Brand tokens are Nadia's palette. System tokens say what each colour is for, per mode. Components only use system tokens.", render: () => <Colour /> },
-      { id: "type", name: "Type", purpose: "Oranienbaum for display and headings, Inter for everything else (inputs at 16), Klee One only for the sign-off and fortune. Six sizes: 12, 14, 16, 20, 28, 56/88. At most two per component.", render: () => <Type /> },
+      { id: "type", name: "Type", purpose: "One scale, five roles: Display (the names), Heading, Body, Small and Label. Oranienbaum for Display and Heading, Inter for the rest, Zen Old Mincho for Japanese display. Their voice (sign-off, fortune) is Oranienbaum at Body size.", render: () => <Type /> },
       { id: "space", name: "Space and radius", purpose: "4px grid, 8px vertical rhythm: related 8, unrelated 24, sections 32. Radius: control 8 (inputs, buttons, chips, rows, nav items, segmented), section 16, letter 24; only pills and the seal are round.", render: () => <Space /> },
       { id: "between", name: "In-between states", purpose: "Every component, five states: idle, loading (after 150 ms, previous content stays, no layout shift), success (settles in 300 ms), error (inline, says what to do), empty (says what to do instead).", render: () => <Between /> },
       { id: "motion", name: "Motion and delight", purpose: "Paper rises and settles; every duration and easing is a motion token. One chosen moment per screen, always with a still version. Nothing fades up on scroll.", render: () => <Motion /> },
@@ -164,7 +164,7 @@ const GROUPS: Group[] = [
         <div className="flex max-w-sm flex-col gap-3">
           <div className="relative grid h-16 grid-cols-4 rounded-[calc(var(--radius-control)+4px)] border bg-background p-1 shadow-paper">
             <span aria-hidden className="absolute top-1 bottom-1 left-1 w-[calc(25%-2px)] rounded-(--radius-control) bg-section-alt" />
-            {["Home", "The day", "Travel", "FAQs"].map((x, i) => <span key={x} className={cn("relative grid place-items-center font-label text-[12px] font-medium", i === 0 ? "text-foreground" : "text-muted-foreground")}>{x}</span>)}
+            {["Home", "The day", "Travel", "FAQs"].map((x, i) => <span key={x} className={cn("relative grid place-items-center font-label text-label font-medium", i === 0 ? "text-foreground" : "text-muted-foreground")}>{x}</span>)}
           </div>
         </div>
       ) },
@@ -186,15 +186,15 @@ function ChipDemo() {
   )
 }
 
-const na = <span className="text-sm text-muted-foreground">n/a</span>
+const na = <span className="text-small text-muted-foreground">n/a</span>
 function Between() {
   const cols = ["Idle", "Loading", "Success", "Error", "Empty"]
   const rows: [string, ReactNode[]][] = [
-    ["Button", [<Button key="i">Send our reply</Button>, <Button key="l" aria-busy>Sending…</Button>, <Button key="s" variant="outline">Sent</Button>, <span key="e" className="flex flex-col gap-2"><Button>Try again</Button><span className="text-xs text-destructive">We couldn't send that. Try again.</span></span>, na]],
+    ["Button", [<Button key="i">Send our reply</Button>, <Button key="l" aria-busy>Sending…</Button>, <Button key="s" variant="outline">Sent</Button>, <span key="e" className="flex flex-col gap-2"><Button>Try again</Button><span className="text-small text-destructive">We couldn't send that. Try again.</span></span>, na]],
     ["Inline submit", [
       <InlineSubmit key="i" id="b-i1" label="Your email" submitLabel="Send my link" onSubmit={() => {}} />,
       <InlineSubmit key="l" id="b-i2" label="Your email" submitLabel="Send my link" busy defaultValue="sam@example.com" onSubmit={() => {}} />,
-      <p key="s" role="status" className="rounded-md bg-section-alt p-3 text-sm">Your link is on its way.</p>,
+      <p key="s" role="status" className="rounded-md bg-section-alt p-3 text-small">Your link is on its way.</p>,
       <InlineSubmit key="e" id="b-i4" label="Your email" submitLabel="Send my link" error="That doesn't look like an email address." defaultValue="sam@" onSubmit={() => {}} />, na]],
     ["Combobox", [
       <Combobox key="i" id="b-c1" label="A song" query="" onQuery={() => {}} options={[]} onPick={() => {}} status="idle" placeholder="Search for a song" />,
@@ -263,7 +263,7 @@ function LetterDemo() {
       <img src={`${import.meta.env.BASE_URL}scenes/kyoto-view-1200.webp`} alt="" className="absolute inset-0 size-full object-cover" style={{ filter: "var(--scene-filter)" }} />
       <div className="letter absolute top-8 left-6 w-64 !gap-3 !p-6">
         <p className="label-caps text-muted-foreground">{en.home.label}</p>
-        <p className="font-display text-[40px] leading-none text-foreground">{COUPLE.first} <span className="text-primary">&amp;</span></p>
+        <p className="names">{COUPLE.first} <span className="text-primary">&amp;</span></p>
         <span className="moss-rule" />
         <p>Dear Sam and Alex,</p>
       </div>
@@ -320,7 +320,7 @@ function Swatch({ name, role, on }: { name: string; role?: string; on?: string }
       <span className="size-10 shrink-0 rounded-sm border" style={{ background: `var(${name})` }} />
       <span className="min-w-0 flex-1">
         <span className="block font-semibold text-foreground">{name.replace(/^--/, "")}</span>
-        <span className="block text-sm text-muted-foreground">{hex(c)}{role ? ` · ${role}` : ""}{on ? ` · ${ratio(c, bg)}:1` : ""}</span>
+        <span className="block text-small text-muted-foreground">{hex(c)}{role ? ` · ${role}` : ""}{on ? ` · ${ratio(c, bg)}:1` : ""}</span>
       </span>
     </div>
   )
@@ -348,10 +348,10 @@ function Type() {
     ["Display · names", "--type-display-names-*", <p className="names">{COUPLE.first} <span className="text-primary">&amp;</span></p>],
     ["Heading", "--type-heading-*", <p className="heading">Getting there</p>],
     ["Body", "--type-body-*", <p>We're getting married in Kyoto, where it all started, and we'd love you to be there.</p>],
-    ["Note", "--type-note-*", <p className="hand">With love, N &amp; G</p>],
+    ["Voice", "--type-body-*", <p className="voice">With love, G &amp; N</p>],
     ["Label", "--type-label-*", <p className="label-caps text-muted-foreground">{en.home.label}</p>],
-    ["Numerals", "--type-display-numerals-*", <p className="numerals text-(length:--type-display-numerals-size) text-foreground">376</p>],
-    ["Small", "--type-small-*", <p className="text-xs text-destructive">Errors and fine print only.</p>],
+    ["Numerals", "--type-display-numerals-*", <p className="numerals text-heading text-foreground">376</p>],
+    ["Small", "--type-small-*", <p className="text-small text-destructive">Errors and fine print only.</p>],
   ]
   return <>{rows.map(([n, tok, el]) => <div key={n} className="flex flex-col gap-2 border-b border-border py-4 last:border-b-0"><span className="label-caps text-muted-foreground">{n} · <span className="normal-case tracking-normal">{tok}</span></span>{el}</div>)}</>
 }
@@ -361,12 +361,12 @@ function Space() {
     <>
       <h3 className="label-caps text-muted-foreground">Space</h3>
       {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
-        <div key={n} className="flex items-center gap-4 py-1"><span className="w-20 text-sm text-muted-foreground">space-{n}</span><span className="h-4 rounded-sm bg-primary" style={{ width: `var(--space-${n})` }} /></div>
+        <div key={n} className="flex items-center gap-4 py-1"><span className="w-20 text-small text-muted-foreground">space-{n}</span><span className="h-4 rounded-sm bg-primary" style={{ width: `var(--space-${n})` }} /></div>
       ))}
       <h3 className="label-caps mt-6 text-muted-foreground">Radius</h3>
       <div className="flex flex-wrap gap-4">
         {["chip", "card", "button", "letter", "pill"].map((r) => (
-          <div key={r} className="flex flex-col items-center gap-2"><span className="size-20 border-2 border-primary bg-card" style={{ borderRadius: `var(--radius-${r})` }} /><span className="text-sm text-muted-foreground">{r}</span></div>
+          <div key={r} className="flex flex-col items-center gap-2"><span className="size-20 border-2 border-primary bg-card" style={{ borderRadius: `var(--radius-${r})` }} /><span className="text-small text-muted-foreground">{r}</span></div>
         ))}
       </div>
     </>
@@ -390,7 +390,7 @@ function Motion() {
       <Button variant="outline" onClick={() => setGo(go + 1)} className="self-start">Play</Button>
       {rows.map(([n, d, e]) => (
         <div key={n} className="flex items-center gap-4 py-2">
-          <span className="w-32 text-sm text-muted-foreground">{n} · {d.replace("--duration-", "")}</span>
+          <span className="w-32 text-small text-muted-foreground">{n} · {d.replace("--duration-", "")}</span>
           <div className="relative h-8 flex-1 rounded-sm bg-secondary" style={{ containerType: "inline-size" }}>
             <span className="absolute top-1 left-1 size-6 rounded-sm bg-primary" style={{ transform: go % 2 ? "translateX(calc(100cqw - 32px))" : "none", transition: `transform var(${d}) var(${e})` }} />
           </div>
@@ -398,7 +398,7 @@ function Motion() {
       ))}
       <h3 className="label-caps mt-6 text-muted-foreground">One moment per screen</h3>
       <dl className="divide-y divide-border">{MOMENTS.map(([a, b]) => <div key={a} className="flex gap-4 py-3"><dt className="w-32 shrink-0 font-semibold text-foreground">{a}</dt><dd>{b}</dd></div>)}</dl>
-      <p className="hand">Under reduced motion everything is still: the letter is just there, steps fade, nothing drifts.</p>
+      <p className="voice">Under reduced motion everything is still: the letter is just there, steps fade, nothing drifts.</p>
     </>
   )
 }
@@ -442,7 +442,7 @@ export function KitPage() {
   return (
     <div className="kit min-h-svh bg-background">
       <header className="sticky top-0 z-30 flex flex-wrap items-center gap-4 border-b bg-background/95 px-4 py-3 backdrop-blur md:px-6">
-        <p className="font-display text-2xl text-foreground">{COUPLE.first[0]}&amp;{COUPLE.second[0]} <span className="label-caps text-muted-foreground">Design system</span></p>
+        <p className="font-display text-heading text-foreground">{COUPLE.first[0]}&amp;{COUPLE.second[0]} <span className="label-caps text-muted-foreground">Design system</span></p>
         <Segmented label="Modes" className="ml-auto" value={modes} onChange={setModes} items={[{ value: "both", label: "Both" }, { value: "autumn", label: "Light" }, { value: "lantern", label: "Lantern" }]} />
         {tuneEnabled && <TuneLauncher />}
       </header>
@@ -472,7 +472,7 @@ export function KitPage() {
           </header>
           <div className={cn("grid gap-6", panels.length > 1 && "xl:grid-cols-2")}>
             {panels.map((m) => (
-              <section key={m} data-theme={m} aria-label={m === "autumn" ? "Light" : "Lantern"} className="kit-panel paper flex min-w-0 flex-col gap-4 rounded-3xl border-t-[6px] border-(--letter-edge-color) bg-background p-6 text-body shadow-paper">
+              <section key={m} data-theme={m} aria-label={m === "autumn" ? "Light" : "Lantern"} className="kit-panel paper flex min-w-0 flex-col gap-4 rounded-3xl border-t-[6px] border-(--letter-edge-color) bg-background p-6 text-body-ink shadow-paper">
                 <p className="label-caps text-muted-foreground">{m === "autumn" ? "Light" : "Lantern"}</p>
                 {page.render()}
               </section>

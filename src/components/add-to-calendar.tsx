@@ -16,7 +16,7 @@ export function AddToCalendar() {
         <Button asChild variant="outline" size="lg"><a href={googleCalendarUrl} target="_blank" rel="noreferrer" onClick={() => setNote("opened")}>{t.day.googleCalendar}</a></Button>
         <Button asChild variant="outline" size="lg"><a href={icsHref()} download="nadia-griffin-wedding.ics" onClick={() => setNote("saved")}>{t.day.appleCalendar}</a></Button>
       </div>
-      <p role="status" aria-live="polite" className={note ? "cal-note is-on text-sm text-success" : "cal-note text-sm text-success"}>{note === "opened" ? t.day.calendarOpened : note === "saved" ? t.day.calendarSaved : ""}</p>
+      <p role="status" aria-live="polite" className={note ? "cal-note is-on text-small text-success" : "cal-note text-small text-success"}>{note === "opened" ? t.day.calendarOpened : note === "saved" ? t.day.calendarSaved : ""}</p>
     </div>
   )
 }

@@ -115,7 +115,7 @@ export function GuestMap({ you, flying, label }: { you: Flying | null; flying: {
           </ul>
         : <><JourneyMini you={you} counts={flying?.counts} label={label} /><JourneyLegend you={Boolean(you)} /></>}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        {flying && flying.households > 0 ? <p className="text-sm text-muted-foreground">{t.journey.count(flying.told, flying.households)}</p> : <span />}
+        {flying && flying.households > 0 ? <p className="text-small text-muted-foreground">{t.journey.count(flying.told, flying.households)}</p> : <span />}
         <button type="button" className="btn-text min-h-11" onClick={() => setList((v) => !v)}>{list ? t.journey.seeMap : t.journey.seeList}</button>
       </div>
     </div>

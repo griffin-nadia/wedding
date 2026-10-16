@@ -23,7 +23,7 @@
   --color-ring: var(--ring);
   --color-highlight: var(--highlight);
   --color-eyebrow: var(--eyebrow);
-  --color-body: var(--body);
+  --color-body-ink: var(--body); /* text-body-ink; text-body is the Body size */
   --color-link: var(--link);
   --color-success: var(--success);
   --color-leaf: var(--leaf);
@@ -40,31 +40,27 @@
 
   --font-display: var(--font-display);
   --font-sans: var(--font-body);
-  --font-hand: var(--font-hand);
   --font-label: var(--font-label);
   --font-ja: var(--font-ja);
   --shadow-paper: var(--shadow-paper);
   --ease-paper: var(--ease-paper);
 }
 
-/* Six steps, nothing else: xs 12 label · sm 14 small · base 16 body · lg/xl 20 lead · 2xl+ 28 heading. Names use the names utility. */
+/* One scale, five roles (docs/system.md): text-display · text-heading · text-body · text-small · text-label.
+   Tailwind's own sizes are switched off, so a stray text-xl or text-sm doesn't build. */
 @theme inline {
-  --text-xs: var(--type-label-size);
-  --text-xs--line-height: var(--type-label-leading);
-  --text-sm: var(--type-small-size);
-  --text-sm--line-height: var(--type-small-leading);
-  --text-base: var(--type-body-size);
-  --text-base--line-height: var(--type-body-leading);
-  --text-lg: var(--type-lead-size);
-  --text-lg--line-height: var(--type-lead-leading);
-  --text-xl: var(--type-lead-size);
-  --text-xl--line-height: var(--type-lead-leading);
-  --text-2xl: var(--type-heading-size);
-  --text-2xl--line-height: var(--type-heading-leading);
-  --text-3xl: var(--type-heading-size);
-  --text-3xl--line-height: var(--type-heading-leading);
-  --text-4xl: var(--type-heading-size);
-  --text-4xl--line-height: var(--type-heading-leading);
+  --text-*: initial;
+  --text-display: var(--type-display-size);
+  --text-display--line-height: var(--type-display-leading);
+  --text-display--letter-spacing: var(--type-display-tracking);
+  --text-heading: var(--type-heading-size);
+  --text-heading--line-height: var(--type-heading-leading);
+  --text-body: var(--type-body-size);
+  --text-body--line-height: var(--type-body-leading);
+  --text-small: var(--type-small-size);
+  --text-small--line-height: var(--type-small-leading);
+  --text-label: var(--type-label-size);
+  --text-label--line-height: var(--type-label-leading);
   --ease-letter: var(--ease-letter);
 }
 
@@ -77,7 +73,7 @@
     overflow-x: clip;
   }
   body {
-    @apply bg-background text-base font-sans antialiased;
+    @apply bg-background text-body font-sans antialiased;
     color: var(--body);
     font-feature-settings: "kern", "liga";
   }
@@ -110,8 +106,8 @@
   }
 }
 
-/* Type roles (see docs/system.md). Label: Inter 12 caps, at most one per card. */
-/* Labels: sentence case, Inter 14 medium, no tracking (v3 I). Caps live only on the status pill. */
+/* Labels on cards and steps ("Taxi from Kyoto Station", "Step 1 of 3"): the Small role at 500, sentence case.
+   Caps live only on the status pill (Label role). */
 @utility label-caps {
   font-family: var(--font-label);
   font-size: var(--type-small-size);
@@ -124,11 +120,6 @@
   line-height: var(--type-small-leading);
   font-weight: 500;
   color: var(--eyebrow);
-}
-/* Lead: the one larger body step (greeting, intros) */
-@utility lead {
-  font-size: var(--type-lead-size);
-  line-height: var(--type-lead-leading);
 }
 /* Hanko: the red seal stamped on "all set". Lands once; no motion when reduced motion is on. */
 @utility hanko {
@@ -148,17 +139,16 @@
   }
 }
 
-/* Notes in Griffin and Nadia's voice (Klee One). */
-@utility hand {
-  font-family: var(--font-hand);
-  font-size: var(--type-note-size);
-  line-height: var(--type-note-leading);
-  font-feature-settings: normal;
+/* Their voice (the sign-off, the fortune, the envelope note): the display serif at the Body size */
+@utility voice {
+  font-family: var(--font-display);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
 }
 
 /* Title: Oranienbaum, sentence case, a 40px moss rule under it. Green as a material, not an overlay. */
 @utility heading {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: var(--type-heading-size);
   line-height: var(--type-heading-leading);
   letter-spacing: var(--type-heading-tracking);
@@ -190,9 +180,9 @@
 /* The names: Oranienbaum 56 → 88, tight, "&" in the one green */
 @utility names {
   font-family: var(--font-display);
-  font-size: var(--type-display-names-size);
-  line-height: var(--type-display-names-leading);
-  letter-spacing: var(--type-display-names-tracking);
+  font-size: var(--type-display-size);
+  line-height: var(--type-display-leading);
+  letter-spacing: var(--type-display-tracking);
   color: var(--foreground);
 }
 
@@ -331,12 +321,11 @@
    reaches it, or when the page can't scroll any further. Still and complete under reduced motion. */
 .timeline-row { position: relative; display: grid; grid-template-columns: 1fr 40px 1fr; align-items: start; column-gap: var(--space-3); }
 .timeline-icon { grid-column: 2; grid-row: 1; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-pill); background: var(--letter-bg); border: 1px solid var(--sys-moss); color: var(--sys-moss); position: relative; z-index: 1; }
-.timeline-time { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); }
+.timeline-time { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); }
 .is-left .timeline-time { grid-column: 1; grid-row: 1; text-align: right; }
 .is-left .timeline-text { grid-column: 3; grid-row: 1; }
 .is-right .timeline-time { grid-column: 3; grid-row: 1; }
 .is-right .timeline-text { grid-column: 1; grid-row: 1; text-align: right; }
-@media (max-width: 479px) { .timeline-time { font-size: var(--type-lead-size); line-height: var(--type-lead-leading); } }
 .timeline-now { position: absolute; left: 50%; z-index: 2; translate: -50% -50%; list-style: none; }
 /* JS fallback where scroll-driven animations are missing (iOS): the page sets --fill on the timeline */
 .timeline-js .timeline-fill { animation: none; transform: scaleY(var(--fill, 0)); transition: transform 120ms linear; }
@@ -425,7 +414,7 @@
 .driver-card { display: flex; flex-direction: column; width: min(640px, 100%); max-height: 100%; overflow: auto; border-radius: var(--radius-letter); background: var(--brand-paper-bright); color: var(--brand-ink-deep); box-shadow: var(--sheet-shadow); }
 .driver-body { display: flex; flex-direction: column; align-items: center; gap: var(--space-5); padding: var(--space-8) var(--space-5); text-align: center; }
 .driver-please { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); color: var(--brand-doro); }
-.driver-name { font-size: var(--type-display-names-size); line-height: 1.15; word-break: keep-all; overflow-wrap: anywhere; }
+.driver-name { font-size: var(--type-display-size); line-height: 1.15; word-break: keep-all; overflow-wrap: anywhere; }
 .driver-address { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); }
 .driver-foot { padding: var(--space-4) var(--space-5) var(--space-5); border-top: 1px solid var(--brand-wara); }
 @media (max-width: 767px) { .driver-modal { padding: 0; } .driver-card { height: 100%; border-radius: 0; } .driver-body { flex: 1; justify-content: center; } .driver-foot { padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom)); } }
@@ -637,7 +626,7 @@
 .mode-switches { display: inline-flex; align-items: center; gap: var(--space-1); }
 .chrome-lantern { position: fixed; z-index: 41; top: 12px; right: 12px; border-radius: var(--radius-pill); background: var(--letter-bg); box-shadow: var(--shadow-paper); }
 @media (min-width: 768px) { .chrome-lantern { position: static; background: transparent; box-shadow: none; } }
-.home-countdown .numerals { font-size: var(--type-display-numerals-size); line-height: var(--type-display-numerals-leading); font-variant-numeric: lining-nums tabular-nums; }
+.home-countdown .numerals { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); font-variant-numeric: lining-nums tabular-nums; }
 /* Segmented / tabs: one look everywhere, the nav's sliding sage marker (200 ms) */
 .segmented { position: relative; display: inline-flex; width: max-content; max-width: 100%; gap: var(--space-1); padding: var(--space-1); border-radius: calc(var(--radius-control) + 4px); outline: 2px solid transparent; outline-offset: 2px; background: color-mix(in oklab, var(--sys-fill) 45%, transparent); }
 .segmented-mark { position: absolute; top: var(--space-1); bottom: var(--space-1); left: 0; border-radius: var(--radius-control); background: var(--input-selected-bg); box-shadow: inset 0 0 0 2px var(--input-selected-line); transition: transform var(--duration-slide) var(--ease-paper), width var(--duration-slide) var(--ease-paper); pointer-events: none; }
@@ -743,7 +732,7 @@ svg.lucide { stroke-width: 1.5; }
 /* v3 A: a segmented control is content width and centred on phones (choice rows keep theirs to the right) */
 @media (max-width: 767px) { .segmented:not(.choice-row .segmented) { display: flex; margin-inline: auto; } }
 /* Song versions (v3 Q3): the "N versions" row reads as a link under its song; versions sit indented under it */
-.combo-option-more { min-height: 44px; padding-left: calc(var(--space-3) + 32px + var(--space-3)); color: var(--sys-link); font-size: var(--type-small-size); text-decoration: underline; text-underline-offset: 3px; }
+.combo-option-more { min-height: 44px; padding-left: calc(var(--space-3) + 32px + var(--space-3)); color: var(--link); font-size: var(--type-small-size); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
 .combo-option-version { padding-left: calc(var(--space-3) + 32px + var(--space-3)); }
 /* Home countdown (v3 Q6): five 48px paper tiles under the card, outside the letter */
 /* Segmented choice: the tick in its reserved slot (v3 R) */
@@ -787,7 +776,7 @@ svg.lucide { stroke-width: 1.5; }
 .reply-chip:focus-visible { outline-color: var(--input-focus); }
 .reply-chip:active { transform: scale(var(--press-scale)); }
 @media (hover: hover) and (pointer: fine) { .reply-chip:hover { border-color: var(--sys-line-strong); } }
-@media (min-width: 1024px) { :root { --type-display-names-size: 88px; } }
+@media (min-width: 1024px) { :root { --type-display-size: 88px; } }
 /* Before you fly: tick on the left, the row opens on the right (v3 S) */
 .check-acc { display: flex; align-items: center; gap: var(--space-4); }
 .check-acc > h3, .check-acc > [data-slot="accordion-header"] { flex: 1; min-width: 0; }
@@ -804,7 +793,7 @@ svg.lucide { stroke-width: 1.5; }
 .count-boxes-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
 .count-boxes-list { display: flex; gap: var(--space-2); }
 .count-box { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 64px; height: 56px; padding: 0 var(--space-3); border-radius: var(--radius-control); background: var(--sys-surface-alt); perspective: 400px; }
-.count-box-num { display: block; font-family: var(--font-label); font-size: var(--type-lead-size); line-height: 24px; font-weight: 500; color: var(--sys-ink); font-variant-numeric: tabular-nums; transform-origin: 50% 50%; backface-visibility: hidden; }
+.count-box-num { display: block; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: var(--type-heading-leading); font-weight: 400; color: var(--sys-ink); font-variant-numeric: tabular-nums; transform-origin: 50% 50%; backface-visibility: hidden; }
 .count-box-unit, .count-boxes-caption { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-soft); }
 @keyframes count-flip { from { transform: rotateX(-90deg); opacity: 0.4; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: no-preference) { .count-flip { animation: count-flip var(--duration-settle) var(--ease-letter) both; } }
@@ -918,7 +907,7 @@ svg.lucide { stroke-width: 1.5; }
 .arrival-note[data-row] .arrival-note-arrow { height: 48px; margin-top: 2px; }
 .arrival-note[data-side="right"] { align-items: flex-end; }
 .arrival-note[data-side="right"] .arrival-note-arrow { scale: -1 1; }
-.arrival-note-words { font-family: var(--font-hand); font-size: 20px; line-height: 1.2; white-space: nowrap; clip-path: inset(0 100% 0 0); animation: note-write var(--duration-rise) var(--ease-paper) 500ms forwards; }
+.arrival-note-words { font-family: var(--font-display); font-size: var(--type-body-size); line-height: 1.2; white-space: nowrap; clip-path: inset(0 100% 0 0); animation: note-write var(--duration-rise) var(--ease-paper) 500ms forwards; }
 .arrival-note-arrow { width: 72px; height: 48px; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .arrival-note-arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: note-draw var(--duration-rise) var(--ease-paper) 900ms forwards; }
 @keyframes note-write { to { clip-path: inset(0 0 0 0); } }
@@ -1066,13 +1055,11 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-slip .label-caps { color: var(--brand-kuri); }
 .omikuji-no { font-size: 0.9rem; letter-spacing: 0.2em; color: var(--brand-kuri); }
 .omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--brand-doro); }
-.omikuji-text { font-family: var(--font-hand, inherit); font-size: 1.125rem; line-height: 1.5; text-wrap: pretty; max-width: 26ch; }
+.omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 26ch; }
 .omikuji-count { opacity: 0.8; }
-.omikuji-save { min-height: 44px; color: var(--brand-doro); text-decoration: underline; text-underline-offset: 4px; outline: 2px solid transparent; outline-offset: 2px; border-radius: var(--radius-control); }
-.omikuji-save:focus-visible { outline-color: var(--brand-doro); }
+.omikuji-save { min-height: 44px; color: var(--brand-doro); } /* the one link style (btn-text), in the slip's own ink: it's always bright paper */
 /* Springs (Options → Fortune): Motion moves the tin, the stick and the slip, so their CSS animations stand down */
 .omikuji-slip.is-spring { animation: none; }
-.omikuji-slip.is-spring .omikuji-save { min-height: 44px; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }
   .omikuji-stick { transition: none; }
@@ -1131,3 +1118,6 @@ svg.lucide { stroke-width: 1.5; }
 /* After the fortune: the optional flying-from card, the same paper card as the fortune's, the small map under the chips */
 .journey-end { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--sys-line); border-radius: var(--radius-control); background: var(--sys-surface-raised); }
 .journey-end-map { width: 100%; max-width: 280px; }
+/* The hanko's 京 is part of the seal's drawing, sized to its circle (not a text role) */
+.hanko-sm { font-size: 20px; }
+.hanko-lg { font-size: 40px; }

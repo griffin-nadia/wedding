@@ -18,7 +18,7 @@ export function SignOff({ action }: { action?: ReactNode }) {
     <footer className="letter-end mt-auto flex flex-wrap items-center justify-between gap-x-4 pt-2">
       {__SIGNOFF_ART__
         ? <img src={`${import.meta.env.BASE_URL}brand/signoff.svg`} alt={t.letter.signOff} className="h-12 w-auto" />
-        : <p className="hand text-foreground">{t.letter.signOff}</p>}
+        : <p className="voice text-foreground">{t.letter.signOff}</p>}
       {action}
     </footer>
   )

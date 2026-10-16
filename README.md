@@ -26,7 +26,7 @@ the back end exists. Copy `.env.example` to `.env` and paste the Apps Script URL
 | App | Vite + React + TypeScript, React Router | Simple static build, app-like tabs |
 | UI | shadcn/ui (Radix, `radix-vega` style) in `src/components/ui` | Accessible accordion, sheet, radio, form parts we own and restyle |
 | Styling | Tailwind v4, tokens in `src/styles/tokens.css` | One token file, themes via `data-theme` |
-| Fonts | Zen Old Mincho, EB Garamond, Klee One via Fontsource | Served from our own site, Latin files preloaded, `font-display: optional` so text never swaps |
+| Fonts | Oranienbaum, Inter and Zen Old Mincho (Japanese) via Fontsource | Served from our own site, Latin files preloaded, `font-display: optional` so text never swaps |
 | Data | Google Sheet + Apps Script web app (`apps-script/`) | Free, Nadia can edit, no server |
 | Hosting | GitHub Pages: `griffin-nadia.github.io/wedding` | Free. Repo is public, so **no guest data in code, ever** |
 

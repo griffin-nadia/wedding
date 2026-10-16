@@ -65,7 +65,7 @@ export function LangToggle() {
   const { lang, setLang } = useLang()
   const ja = lang === "ja"
   return (
-    <button type="button" onClick={() => setLang(ja ? "en" : "ja")} className="utility-btn press font-label text-(length:--type-ui-size) font-medium"
+    <button type="button" onClick={() => setLang(ja ? "en" : "ja")} className="utility-btn press font-label text-body font-medium"
       title={ja ? "Switch to English" : "日本語に切り替える"}
       aria-label={ja ? "Switch to English" : "日本語に切り替える"} lang={ja ? "en" : "ja"}>
       <span aria-hidden>{ja ? "A" : "あ"}</span>

@@ -79,8 +79,8 @@ export function FortuneCard({ token, className }: { token: string; className?: s
           <Box drawing={state === "drawing"} />
         </button>
         <div className="flex flex-1 flex-col items-start gap-2">
-          <h3 id="fortune" className="text-base font-medium text-foreground">{t.fortune.title}</h3>
-          <p className="text-sm text-muted-foreground" aria-live="polite">{state === "drawing" ? t.fortune.drawing : shaky.current ? t.fortune.hintShake : t.fortune.hint}</p>
+          <h3 id="fortune" className="text-body font-medium text-foreground">{t.fortune.title}</h3>
+          <p className="text-small text-muted-foreground" aria-live="polite">{state === "drawing" ? t.fortune.drawing : shaky.current ? t.fortune.hintShake : t.fortune.hint}</p>
           <Button variant="outline" onClick={draw} disabled={state === "drawing"} aria-busy={state === "drawing"}>{t.fortune.draw}</Button>
         </div>
       </section>

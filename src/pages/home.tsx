@@ -103,7 +103,7 @@ export function HomePage() {
       </header>
 
       {household
-        ? <p className="lead max-w-[34em]"><span className="text-foreground">{t.home.dear(dear)}</span> {mode === "keepsake" ? t.home.keepsake.greeting : mode === "week-of" ? t.home.week.greeting : t.home.greetingLine}</p>
+        ? <p className="max-w-[34em]"><span className="text-foreground">{t.home.dear(dear)}</span> {mode === "keepsake" ? t.home.keepsake.greeting : mode === "week-of" ? t.home.week.greeting : t.home.greetingLine}</p>
         : <Skeleton className="h-21 w-full" />}
 
       {/* Later modes (v3 S): the week of the wedding points at the day; the keepsake is a thank-you letter */}
@@ -111,7 +111,7 @@ export function HomePage() {
         <div className="flex flex-col gap-3">
           <Button asChild size="lg" className="w-full sm:w-auto sm:self-start"><Link to="/the-day">{t.home.week.day}</Link></Button>
           <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{t.home.week.directions}</a>
-          {contactDay && <p className="text-sm">{t.qa.onTheDay} {contactDay}</p>}
+          {contactDay && <p className="text-small">{t.qa.onTheDay} {contactDay}</p>}
         </div>
       )}
       {household && mode === "keepsake" && <Link to="/our-story" className="btn-text inline-flex min-h-11 items-center self-start">{t.home.keepsake.story}</Link>}
@@ -123,7 +123,7 @@ export function HomePage() {
         done ? (
           <div className="flex flex-col gap-2">
             <Pill tone="good" className="self-start">{t.home.pills.replied}</Pill>
-            <p className="text-sm text-muted-foreground">{t.home.changeAfter}</p>
+            <p className="text-small text-muted-foreground">{t.home.changeAfter}</p>
           </div>
         ) : <p>{t.home.rsvpClosed}</p>
       ) : (
@@ -135,7 +135,7 @@ export function HomePage() {
                 <RsvpSheet openOnLoad={tapped} request={request}>{rsvpButton}</RsvpSheet>
               </Suspense>
             </div>
-            {done && <p className="text-sm text-muted-foreground">{t.home.changeBy}</p>}
+            {done && <p className="text-small text-muted-foreground">{t.home.changeBy}</p>}
           </div>
           {done && <YourReply h={household} open={openAt} />}
           {/* Their line on the map, once they've said where they're flying from (after the fortune) */}

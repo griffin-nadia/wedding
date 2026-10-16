@@ -26,13 +26,13 @@ export function JourneyEnd({ token }: { token: string }) {
     <section aria-labelledby="fly-end" className="journey-end">
       <div className="flex flex-col gap-1">
         <h3 id="fly-end" className="font-medium text-foreground">{t.flying.endTitle}</h3>
-        <p className="text-sm text-muted-foreground">{t.flying.hint}</p>
+        <p className="text-small text-muted-foreground">{t.flying.hint}</p>
       </div>
       <div role="group" aria-labelledby="fly-end" className="flex flex-wrap gap-2">
         {FLYING.map((c) => <Chip key={c} on={city === c} onClick={() => pick(c)}>{t.flying.cities[c] ?? c}</Chip>)}
       </div>
       <JourneyMini you={city} counts={counts} label={t.journey.map(name)} className="journey-end-map" />
-      {name && <p role="status" className="text-sm text-muted-foreground">{t.flying.yours(name)}</p>}
+      {name && <p role="status" className="text-small text-muted-foreground">{t.flying.yours(name)}</p>}
     </section>
   )
 }

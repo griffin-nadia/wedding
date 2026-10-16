@@ -111,7 +111,7 @@ export function DayPage() {
     <div className="flex flex-col gap-4">
       <Timeline now={now} />
       {/* The Kyoto minute rolls up into place when it ticks over; the key remounts it */}
-      <p className="text-sm text-muted-foreground">{t.day.japanTime} <span className={rolls ? "no-print clock-roll" : "no-print"} key={kyotoNow(now)}>{t.day.kyotoNow(kyotoNow(now))}</span></p>
+      <p className="text-small text-muted-foreground">{t.day.japanTime} <span className={rolls ? "no-print clock-roll" : "no-print"} key={kyotoNow(now)}>{t.day.kyotoNow(kyotoNow(now))}</span></p>
       <p>{t.day.rainPlan}</p>
     </div>
   )
@@ -119,7 +119,7 @@ export function DayPage() {
     <>
       <header className="flex flex-col gap-4">
         <h1 className="heading">{t.day.title}</h1>
-        <p className="lead">{t.day.dateLong}</p>
+        <p className="font-medium text-foreground">{t.day.dateLong}</p>
       </header>
       <Details />
       {timeline}

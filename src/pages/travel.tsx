@@ -81,8 +81,8 @@ function Picks() {
       <a href={x.href} target="_blank" rel="noreferrer" className="stay-row stay-pick">
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="font-medium text-foreground">{airbnb ? x.area : x.name}</span>
-          <span className="text-sm">{[airbnb ? (x.sleeps ? p.sleeps(x.sleeps) : "") : x.area, x.price ? p.perNight(x.price) : ""].filter(Boolean).join(" · ")}</span>
-          {x.note && <span className="text-sm text-muted-foreground">{x.note}</span>}
+          <span className="text-small">{[airbnb ? (x.sleeps ? p.sleeps(x.sleeps) : "") : x.area, x.price ? p.perNight(x.price) : ""].filter(Boolean).join(" · ")}</span>
+          {x.note && <span className="text-small text-muted-foreground">{x.note}</span>}
         </span>
         <ArrowUpRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
         <span className="sr-only">, {airbnb ? p.opensAirbnb : p.opensHotel}</span>
@@ -91,8 +91,8 @@ function Picks() {
   )
   return (
     <div id="picks" className="flex scroll-mt-24 flex-col gap-3">
-      <h3 className="font-display text-xl text-foreground">{p.title}</h3>
-      <p className="text-sm text-muted-foreground">{note}</p>
+      <h3 className="font-medium text-foreground">{p.title}</h3>
+      <p className="text-small text-muted-foreground">{note}</p>
       <h4 className="pt-2 font-medium text-foreground">{p.hotelsTitle}</h4>
       <ul className="flex flex-col border-y border-border">{picks.hotels.map((x) => row(x, false))}</ul>
       <h4 className="pt-2 font-medium text-foreground">{p.airbnbsTitle} <span className="font-normal text-muted-foreground">· {p.airbnbsNote}</span></h4>
@@ -144,7 +144,7 @@ export function TravelPage() {
       </section>
 
       <section id="to-kyoto" aria-labelledby="to-kyoto-title" className="flex scroll-mt-24 flex-col gap-4">
-        <h2 id="to-kyoto-title" className="font-display text-2xl text-foreground">{g.toKyotoTitle}</h2>
+        <h2 id="to-kyoto-title" className="font-display text-heading text-foreground">{g.toKyotoTitle}</h2>
         <Disclosure label={g.toKyotoTitle}>
           <Plain value="flights" title={g.rows.flights}>
             <p>{t.travel.items[1].body}</p><p>{g.flyingBody}</p>
@@ -156,7 +156,7 @@ export function TravelPage() {
       </section>
 
       <section id="stay" aria-labelledby="stay-title" className="flex scroll-mt-24 flex-col gap-4">
-        <h2 id="stay-title" className="font-display text-2xl text-foreground">{t.stay.title}</h2>
+        <h2 id="stay-title" className="font-display text-heading text-foreground">{t.stay.title}</h2>
         <p>{t.stay.intro}</p>
         <Disclosure label={t.stay.title}>
           {t.day.stay.map((a) => (
@@ -171,8 +171,8 @@ export function TravelPage() {
       </section>
 
       <section id="before" aria-labelledby="before-title" className="flex scroll-mt-24 flex-col gap-4">
-        <h2 id="before-title" className="font-display text-2xl text-foreground">{g.beforeTitle}</h2>
-        <p className="text-sm text-muted-foreground" aria-live="polite">{g.ticked(rows.filter(([v]) => ticks[v]).length, rows.length)}</p>
+        <h2 id="before-title" className="font-display text-heading text-foreground">{g.beforeTitle}</h2>
+        <p className="text-small text-muted-foreground" aria-live="polite">{g.ticked(rows.filter(([v]) => ticks[v]).length, rows.length)}</p>
         <Disclosure label={g.beforeTitle}>
           {rows.map(([value, title, body]) => <Row key={value} value={value} title={title} done={Boolean(ticks[value])} onTick={(v) => setTick(value, v)} tickLabel={g.tick(title)}>{body}</Row>)}
         </Disclosure>

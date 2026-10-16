@@ -33,7 +33,7 @@ export function CrewGate({ page }: { page: "kit" | "lab" }) {
       {state !== "checking" && (
         <div className="flex max-w-sm flex-col items-center gap-3 text-center">
           <p className="text-foreground">{state === "error" ? "Couldn't check your link just now." : state === "no" ? "That link isn't a crew link." : "This page opens from a crew link."}</p>
-          <p className="text-sm text-muted-foreground">{state === "error" ? "Check your connection and try again." : "Use your link from the Crew tab in Site-Data. After that, this address works on its own."}</p>
+          <p className="text-small text-muted-foreground">{state === "error" ? "Check your connection and try again." : "Use your link from the Crew tab in Site-Data. After that, this address works on its own."}</p>
           {state === "error" && <button type="button" className="btn-text min-h-11" onClick={() => setTries((n) => n + 1)}>Try again</button>}
         </div>
       )}
