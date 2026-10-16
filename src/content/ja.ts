@@ -40,6 +40,7 @@ export const ja: DeepPartial<Content> = {
     "trio-mountain-town": { alt: `山あいの町で家族と${A}と${B}`, caption: "家族との旅" },
     "torii-mist": { alt: "霧の中の赤い鳥居", caption: "道すがらの霧の鳥居" },
     "griffin-cedar-forest": { alt: `杉の大木の間に立つ${B}`, caption: `杉林の${B}` },
+    "kid-nadia": { alt: "幼い頃のナディア。帽子をかぶって車の後部座席で笑っている", caption: "" },
     "couple-osaka-castle": { alt: `大阪城の前に立つ${A}と${B}`, caption: "大阪に着くなら、お城も立ち寄る価値あり" },
     "yasaka-gate-shijo": { alt: "八坂神社の門から四条通を見下ろす", caption: "八坂神社から四条通を望む。会場から徒歩10分" },
     "higashiyama-bookshop": { alt: "東山の静かな通りと本屋", caption: "会場のある東山。坂を上れば清水寺" },
