@@ -125,7 +125,7 @@
   "wide": {},
   "lqip": "kid-nadia-lqip.webp",
   "width": 800,
-  "height": 1206
+  "height": 1202
  },
  "kyoto-night": {
   "formats": {
@@ -220,6 +220,134 @@
   "lqip": "stone-lantern-maple-lqip.webp",
   "width": 1600,
   "height": 2133
+ },
+ "story-1": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-1-lqip.webp",
+  "width": 800,
+  "height": 1067
+ },
+ "story-2": {
+  "formats": {
+   "avif": [
+    400,
+    648
+   ],
+   "webp": [
+    400,
+    648
+   ]
+  },
+  "wide": {},
+  "lqip": "story-2-lqip.webp",
+  "width": 648,
+  "height": 486
+ },
+ "story-3": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-3-lqip.webp",
+  "width": 800,
+  "height": 1067
+ },
+ "story-4": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-4-lqip.webp",
+  "width": 800,
+  "height": 1067
+ },
+ "story-5": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-5-lqip.webp",
+  "width": 800,
+  "height": 1067
+ },
+ "story-6": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-6-lqip.webp",
+  "width": 800,
+  "height": 600
+ },
+ "story-7": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-7-lqip.webp",
+  "width": 800,
+  "height": 1067
+ },
+ "story-8": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-8-lqip.webp",
+  "width": 800,
+  "height": 800
  },
  "torii-mist": {
   "formats": {

@@ -15,12 +15,12 @@ export type Treatment = "full" | "print" | "split"
  * Until Nadia says photos can be public (PUBLIC_PHOTOS), the same frame shows a paper placeholder with
  * the caption, so nothing jumps when real photos arrive.
  */
-export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, className, children }: {
-  name: string; treatment: Treatment; sizes?: string; priority?: boolean; wide?: boolean; className?: string; children?: ReactNode
+export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, className, children, alt }: {
+  name: string; treatment: Treatment; alt?: string; sizes?: string; priority?: boolean; wide?: boolean; className?: string; children?: ReactNode
 }) {
   const { t } = useLang()
   const p = PHOTOS[name]
-  const words = t.photos[name] ?? { alt: "", caption: "" }
+  const words = { ...(t.photos[name] ?? { alt: "", caption: "" }), ...(alt ? { alt } : {}) }
   const [loaded, setLoaded] = useState(false)
   if (!p) return null
   const ratio = treatment === "split" ? "1 / 1" : treatment === "full" ? undefined : `${p.width} / ${p.height}`
