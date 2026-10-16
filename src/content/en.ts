@@ -72,6 +72,7 @@ export const en = {
     "trio-mountain-town": { alt: `${A} and ${B} with family in a mountain town`, caption: "A trip with family" },
     "torii-mist": { alt: "A red torii gate in the mist", caption: "Misty torii on the way" },
     "griffin-cedar-forest": { alt: `${B} among tall cedar trees`, caption: `${B} in the cedars` },
+    "kid-nadia": { alt: "Nadia as a little girl in the back seat of a car, in a cap, smiling", caption: "" },
     "couple-osaka-castle": { alt: `${A} and ${B} in front of Osaka Castle`, caption: "If you fly into Osaka, the castle's worth a stop" },
     "yasaka-gate-shijo": { alt: "Looking down Shijo-dori from the gate of Yasaka Shrine", caption: "Looking down Shijo-dori from Yasaka Shrine, 10 minutes' walk from the venue" },
     "higashiyama-bookshop": { alt: "A quiet street and bookshop in Higashiyama", caption: "Higashiyama, the venue's neighbourhood. Kiyomizu-dera is up the hill" },
@@ -367,6 +368,7 @@ export const en = {
       busy: "We couldn't send that just now. Your answers are still here, so try again.",
       network: "We couldn't get through. Check your connection and try again.",
       not_found: `We couldn't find this invite. Message ${A} or ${B}.`,
+      paused: "Replies are paused for a moment, try again later.",
       other: `We couldn't send that. Your answers are still here, so try again, or message ${A} or ${B}.`,
     },
     tryAgain: "Try again",
@@ -389,6 +391,8 @@ export const en = {
     title: "That link doesn't look right",
     body: `We couldn't find an invite for this link. Check it's the full link from your email, or message ${A} or ${B} and we'll send it again.`,
   },
+  // The back end is locked or suspended by Google (a calm note, not an error): docs/if-google-locks-it.md
+  paused: { title: "Replies are paused for a moment", body: "Try again later.", retry: "Try again", line: "Replies are paused for a moment, try again later." },
   offline: {
     title: "We couldn't open your invite",
     body: "It might be your connection. Try again in a moment.",

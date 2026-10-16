@@ -41,6 +41,7 @@ export const ja: DeepPartial<Content> = {
     "trio-mountain-town": { alt: `山あいの町で家族と${A}と${B}`, caption: "家族との旅" },
     "torii-mist": { alt: "霧の中の赤い鳥居", caption: "道すがらの霧の鳥居" },
     "griffin-cedar-forest": { alt: `杉の大木の間に立つ${B}`, caption: `杉林の${B}` },
+    "kid-nadia": { alt: "幼い頃のナディア。帽子をかぶって車の後部座席で笑っている", caption: "" },
     "couple-osaka-castle": { alt: `大阪城の前に立つ${A}と${B}`, caption: "大阪に着くなら、お城も立ち寄る価値あり" },
     "yasaka-gate-shijo": { alt: "八坂神社の門から四条通を見下ろす", caption: "八坂神社から四条通を望む。会場から徒歩10分" },
     "higashiyama-bookshop": { alt: "東山の静かな通りと本屋", caption: "会場のある東山。坂を上れば清水寺" },
@@ -332,6 +333,7 @@ export const ja: DeepPartial<Content> = {
       busy: "今は送信できませんでした。入力内容は残っていますので、もう一度お試しください。",
       network: "接続できませんでした。通信環境を確認して、もう一度お試しください。",
       not_found: `この招待状が見つかりませんでした。${A}か${B}にご連絡ください。`,
+      paused: "お返事の受付を少しお休みしています。時間をおいて、もう一度お試しください。",
       other: `送信できませんでした。入力内容は残っていますので、もう一度お試しいただくか、${A}か${B}にご連絡ください。`,
     },
     tryAgain: "もう一度",
@@ -354,6 +356,7 @@ export const ja: DeepPartial<Content> = {
     title: "このリンクは正しくないようです",
     body: `このリンクの招待状が見つかりませんでした。メールのリンクをすべてコピーしたか確認いただくか、${A}か${B}にご連絡いただければ再送します。`,
   },
+  paused: { title: "お返事の受付を少しお休みしています", body: "時間をおいて、もう一度お試しください。", retry: "もう一度", line: "お返事の受付を少しお休みしています。時間をおいて、もう一度お試しください。" },
   offline: {
     title: "招待状をひらけませんでした",
     body: "通信環境のせいかもしれません。少し待ってからもう一度お試しください。",
