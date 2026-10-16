@@ -339,7 +339,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                     <FieldError id={`answer-${g.id}-err`} className="pb-2">{missing[`answer-${g.id}`]}</FieldError>
                   </div>
                 ))}
-                {/* A +1 only exists if Nadia and Griffin put one on this household (v3 A) */}
+                {/* A +1 only exists if Griffin and Nadia put one on this household (v3 A) */}
                 {form.guests.filter((g) => g.plusOne).map((g) => (
                   <div key={g.id} className="flex flex-col gap-2 pt-4">
                     <label htmlFor={`bring-${g.id}`} className="check-row">

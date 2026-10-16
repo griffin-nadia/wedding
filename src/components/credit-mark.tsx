@@ -1,7 +1,7 @@
 import { useLang } from "@/lib/lang"
 import { BrandSeal } from "@/components/brand-seal"
 
-/** The credit (v3 A): a 24px N&G mark, bottom left of the scene, 18% until hovered. On phones (inline) it sits in the strip under the letter. */
+/** The credit (v3 A): a 24px G&N mark, bottom left of the scene, 18% until hovered. On phones (inline) it sits in the strip under the letter. */
 export function CreditMark({ inline = false }: { inline?: boolean }) {
   const { t } = useLang()
   return (

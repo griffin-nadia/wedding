@@ -1,4 +1,4 @@
-// All the words on the site, in Nadia and Griffin's own wording (from the planner's Inv details tab).
+// All the words on the site, in Griffin and Nadia's own wording (from the planner's Inv details tab).
 // Edit here (or later, the Content tab in the data sheet) rather than inside components.
 // Japanese lives in ja.ts with the same shape. Anything missing there falls back to English.
 

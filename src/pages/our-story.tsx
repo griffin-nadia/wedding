@@ -153,7 +153,7 @@ export function StoryPage() {
     )
   }
   // Crew devices: the base map with no chapters (nothing invented), so the map and guests' lines can be judged
-  // before Nadia and Griffin's words are in the Content tab. Guests never reach this page while it's empty.
+  // before Griffin and Nadia's words are in the Content tab. Guests never reach this page while it's empty.
   const crew = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
   if (ready && crew && !story.length && (!view || view === "b") && journey) {
     return (

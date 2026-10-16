@@ -1,6 +1,6 @@
-# Nadia & Griffin · wedding site
+# Griffin & Nadia · wedding site
 
-Private invite + RSVP site for Nadia and Griffin's wedding, Fri 15 Oct 2027, The Sodoh Higashiyama, Kyoto.
+Private invite + RSVP site for Griffin and Nadia's wedding, Fri 15 Oct 2027, The Sodoh Higashiyama, Kyoto.
 Each household gets its own link (`/?h=token`). No logins, no app, no trackers.
 
 - **v1 (live Thu 15 Oct 2026):** Home, The day, Travel, Q&A, RSVP in a simple autumn look. Invites send from the sheet menu.

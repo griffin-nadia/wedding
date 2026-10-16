@@ -25,7 +25,7 @@ still point at the old one.
 | Check song search (Spotify) | Tells you if the Spotify keys work |
 | Reset test households… | Clears answers, songs, Log rows, visits, stamps and duplicate flags for households named "Test …" or "… (Test)" |
 | Send the "Final numbers soon" note… | Before changes lock, asks households who are coming to check their reply (Emails tab keys `final_*`; test households skipped) |
-| Make crew links | Makes the Crew tab (Jehan, Nadia, Griffin, wedding Gmail) and writes each person's /kit and /lab link. No guest data |
+| Make crew links | Makes the Crew tab (Jehan, Griffin, Nadia, wedding Gmail) and writes each person's /kit and /lab link. No guest data |
 
 ## Script properties (all optional)
 

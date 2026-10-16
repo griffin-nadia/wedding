@@ -7,8 +7,8 @@ See it live at `/kit` (every component, Light and Lantern side by side, every st
 ## Brand
 
 - **Mood:** painted, foggy, warm, autumn Kyoto. Original only: nothing that references or imitates a show, film or studio.
-- **Voice:** warm, plain, a bit playful. Australian English, sentence case, no em dashes. Guests never see back-end words; their reply "goes only to Nadia and Griffin".
-- **Marks:** the names in Oranienbaum with a sage "&", the N&G seal (favicon, envelope, credit), the hanko 京 for "done".
+- **Voice:** warm, plain, a bit playful. Australian English, sentence case, no em dashes. Guests never see back-end words; their reply "goes only to Griffin and Nadia".
+- **Marks:** the names in Oranienbaum with a sage "&", the G&N seal (favicon, envelope, credit), the hanko 京 for "done".
 - **Photos:** behind every page. The Photo option picks one per mode (kyoto-view by day, night-lane in Lantern) or the same one in both modes. Fixed and cover; nothing moves, rescales or reflows it. Each has a face-safe rect in `scenes.json` that nothing on the arrival may cover.
 - **Texture:** one fine paper grain of our own, on the letter itself.
 

@@ -5,7 +5,7 @@ export type Chapter = { key: string; title: string; year: string; body: string[]
 export type SiteMode = "invite" | "week-of" | "keepsake"
 export type SiteContent = { story: Chapter[]; mode: SiteMode; contactDay?: string }
 
-// No sample chapters (Jehan, 6 Oct): Our story shows only what Nadia and Griffin put in the Content tab, nothing invented.
+// No sample chapters (Jehan, 6 Oct): Our story shows only what Griffin and Nadia put in the Content tab, nothing invented.
 
 const KEY = "ng-content"
 let cached: SiteContent | null = (() => { try { return JSON.parse(sessionStorage.getItem(KEY) || "null") } catch { return null } })()

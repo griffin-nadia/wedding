@@ -1,5 +1,5 @@
 /**
- * Nadia & Griffin wedding site: back end.
+ * Griffin & Nadia wedding site: back end.
  *
  * Lives in the site data Google Sheet (owned by the wedding Gmail) and is pushed with clasp.
  * Deployed as a web app (Execute as: Me, Who has access: Anyone). The /exec URL is the site's
@@ -917,7 +917,7 @@ function content_() {
 
 // ---------- crew links (/kit and /lab) ----------
 
-const CREW = [["Jehan", "builder"], ["Nadia", "couple"], ["Griffin", "couple"], ["Wedding Gmail", "account"]]
+const CREW = [["Jehan", "builder"], ["Griffin", "couple"], ["Nadia", "couple"], ["Wedding Gmail", "account"]]
 
 /** { ok, name } only for a token in the Crew tab. Never says anything about households. */
 function crew_(token) {

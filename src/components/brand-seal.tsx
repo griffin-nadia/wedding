@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 
 /**
- * The N&G seal: the same mark as the favicon, the envelope seal and the credit. Drawn from
+ * The G&N seal: the same mark as the favicon, the envelope seal and the credit. Drawn from
  * public/brand/seal.svg (made by .brief/tools/brand.mjs), so the paths stay out of the first-screen JS.
  */
 export function BrandSeal({ className }: { className?: string }) {

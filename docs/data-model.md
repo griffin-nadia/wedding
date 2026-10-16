@@ -1,6 +1,6 @@
 # Data model (site data sheet)
 
-Owned by the wedding Gmail. Only Nadia, Griffin and Jehan have access. Delete guest data about
+Owned by the wedding Gmail. Only Griffin, Nadia and Jehan have access. Delete guest data about
 3 months after the wedding. Columns are found by header name: never rename them or the tabs.
 
 ## Guests (one row per person, typed by us)
