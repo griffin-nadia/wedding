@@ -34,5 +34,3 @@ export function pickList(live: unknown, fallback: Picks): Picks {
   return { note: text(d.note) || fallback.note, hotels, airbnbs }
 }
 
-/** The areas that have a pick, in first-seen order, for the filter chips. */
-export const areasOf = (p: Picks) => [...new Set([...p.hotels, ...p.airbnbs].map((x) => x.area).filter(Boolean))]

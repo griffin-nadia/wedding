@@ -1123,24 +1123,8 @@ svg.lucide { stroke-width: 1.5; }
 .story-kids { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: var(--space-4); align-items: start; }
 .story-kid-slot { position: relative; aspect-ratio: 2 / 3; border: 1px dashed var(--sys-line-strong); border-radius: var(--radius-control); background: var(--sys-surface-alt); }
 
-/* Travel in two parts: the switch sticks under the top (phones: the letter's top; laptops: under the 64px bar) */
-.travel-switch { position: sticky; z-index: 20; top: 0; display: flex; justify-content: center; margin-block: calc(-1 * var(--space-2)); padding-block: var(--space-2); background: var(--letter-bg); box-shadow: 0 1px 0 color-mix(in oklab, var(--sys-line) 70%, transparent); }
-@media (min-width: 768px) { .travel-switch { top: 64px; justify-content: flex-start; } }
-/* The three areas as short cards: stacked on phones, side by side from 1024 */
-.stay-areas { display: grid; gap: var(--space-3); }
-@media (min-width: 1024px) { .stay-areas { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.stay-area { display: flex; flex-direction: column; gap: var(--space-1); height: 100%; padding: var(--space-3) var(--space-4); border: 1px solid var(--sys-line); border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
-.stay-area:focus-visible { outline-color: var(--input-focus); }
-@media (hover: hover) { .stay-area:hover { border-color: var(--sys-line-strong); } }
-/* Their picks: compact rows, and area filter chips (toggle buttons) */
+/* Their picks: compact rows, the whole row is the link */
 .stay-pick { min-height: 48px; padding-block: var(--space-2); }
-.chip-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-/* Phones: one row that scrolls sideways, edge to edge in the letter, instead of three rows of chips */
-@media (max-width: 767px) { .chip-row { flex-wrap: nowrap; overflow-x: auto; margin-inline: calc(-1 * var(--letter-pad)); padding: 2px var(--letter-pad); scrollbar-width: none; } .chip-row::-webkit-scrollbar { display: none; } .chip-filter { flex: none; } }
-.chip-filter { min-height: 36px; padding: 0 var(--space-3); border: 1px solid var(--sys-line); border-radius: 999px; font-family: var(--font-label); font-size: var(--type-ui-small-size); font-weight: 500; color: var(--sys-ink-soft); outline: 2px solid transparent; outline-offset: 2px; }
-.chip-filter[aria-pressed="true"] { border-color: var(--input-selected-line); box-shadow: inset 0 0 0 1px var(--input-selected-line); background: var(--input-selected-bg); color: var(--sys-ink); }
-.chip-filter:focus-visible { outline-color: var(--input-focus); }
-@media (hover: hover) { .chip-filter:hover { border-color: var(--sys-line-strong); color: var(--sys-ink); } }
 /* A story stop's photo (crew preview for now): a small print above the stop's words */
 .journey-stop-photo { width: min(220px, 55%); margin-bottom: var(--space-2); }
 

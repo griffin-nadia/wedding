@@ -21,8 +21,7 @@ export function KyotoMap() {
   const [on, setOn] = useState("venue")
   const place = m.places.find((p) => p.id === on) ?? m.places[3]
   return (
-    <section aria-labelledby="kyoto-map-title" className="flex flex-col gap-4">
-      <h3 id="kyoto-map-title" className="font-display text-xl text-foreground">{m.title}</h3>
+    <section aria-label={m.title} className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">{m.intro}</p>
       <div className="kmap">
         <svg viewBox="0 0 360 260" className="kmap-plate" role="img" aria-label={m.label}>

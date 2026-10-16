@@ -1,7 +1,7 @@
 // Their stay picks follow the planner, links lose their tracking, and a failed or empty read keeps the built-in list.
 import { test } from "node:test"
 import assert from "node:assert/strict"
-import { areasOf, cleanLink, pickList, type Picks } from "../src/lib/stay.ts"
+import { cleanLink, pickList, type Picks } from "../src/lib/stay.ts"
 
 const fallback: Picks = { note: "Compare other booking sites too. Prices change.", hotels: [{ name: "Built in", area: "Kyoto Station", price: "~$150 AUD", note: "", href: "https://example.com/" }], airbnbs: [] }
 
@@ -22,7 +22,6 @@ test("the planner's rows replace the built-in list", () => {
   assert.equal(p.note, "Her note")
   assert.equal(p.hotels[0].href, "https://rinn.example/")
   assert.equal(p.airbnbs[0].sleeps, "9")
-  assert.deepEqual(areasOf(p), ["Kiyomizu-Gojo", "Sanjo"])
 })
 
 test("a failed, empty or odd answer keeps the built-in list", () => {
