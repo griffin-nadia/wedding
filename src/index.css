@@ -285,21 +285,15 @@
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
 }
-@utility page-in {
-  animation: page-in var(--duration-settle) var(--ease-paper) both;
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
 
 /* Lantern mode: photos sit a touch dimmer so they don't glare. */
 /* Lantern letter (the default; "Letter in Lantern" = cream turns the letter into paper under a lamp instead) */
-:root:not([data-opt-letterpaper="cream"])[data-theme="lantern"] .letter { background:
+:root[data-theme="lantern"] .letter { background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 8%, transparent), transparent 60%),
     radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%),
     var(--letter-bg); }
-:root:not([data-opt-letterpaper="cream"])[data-theme="lantern"] .letter .photo-img { filter: saturate(0.95) brightness(0.92); }
-:root:not([data-opt-letterpaper="cream"])[data-theme="lantern"] .field[data-filled="true"]:not([type="date"]):not(textarea) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a37e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
+:root[data-theme="lantern"] .letter .photo-img { filter: saturate(0.95) brightness(0.92); }
+:root[data-theme="lantern"] .field[data-filled="true"]:not([type="date"]):not(textarea) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a37e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
 [data-theme="lantern"] .scene img {
   filter: brightness(0.9);
 }
@@ -312,12 +306,11 @@
     --muted-foreground: #8b5a3c; --border: #e5d0a8; --primary: #5b6b3a; --leaf: #727354;
   }
   body { background: #fff !important; }
-  .site-header, nav, .no-print { display: none !important; }
+  nav, .no-print { display: none !important; }
   main { max-width: none !important; padding: 0 !important; }
-  .page-in { animation: none !important; }
   /* Print (v3 S): just the letter, at the letter's width, on white, in the light palette */
   :root, [data-theme] { --letter-bg: #fff; --sys-ink: #421a05; --sys-ink-soft: #754b38; --sys-ink-muted: #8b5a3c; --sys-line: #e5d0a8; --sys-moss: #727354; --sys-accent: #a84f32; --sys-link: #3e4a26; --sys-surface-raised: #fff; --sys-surface-alt: #f3efe2; }
-  .scene, .scene-layer, .site-bar, .site-nav, .phone-qr, .credit-mark, .chrome-lantern, .letter-lantern, .crew-options, .home-count, .letter-end button, .skip-link { display: none !important; }
+  .scene, .scene-layer, .site-bar, .site-nav, .phone-qr, .credit-mark, .chrome-lantern, .letter-lantern, .crew-options, .letter-end button, .skip-link { display: none !important; }
   .letter-wrap { padding: 0 !important; min-height: 0 !important; }
   .letter { max-width: var(--letter-width) !important; margin: 0 auto !important; box-shadow: none !important; border: 0 !important; background: #fff !important; padding: 0 !important; }
   .letter::before { display: none !important; }
@@ -361,14 +354,14 @@
 
 /* Arrival: the sealed envelope on the scene. Flap 300 ms, then the letter rises 600 ms as the envelope sinks. */
 .arrival { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; align-content: center; gap: var(--space-5); padding-top: 18svh; }
-@media (min-width: 1024px) { .arrival { justify-items: start; padding-left: calc(var(--letter-left) + var(--letter-width) / 2 - 205px); padding-top: 0; } .arrival-hint { margin-left: 128px; } }
+@media (min-width: 1024px) { .arrival { justify-items: start; padding-left: calc(var(--letter-left) + var(--letter-width) / 2 - 205px); padding-top: 0; } }
 .envelope { position: relative; width: 300px; height: 196px; border-radius: var(--radius-card); perspective: 800px; outline: 2px solid transparent; outline-offset: 6px; cursor: pointer; filter: drop-shadow(0 24px 24px rgb(var(--sys-shadow-tint) / 0.28)); transition: transform var(--duration-quick) var(--ease-paper); }
 @media (min-width: 768px) { .envelope { width: 380px; height: 248px; } }
 /* Desktop hover: the flap lifts a little and a corner of the letter peeks out. Touch: nothing until tap. */
 @media (hover: hover) {
   .envelope:hover { transform: translateY(-4px); }
-  :root:not([data-opt-peek="off"]) .envelope:hover .envelope-flap { transform: rotateX(28deg) translateY(-6px); }
-  :root:not([data-opt-peek="off"]) .envelope:hover .envelope-paper { transform: translateY(-22%) rotate(-1.5deg); }
+  :root .envelope:hover .envelope-flap { transform: rotateX(28deg) translateY(-6px); }
+  :root .envelope:hover .envelope-paper { transform: translateY(-22%) rotate(-1.5deg); }
 }
 .envelope:focus-visible { outline-color: var(--input-focus); }
 .envelope:active { transform: scale(var(--press-scale)); }
@@ -378,21 +371,14 @@
 .envelope-front { background: var(--sys-surface-raised); clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%); }
 .envelope-flap { background: color-mix(in oklab, var(--sys-fill) 80%, var(--sys-ink)); clip-path: polygon(0 0, 100% 0, 50% 60%); transform-origin: top; transition: transform var(--duration-settle) var(--ease-paper); backface-visibility: hidden; }
 .envelope-seal { inset: auto !important; left: 50% !important; top: 58% !important; width: 56px; height: 56px; translate: -50% -50%; display: grid; border-radius: var(--radius-pill) !important; transition: opacity var(--duration-quick); }
-.arrival-hint { padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); background: var(--letter-bg); color: var(--sys-ink); }
 .is-opening .envelope-flap { transform: rotateX(180deg) !important; }
 .is-opening .envelope-seal { opacity: 0; }
 .is-opening .envelope-paper { transform: translateY(-40%) !important; transition: transform var(--duration-rise) var(--ease-letter) var(--duration-settle); }
-.is-opening .envelope, .is-opening .arrival-hint { animation: envelope-sink var(--duration-rise) var(--ease-out) var(--duration-settle) both; }
+.is-opening .envelope { animation: envelope-sink var(--duration-rise) var(--ease-out) var(--duration-settle) both; }
 @keyframes envelope-sink { to { transform: translateY(48px); opacity: 0; } }
 /* Options lab: noren curtain (two panels part, 600 ms) */
 .noren { position: relative; width: 300px; height: 260px; display: flex; gap: 6px; padding-top: 12px; outline: 2px solid transparent; outline-offset: 6px; border-radius: var(--radius-card); cursor: pointer; }
 .noren:focus-visible { outline-color: var(--input-focus); }
-.noren-rod { position: absolute; top: 0; left: -12px; right: -12px; height: 12px; border-radius: 6px; background: var(--sys-ink); }
-.noren-panel { flex: 1; display: grid; place-items: center; background: var(--brand-forest); color: var(--brand-kinari); font-family: var(--font-display); font-size: 56px; border-radius: 0 0 var(--radius-chip) var(--radius-chip);  transition: transform var(--duration-rise) var(--ease-letter); }
-[data-theme="lantern"] .noren-panel { background: var(--brand-sabi); }
-@media (hover: hover) { .noren:hover .noren-left { transform: translateX(-6px) rotate(-1deg); } .noren:hover .noren-right { transform: translateX(6px) rotate(1deg); } }
-.is-opening .noren-left { transform: translateX(-120%) !important; }
-.is-opening .noren-right { transform: translateX(120%) !important; }
 .is-opening .noren { animation: envelope-sink var(--duration-rise) var(--ease-out) var(--duration-settle) both; }
 .letter-sealed { opacity: 0; transform: translateY(48px); }
 .letter-rise { animation: letter-rise var(--duration-rise) var(--ease-letter) var(--duration-settle) both; }
@@ -428,11 +414,9 @@
 .toast-in { animation: toast-in var(--duration-quick) var(--ease-letter) both; }
 /* Omikuji: the box tilts three times (900 ms), then the slip unfolds (400 ms). Reduced motion: fade only. */
 @keyframes omikuji-shake { 0%, 100% { rotate: 0deg; } 16% { rotate: -12deg; } 33% { rotate: 12deg; } 50% { rotate: -10deg; } 66% { rotate: 10deg; } 83% { rotate: -6deg; } }
-.omikuji-shake { animation: omikuji-shake var(--duration-shake) var(--ease-breathe) both; }
 @keyframes slip-unfold { from { opacity: 0; transform: scaleY(0.2); transform-origin: top; } to { opacity: 1; transform: none; } }
 .omikuji-slip { animation: slip-unfold var(--duration-settle) var(--ease-letter) both; }
 @media (prefers-reduced-motion: reduce) {
-  .omikuji-shake { animation: none; }
   .omikuji-slip { animation: toast-in var(--duration-quick) linear both; transform: none; }
 }
 /* Driver card full screen: bigger in landscape */
@@ -450,9 +434,6 @@
 
 
 /* Names settle in once per visit (after the envelope on a first visit). */
-@keyframes names-settle { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
-.names-settle { animation: names-settle var(--duration-rise) var(--ease-letter) var(--duration-quick) both; }
-@media (prefers-reduced-motion: reduce) { .names-settle { animation: none; } }
 
 /* ─── Scene and letter (v2) ─────────────────────────────────────────────────── */
 /* The photo never moves (Jehan, 6 Oct): pinned to the large viewport, so the phone's URL bar, the dock, the
@@ -508,7 +489,6 @@
 /* Paper grain on the letter only, under the words, moving with the letter */
 .letter { isolation: isolate; }
 .letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background-image: var(--texture-paper); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
-[data-opt-texture="off"] .letter::before { display: none; }
 
 /* Site bar and nav, rendered once: a floating dock on phones, a thin bar along the top from 768 */
 .site-bar { position: fixed; z-index: 40; top: 0; inset-inline: 0; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); pointer-events: none; }
@@ -534,18 +514,13 @@
 /* Top bar: the current page on a sage tint, hover a lighter one under the pointer (Jehan, 6 Oct: the pale marker was hard
    to see). Options → Nav pill → Paper brings back the old sage-paper marker. */
 @media (min-width: 768px) {
-  :root:not([data-opt-navtint]):not([data-opt-nav="dock"]) .nav-mark { background: var(--nav-mark-bg); box-shadow: inset 0 0 0 1px var(--nav-mark-line); }
-  :root:not([data-opt-navtint]):not([data-opt-nav="dock"]) .site-nav-link { transition: color var(--duration-quick) var(--ease-paper), background-color var(--duration-quick) var(--ease-paper); }
+  :root .nav-mark { background: var(--nav-mark-bg); box-shadow: inset 0 0 0 1px var(--nav-mark-line); }
+  :root .site-nav-link { transition: color var(--duration-quick) var(--ease-paper), background-color var(--duration-quick) var(--ease-paper); }
 }
 @media (min-width: 768px) and (hover: hover) and (pointer: fine) {
-  :root:not([data-opt-navtint]):not([data-opt-nav="dock"]) .site-nav-link:not(.is-active):hover { background: var(--nav-hover-bg); }
+  :root .site-nav-link:not(.is-active):hover { background: var(--nav-hover-bg); }
 }
 /* Options lab: the dock on desktop too */
-@media (min-width: 768px) {
-  [data-opt-nav="dock"] .site-bar { background: none; border: 0; pointer-events: none; }
-  [data-opt-nav="dock"] .site-nav { position: fixed; left: 50%; right: auto; translate: -50% 0; bottom: 24px; width: 420px; border-radius: var(--radius-letter); background: color-mix(in oklab, var(--letter-bg) 94%, transparent); border: 1px solid var(--sys-line); box-shadow: var(--letter-shadow); }
-  [data-opt-nav="dock"] .site-nav ul { display: grid; grid-template-columns: repeat(4, 1fr); padding: 4px; }
-}
 
 /* Sound and Lantern: two quiet icons at the end of the letter */
 .utility-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--sys-ink-muted); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-quick), background-color var(--duration-quick); }
@@ -590,7 +565,6 @@
 @keyframes sheet-rise { from { opacity: 0; transform: translateY(var(--rise-from, 48px)); } to { opacity: 1; transform: none; } }
 @media (max-width: 767px) { .rsvp-letter { --rise-from: 40%; } }
 .rsvp-overlay[data-state="open"] { animation: fade-in var(--duration-settle) var(--ease-paper) both; }
-@keyframes letter-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .rsvp-close { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid transparent; border-radius: var(--radius-pill); color: var(--sys-ink); outline: 2px solid transparent; outline-offset: 2px; }
 .rsvp-close:focus-visible { outline-color: var(--input-focus); }
@@ -610,7 +584,6 @@
 @keyframes tick-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
 /* Accordions open and close in 300 ms on the paper ease */
 .accordion-content[data-state] { animation-duration: var(--duration-settle) !important; animation-timing-function: var(--ease-paper) !important; }
-.countdown-unit { color: var(--countdown-ink); }
 
 /* ─── Tuning panel (dev and VITE_TUNE builds only) ─────────────────────────── */
 .tune-panel { position: fixed; z-index: 90; top: 0; right: 0; bottom: 0; width: min(380px, 100vw); display: flex; flex-direction: column; background: var(--sys-surface-raised); color: var(--sys-ink-soft); border-left: 1px solid var(--sys-line); box-shadow: var(--sheet-shadow); font-size: 15px; }
@@ -656,42 +629,10 @@
 
 /* ─── Themes (Letter is the default), density and roundness: switchable in /lab → Options ───
    Light / Lantern is separate (data-theme) and combines with any of these. */
-:root[data-opt-preset="storybook"] { --density-field: 56px; --density-form: var(--space-6); --density-gap: var(--space-6); --radius-scale: 1.25; --type-display-names-tracking: -0.03em; --theme-texture: 0.08; }
-:root[data-opt-preset="crisp"] { --density-field: 48px; --density-form: var(--space-4); --density-gap: var(--space-4); --radius-scale: 0.5; --font-heading: var(--font-label); --theme-texture: 0; }
-@media (min-width: 768px) {
-  :root[data-opt-preset="storybook"] { --density-field: 52px; --density-gap: var(--space-7); }
-  :root[data-opt-preset="crisp"] { --density-field: 44px; --density-gap: var(--space-5); }
-}
-:root[data-opt-preset][data-opt-density="compact"], :root[data-opt-density="compact"] { --density-field: 48px; --density-form: var(--space-4); --density-gap: var(--space-4); }
-:root[data-opt-preset][data-opt-density="comfortable"], :root[data-opt-density="comfortable"] { --density-field: 52px; --density-form: var(--space-5); --density-gap: var(--space-5); }
-:root[data-opt-preset][data-opt-density="roomy"], :root[data-opt-density="roomy"] { --density-field: 56px; --density-form: var(--space-6); --density-gap: var(--space-6); }
-@media (min-width: 768px) {
-  :root[data-opt-preset][data-opt-density="compact"], :root[data-opt-density="compact"] { --density-field: 44px; --density-gap: var(--space-5); }
-  :root[data-opt-preset][data-opt-density="comfortable"], :root[data-opt-density="comfortable"] { --density-field: 48px; --density-gap: var(--space-6); }
-  :root[data-opt-preset][data-opt-density="roomy"], :root[data-opt-density="roomy"] { --density-field: 52px; --density-gap: var(--space-7); }
-}
-:root[data-opt-preset][data-opt-round="sharp"], :root[data-opt-round="sharp"] { --radius-scale: 0.5; }
-:root[data-opt-preset][data-opt-round="soft"], :root[data-opt-round="soft"] { --radius-scale: 1; }
-:root[data-opt-preset][data-opt-round="round"], :root[data-opt-round="round"] { --radius-scale: 1.5; }
 /* Paper scene (v3 H): warm paper gradient (or Nadia's wash), grain, a light that drifts (one radial, 40s, 2%)
    and a mist band that breathes (opacity .06 to .10, 12s). Static under reduced motion. Nothing else moves. */
-.scene-paper { background:
-  linear-gradient(160deg, var(--brand-kinari), color-mix(in oklab, var(--brand-sage-paper) 80%, var(--brand-kinari)));
-  background-size: cover; background-position: center; }
-[data-theme="lantern"] .scene-paper { background: linear-gradient(160deg, var(--brand-yoru), var(--brand-yoru-raised)); }
-.scene-paper[data-art] { background-size: cover; background-position: center; }
-.scene-paper::after, .scene-walk::after { content: ""; position: absolute; inset: 0; background-image: var(--texture-paper); background-size: 256px; opacity: 0.06; mix-blend-mode: var(--texture-blend); pointer-events: none; }
-.paper-light { position: absolute; inset: -10%; translate: calc(var(--paper-turn, 0) * -2%) calc(var(--paper-scroll, 0) * -2%); background: radial-gradient(50% 45% at 22% 18%, color-mix(in oklab, var(--brand-mitsu) 34%, transparent), transparent 70%); animation: paper-drift var(--duration-light) var(--ease-breathe) infinite alternate; pointer-events: none; }
-[data-theme="lantern"] .paper-light { background: radial-gradient(50% 45% at 22% 18%, color-mix(in oklab, var(--brand-hachimitsu) 14%, transparent), transparent 70%); }
-.paper-mist { position: absolute; left: 0; right: 0; top: 52%; height: 28%; background: linear-gradient(to bottom, transparent, color-mix(in oklab, var(--brand-paper-bright) 100%, transparent), transparent); opacity: 0.06; animation: paper-mist var(--duration-mist) var(--ease-breathe) infinite alternate; pointer-events: none; }
-[data-theme="lantern"] .paper-mist { background: linear-gradient(to bottom, transparent, var(--brand-kiri), transparent); }
-@keyframes paper-drift { from { transform: translate(0, 0); } to { transform: translate(2%, 1.5%); } }
-@keyframes paper-mist { from { opacity: 0.06; } to { opacity: 0.1; } }
-@media (prefers-reduced-motion: reduce) { .paper-light, .paper-mist { animation: none; } }
 
 /* Arched photo at the top of a section (paper scene only) */
-.arch-photo { overflow: hidden; border-radius: 999px 999px var(--radius-card) var(--radius-card); aspect-ratio: 4 / 3; }
-.arch-photo img { width: 100%; height: 100%; object-fit: cover; filter: var(--scene-filter); }
 /* Lantern toggle in the chrome: top right of the scene on phones (44px target, 12px in), in the top bar from 768 */
 .mode-switches { display: inline-flex; align-items: center; gap: var(--space-1); }
 .chrome-lantern { position: fixed; z-index: 41; top: 12px; right: 12px; border-radius: var(--radius-pill); background: var(--letter-bg); box-shadow: var(--shadow-paper); }
@@ -751,8 +692,6 @@ svg.lucide { stroke-width: 1.5; }
 .letter-ghost, .letter-ghost * { animation: none !important; }
 .letter-ghost * { transition: none !important; }
 /* The paper shader draws over the CSS paper (its fallback) once it's running */
-.paper-canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; animation: fade-in var(--duration-rise) var(--ease-paper) both; }
-.paper-gl .paper-light, .paper-gl .paper-mist { display: none; }
 .segmented[aria-invalid="true"] { box-shadow: inset 0 0 0 2px var(--input-error); }
 .segmented:focus-visible { outline-color: var(--input-focus); }
 /* Choice rows (v3 A): one row per person, name left, Coming / Can't make it right at content width */
@@ -793,29 +732,12 @@ svg.lucide { stroke-width: 1.5; }
 @media (prefers-reduced-motion: reduce) { .trail-reveal { transition: none; transform: none; } .trail-stop { opacity: 1; transition: none; } .trail-stops::before { transition: none; transform: none; } }
 @media print { .trail-reveal { transform: none; } .trail-stop { opacity: 1; } .trail-stops::before { transform: none; } }
 /* Countdown tiles (v3 A): each unit on its own paper tile, one row, seconds ticking */
-.count-tile-secs { background: color-mix(in oklab, var(--sys-surface-alt) 70%, var(--sys-surface-raised)); }
-.count-tile-secs .count-num { display: inline-block; }
-@media (prefers-reduced-motion: no-preference) { .count-tile-secs .count-num { animation: tile-tick 1s steps(1) infinite; } }
-@keyframes tile-tick { 0% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
 /* Stay rows (v3 A, M): the whole row is the link */
 .stay-row { display: flex; align-items: center; gap: var(--space-4); min-height: 56px; padding: var(--space-3) 0; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; color: var(--sys-ink-soft); }
 .stay-row:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .stay-row:hover .font-medium { text-decoration: underline; text-underline-offset: 4px; } }
 /* Our story A: chapters as pages, swipe or arrows on phones, side by side from 1024 */
-.story-pages { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; gap: var(--space-6); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
-.story-pages::-webkit-scrollbar { display: none; }
-.story-page { display: flex; flex-direction: column; gap: var(--space-3); scroll-snap-align: start; }
-@media (min-width: 1024px) { .story-pages { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; } }
-.story-stop { pointer-events: auto; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
-.story-stop:focus-visible { outline-color: var(--input-focus); }
-.story-stop.is-on .trail-icon { background: var(--sys-moss); color: var(--sys-surface); }
 /* Stamp book (concept B hook) */
-.stamp-trigger { position: fixed; z-index: 41; top: 12px; right: 64px; background: var(--letter-bg); }
-@media (min-width: 768px) { .stamp-trigger { position: static; background: transparent; } }
-.stamp-slot { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-align: center; }
-.stamp-ink { display: grid; place-items: center; width: 72px; height: 72px; border-radius: var(--radius-pill); border: 1px dashed var(--sys-line-strong); }
-.stamp-ink svg path:first-child { fill: var(--stamp, var(--sys-stamp)); }
-.is-got .stamp-ink { border-color: transparent; }
 /* Crew gate (v2-fixes §8): blank paper until a crew link checks out */
 .crew-blank { min-height: 100svh; background: var(--letter-bg); }
 /* v3 A: a segmented control is content width and centred on phones (choice rows keep theirs to the right) */
@@ -824,12 +746,6 @@ svg.lucide { stroke-width: 1.5; }
 .combo-option-more { min-height: 44px; padding-left: calc(var(--space-3) + 32px + var(--space-3)); color: var(--sys-link); font-size: var(--type-small-size); text-decoration: underline; text-underline-offset: 3px; }
 .combo-option-version { padding-left: calc(var(--space-3) + 32px + var(--space-3)); }
 /* Home countdown (v3 Q6): five 48px paper tiles under the card, outside the letter */
-.home-count { width: 100%; max-width: var(--letter-width, 620px); margin: var(--space-2) auto 0; }
-.home-count-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-2); }
-.home-count-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 48px; padding: 0; border-radius: var(--radius-control); border: 1px solid var(--sys-line); background: var(--letter-bg); box-shadow: var(--letter-shadow); }
-.home-count-tile .numerals { font-family: var(--font-display); font-size: var(--type-lead-size); line-height: 24px; color: var(--sys-ink); }
-.home-count-unit { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-muted); }
-@media (min-width: 1024px) { .home-count { margin-left: 0; } }
 /* Segmented choice: the tick in its reserved slot (v3 R) */
 .segmented[role="radiogroup"] .segmented-item { display: inline-flex; align-items: center; gap: var(--space-1); padding-left: var(--space-3); }
 .segmented-tick { color: var(--sys-accent); flex: none; }
@@ -851,29 +767,17 @@ svg.lucide { stroke-width: 1.5; }
 
 /* ─── v3 S · Home overhaul ─────────────────────────────────────────── */
 /* Countdown A: one long narrow strip under the card (numerals 28, units and caption 12) */
-.count-strip { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-4); border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--letter-bg); box-shadow: var(--letter-shadow); }
-.count-strip-row { display: flex; justify-content: center; gap: var(--space-1); }
-.count-strip-unit { position: relative; display: grid; justify-items: center; grid-template-rows: auto auto; padding-inline: var(--space-2); }
-.count-strip-num { font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 32px; color: var(--sys-ink); min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
-.count-strip-colon { position: absolute; left: -4px; top: 0; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 32px; color: var(--sys-accent); opacity: 0.7; }
-.count-strip-label, .count-strip-caption { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--sys-ink-muted); }
-.count-strip-caption { color: var(--sys-ink-soft); }
 /* Date as a sage paper badge under the names (A) */
 .date-badge { align-self: flex-start; padding: var(--space-1) var(--space-3); border-radius: var(--radius-control); background: var(--sys-surface-alt); color: var(--sys-ink); font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); font-weight: 500; }
 /* Evening switch inside the letter on phones (A): no gap above the letter */
 .letter-lantern { display: none; }
 @media (max-width: 767px) {
-  :root:not([data-opt-toggle="corner"]) .letter-lantern { display: inline-flex; position: absolute; top: 8px; right: 8px; z-index: 1; }
-  :root:not([data-opt-toggle="corner"]):not([data-sealed]) .chrome-lantern { display: none; }
-  :root:not([data-opt-toggle="corner"]) .letter-wrap { padding-top: 8px; }
+  :root .letter-lantern { display: inline-flex; position: absolute; top: 8px; right: 8px; z-index: 1; }
+  :root:not([data-sealed]) .chrome-lantern { display: none; }
+  :root .letter-wrap { padding-top: 8px; }
 }
 /* Names on one line from 1024 (A): the Home letter widens to fit them at 88 */
-@media (min-width: 1024px) {
-  :root[data-opt-names="one"] .names br { display: none; }
-  :root[data-opt-names="one"] .names { white-space: nowrap; }
-}
 /* Accent B (Options): the earlier rust buttons, to compare against one green */
-:root[data-opt-accent="rust"], :root[data-opt-accent="rust"] .paper { --sys-accent: var(--brand-sabi); --sys-focus: var(--brand-doro); --sys-link: var(--brand-doro); }
 ::selection { background: color-mix(in oklab, var(--sys-moss) 35%, transparent); color: var(--sys-ink); }
 /* What's left as one compact row of chips (v3 S): ticked or a soft dash, each opens its step */
 .reply-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
@@ -883,23 +787,16 @@ svg.lucide { stroke-width: 1.5; }
 .reply-chip:focus-visible { outline-color: var(--input-focus); }
 .reply-chip:active { transform: scale(var(--press-scale)); }
 @media (hover: hover) and (pointer: fine) { .reply-chip:hover { border-color: var(--sys-line-strong); } }
-@media (min-width: 1024px) { :root:not([data-opt-names="one"]) { --type-display-names-size: 88px; } }
-.count-strip .count-tile-secs { background: none; }
+@media (min-width: 1024px) { :root { --type-display-names-size: 88px; } }
 /* Before you fly: tick on the left, the row opens on the right (v3 S) */
 .check-acc { display: flex; align-items: center; gap: var(--space-4); }
 .check-acc > h3, .check-acc > [data-slot="accordion-header"] { flex: 1; min-width: 0; }
 .check-acc-box { flex: none; }
 /* Our story · card stack (v3 S) */
-.story-stack { position: relative; display: grid; width: 100%; max-width: 440px; margin-inline: auto; min-height: 320px; padding-bottom: 24px; touch-action: pan-y; }
-.story-card { grid-area: 1 / 1; display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); border-radius: var(--radius-section); border: 1px solid var(--sys-line); background: var(--sys-surface-raised); box-shadow: var(--letter-shadow); cursor: grab; user-select: none; transition: transform var(--duration-turn) var(--ease-letter), opacity var(--duration-quick) var(--ease-paper); outline: 2px solid transparent; outline-offset: 2px; }
-.story-card:active { cursor: grabbing; }
-.story-card:focus-visible { outline-color: var(--input-focus); }
-@media (prefers-reduced-motion: reduce) { .story-card { transition: none; } }
 /* Mouse-only hints (v3 S): the stay row's chevron nudges toward where it goes; the top story card lifts to invite a drag */
 @media (hover: hover) {
   .stay-row > svg { transition: transform var(--duration-quick) var(--ease-paper); }
   .stay-row:hover > svg { transform: translateX(4px); }
-  .story-card[tabindex="0"]:hover { box-shadow: var(--sheet-shadow); }
 }
 @media (prefers-reduced-motion: reduce) { .stay-row:hover > svg { transform: none; } }
 /* Countdown boxes inside the letter (v3 S): days, hrs, mins in paper boxes; a box flips only when its number changes */
@@ -914,16 +811,9 @@ svg.lucide { stroke-width: 1.5; }
 /* Crew gate note centred on the page */
 .crew-blank { width: 100%; }
 /* Desk (preview, v3 S): the other letters as paper tabs peeking from behind the current one, laptop only */
-.desk-tabs { display: none; }
 @media (min-width: 1024px) {
-  :root[data-opt-navigation="desk"] .site-nav, :root[data-opt-navigation="desk"] .site-rsvp { display: none; }
-  :root[data-opt-navigation="desk"] .desk-tabs { display: block; position: absolute; z-index: 0; top: calc(var(--letter-top) + 40px); left: calc(var(--letter-left) + var(--letter-width) - 32px); }
-  .desk-tabs ul { display: flex; flex-direction: column; gap: var(--space-3); }
-  .desk-tab { display: flex; align-items: center; min-height: 56px; padding: 0 var(--space-5) 0 calc(32px + var(--space-4)); border-radius: 0 var(--radius-section) var(--radius-section) 0; border: 1px solid var(--sys-line); background: var(--letter-bg); box-shadow: var(--letter-shadow); font-family: var(--font-display); font-size: var(--type-lead-size); color: var(--sys-ink); outline: 2px solid transparent; outline-offset: 2px; transition: transform var(--duration-quick) var(--ease-paper); }
-  .desk-tab:focus-visible { outline-color: var(--input-focus); }
   .letter-wrap .letter { position: relative; z-index: 1; }
 }
-@media (min-width: 1024px) and (hover: hover) { .desk-tab:hover { transform: translateX(8px); } }
 /* Evening mode switch (v3 S): the new mode grows in a circle from the toggle */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 /* One reveal, nothing else moving inside it (6 Oct): the photo swaps instantly under the snapshot, so it never
@@ -949,7 +839,7 @@ svg.lucide { stroke-width: 1.5; }
    of it (checked at 1280, 1366, 1440, 1920). 1024 to 1279 keeps the panel. The sealed envelope keeps its paper
    and the photo panel on the right. */
 @media (min-width: 1280px) {
-  :root:root { --letter-left: max(48px, min(180px, calc((100vw - 1180px) / 2))); }
+  :root { --letter-left: max(48px, min(180px, calc((100vw - 1180px) / 2))); }
   /* Same full-bleed frame behind the envelope as behind the letter (6 Oct), so opening it never moves the photo */
   :root .scene-photo[data-wide] { left: 0; width: 100%; mask-image: none; transform-origin: 80% 40%; }
   :root .scene-photo[data-wide] img { object-position: 100% 32%; }
@@ -1007,37 +897,15 @@ svg.lucide { stroke-width: 1.5; }
 .journey-seal-g { opacity: 0; transform-box: fill-box; transform-origin: center; }
 .journey.is-in .journey-seal-g { animation: journey-seal-land 300ms var(--ease-paper) 1200ms forwards; }
 @keyframes journey-seal-land { from { opacity: 0; transform: scale(1.4); } 60% { opacity: 1; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-.journey-pulse { fill: none; stroke: var(--sys-accent); stroke-width: 1.5; opacity: 0; transform-box: fill-box; transform-origin: center; }
-.journey.is-in .journey-pulse { animation: journey-pulse 600ms var(--ease-paper) forwards; }
-@keyframes journey-pulse { from { opacity: 0.6; transform: scale(0.4); } to { opacity: 0; transform: scale(2.2); } }
 @media (prefers-reduced-motion: reduce) {
   .journey .journey-land { opacity: 1; transition: none; }
   .journey-reveal { stroke-dashoffset: 0; animation: none !important; }
   .journey-seal-g { opacity: 1; animation: none !important; }
-  .journey-pulse { display: none; }
 }
 /* Hold to stamp (v3 T): the ink fills left to right while held */
-.hold-fill { position: absolute; inset: 0; transform-origin: left; background: color-mix(in oklab, var(--sys-ink) 25%, transparent); pointer-events: none; }
-.hold-btn { touch-action: none; user-select: none; -webkit-user-select: none; }
 /* Envelope tilts toward the mouse (v3 T, option) */
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  :root[data-opt-tilt="on"] .arrival .envelope { transform: perspective(900px) rotateY(calc(var(--tx, 0) * 10deg)) rotateX(calc(var(--ty, 0) * -8deg)); transition: transform var(--duration-quick) var(--ease-paper); }
-}
 /* Drag the sheet down to close (v3 T, option, phones): a grab bar at the top */
-.sheet-grab { display: none; }
-@media (max-width: 767px) {
-  .sheet-grab { display: grid; place-items: center; height: 24px; margin-bottom: -8px; touch-action: none; cursor: grab; }
-  .sheet-grab span { width: 40px; height: 4px; border-radius: var(--radius-pill); background: var(--sys-line-strong); }
-}
 /* Catch a leaf (v3 T, option) */
-.leaf-fall { position: fixed; z-index: 35; top: -40px; width: 44px; height: 44px; padding: 10px; animation: leaf-fall linear forwards; cursor: pointer; }
-.leaf-svg { width: 100%; height: 100%; fill: color-mix(in oklab, var(--sys-moss) var(--season-green, 100%), var(--brand-sabi)); stroke: none; }
-.leaf-svg path:last-child { stroke: currentColor; }
-@keyframes leaf-fall { 0% { transform: translate(0, 0) rotate(0deg); } 25% { transform: translate(30px, 25vh) rotate(60deg); } 50% { transform: translate(-20px, 50vh) rotate(140deg); } 75% { transform: translate(25px, 75vh) rotate(220deg); } 100% { transform: translate(0, 110vh) rotate(300deg); } }
-.leaf-pressed { position: absolute; top: 14px; left: 14px; width: 22px; height: 22px; rotate: -24deg; opacity: 0.85; pointer-events: none; }
-.journey-handle { cursor: grab; }
-.journey-handle:active { cursor: grabbing; }
-.journey-handle-dot { fill: var(--sys-accent); stroke: var(--brand-shiro-kinari); stroke-width: 2; filter: drop-shadow(0 2px 3px rgb(var(--sys-shadow-tint) / 0.3)); }
 
 /* Arrival (v3 U, Jehan 6 Oct): the envelope 8% larger; a handwritten "open your invite" and arrow in one white
    1.5px line, placed clear of their faces; pulling the flap lifts the letter out as the envelope sinks. */
@@ -1094,8 +962,6 @@ svg.lucide { stroke-width: 1.5; }
 
 
 /* Times tick in, where scroll-driven animations are missing (iOS): rows settle as the line's tip reaches them */
-:root[data-opt-daytick] .timeline-js .timeline-time { opacity: 0.3; translate: 0 6px; transition: opacity var(--duration-settle) var(--ease-paper), translate var(--duration-settle) var(--ease-paper); }
-:root[data-opt-daytick] .timeline-js .timeline-row.is-past .timeline-time { opacity: 1; translate: 0 0; }
 /* Dock: a 90 ms press on the icon you tap, so the dock feels like a thing (part of the state system, no switch) */
 .site-nav-link svg { transition: transform var(--duration-press) var(--ease-paper); }
 .site-nav-link:active svg { transform: scale(0.9); }
@@ -1103,41 +969,17 @@ svg.lucide { stroke-width: 1.5; }
 .cal-note { min-height: 1.25rem; opacity: 0; translate: 0 4px; transition: opacity var(--duration-quick) var(--ease-paper), translate var(--duration-quick) var(--ease-paper); }
 .cal-note.is-on { opacity: 1; translate: 0 0; }
 /* Kyoto clock: the new minute rolls up (default on; off in Options) */
-:root:not([data-opt-clockroll="off"]) .clock-roll { display: inline-block; animation: clock-roll var(--duration-settle) var(--ease-paper) both; }
+:root .clock-roll { display: inline-block; animation: clock-roll var(--duration-settle) var(--ease-paper) both; }
 @keyframes clock-roll { from { opacity: 0; translate: 0 0.5em; } to { opacity: 1; translate: 0 0; } }
 /* Sections rise in (Options): below the fold only; the mechanics module marks them as they arrive */
-:root[data-opt-rise] .letter-body > [data-rise] { opacity: 0; translate: 0 8px; transition: opacity var(--duration-rise) var(--ease-paper), translate var(--duration-rise) var(--ease-paper); transition-delay: var(--rise-delay, 0ms); }
-:root[data-opt-rise] .letter-body > [data-rise="in"] { opacity: 1; translate: 0 0; }
 /* Dock steps aside (Options, phones): slips down while scrolling down, back on scroll up or when scrolling stops */
-@media (max-width: 767px) {
-  :root[data-opt-dockhide] .site-nav { transition: transform var(--duration-settle) var(--ease-paper), opacity var(--duration-settle) var(--ease-paper); }
-  :root[data-opt-dockhide][data-dock-away] .site-nav { transform: translateY(calc(100% + 12px + env(safe-area-inset-bottom))); opacity: 0; }
-}
 @media (prefers-reduced-motion: reduce) {
-  :root[data-opt-daytick] .timeline-js .timeline-time, .clock-roll, .cal-note, .site-nav-link svg { animation: none !important; transition: none !important; opacity: 1; translate: 0 0; transform: none; }
-  :root[data-opt-rise] .letter-body > [data-rise] { opacity: 1; translate: 0 0; transition: none; }
-  :root[data-opt-dockhide][data-dock-away] .site-nav { transform: none; opacity: 1; }
+  .clock-roll, .cal-note, .site-nav-link svg { animation: none !important; transition: none !important; opacity: 1; translate: 0 0; transform: none; }
 }
 /* Kit mechanics (v3 U), each behind its Options switch; the JS half is src/mechanics (lazy) */
-@media (hover: hover) and (pointer: fine) {
-}
-:root[data-opt-inkset][data-inking] #letter .letter-body > *, :root[data-opt-inkset][data-inking] #letter .letter-body > * > * { animation: ink-settle 520ms var(--ease-paper) both; animation-delay: calc(var(--ink-i, 0) * 40ms); }
-@keyframes ink-settle { from { opacity: 0; filter: blur(2px); } to { opacity: 1; filter: none; } }
-:root[data-opt-underline] .home-rsvp { position: relative; overflow: visible; }
-:root[data-opt-underline] .home-rsvp::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -10px; height: 2px; border-radius: 2px; background: var(--sys-accent); transform-origin: left; animation: underline-draw var(--duration-rise) var(--ease-paper) 900ms both; }
-@keyframes underline-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-@supports (animation-timeline: view()) {
-  :root[data-opt-daytick] .timeline-time { animation: time-tick linear both; animation-timeline: view(); animation-range: entry 30% cover 45%; }
-  :root[data-opt-daytick] .timeline-js .timeline-time { animation: none; }
-}
-@keyframes time-tick { from { opacity: 0.3; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
-:root[data-opt-thread] .timeline-fill { animation: none !important; transform: scaleY(var(--thread, 0)); }
 @media (hover: hover) {
-  :root[data-opt-focus] :is(ul, ol):has(> li > .stay-row:hover) > li > .stay-row:not(:hover) { opacity: 0.7; }
   .stay-row { transition: opacity var(--duration-quick) var(--ease-paper); }
 }
-:root[data-opt-faq] .accordion-content[data-state] { animation-duration: 150ms !important; }
-:root[data-opt-dotmap] .journey-land { fill: url(#journey-dots); }
 .journey-dot-grain { fill: var(--sys-moss); opacity: 0.55; }
 /* Guest maps (Options → Journey map): the household's own line in gold, drawing in last; the rest stay faint */
 .journey-mini { display: block; }
@@ -1167,62 +1009,37 @@ svg.lucide { stroke-width: 1.5; }
 [data-theme="lantern"] .journey-hifi .journey-route-nadia { color: var(--sys-story); }
 [data-theme="lantern"] .journey-hifi .journey-route-griffin { color: var(--sys-moss); }
 [data-theme="lantern"] .journey-hifi :is(.journey-guest, .journey-you) { color: var(--journey-you); }
-.journey-print { position: absolute; z-index: 2; width: 160px; padding: var(--space-4) var(--space-3) var(--space-5); border-radius: 4px; background: var(--brand-paper-bright); box-shadow: 0 10px 24px -12px rgb(var(--sys-shadow-tint) / 0.4); font-family: var(--font-hand); font-size: 16px; color: var(--sys-ink); text-align: center; pointer-events: none; opacity: 0; rotate: 2deg; translate: 0 8px; transition: opacity var(--duration-quick), translate var(--duration-settle) var(--ease-paper); }
-.journey-print[data-from="left"] { rotate: -2deg; translate: -12px 8px; }
-.journey-print[data-from="right"] { translate: 12px 8px; }
-.journey-print.is-up { opacity: 1; translate: 0 0; }
 @media (prefers-reduced-motion: reduce) {
-  :root[data-opt-daytick] .timeline-time, .home-rsvp::after { animation: none !important; }
-  .journey-print { transition: none; }
+  .home-rsvp::after { animation: none !important; }
 }
 
 /* Nadia's painted envelope (Options → Arrival; placeholder art until her scan, public/art/envelope). The pencil
    sketch sits under the colour; with "Colour bleeds in", the colour spreads from a ragged wet edge on arrival. */
-.envelope .envelope-pencil, .envelope .envelope-paint { background: url("/wedding/art/envelope/placeholder-820.webp") center / 100% 100%; clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%); pointer-events: none; }
-.envelope .envelope-pencil { filter: grayscale(1) contrast(1.6) brightness(1.08); opacity: 0.55; }
-:root[data-opt-envpaint] .envelope-flap { background: color-mix(in oklab, var(--sys-fill) 70%, #c9cfae); }
-:root[data-opt-bleed] .arrival .envelope-paint { -webkit-mask: url("/wedding/art/envelope/bleed-mask.png") center / 0% no-repeat; mask: url("/wedding/art/envelope/bleed-mask.png") center / 0% no-repeat; animation: paint-bleed 2.4s var(--ease-paper) 700ms forwards; }
-@keyframes paint-bleed { to { -webkit-mask-size: 420%; mask-size: 420%; } }
-@media (prefers-reduced-motion: reduce) { :root[data-opt-bleed] .arrival .envelope-paint { animation: none; -webkit-mask: none; mask: none; } }
 .arrival .envelope { -webkit-touch-callout: none; user-select: none; }
-.loupe { position: fixed; z-index: 35; width: 144px; height: 144px; border-radius: 50%; pointer-events: none; background-repeat: no-repeat; filter: url(#loupe-glass); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.7), 0 0 0 4px rgb(var(--sys-shadow-tint) / 0.12), 0 14px 30px -10px rgb(var(--sys-shadow-tint) / 0.5), inset 0 0 18px rgb(var(--sys-shadow-tint) / 0.25); }
-.loupe::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: radial-gradient(60% 50% at 32% 26%, rgb(255 255 255 / 0.28), transparent 60%); }
 
-/* Postcard flip after RSVP (Options → RSVP): one card, Sent on the front, the fortune on the back */
-.postcard { display: grid; perspective: 1200px; margin-top: 36px; } /* clear of the sheet's close button */
-.postcard-face { grid-area: 1 / 1; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5); border-radius: var(--radius-card); background: var(--brand-paper-bright); border: 1px solid var(--sys-line); backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform var(--duration-rise) var(--ease-letter); outline: 2px solid transparent; outline-offset: 2px; }
-.postcard-face:focus-visible { outline-color: var(--input-focus); }
-.postcard-back { transform: rotateY(-180deg); color: var(--brand-kogecha); }
-.postcard.is-back .postcard-front { transform: rotateY(180deg); }
-.postcard.is-back .postcard-back { transform: none; }
-@media (prefers-reduced-motion: reduce) {
-  .postcard-face { transition: opacity var(--duration-quick) linear; transform: none !important; }
-  .postcard .postcard-back, .postcard.is-back .postcard-front { opacity: 0; }
-  .postcard.is-back .postcard-back { opacity: 1; }
-}
+/* Postcard flip after RSVP (Options → RSVP): one card, Sent on the front, the fortune on the back */ /* clear of the sheet's close button */
 
 /* Rows (v3 T): everything that is a whole row shares one hover. A soft tint of the ink, 12px wider than the
    text so nothing touches its edge, fades in at --duration-quick; the same tint, a step stronger, while a finger
    is down, so phones get it too. The tick box in a row answers the row. Controls (buttons, fields) keep border-only. */
-:root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row) { position: relative; isolation: isolate; }
-:root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row)::before {
+:root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row) { position: relative; isolation: isolate; }
+:root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row)::before {
   content: ""; position: absolute; inset: 2px -12px; z-index: -1; pointer-events: none;
   border-radius: var(--radius-control); background: color-mix(in oklab, var(--sys-ink) var(--row-hover-mix, 5%), transparent); opacity: 0;
   transition: opacity var(--duration-quick) var(--ease-paper), background-color var(--duration-quick) var(--ease-paper);
 }
 /* In a tick row the whole row tints, not just its question */
-:root:not([data-opt-rowhover="off"]) .check-acc [data-slot="accordion-trigger"]::before { content: none; }
+:root .check-acc [data-slot="accordion-trigger"]::before { content: none; }
 @media (hover: hover) {
-  :root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):hover::before { opacity: 1; }
+  :root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):hover::before { opacity: 1; }
   /* The tint is the hover now: drop the underline these rows used to show */
-  :root:not([data-opt-rowhover="off"]) .reply-row:hover { text-decoration: none; }
-  :root:not([data-opt-rowhover="off"]) .stay-row:hover .font-medium { text-decoration: none; }
+  :root .reply-row:hover { text-decoration: none; }
+  :root .stay-row:hover .font-medium { text-decoration: none; }
   /* The tick box follows its row (and its own hover): a stronger line, unless it is already ticked */
-  :root:not([data-opt-rowhover="off"]) :is(.check-row, .check-acc):hover [data-slot="checkbox"]:not([data-state="checked"]),
-  [data-slot="checkbox"]:not([data-state="checked"], :disabled):hover { border-color: var(--sys-ink-soft); }
+  :root :is(.check-row, .check-acc):hover [data-slot="checkbox"]:not([data-state="checked"]), [data-slot="checkbox"]:not([data-state="checked"], :disabled):hover { border-color: var(--sys-ink-soft); }
 }
-:root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):active::before { opacity: 1; background: color-mix(in oklab, var(--sys-ink) var(--row-press-mix, 8%), transparent); }
-@media (prefers-reduced-motion: reduce) { :root:not([data-opt-rowhover="off"]) :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row)::before { transition: none; } }
+:root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):active::before { opacity: 1; background: color-mix(in oklab, var(--sys-ink) var(--row-press-mix, 8%), transparent); }
+@media (prefers-reduced-motion: reduce) { :root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row)::before { transition: none; } }
 
 /* Omikuji (v3 V, Nadia: "prioritise the fortunes, no branch"). The tin is the button; it shakes, its stick rises,
    then the slip unfolds: a tall paper slip with rust rules top and bottom, the number in kanji, 大吉 large. */
@@ -1255,7 +1072,6 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-save:focus-visible { outline-color: var(--brand-doro); }
 /* Springs (Options → Fortune): Motion moves the tin, the stick and the slip, so their CSS animations stand down */
 .omikuji-slip.is-spring { animation: none; }
-.omikuji-tin-spring { display: block; transform-origin: 50% 90%; }
 .omikuji-slip.is-spring .omikuji-save { min-height: 44px; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }

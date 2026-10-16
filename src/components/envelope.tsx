@@ -1,17 +1,13 @@
 import { ART } from "@/lib/art"
 import { BrandSeal } from "@/components/brand-seal"
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
-import { COUPLE } from "@/content/en"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
-import { useOption } from "@/lib/options"
 
 const KEY = "ng-opened"
 // The handwritten "open your invite" (only on a first visit, so it loads beside the envelope, not with the site)
 const ArrivalNote = lazy(() => import("@/components/arrival-note"))
-// The loupe over the painted envelope (Options → Arrival), only when switched on
-const EnvelopeLoupe = lazy(() => import("@/components/envelope-loupe"))
 type Phase = "sealed" | "opening" | "open"
 
 export function firstPhase(enabled: boolean): Phase {
@@ -52,14 +48,6 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const { household } = useHousehold()
   const [phase, setPhase] = useState<Phase>(() => (sealedAgain && enabled ? "sealed" : firstPhase(enabled)))
   const button = useRef<HTMLButtonElement>(null)
-  const hint = useOption("arrivalhint")
-  // Nadia's painted envelope (a placeholder until her scan), its colour bleeding in, and a loupe to lean in on it
-  // Real painting (ART.envelope): on for everyone unless crew switch it off. Placeholder: crew-only preview.
-  const drawn = useOption("envart") !== "off" // Nadia's drawn envelope (6 Oct scan), closed then open
-  const envOpt = useOption("envpaint")
-  const painted = ART.envelope ? envOpt !== "off" : envOpt === "on"
-  const loupeOn = useOption("loupe") === "on"
-  const loupe = painted && loupeOn
   const stage = useRef<HTMLDivElement>(null)
   // Pull to open (v3 K): drag the flap up and it follows the finger; let go past 40% and it opens,
   // otherwise it springs back. A tap still opens it.
@@ -68,10 +56,9 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const setPull = (v: number) => stage.current?.style.setProperty("--pull", String(v))
   const onDown = (e: React.PointerEvent) => { if (phase !== "sealed") return; drag.current = { y: e.clientY, moved: false }; stage.current?.classList.add("is-pulling") }
   const onMove = (e: React.PointerEvent) => {
-    // Tilt toward a mouse (v3 T, Options → Arrival): a few degrees, like a card on a table
+    // Tilt toward a mouse (v3 T): a few degrees, like a card on a table
     if (e.pointerType === "mouse" && !drag.current && stage.current) { stage.current.style.setProperty("--tx", (e.clientX / innerWidth - 0.5).toFixed(3)); stage.current.style.setProperty("--ty", (e.clientY / innerHeight - 0.5).toFixed(3)) }
     const d = drag.current; if (!d) return
-    if (stage.current?.hasAttribute("data-loupe")) return // holding the loupe, not pulling
     const dy = d.y - e.clientY
     if (Math.abs(dy) > 6) { d.moved = true; (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId) }
     setPull(Math.max(0, Math.min(1, dy / 140)))
@@ -79,13 +66,11 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const onUp = () => {
     const d = drag.current; drag.current = null
     stage.current?.classList.remove("is-pulling")
-    if (stage.current?.hasAttribute("data-loupe")) { suppressClick.current = true; setPull(0); return } // letting go of the loupe doesn't open it
     if (!d?.moved) return
     suppressClick.current = true // the click that follows a drag isn't a tap
     const p = Number(stage.current?.style.getPropertyValue("--pull") || 0)
     if (p > 0.4) open(); else setPull(0)
   }
-  const noren = useOption("arrival") === "noren"
   const timer = useRef(0)
 
   const finish = () => {
@@ -120,28 +105,16 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   return (
     <>
       <div ref={stage} className={cn("arrival", phase === "opening" && "is-opening")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
-        {noren ? (
-          // Options lab: a noren curtain that parts instead of an envelope
-          <button ref={button} type="button" onClick={open} aria-label={t.letter.openLabel(first)} className="noren">
-            <span aria-hidden className="noren-rod" />
-            <span aria-hidden className="noren-panel noren-left"><span>{COUPLE.first[0]}</span></span>
-            <span aria-hidden className="noren-panel noren-right"><span>{COUPLE.second[0]}</span></span>
-          </button>
-        ) : (
-          <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className={cn("envelope paper", drawn && "is-drawn")}>
-            <span aria-hidden className="envelope-back" />
-            <span aria-hidden className="envelope-paper" />
-            <span aria-hidden className="envelope-front" />
-            {painted && <><span aria-hidden className="envelope-pencil" /><span aria-hidden className="envelope-paint" /></>}
-            <span aria-hidden className="envelope-flap" />
-            <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
-            {drawn && <><DrawnEnvelope which="open" /><DrawnEnvelope which="closed" /></>}
-          </button>
-        )}
-        {loupe && !noren && phase === "sealed" && <Suspense><EnvelopeLoupe envelope={button} stage={stage} /></Suspense>}
-        {hint === "pill" || noren
-          ? <span aria-hidden className="arrival-hint label-caps">{t.letter.open}</span>
-          : phase === "sealed" && <Suspense><ArrivalNote envelope={button} /></Suspense>}
+        {/* Nadia's drawn envelope (6 Oct scan): closed, then her open envelope as the letter rises */}
+        <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper is-drawn">
+          <span aria-hidden className="envelope-back" />
+          <span aria-hidden className="envelope-paper" />
+          <span aria-hidden className="envelope-front" />
+          <span aria-hidden className="envelope-flap" />
+          <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
+          <DrawnEnvelope which="open" /><DrawnEnvelope which="closed" />
+        </button>
+        {phase === "sealed" && <Suspense><ArrivalNote envelope={button} /></Suspense>}
       </div>
       {/* The letter is underneath, ready to rise; out of reach until opened */}
       <div className={cn("letter-sealed", phase === "opening" && "letter-rise")} inert>{children}</div>

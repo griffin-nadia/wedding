@@ -9,18 +9,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { FormField } from "@/components/form-field"
 import { Combobox } from "@/components/combobox"
 import { Segmented } from "@/components/segmented"
-import { HoldButton } from "@/components/hold-button"
-import { useOption } from "@/lib/options"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
-import { Chip, FieldError, ReviewRow, StepProgress } from "@/components/blocks"
+import { FieldError, ReviewRow, StepProgress } from "@/components/blocks"
 import { AddToCalendar } from "@/components/add-to-calendar"
-import { FortuneCard, useFortune } from "@/components/fortune-card"
+import { FortuneCard } from "@/components/fortune-card"
 import { useSceneDim } from "@/components/letter/letter"
-import { GuestMap, JourneyLegend, JourneyMini } from "@/components/journey-mini"
-import { keepFlying, readFlying } from "@/lib/journey"
-import { FlyingFrom } from "@/components/flying-from"
-import { answerOf, ApiError, FLYING, getFlying, setFlying, type Flying, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
+import { answerOf, ApiError, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
@@ -117,11 +112,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   const { household, setHousehold } = useHousehold()
   const { setDim } = useSceneDim()
   const [open, setOpen] = useState(openOnLoad)
-  const holdToSend = useOption("send") === "hold"
-  // Drag the sheet down to close (v3 T option, phones): the grab bar follows the finger, a short drag springs back
-  const dragClose = useOption("sheetdrag") === "drag"
-  const sheet = useRef<HTMLDivElement>(null)
-  const grab = useRef<{ y: number; t: number } | null>(null)
   // v3 Q9: while the sheet is open the letter steps aside and the sheet sits over the scene, dimmed to 40%
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sheet", open)
@@ -152,9 +142,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (request && household) { onOpenChange(true); setStep(request.step) } }, [request?.at])
   const sending = useRef(false)
-  // Options → Journey map: step 3 becomes "Your journey" (where they're flying from, a mini map, the dates)
-  const journeyOn = useOption("journey") === "on"
-  const [flying, setFlyingPick] = useState<Flying | null>(() => readFlying(household?.token))
   const [form, setForm] = useState<RsvpPayload>(() => startingForm(household))
   // Opened by an early tap (before this form loaded): count it as a started RSVP too.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -182,9 +169,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     setMissing((m) => { const n = { ...m }; delete n[`answer-${id}`]; delete n[`diet-other-${id}`]; return n })
   }
   const coming = form.guests.filter((g) => g.attending === "yes")
-  const journeyStep = journeyOn && coming.length ? 3 : 0
-  const total = journeyStep ? 4 : 3
-  const datesStep = journeyStep || 2
+  const total = 3
   const songsFilled = form.songs.map((x) => x.trim()).filter(Boolean)
   const outside = (d: string) => Boolean(d) && (d < TRIP.from || d > TRIP.to)
   const dateError = outside(form.arrival) || outside(form.departure)
@@ -200,9 +185,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
         const d = parseDiet(g.dietary, t.rsvp.dietaryOptions)
         if (d.picked.includes(OTHER) && !d.other.trim()) m[`diet-other-${g.id}`] = t.rsvp.dietaryOtherMissing
       }
-      if (dateError && datesStep === 2) m.arr = dateError
+      if (dateError) m.arr = dateError
     }
-    if (step === journeyStep && dateError) m.arr = dateError
     return m
   }
   function next() {
@@ -221,7 +205,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   function onOpenChange(o: boolean) {
     if (o) {
       setForm(startingForm(household))
-      setFlyingPick(readFlying(household!.token))
       replyId.current = ""
       setError("")
       setMissing({})
@@ -242,8 +225,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     // An unticked "Bringing someone?" is a no
     if (form.guests.some((g) => g.plusOne && !g.attending)) form.guests = form.guests.map((g) => (g.plusOne && !g.attending ? { ...g, attending: "no" } : g))
     replyId.current ||= crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
-    // Their line is theirs on this device straight away (Home's map card reads it); the count goes in once the reply is safe
-    if (journeyStep && flying) keepFlying(before.token, flying)
     const optimistic = applyLocal(before, form)
     setDone({ household: optimistic, updated: Boolean(before.respondedAt), changes: [] })
     setHousehold(optimistic)
@@ -253,8 +234,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     try {
       const result = await saveRsvpWithRetry(before.token, form, before, replyId.current)
       clearDraft(before.token)
-      // Where they're flying from goes in once the reply is safe (counts only, never names)
-      if (journeyStep && flying) void setFlying(before.token, flying).catch(() => {})
       setHousehold(result.household)
       setDone((d) => (d ? { ...result } : d))
       setConfirm("saved")
@@ -294,31 +273,18 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
       <Dialog.Trigger asChild disabled={locked}>{children}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="rsvp-overlay" />
-        <Dialog.Content ref={sheet} className="letter paper rsvp-letter" aria-describedby={undefined}
+        <Dialog.Content className="letter paper rsvp-letter" aria-describedby={undefined}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}
           // Only X, Esc or "Back to your invite" close the sheet; a tap outside never does (v3 A)
           onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}
           // Escape inside an open combobox closes its list, not the sheet
           onEscapeKeyDown={(e) => { const el = e.target as HTMLElement | null; if (el?.getAttribute("role") === "combobox" && el.getAttribute("aria-expanded") === "true") e.preventDefault() }}>
-          {dragClose && (
-            <div aria-hidden className="sheet-grab"
-              onPointerDown={(e) => { grab.current = { y: e.clientY, t: performance.now() }; e.currentTarget.setPointerCapture(e.pointerId); if (sheet.current) sheet.current.style.transition = "none" }}
-              onPointerMove={(e) => { const g = grab.current; if (g && sheet.current) sheet.current.style.transform = `translateY(${Math.max(0, e.clientY - g.y)}px)` }}
-              onPointerUp={(e) => {
-                const g = grab.current; grab.current = null; const el = sheet.current; if (!g || !el) return
-                const dy = e.clientY - g.y, v = dy / Math.max(1, performance.now() - g.t)
-                el.style.transition = "transform var(--duration-slide) var(--ease-spring)"
-                if (dy > 120 || v > 0.6) onOpenChange(false); else el.style.transform = ""
-              }}>
-              <span />
-            </div>
-          )}
           <Dialog.Close className="rsvp-close press" aria-label={t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
-          {done ? <div className="rsvp-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} journey={journeyOn} flying={flying} onFlying={(c) => { setFlyingPick(c); keepFlying(done.household.token, c) }} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
+          {done ? <div className="rsvp-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
           <header className="rsvp-head flex flex-col gap-3">
             <p className="label-caps text-muted-foreground">{t.rsvp.step(step, total)}</p>
             <Dialog.Title ref={heading} tabIndex={-1} className="heading outline-none">
-              {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : step === journeyStep ? t.journey.title : t.rsvp.checkTitle}
+              {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : t.rsvp.checkTitle}
             </Dialog.Title>
             <StepProgress step={step} of={total} label={t.rsvp.step(step, total)} />
           </header>
@@ -371,25 +337,9 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                 {coming.length > 0 && <>
                 <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song}
                   t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded, versions: t.rsvp.versions, hideVersions: t.rsvp.hideVersions }} />
-                {datesStep === 2 && datesBlock}
+                {datesBlock}
                 </>}
                 <FormField id="msg" label={t.rsvp.message}><Textarea id="msg" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></FormField>
-              </>
-            )}
-
-            {step === journeyStep && journeyStep > 0 && (
-              <>
-                <section aria-labelledby="fly-q" className="flex flex-col gap-3">
-                  <p id="fly-q" className="font-medium text-foreground">{t.flying.title} <span className="font-normal text-body">{t.flying.hint}</span></p>
-                  <div className="flex flex-wrap gap-2">
-                    {FLYING.map((c) => <Chip key={c} on={flying === c} onClick={() => setFlyingPick(flying === c ? null : c)}>{t.flying.cities[c] ?? c}</Chip>)}
-                  </div>
-                  <div className="flex max-w-64 flex-col gap-2">
-                    <JourneyMini you={flying} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} />
-                    <JourneyLegend you={Boolean(flying)} />
-                  </div>
-                </section>
-                {datesBlock}
               </>
             )}
 
@@ -405,10 +355,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                     <ReviewRow label={t.rsvp.songs} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.songs)}>{songsFilled.join(", ") || t.rsvp.noSongs}</ReviewRow>
                   )}
                   {coming.length > 0 && (
-                    <ReviewRow label={t.rsvp.dates} edit={() => goTo(datesStep)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.notSet}</ReviewRow>
-                  )}
-                  {journeyStep > 0 && (
-                    <ReviewRow label={t.journey.review} edit={() => goTo(journeyStep)} editLabel={t.rsvp.edit(t.journey.review)}>{flying ? t.flying.cities[flying] ?? flying : t.journey.notSaying}</ReviewRow>
+                    <ReviewRow label={t.rsvp.dates} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.notSet}</ReviewRow>
                   )}
                   <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
                 </dl>
@@ -432,9 +379,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
             {step > 1 && <Button variant="outline" size="lg" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
             {step < total
               ? <Button size="lg" className="flex-1 shrink!" onClick={next}>{t.rsvp.next}</Button>
-              : holdToSend && !error
-                ? <HoldButton className="flex-1" onDone={send} hint={t.rsvp.holdHint}>{t.rsvp.holdSend}</HoldButton>
-                : <Button size="lg" className="flex-1 shrink!" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
+              : <Button size="lg" className="flex-1 shrink!" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
           </footer>
           </>}
         </Dialog.Content>
@@ -444,86 +389,28 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
 }
 
 /**
- * Success, on the same letter: the hanko stamps (with one furin ting if sound is on), the words match
- * the answer, one line on the save, the fortune, add to calendar, and a way to change it.
+ * Success, on the same letter: the hanko stamps, the words match the answer, one line on the save, then the
+ * fortune card once the stamp has landed (one thing moves at a time), add to calendar, and a way to change it.
  */
-function Done({ result, confirm, titleRef, journey = false, flying = null, onFlying, onClose, onChange }: { result: SaveResult; confirm: "saving" | "saved" | "offline" | null; titleRef: React.RefObject<HTMLHeadingElement | null>; journey?: boolean; flying?: Flying | null; onFlying?: (city: Flying) => void; onClose: () => void; onChange: () => void }) {
+function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveResult; confirm: "saving" | "saved" | "offline" | null; titleRef: React.RefObject<HTMLHeadingElement | null>; onClose: () => void; onChange: () => void }) {
   const { t } = useLang()
   const h = result.household
   const answer = answerOf(h)
-  // After the fortune (Options → Journey map): the same map, everyone's faint lines first, theirs drawing in last
-  const [map, setMap] = useState(false)
-  const [counts, setCounts] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
-  const [changing, setChanging] = useState(false)
-  const mapHead = useRef<HTMLHeadingElement>(null)
-  const showMap = () => {
-    setMap(true)
-    void getFlying().then(setCounts)
-    requestAnimationFrame(() => { mapHead.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); mapHead.current?.focus({ preventScroll: true }) })
-  }
   useEffect(() => {
     titleRef.current?.focus()
   }, [answer, titleRef])
-  const postcard = useOption("postcard") === "on" && answer !== "none"
-  // Options → RSVP → After sending → One at a time (default): the stamp lands on its own, the fortune card arrives
-  // once it has, and the map takes the fortune's place rather than sitting under it, so one thing moves at a time
-  const steps = useOption("sentflow") !== "together"
-  const front = (
-    <>
+  return (
+    <div className="flex flex-col gap-6">
       <header className="flex items-center gap-5 pr-10">
         {answer !== "none" && <Hanko stamp />}
         <Dialog.Title ref={titleRef} tabIndex={-1} className="heading outline-none">{t.rsvp.doneTitle[answer]}</Dialog.Title>
       </header>
       <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
-    </>
-  )
-  return (
-    <div className="flex flex-col gap-6">
-      {postcard ? <Postcard token={h.token}>{front}</Postcard> : front}
-      {answer !== "none" && !postcard && !(steps && map) && <div className={cn(steps && "sent-next")}><FortuneCard token={h.token} onMap={journey && !map ? showMap : undefined} /></div>}
-      {journey && map && (
-        <section aria-labelledby="map-head" className="flex flex-col gap-3">
-          <h3 id="map-head" ref={mapHead} tabIndex={-1} className="font-medium text-foreground outline-none">{t.journey.onMap}</h3>
-          <GuestMap you={flying} flying={counts} label={t.journey.map(flying ? t.flying.cities[flying] ?? flying : null)} />
-          {steps && <button type="button" className="btn-text min-h-11 self-start" onClick={() => setMap(false)}>{t.journey.backToFortune}</button>}
-          {changing || !flying
-            ? <><p className="text-sm text-muted-foreground">{!flying && t.journey.notPicked}</p><FlyingFrom token={h.token} initial={flying} onSaved={(c) => { onFlying?.(c); setChanging(false) }} /></>
-            : <p className="text-sm text-muted-foreground">{t.flying.yours(t.flying.cities[flying] ?? flying)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}
-        </section>
-      )}
+      {answer !== "none" && <div className="sent-next"><FortuneCard token={h.token} /></div>}
       {answer !== "none" && <AddToCalendar />}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
         <Button size="lg" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
         <button type="button" className="btn-text min-h-11" onClick={onChange}>{t.rsvp.changeReply}</button>
-      </div>
-    </div>
-  )
-}
-
-/**
- * Postcard (Options → RSVP): "Sent" is the front of a card; "Turn it over" flips it (600 ms, the letter's easing)
- * to Griffin's fortune on the back. Both faces share one grid cell, so the card never changes height; the face
- * that's away is inert. Reduced motion: a cross-fade.
- */
-function Postcard({ token, children }: { token: string; children: ReactNode }) {
-  const { t } = useLang()
-  const { i, of, text, drawn } = useFortune(token)
-  const [back, setBack] = useState(false)
-  const backRef = useRef<HTMLDivElement>(null), turn = useRef<HTMLButtonElement>(null)
-  const flip = (to: boolean) => { setBack(to); if (to) drawn(); requestAnimationFrame(() => (to ? backRef.current : turn.current)?.focus()) }
-  return (
-    <div className={cn("postcard", back && "is-back")}>
-      <div className="postcard-face postcard-front" inert={back}>
-        {children}
-        <button ref={turn} type="button" className="btn-text min-h-11 self-start" onClick={() => flip(true)}>{t.rsvp.turnOver}</button>
-      </div>
-      <div ref={backRef} tabIndex={-1} role="group" aria-labelledby="postcard-fortune" className="postcard-face postcard-back" inert={!back}>
-        <p id="postcard-fortune" className="flex items-baseline justify-between gap-3">
-          <span><span lang="ja" className="font-ja text-2xl text-(--sys-stamp)">{t.fortune.blessing}</span> <span className="label-caps">{t.fortune.blessingEn}</span></span>
-          <span className="label-caps">{t.fortune.number(i + 1, of)}</span>
-        </p>
-        <p className="hand">{text}</p>
-        <button type="button" className="btn-text min-h-11 self-start" onClick={() => flip(false)}>{t.rsvp.turnBack}</button>
       </div>
     </div>
   )

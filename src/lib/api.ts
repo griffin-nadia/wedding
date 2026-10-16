@@ -206,14 +206,6 @@ export async function getFortunes(): Promise<string[] | null> {
   try { const d = await call(`${config.apiUrl}?action=fortunes`); return d.ok && Array.isArray(d.fortunes) ? d.fortunes : null } catch { return null }
 }
 
-/** Concept B: the stamps a household has collected, saved to its Stamps column. Fire and forget. */
-export async function saveStamps(token: string, stamps: string[]): Promise<void> {
-  if (!config.apiUrl || token === "sample") return
-  try {
-    await fetch(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "stamps", token, stamps }) })
-  } catch { /* the device keeps them anyway */ }
-}
-
 /** Crew links (/kit and /lab): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */
 export async function checkCrew(token: string): Promise<"yes" | "no" | "error"> {
   if (!config.apiUrl) return "yes"

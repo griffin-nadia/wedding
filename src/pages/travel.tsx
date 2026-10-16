@@ -5,12 +5,10 @@ import { ArrowUpRight, ChevronRight } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Disclosure } from "@/components/disclosure"
 import { DriverCard } from "@/components/driver-card"
-import { FlyingFrom } from "@/components/flying-from"
 import { Trail } from "@/components/trail"
 import { KyotoMap } from "@/components/kyoto-map"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
-import { useOption } from "@/lib/options"
 import { getStayPicks } from "@/lib/api"
 import { areasOf, pickList, type Pick, type Picks } from "@/lib/stay"
 import { Segmented } from "@/components/segmented"
@@ -125,10 +123,6 @@ export function TravelPage() {
   const g = t.getting
   const { household } = useHousehold()
   const [ticks, setTick] = useTicks(household?.token)
-  const coming = household?.guests.some((x) => x.attending === "yes")
-  // v3 P: "Flying from" exists only when the story map (Our story B) and its Flying from option are on
-  const storyOpt = useOption("story"), flyingOpt = useOption("flying")
-  const flyingOn = (storyOpt ?? "b") === "b" && flyingOpt === "on"
   const { hash } = useLocation()
   const navigate = useNavigate()
   const part = partOf(hash)
@@ -149,7 +143,6 @@ export function TravelPage() {
     ["flights", g.rows.flights, <>
       <p>{t.travel.items[1].body}</p><p>{g.flyingBody}</p><p>{g.tokyoBody}</p>
       <div className="flex flex-wrap gap-x-4"><Ext href={g.links.haruka.href}>{g.links.haruka.label}</Ext><Ext href={g.links.flights.href}>{g.links.flights.label}</Ext><Ext href={g.links.trains.href}>{g.links.trains.label}</Ext></div>
-      {household && coming && flyingOn && <FlyingFrom token={household.token} />}
     </>],
     ["insurance", g.rows.insurance, <><p>{g.insuranceBody}</p><Ext href={g.links.smartraveller.href}>{g.links.smartraveller.label}</Ext></>],
     ["booking", g.rows.booking, <><p>{t.travel.items[2].body}</p><button type="button" className="btn-text inline-flex min-h-11 items-center self-start" onClick={() => choose("stay")}>{g.seeStay}</button></>],

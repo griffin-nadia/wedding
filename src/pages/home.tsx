@@ -18,9 +18,6 @@ import type { Household } from "@/lib/api"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
-// Catch a leaf (Options → Home): its own small file, only when switched on
-const Leaves = lazy(() => import("@/components/leaves"))
-const JourneyCard = lazy(() => import("@/components/journey-card"))
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
 
 // The names reveal once, letter by letter, the first time the letter is opened (v3 L). Never again.
@@ -46,22 +43,19 @@ function Names() {
 }
 
 /** What's left, quietly (v3 J): three lines with a tick or a soft dash, each opening its step. Hidden once all three are done. */
-function YourReply({ h, open, keepDone, extra }: { h: Household; open: (step: number) => void; keepDone: boolean; extra?: React.ReactNode }) {
+function YourReply({ h, open }: { h: Household; open: (step: number) => void }) {
   const { t } = useLang()
-  const datesStep = useOption("journey") === "on" ? 3 : 2 // Options → Journey map moves the dates to Your journey
   const coming = h.guests.filter((g) => g.attending === "yes")
   if (!coming.length) return null
   const rows = [
     { key: "who", label: t.home.todo.who, done: h.guests.every((g) => g.attending), step: 1 },
     { key: "food", label: t.home.todo.food, done: h.songs.length > 0 || coming.some((g) => g.dietary && g.dietary !== "None"), step: 2 },
-    { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: datesStep, note: t.home.todo.datesLater },
+    { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: 2, note: t.home.todo.datesLater },
   ]
-  const allDone = rows.every((r) => r.done) && !keepDone
-  if (allDone && !extra) return null
   return (
     <section aria-label={t.home.yourReply}>
       <ul className="reply-chips">
-        {(allDone ? [] : rows).map((r, i) => [i === 1 && extra ? <li key="extra">{extra}</li> : null, (
+        {rows.map((r) => (
           <li key={r.key}>
             <button type="button" onClick={() => open(r.step)} className="reply-chip" data-done={r.done || undefined}>
               {r.done ? <Check className="size-5 text-success" aria-hidden /> : <Minus className="size-5 text-muted-foreground" aria-hidden />}
@@ -69,8 +63,7 @@ function YourReply({ h, open, keepDone, extra }: { h: Household; open: (step: nu
               <span className="sr-only">, {r.done ? t.home.todo.done : t.home.todo.toDo}</span>
             </button>
           </li>
-        )])}
-        {(allDone || rows.length < 2) && extra && <li>{extra}</li>}
+        ))}
       </ul>
     </section>
   )
@@ -94,13 +87,8 @@ export function HomePage() {
   const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : g.firstName)).filter(Boolean) : []
   const dear = t.home.dearNames(names) || household?.displayName || ""
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
-  const dateStyle = useOption("datestyle")
-  const leaves = useOption("leaves") === "on"
-  const journey = useOption("journey") === "on"
-  const homemap = useOption("homemap")
   useOption("mode") // re-render when the crew preview changes
   const { mode, contactDay } = useContent()
-  const keepDone = useOption("ticks") !== "hide"
 
   const rsvpButton = done
     ? <button type="button" className="btn-text min-h-11" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.changeReply}</button>
@@ -110,9 +98,7 @@ export function HomePage() {
     <>
       <header className="flex flex-col gap-4">
         <Names />
-        {dateStyle === "line"
-          ? <p className="font-display text-2xl text-foreground">{mode === "keepsake" ? t.home.keepsake.badge : t.home.dateLine}</p>
-          : <p className="date-badge">{mode === "keepsake" ? t.home.keepsake.badge : t.home.dateLine}</p>}
+        <p className="date-badge">{mode === "keepsake" ? t.home.keepsake.badge : t.home.dateLine}</p>
       </header>
 
       {household
@@ -150,13 +136,10 @@ export function HomePage() {
             </div>
             {done && <p className="text-sm text-muted-foreground">{t.home.changeBy}</p>}
           </div>
-          {/* Options → Home map card → One chip: the map line joins Your reply's chips, beside "Who's coming" */}
-          {done && <YourReply h={household} open={openAt} keepDone={keepDone} extra={journey && homemap === "chip" ? <Suspense><JourneyCard token={household.token} chip /></Suspense> : undefined} />}
-          {done && journey && homemap !== "chip" && <Suspense><JourneyCard token={household.token} /></Suspense>}
+          {done && <YourReply h={household} open={openAt} />}
         </div>
       )}
-      <HomeCountdown placement="inside" />
-      {leaves && <Suspense><Leaves /></Suspense>}
+      <HomeCountdown />
     </>
   )
 }
