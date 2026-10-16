@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react"
+import { useKeyboardAvoid } from "@/lib/keyboard"
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom"
 import { Layout } from "@/components/layout"
 import { HouseholdProvider, useHousehold } from "@/lib/household"
@@ -25,6 +26,7 @@ function OldTabs({ children }: { children: React.ReactNode }) {
 }
 
 function Gate() {
+  useKeyboardAvoid()
   const { status } = useHousehold()
   // Hidden: the design system (/kit) and the options lab (/lab), crew links only
   if (/\/kit\/?$/.test(window.location.pathname)) return <CrewGate page="kit" />

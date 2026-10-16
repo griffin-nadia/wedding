@@ -109,18 +109,6 @@ export function Layout() {
     window.addEventListener("ng-reseal", on)
     return () => window.removeEventListener("ng-reseal", on)
   }, [])
-  // Phones: the strip above the dock follows the visual viewport so it doesn't jump while the browser bar collapses
-  // or grows on scroll (100dvh updates late on iOS; visualViewport doesn't). Written in the resize event itself, not
-  // a frame later: the one-frame lag read as a jitter at the bottom edge. One style write, only when the height changes.
-  useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv || !window.matchMedia("(max-width: 767px)").matches) return
-    const root = document.documentElement
-    let last = 0
-    const set = () => { const h = Math.round(vv.height); if (h !== last) { last = h; root.style.setProperty("--vvh", `${h}px`) } }
-    set(); vv.addEventListener("resize", set)
-    return () => { vv.removeEventListener("resize", set); root.style.removeProperty("--vvh") }
-  }, [])
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sealed", sealed)
     return () => document.documentElement.removeAttribute("data-sealed")
