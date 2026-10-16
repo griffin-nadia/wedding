@@ -89,6 +89,7 @@ export const en = {
     title: "Our story",
     prevChapter: "Previous chapter", nextChapter: "Next chapter",
     page: (n: number, of: number) => `Chapter ${n} of ${of}`,
+    slide: (n: number, of: number) => `${n} of ${of}`,
     kyoto: "Kyoto", brisbane: "Brisbane", canada: "Canada",
     seeList: "See as a list", seeMap: "See the map", next: "Next", done: "Done",
   },

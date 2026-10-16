@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
@@ -17,17 +17,21 @@ function placeOf(c: Chapter, i: number, n: number): [number, number] {
 }
 
 /**
- * Our story as a journey you can play with: pick a chapter (on the map or in the list) and its line draws in to
- * Kyoto and its stop lifts; the map's stops are buttons, arrow keys step through them, and "See as a list" shows
- * the same words plainly. Guests' Flying from lines (counts only, never names) join as faint dotted lines when on.
- * Phones: the map on top, one stop card under it with dots and Next stop. Still under reduced motion.
+ * Our story, one stop at a time (APG carousel): the map stays on top and its line draws to the stop you're on;
+ * underneath, a sideways track of slides that snaps one stop at a time (the kid-photo opener when there is one, a
+ * slide per chapter with its photo, then Kyoto). Each slide is sized to fit the screen, so nothing scrolls inside
+ * it. Swipe, the arrows, the arrow keys or a stop on the map move it. Reduced motion: the arrows jump straight to
+ * the stop and nothing animates. "See as a list" shows the same words plainly.
  */
-export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
+export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener?: ReactNode }) {
   const { t } = useLang()
-  const [on, setOn] = useState(0)
+  const [at, setAt] = useState(0)
   const [list, setList] = useState(false)
   const svg = useRef<SVGSVGElement>(null)
-  // Arrival (v3 R): the land washes in, the two home routes draw to Kyoto, the seal lands, then guests' lines one by one
+  const track = useRef<HTMLDivElement>(null)
+  const lead = opener ? 1 : 0
+  const total = chapters.length + lead
+  // Arrival (v3 R): the land washes in, the two home routes draw to Kyoto, the seal lands
   const [inView, setInView] = useState(false)
   useEffect(() => {
     const el = svg.current
@@ -37,10 +41,23 @@ export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
     io.observe(el)
     return () => io.disconnect()
   }, [list])
-  const n = chapters.length
-  const go = (i: number) => { if (n) setOn((i + n) % n) }
-  const pts = chapters.map((c, i) => placeOf(c, i, n))
-  const c = chapters[on]
+  // Which slide is showing, from where the track has snapped to (one passive listener, at most once a frame)
+  useEffect(() => {
+    const el = track.current
+    if (!el) return
+    let raf = 0
+    const on = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setAt(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)))) }
+    el.addEventListener("scroll", on, { passive: true })
+    return () => { el.removeEventListener("scroll", on); cancelAnimationFrame(raf) }
+  }, [list])
+  const go = (i: number) => {
+    const el = track.current
+    if (!el) return
+    const n = Math.max(0, Math.min(total - 1, i))
+    el.scrollTo({ left: n * el.clientWidth, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
+  }
+  const on = at - lead // the chapter showing, or -1 on the opener
+  const pts = chapters.map((c, i) => placeOf(c, i, chapters.length))
   if (list) return (
     <div className="flex flex-col gap-4">
       <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(false)}>{t.story.seeMap}</button>
@@ -50,8 +67,8 @@ export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
     </div>
   )
   return (
-    <div className={cn("journey", inView && "is-in")} onKeyDown={(e) => { if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); go(on + 1) } if (e.key === "ArrowLeft" || e.key === "ArrowUp") { e.preventDefault(); go(on - 1) } }}>
-      <svg ref={svg} viewBox="0 0 400 320" className="journey-map" role="group" aria-label={t.story.title}>
+    <div className={cn("journey story", inView && "is-in")}>
+      <svg ref={svg} viewBox="0 0 400 320" className="journey-map story-map" role="group" aria-label={t.story.title}>
         <JourneyLand />
         {/* Each line is revealed by a mask whose solid copy draws in (dotted strokes can't draw with dashoffset alone) */}
         <defs>
@@ -64,7 +81,7 @@ export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
         {pts.map(([x, y], i) => (
           <g key={chapters[i].key} role="button" tabIndex={0} aria-label={chapters[i].title} aria-pressed={on === i}
             className={cn("journey-stop", on === i && "is-on")} transform={`translate(${x} ${y})`}
-            onClick={() => setOn(i)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOn(i) } }}>
+            onClick={() => go(i + lead)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(i + lead) } }}>
             <circle r="16" className="journey-hit" />
             <circle r="5" className="journey-dot" />
             {/* Stops on or beside the 京 seal label below the dot, so the seal never covers the words */}
@@ -78,37 +95,31 @@ export function StoryJourney({ chapters }: { chapters: Chapter[] }) {
           </g>
         </g>
       </svg>
-      <div className="journey-panel">
-        <ol className="journey-cards">
-          {chapters.map((ch, i) => (
-            <li key={ch.key}>
-              <button type="button" className={cn("journey-card", on === i && "is-on")} aria-pressed={on === i} onClick={() => setOn(i)}>
-                <span className="journey-num numerals" aria-hidden>{i + 1}</span>
-                <span className="flex min-w-0 flex-col text-left"><span className="font-medium text-foreground">{ch.title}</span><span className="text-small text-muted-foreground">{ch.year}</span></span>
-              </button>
-            </li>
-          ))}
-        </ol>
-        {c ? (
-        <section className="journey-stopcard" aria-live="polite">
-          {c.photo && <Photo key={c.photo} name={c.photo} treatment="print" sizes="(min-width: 1024px) 240px, 60vw" alt={`${c.title}, ${c.year}`} className="journey-stop-photo" />}
-          <p className="text-small text-muted-foreground">{t.story.page(on + 1, n)}, {c.year}{c.place ? ` · ${c.place}` : ""}</p>
-          <h2 className="font-display text-heading text-foreground">{c.title}</h2>
-          {c.body.map((p, k) => <p key={k}>{p}</p>)}
-          <div className="flex items-center justify-between">
-            <button type="button" className="utility-btn" onClick={() => go(on - 1)} aria-label={t.story.prevChapter}><ChevronLeft className="size-5" aria-hidden /></button>
-            <span aria-hidden className="journey-dots">{chapters.map((ch, i) => <span key={ch.key} className={cn(i === on && "is-on")} />)}</span>
-            <button type="button" className="utility-btn" onClick={() => go(on + 1)} aria-label={t.story.nextChapter}><ChevronRight className="size-5" aria-hidden /></button>
-          </div>
-        </section>
-        ) : (
-        <section className="journey-stopcard" aria-live="polite">
-          <h2 className="font-display text-heading text-foreground">{t.letter.comingSoon}</h2>
-          <p>{t.story.soonBody}</p>
-        </section>
+
+      <div ref={track} className="story-track" role="region" aria-roledescription="carousel" aria-label={t.story.title} tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(at + 1) } if (e.key === "ArrowLeft") { e.preventDefault(); go(at - 1) } }}>
+        {opener && <section className="story-slide" role="group" aria-roledescription="slide" aria-label={t.story.slide(1, total)}>{opener}</section>}
+        {chapters.length ? chapters.map((c, i) => (
+          <section key={c.key} className="story-slide" role="group" aria-roledescription="slide" aria-label={t.story.slide(i + 1 + lead, total)} inert={i !== on || undefined}>
+            {c.photo && <Photo name={c.photo} treatment="print" sizes="(min-width: 1024px) 320px, 60vw" alt={`${c.title}, ${c.year}`} className="story-slide-photo" />}
+            <p className="text-small text-muted-foreground">{t.story.page(i + 1, chapters.length)}, {c.year}{c.place ? ` · ${c.place}` : ""}</p>
+            <h2 className="font-display text-heading text-foreground">{c.title}</h2>
+            {c.body.map((p, k) => <p key={k}>{p}</p>)}
+          </section>
+        )) : (
+          <section className="story-slide" role="group" aria-roledescription="slide">
+            <h2 className="font-display text-heading text-foreground">{t.letter.comingSoon}</h2>
+            <p>{t.story.soonBody}</p>
+          </section>
         )}
-        <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(true)}>{t.story.seeList}</button>
       </div>
+
+      <div className="story-controls">
+        <button type="button" className="utility-btn" onClick={() => go(at - 1)} disabled={at === 0} aria-label={t.story.prevChapter}><ChevronLeft className="size-5" aria-hidden /></button>
+        <span aria-hidden className="journey-dots">{Array.from({ length: total }, (_, i) => <span key={i} className={cn(i === at && "is-on")} />)}</span>
+        <button type="button" className="utility-btn" onClick={() => go(at + 1)} disabled={at >= total - 1} aria-label={t.story.nextChapter}><ChevronRight className="size-5" aria-hidden /></button>
+      </div>
+      <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(true)}>{t.story.seeList}</button>
     </div>
   )
 }
