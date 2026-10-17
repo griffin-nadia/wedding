@@ -16,5 +16,5 @@ test("lab paper: four presets in both themes, sliders move the picked one", asyn
   await folds.fill("0.2")
   await expect(page.locator(".x-pp-tools output").first()).toHaveText("0.20")
   await page.getByRole("button", { name: "Copy settings" }).click()
-  await expect(page.getByText("Settings copied.")).toBeVisible()
+  await expect(page.getByText(/Settings copied\.|Settings below/)).toBeVisible({ timeout: 10_000 })
 })

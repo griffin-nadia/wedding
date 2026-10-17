@@ -54,14 +54,14 @@ export default function Paper() {
   const { t } = useLang()
   const [sets, setSets] = useState(() => Object.fromEntries(PRESETS.map((p) => [p.id, p.params])) as Record<string, PaperParams>)
   const [pick, setPick] = useState("chosen")
-  const [copied, setCopied] = useState(false)
+  // "copied", or the settings shown to copy by hand when the clipboard isn't there
+  const [copied, setCopied] = useState<"" | "copied" | "shown">("")
   const now = sets[pick]
+  const text = JSON.stringify({ preset: pick, params: now, lanternParams: forTone(now, "lantern"), colours: COLOURS }, null, 2)
   const copy = async () => {
-    const text = JSON.stringify({ preset: pick, params: now, lanternParams: forTone(now, "lantern"), colours: COLOURS }, null, 2)
     // A clipboard that never answers (some browsers wait on a permission) counts as failed after a second
     const wrote = await Promise.race([navigator.clipboard?.writeText(text).then(() => true, () => false) ?? false, new Promise<boolean>((r) => setTimeout(() => r(false), 1000))])
-    if (!wrote) window.prompt("Copy these settings", text)
-    setCopied(true); setTimeout(() => setCopied(false), 2000)
+    setCopied(wrote ? "copied" : "shown")
   }
   return (
     <Stage hint="Tap the one you like, nudge it, then Copy settings and send them over.">
@@ -94,8 +94,9 @@ export default function Paper() {
               <output>{now[key].toFixed(2)}</output>
             </label>
           ))}
-          <button type="button" className="btn-primary h-11 rounded-(--button-radius) px-(--button-pad) font-label" onClick={copy}>{copied ? "Copied" : "Copy settings"}</button>
-          <p className="text-small" aria-live="polite">{copied ? "Settings copied." : ""}</p>
+          <button type="button" className="btn-primary h-11 rounded-(--button-radius) px-(--button-pad) font-label" onClick={copy}>{copied === "copied" ? "Copied" : "Copy settings"}</button>
+          <p className="text-small" aria-live="polite">{copied === "copied" ? "Settings copied." : copied === "shown" ? "Settings below: select and copy them." : ""}</p>
+          {copied === "shown" && <textarea readOnly aria-label="Settings" className="field font-mono text-small" rows={8} value={text} onFocus={(e) => e.currentTarget.select()} />}
         </div>
       </div>
     </Stage>
