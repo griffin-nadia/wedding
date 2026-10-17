@@ -19,7 +19,9 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
     <>
       <Scene source={sceneFor(theme)} />
       <main className="letter-wrap">
-        <Letter id="letter">
+        <Letter id="letter" data-page="home">
+          {/* The same frame as every page: the words scroll in here, and the card fits them */}
+          <div className="letter-scroll">
           <div className="letter-body">
             <p className="label-caps text-muted-foreground">{t.home.label}</p>
             <h1 className="heading">{copy.title}</h1>
@@ -27,6 +29,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
             {reason === "error" || reason === "paused" ? <Button size="md" className="self-start" onClick={retry}>{reason === "paused" ? t.paused.retry : t.offline.retry}</Button> : <ResendForm />}
           </div>
           <SignOff />
+          </div>
         </Letter>
       </main>
     </>

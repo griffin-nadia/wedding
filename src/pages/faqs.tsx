@@ -25,7 +25,7 @@ export function FaqsPage() {
           </AccordionItem>
         ))}
       </Disclosure>
-      <p className="text-small">{t.qa.contact}</p>
+      <p className="text-small">{t.qa.contact} <a href="mailto:griffinandnadia@gmail.com" className="btn-text">{pending("contact.emailUs", lang)}</a></p>
       <p className="text-small">{contactDay ? `${t.qa.onTheDay} ${contactDay}` : pending("faqs.contactDay", lang)}</p>
     </>
   )
