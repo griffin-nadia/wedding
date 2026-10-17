@@ -14,10 +14,12 @@ export type ComboStatus = "idle" | "loading" | "results" | "empty" | "error"
  * empty and error rows say what to do ("just type it"). WAI-ARIA combobox with listbox.
  */
 export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag, query, onQuery, options, onPick, status, emptyText, errorText,
-  placeholder, action, maxLength = 200, removeLabel = (s) => `Remove ${s}`, openOnFocus = false, forceOpen = false, multi = false, className, enterKeyHint, inputMode, onSubmit }: {
+  placeholder, action, maxLength = 200, removeLabel = (s) => `Remove ${s}`, openOnFocus = false, forceOpen = false, multi = false, className, enterKeyHint, inputMode, onSubmit, onLeave }: {
   id?: string; label: string; help?: ReactNode; error?: string
   /** The keyboard's Enter key label and layout; onSubmit runs on Enter when no option is highlighted */
   enterKeyHint?: React.HTMLAttributes<HTMLInputElement>["enterKeyHint"]; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]; onSubmit?: () => void
+  /** Focus left the field (after a tapped option has landed) */
+  onLeave?: () => void
   tags?: Option[]; onRemoveTag?: (o: Option) => void
   query: string; onQuery: (q: string) => void
   options: Option[]; onPick: (o: Option) => void
@@ -64,7 +66,7 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
             value={query} maxLength={maxLength} autoComplete="off" autoCorrect="off" spellCheck={false} enterKeyHint={enterKeyHint} inputMode={inputMode} placeholder={tags.length ? "" : placeholder}
             onChange={(e) => { onQuery(e.target.value); setOpen(true) }}
             onFocus={() => { clearTimeout(closing.current); if (openOnFocus || query.trim().length > 1) setOpen(true) }}
-            onBlur={() => { closing.current = window.setTimeout(() => setOpen(forceOpen), 150) }}
+            onBlur={() => { closing.current = window.setTimeout(() => { setOpen(forceOpen); onLeave?.() }, 150) }}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, options.length - 1)) }
               else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)) }

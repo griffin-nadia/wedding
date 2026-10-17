@@ -2,23 +2,44 @@ import { useId, useState } from "react"
 import type { Flying } from "@/lib/api"
 import { ART } from "@/lib/art"
 import { FROM, KYOTO, PLACES, arc } from "@/lib/journey"
+import { LAND } from "@/lib/map-land"
+import { placeOf, pointOf } from "@/lib/places"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
 
 /**
  * The land on every map: Nadia's painting once ART.mapLand is set (painted on the template, so its dashed box is
- * this 400 × 320 viewBox exactly), otherwise the drawn land: Australia, Japan and Canada, each whole inside the card (nothing cut at its edge).
+ * this 400 × 320 viewBox exactly), otherwise the real outlines of Australia, New Zealand, Japan and Canada (18f),
+ * each whole inside the card at its own scale, with "Not to scale" said in the corner.
  */
 export function JourneyLand() {
   if (ART.mapLand) return <image href={`${import.meta.env.BASE_URL}${ART.mapLand}`} x="0" y="0" width="400" height="320" preserveAspectRatio="none" className="journey-land-art" />
   return (
     <>
       <defs><pattern id="journey-dots" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.3" className="journey-dot-grain" /></pattern></defs>
-      <path className="journey-land" d="M60 236c26-30 82-40 118-30 30-14 60-2 74 22 12 24 0 50-24 64-34 18-90 20-128 8-36-12-60-34-40-64z" />
-      <path className="journey-land journey-land-green" d="M120 150c8-20 22-34 30-52 8-16 20-30 34-38 8 8 0 22-8 32-12 16-22 32-34 48-8 12-18 18-22 10z" />
-      <path className="journey-land" d="M298 24c24-14 62-14 84-2 14 8 14 30 2 44-16 18-50 20-70 10-22-10-36-40-16-52z" />
+      <path className="journey-land" d={LAND.AU.d} />
+      <path className="journey-land" d={LAND.NZ.d} />
+      <path className="journey-land journey-land-green" d={LAND.JP.d} />
+      <path className="journey-land" d={LAND.CA.d} />
     </>
   )
+}
+
+/** A place's name beside its dot, on whichever side keeps it inside the map (never cut at the edge) */
+function Named({ at: [x, y], name, room = 64 }: { at: [number, number]; name: string; room?: number }) {
+  const left = x + 8 + room > 400
+  return (
+    <>
+      <circle cx={x} cy={y} r="3" className="journey-place-dot" />
+      <text x={left ? x - 8 : x + 8} y={y + 4} textAnchor={left ? "end" : "start"} className="journey-place">{name}</text>
+    </>
+  )
+}
+
+/** A place's name in this language */
+export function usePlaceName() {
+  const { lang } = useLang()
+  return (name: string) => { const p = placeOf(name); return p ? (lang === "ja" ? p.ja : p.name) : name }
 }
 
 /** Brisbane and Canada named on the map, and Kyoto under its seal ("KYOTO · 15 OCT 2027"), as in the hi-fi. */
@@ -26,13 +47,12 @@ export function JourneyPlaces() {
   const { t } = useLang()
   return (
     <g aria-hidden className="journey-places">
-      <circle cx={PLACES.brisbane[0]} cy={PLACES.brisbane[1]} r="3" className="journey-place-dot" />
-      <text x={PLACES.brisbane[0] + 8} y={PLACES.brisbane[1] + 4} className="journey-place">{t.journey.brisbane}</text>
-      <circle cx={PLACES.canada[0]} cy={PLACES.canada[1]} r="3" className="journey-place-dot" />
-      <text x={PLACES.canada[0] + 8} y={PLACES.canada[1] + 4} className="journey-place">{t.journey.canada}</text>
+      <Named at={PLACES.brisbane} name={t.journey.brisbane} />
+      <Named at={PLACES.canada} name={t.journey.canada} />
+      <text x="396" y="314" textAnchor="end" className="journey-place journey-scale">{t.kyotoMap.notToScale}</text>
       {/* Two lines left of the seal, in the open water: KYOTO / 15 OCT 2027 */}
-      <text x={KYOTO[0] - 22} y={KYOTO[1] - 2} textAnchor="end" className="journey-place journey-place-kyoto">
-        {t.journey.kyoto.split(/ · |・/).map((part, i) => <tspan key={i} x={KYOTO[0] - 22} dy={i ? 12 : 0}>{part}</tspan>)}
+      <text x={KYOTO[0] - 28} y={KYOTO[1] - 6} textAnchor="end" className="journey-place journey-place-kyoto">
+        {t.journey.kyoto.split(/ · |・/).map((part, i) => <tspan key={i} x={KYOTO[0] - 28} dy={i ? 12 : 0}>{part}</tspan>)}
       </text>
     </g>
   )
@@ -68,10 +88,11 @@ export function JourneyLegend({ you = false }: { you?: boolean }) {
  * when they change it; Nadia's and Griffin's lines are always there; everyone else's are faint gold (counts only,
  * never names), theirs drawing in last. Still under reduced motion: every line already drawn.
  */
-export function JourneyMini({ you, counts, label, className }: { you: Flying | null; counts?: Partial<Record<Flying, number>> | null; label: string; className?: string }) {
+export function JourneyMini({ you, counts, label, className }: { you: string | null; counts?: Partial<Record<Flying, number>> | null; label: string; className?: string }) {
   const id = useId().replace(/:/g, "")
   const others = counts ? (Object.keys(counts) as Flying[]).filter((c) => FROM[c] && (counts[c] ?? 0) > 0) : []
   const youDelay = 900 + others.length * 120
+  const place = placeOf(you), mine = place ? pointOf(place) : null
   return (
     <svg viewBox="0 0 400 320" role={label ? "img" : undefined} aria-label={label || undefined} aria-hidden={label ? undefined : true} className={cn("journey is-in journey-map journey-mini journey-hifi", className)}>
       <JourneyLand />
@@ -84,8 +105,8 @@ export function JourneyMini({ you, counts, label, className }: { you: Flying | n
       </defs>
       <CoupleLines id={id} />
       {others.map((c, i) => <path key={c} d={arc(FROM[c], KYOTO, 0.15)} className="journey-guest" mask={`url(#${id}-o${i})`} />)}
-      {you && <path key={you} d={arc(FROM[you], KYOTO, 0.25)} className="journey-you" pathLength={1} style={{ animationDelay: `${youDelay}ms` }} />}
-      {you && <circle key={`${you}-dot`} cx={FROM[you][0]} cy={FROM[you][1]} r="5" className="journey-you-dot" />}
+      {mine && <path key={you} d={arc(mine, KYOTO, 0.25)} className="journey-you" pathLength={1} style={{ animationDelay: `${youDelay}ms` }} />}
+      {mine && <circle key={`${you}-dot`} cx={mine[0]} cy={mine[1]} r="5" className="journey-you-dot" />}
       <JourneyPlaces />
       <g transform={`translate(${KYOTO[0] - 14} ${KYOTO[1] - 14})`} aria-hidden>
         <rect width="28" height="28" rx="6" className="journey-seal" />
@@ -100,10 +121,11 @@ export function JourneyMini({ you, counts, label, className }: { you: Flying | n
  * lines in words, counts per city, never names). Our story's last stop shows it without its own list (the story
  * has one).
  */
-export function GuestMap({ you, flying, label, listable = true }: { you: Flying | null; flying: { counts: Partial<Record<Flying, number>>; told: number; households: number } | null; label: string; listable?: boolean }) {
+export function GuestMap({ you, flying, label, listable = true }: { you: string | null; flying: { counts: Partial<Record<Flying, number>>; told: number; households: number } | null; label: string; listable?: boolean }) {
   const { t } = useLang()
   const [list, setList] = useState(false)
   const name = (c: Flying) => t.flying.cities[c] ?? c
+  const placeName = usePlaceName()
   const told = Boolean(flying && flying.households > 0)
   const cities = flying ? (Object.entries(flying.counts) as [Flying, number][]).filter(([, n]) => n > 0) : []
   return (
@@ -112,7 +134,7 @@ export function GuestMap({ you, flying, label, listable = true }: { you: Flying 
         ? <ul className="flex flex-col gap-1">
             <li>{t.journey.list.griffin}</li>
             <li>{t.journey.list.nadia}</li>
-            {you && <li className="font-medium text-foreground">{t.journey.list.you(name(you))}</li>}
+            {you && <li className="font-medium text-foreground">{t.journey.list.you(placeName(you))}</li>}
             {cities.map(([c, n]) => <li key={c}>{t.journey.list.city(name(c), n)}</li>)}
           </ul>
         : <><JourneyMini you={you} counts={flying?.counts} label={label} /><JourneyLegend you={Boolean(you)} /></>}
