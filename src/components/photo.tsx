@@ -3,6 +3,7 @@ import { Camera } from "lucide-react"
 import manifest from "@/content/photos.json"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
+import { printFrame } from "@/lib/print-frame"
 
 type Entry = { formats: Record<string, number[]>; wide: Record<string, number[]>; lqip: string; width: number; height: number }
 const PHOTOS = manifest as Record<string, Entry>
@@ -15,15 +16,16 @@ export type Treatment = "full" | "print" | "split"
  * Until Nadia says photos can be public (PUBLIC_PHOTOS), the same frame shows a paper placeholder with
  * the caption, so nothing jumps when real photos arrive.
  */
-export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, className, children, alt }: {
-  name: string; treatment: Treatment; alt?: string; sizes?: string; priority?: boolean; wide?: boolean; className?: string; children?: ReactNode
+export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, vary = false, className, children, alt }: {
+  name: string; treatment: Treatment; alt?: string; sizes?: string; priority?: boolean; wide?: boolean; vary?: boolean; className?: string; children?: ReactNode
 }) {
   const { t } = useLang()
   const p = PHOTOS[name]
   const words = { ...(t.photos[name] ?? { alt: "", caption: "" }), ...(alt ? { alt } : {}) }
   const [loaded, setLoaded] = useState(false)
   if (!p) return null
-  const ratio = treatment === "split" ? "1 / 1" : treatment === "full" ? undefined : `${p.width} / ${p.height}`
+  const varied = vary && treatment === "print" ? printFrame(name) : null
+  const ratio = treatment === "split" ? "1 / 1" : treatment === "full" ? undefined : varied ? varied.ratio : `${p.width} / ${p.height}`
   const set = (fmt: string, useWide = false) => {
     const w = (useWide ? p.wide[fmt] : p.formats[fmt]) || []
     return w.map((x) => `${src(`${name}-${useWide ? "wide-" : ""}${x}.${fmt}`)} ${x}w`).join(", ")
@@ -71,7 +73,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
   )
   if (treatment === "print") {
     return (
-      <figure className={cn("photo-print", className)}>
+      <figure className={cn("photo-print", className)} style={varied ? ({ "--tilt": varied.tilt } as React.CSSProperties) : undefined} data-frame={varied ? (varied.ratio === "4 / 3" ? "landscape" : "portrait") : undefined}>
         {frame}
         {words.caption && <figcaption className="mt-2 text-small text-muted-foreground">{words.caption}</figcaption>}
       </figure>
