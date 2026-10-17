@@ -80,9 +80,9 @@
   --line-edge: var(--brand-forest);                 /* the letter's top edge */
   --surface-scrim: var(--brand-kinari);
   --tint-shadow: 66 26 5;
-  /* The paper (18f): Paper's PaperTexture, made in the browser at the screen's size (src/lib/paper-live.ts, preset in
-     src/lib/paper.ts) as --paper-live, and laid over every paper surface (index.css), words, fields and buttons
-     included. By day white paper multiplied in; in Lantern inverted (light fibres) and screened in. The hanko's ink is
+  /* The paper (18f, lab only for now): Paper's PaperTexture, made in the browser at the screen's size
+     (src/lib/paper-live.ts, preset in src/lib/paper.ts) as --paper-live, and laid over every paper surface
+     (index.css), words, fields and buttons included. Not started on the guest site yet, so it's plain there. By day white paper multiplied in; in Lantern inverted (light fibres) and screened in. The hanko's ink is
      baked by bake-textures. */
   --paper-blend: multiply;
   --paper-strength: 0.45;

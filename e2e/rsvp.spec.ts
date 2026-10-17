@@ -205,7 +205,7 @@ test("where are you flying from: type to filter, pick, and the map line follows"
   await expect(dialog.locator(".combo-note")).toHaveText("Nothing matches. Try Somewhere else.")
 })
 
-test("the sent letter is paper: the sheet made once over everything, then no shader left running", async ({ page }) => {
+test("the sent letter: plain paper on the guest site for now (the made paper is lab only), no canvas, the hanko's ink", async ({ page }) => {
   await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
   await openForm(page)
   const dialog = page.getByRole("dialog")
@@ -214,15 +214,13 @@ test("the sent letter is paper: the sheet made once over everything, then no sha
   await toCheck(page); await press(page, /^Send our reply$/)
   await dialog.getByRole("button", { name: "Draw one" }).click()
   await expect(dialog.locator(".omikuji-slip")).toBeVisible()
-  // The paper's sheet is made after the first tap (a browser without WebGL keeps plain paper)
-  await page.waitForFunction(() => document.documentElement.style.getPropertyValue("--paper-live") || !document.createElement("canvas").getContext("webgl2"), null, { timeout: 15_000 })
-  await page.waitForFunction(() => !document.querySelector("canvas"), null, { timeout: 15_000 })
+  await page.waitForTimeout(1500)
   const paper = await page.evaluate(() => ({
     canvases: document.querySelectorAll("canvas").length,
-    paper: [".sheet"].map((s) => { const a = getComputedStyle(document.querySelector(s)!, "::after"); return a.zIndex === "30" && a.pointerEvents === "none" }),
+    live: document.documentElement.style.getPropertyValue("--paper-live"),
     ink: (() => { const h = getComputedStyle(document.querySelector(".hanko")!); return [h.filter.includes("ink-bleed"), (h.maskImage || h.webkitMaskImage).includes("texture-ink")] })(),
   }))
-  expect(paper).toEqual({ canvases: 0, paper: [true], ink: [true, true] })
+  expect(paper).toEqual({ canvases: 0, live: "", ink: [true, true] })
 })
 
 // 18e: once replied, Home shows one next step: travel dates if there are none yet (opening the dates step), else
