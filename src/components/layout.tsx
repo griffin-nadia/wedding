@@ -1,45 +1,33 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom"
 import { BookOpen, CalendarDays, CircleHelp, Home, TrainFront } from "lucide-react"
-import { useContent } from "@/lib/content"
 import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { pageOf, sceneFor } from "@/lib/scenes"
-import { setStoryLetter, usePageTurn } from "@/lib/page-turn"
+import { usePageTurn } from "@/lib/page-turn"
 import { ModeSwitches } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
-import { checkCrew } from "@/lib/api"
 // Desktop only, so they load after the first screen: the credit mark and the phone QR
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
 
-const baseLinks = [
+// Five items for everyone. Our story shows their words, or the planner's layout with placeholders until they arrive.
+const links = [
   { to: "/", key: "home", icon: Home },
   { to: "/the-day", key: "day", icon: CalendarDays },
   { to: "/travel", key: "travel", icon: TrainFront },
   { to: "/faqs", key: "faqs", icon: CircleHelp },
+  { to: "/our-story", key: "story", icon: BookOpen },
 ] as const
-const storyLink = { to: "/our-story", key: "story", icon: BookOpen } as const
 
-/** Four items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
+/** Five items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
 function Nav() {
   const { t } = useLang()
-  const { story } = useContent()
-  // Crew devices see Our story (the base map, no invented chapters) before the words exist; guests only once they do
-  const [crew, setCrew] = useState(() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })
-  // A crew link (?c=<token>, checked against the Crew tab) marks this device as crew
-  useEffect(() => {
-    const given = new URLSearchParams(location.search).get("c")
-    if (given) void checkCrew(given).then((r) => { if (r === "yes") { try { localStorage.setItem("ng-crew", given) } catch { /* fine */ } setCrew(true) } })
-  }, [])
-  const hasStory = story.length > 0 || crew
-  const links = hasStory ? [...baseLinks, storyLink] : baseLinks
   const linksKey = links.map((l) => `${l.to}:${t.nav[l.key]}`).join("|")
-  useEffect(() => { setStoryLetter(hasStory) }, [hasStory])
   const { pathname } = useLocation()
   // Laptops: page changes are a view transition; phones have the page-turn track
   const wide = typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches

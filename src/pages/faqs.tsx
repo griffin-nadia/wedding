@@ -1,12 +1,13 @@
 import { AccordionContent, AccordionItem, AccordionTrigger, Disclosure } from "@/components/ui/accordion"
 import { useLang } from "@/lib/lang"
 import { PageHeader } from "@/components/ui/page-header"
+import { pending } from "@/content/pending"
 import { useContent } from "@/lib/content"
 
 /** FAQs: one numbered accordion (numbers help guests point to a question when they message). Answers are body.
  * Who to contact on the day appears once Griffin and Nadia fill contact_day in the Content tab. */
 export function FaqsPage() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const { contactDay } = useContent()
   return (
     <>
@@ -25,7 +26,7 @@ export function FaqsPage() {
         ))}
       </Disclosure>
       <p className="text-small">{t.qa.contact}</p>
-      {contactDay && <p className="text-small">{t.qa.onTheDay} {contactDay}</p>}
+      <p className="text-small">{contactDay ? `${t.qa.onTheDay} ${contactDay}` : pending("faqs.contactDay", lang)}</p>
     </>
   )
 }
