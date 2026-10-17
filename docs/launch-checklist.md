@@ -17,8 +17,7 @@ bugs it found are fixed in the next PR and ticked below). The steps for each ite
       `src/content/en.ts` (FORTUNES), and the sheet's Fortunes tab replaces them when filled. Six of them are
       travel tips, so they need to stay true: ICOCA or Suica, no tipping, the Haruka train at about 75 minutes,
       cash-only shops, luggage delivery, temples calm before 8 am.
-- [ ] **A native read of the Japanese.** All 14 lines `check:pending` lists (the reply form, the flying-from field,
-      the FAQs, the music credit), and ideally a read of all of `ja.ts`.
+- [ ] **A native read of the Japanese.** The pack: [docs/japanese-read.md](japanese-read.md) (and [the CSV](japanese-read.csv) for a sheet): every line by page, the 18 new or changed since 17 Oct marked, 43 that still show English. The translating is done; it just needs someone fluent to read it over.
 - [ ] **FAQ facts to confirm:**
   - Kids: nothing says whether children are invited, so there's no FAQ for it.
   - Visas: the copy only covers Australians. Griffin's side may be flying from Canada.
