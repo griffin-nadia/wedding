@@ -33,19 +33,22 @@ export function LanternToggle({ className }: { className?: string }) {
       flushSync(() => warmPhoto(nextPhoto))
       const img = document.querySelector<HTMLImageElement>(`[data-photo="${nextPhoto}"] img`)
       const ready = img ? Promise.race([img.decode().catch(() => {}), new Promise((ok) => setTimeout(ok, 220))]) : Promise.resolve()
+      // The circle in literal pixels, written before the transition starts: its resting clip and its keyframes are
+      // both centred on the button, so no frame (the very first included) can show it anywhere else. Nothing is read
+      // from CSS variables on the snapshot or animated from script after the snapshot exists, which some browsers
+      // don't apply on the first transition (it used to start from the middle the first time).
+      const css = getComputedStyle(root), d = css.getPropertyValue("--duration-slow").trim()
+      const duration = (d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000) || 760 // the token can compute to "0.76s"
+      const from = `circle(0px at ${Math.round(x)}px ${Math.round(y)}px)`, to = `circle(${Math.ceil(reach)}px at ${Math.round(x)}px ${Math.round(y)}px)`
+      const style = document.createElement("style")
+      style.textContent = `@keyframes vt-circle { from { clip-path: ${from}; } to { clip-path: ${to}; } }
+        :root[data-vt="circle"]::view-transition-new(root) { clip-path: ${from}; animation: vt-circle ${duration}ms ${css.getPropertyValue("--ease-paper").trim() || "ease-in-out"} both; }`
+      document.head.appendChild(style)
       root.dataset.vt = "circle"
-      const clear = () => { delete root.dataset.vt }
+      const clear = () => { delete root.dataset.vt; style.remove() }
       void ready.then(() => {
         try {
           const vt = doc.startViewTransition!(() => flushSync(() => setTheme(next)))
-          // Driven from here rather than a keyframe reading CSS variables, which not every browser resolves on the
-          // transition's snapshot: that left the circle starting from the top of the page instead of the button
-          void vt.ready?.then(() => {
-            const css = getComputedStyle(root), d = css.getPropertyValue("--duration-slow").trim()
-            const duration = d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000 // the token can compute to "0.76s"
-            root.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${reach}px at ${x}px ${y}px)`] },
-              { duration: duration || 760, easing: css.getPropertyValue("--ease-paper").trim() || "ease-in-out", fill: "both", pseudoElement: "::view-transition-new(root)" })
-          })
           vt.finished?.finally(clear)
           window.setTimeout(clear, 1200)
         } catch {
