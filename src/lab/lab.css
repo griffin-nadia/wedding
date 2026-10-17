@@ -38,3 +38,32 @@
 .lab-desktop .lab-frame { position: absolute; top: 0; left: 0; width: 1440px; height: 900px; transform-origin: 0 0; }
 .lab-experiments { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: var(--space-5); }
 .lab-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); border-radius: var(--radius-section); background: var(--letter-bg); box-shadow: var(--elevation-raised); }
+
+/* ── Playground (index, viewer, the experiment frame) ── */
+.lab-index { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: var(--space-4); }
+.lab-index-card { display: flex; flex-direction: column; gap: var(--space-3); width: 100%; height: 100%; padding: var(--space-3); border-radius: var(--radius-section); background: var(--letter-bg); box-shadow: var(--elevation-raised); outline: 2px solid transparent; outline-offset: 2px; transition: transform var(--duration-fast) var(--ease-paper); }
+.lab-index-card:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .lab-index-card:hover { transform: translateY(-2px); } }
+.lab-thumb { display: block; width: 100%; aspect-ratio: 390 / 520; object-fit: cover; object-position: top; border-radius: var(--radius-control); background: var(--surface-alt); }
+.lab-tag { margin-left: var(--space-2); padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--surface-alt); color: var(--ink-soft); font-size: var(--type-label-size); font-weight: 500; vertical-align: middle; }
+.lab-viewer { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+@media (max-width: 900px) { .lab-viewer { grid-template-columns: 1fr; } }
+.lab-speed { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; }
+.lab-speed input { width: 160px; accent-color: var(--action); }
+.lab-notes { position: sticky; top: 88px; display: flex; flex-direction: column; gap: var(--space-3); min-height: 60svh; padding: var(--space-5); border-radius: var(--radius-section); background: var(--letter-bg); box-shadow: var(--elevation-raised); }
+/* A phone: a dark bezel with rounded corners round a 390 × 844 screen */
+.lab-device { width: calc(390px + 24px); padding: 12px; border-radius: 56px; background: #1b1410; box-shadow: var(--elevation-sheet), inset 0 0 0 2px #3a2c22; }
+.lab-device-screen { display: block; width: 390px; height: 844px; border: 0; border-radius: 44px; background: #fff; }
+.lab-play { min-height: 100svh; }
+/* The stage an experiment plays in (playground/stage.tsx) */
+.x-stage { position: relative; min-height: 100svh; display: flex; flex-direction: column; background: var(--surface-paper); color: var(--ink-soft); overflow: hidden; }
+.x-stage::before, .x-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+.x-stage::before { background-image: var(--texture-fibre); background-size: 384px; opacity: 0.5; }
+.x-stage::after { background-image: var(--texture-grain); background-size: 256px; mix-blend-mode: var(--texture-blend); opacity: 0.3; } /* the grain is baked to multiply (or soft-light), never laid on flat */
+.x-stage.is-photo { background: transparent; }
+.x-stage.is-photo::before, .x-stage.is-photo::after { display: none; }
+.x-stage-hint { position: relative; z-index: 2; align-self: center; margin: var(--space-4) var(--space-4) 0; padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); background: color-mix(in oklab, var(--letter-bg) 88%, transparent); color: var(--ink-soft); font: 500 var(--type-small-size) / var(--type-small-leading) var(--font-label); text-align: center; box-shadow: 0 1px 2px rgb(var(--tint-shadow) / 0.12); }
+.x-stage-main { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5); padding: var(--space-5) var(--space-4); }
+/* Inside the phone and laptop frames, no scrollbar or its reserved gutter (a desktop browser would draw one) */
+html:has(.lab-play) { scrollbar-width: none; scrollbar-gutter: auto; }
+html:has(.lab-play)::-webkit-scrollbar { display: none; }

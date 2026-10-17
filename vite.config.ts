@@ -61,7 +61,7 @@ function noPrivateInBuild(): Plugin {
         const same = sizes.has(fs.statSync(f).size) && priv.some((p) => fs.statSync(path.join(PRIVATE, p)).isFile() && fs.readFileSync(path.join(PRIVATE, p)).equals(fs.readFileSync(f)))
         if (same || (/\.(js|html)$/.test(f) && fs.readFileSync(f, "utf8").includes("__private/"))) throw new Error(`private/ file in the build: ${path.relative(outDir, f)}`)
         // The lab (lab.html, src/lab) is local only: nothing of it may be built
-        if (/lab(-frame)?\.html$/.test(f) || (/\.js$/.test(f) && fs.readFileSync(f, "utf8").includes("__NG_LAB__"))) throw new Error(`lab code in the build: ${path.relative(outDir, f)}`)
+        if (/lab(-frame|-play)?\.html$/.test(f) || (/\.js$/.test(f) && fs.readFileSync(f, "utf8").includes("__NG_LAB__"))) throw new Error(`lab code in the build: ${path.relative(outDir, f)}`)
       }
     },
   }
