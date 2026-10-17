@@ -14,6 +14,9 @@ import { useLang } from "@/lib/lang"
 import { getStayPicks } from "@/lib/api"
 import { PageHeader } from "@/components/ui/page-header"
 import { pickList, type Pick, type Picks } from "@/lib/stay"
+import { SECTIONS, travelOrder, type Section } from "@/lib/travel-order"
+import { config } from "@/lib/config"
+import { useContent } from "@/lib/content"
 
 function Ext({ href, children }: { href: string; children: React.ReactNode }) {
   return <a href={href} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{children}</a>
@@ -157,38 +160,46 @@ function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => vo
   )
 }
 
-const SECTIONS = ["to-kyoto", "stay", "before", "on-the-day"] as const
 
 /**
- * Jump links under the page header (sticky with it): one per section, the one you're reading marked
- * (aria-current), from an IntersectionObserver on the sections. Plain links, so Tab, Enter and screen readers work.
+ * Jump links under the page header (sticky with it): one per section in the page's order, the one you're reading
+ * marked (aria-current), from an IntersectionObserver on the sections. A tapped link is marked straight away and
+ * stays marked until you scroll yourself, even if its section can't reach the top. Plain links, so Tab, Enter and
+ * screen readers work.
  */
-function JumpLinks({ labels }: { labels: Record<(typeof SECTIONS)[number], string> }) {
+function JumpLinks({ order, labels }: { order: readonly Section[]; labels: Record<Section, string> }) {
   const { t } = useLang()
-  const [at, setAt] = useState<string>(SECTIONS[0])
+  const [at, setAt] = useState<string>(order[0])
+  const held = useRef("")
   useEffect(() => {
-    const els = SECTIONS.map((id) => document.getElementById(id)).filter((e): e is HTMLElement => !!e)
+    const els = order.map((id) => document.getElementById(id)).filter((e): e is HTMLElement => !!e)
     const seen = new Map<string, boolean>()
     // A section counts as current while it crosses a line a third of the way down the screen
     const io = new IntersectionObserver((es) => {
       for (const e of es) seen.set(e.target.id, e.isIntersecting)
-      const first = SECTIONS.find((id) => seen.get(id))
-      if (first) setAt(first)
+      const first = order.find((id) => seen.get(id))
+      if (first && !held.current) setAt(first)
     }, { rootMargin: "-33% 0px -66% 0px" })
     els.forEach((e) => io.observe(e))
-    return () => io.disconnect()
-  }, [])
+    // Your own scroll (a swipe, the wheel, a key) lets the observer mark sections again
+    const free = () => { held.current = "" }
+    const opts = { passive: true }
+    addEventListener("touchstart", free, opts); addEventListener("wheel", free, opts); addEventListener("keydown", free)
+    return () => { io.disconnect(); removeEventListener("touchstart", free); removeEventListener("wheel", free); removeEventListener("keydown", free) }
+  }, [order])
   // On a narrow screen the strip scrolls sideways: keep the current link in view
   const strip = useRef<HTMLUListElement>(null)
   useEffect(() => {
     const ul = strip.current, a = ul?.querySelector<HTMLElement>("[aria-current]")
     if (ul && a) ul.scrollTo({ left: a.offsetLeft - (ul.clientWidth - a.offsetWidth) / 2, behavior: still() ? "instant" : "smooth" })
   }, [at])
+  // The tap's own touchstart comes before the click, so the hold is set after it
+  const go = (e: React.MouseEvent, id: Section) => { glide(e, id); held.current = id; setAt(id) }
   return (
     <nav aria-label={t.getting.onThisPage} className="jump-links">
       <ul ref={strip}>
-        {SECTIONS.map((id) => (
-          <li key={id}><a href={`#${id}`} onClick={(e) => glide(e, id)} aria-current={at === id ? "true" : undefined} className="jump-link">{labels[id]}</a></li>
+        {order.map((id) => (
+          <li key={id}><a href={`#${id}`} onClick={(e) => go(e, id)} aria-current={at === id ? "true" : undefined} className="jump-link">{labels[id]}</a></li>
         ))}
       </ul>
     </nav>
@@ -209,6 +220,10 @@ export function TravelPage() {
   const { hash } = useLocation()
   const [open, setOpen] = useState("")
   const [sheet, setSheet] = useState("")
+  const { mode } = useContent()
+  // Read once per visit: a page open across the 14-day line keeps its order until the next visit
+  const [now] = useState(() => new Date())
+  const order = travelOrder(now, config.weddingStart, mode)
   const first = useRef(true)
   useEffect(() => {
     const id = decodeURIComponent(hash.slice(1))
@@ -233,65 +248,70 @@ export function TravelPage() {
     ["medicines", g.rows.medicines, <><p>{g.tips[2]}</p><Ext href={g.links.smartraveller.href}>{g.links.smartraveller.label}</Ext></>],
   ]
   // The three lines at the top: the first sentence of each part's own copy
-  const summary: [string, string][] = [
-    ["to-kyoto", firstSentence(g.flyingBody)],
-    ["stay", firstSentence(t.stay.intro)],
-    ["on-the-day", g.shuttleTitle],
-  ]
+  const lines: Partial<Record<Section, string>> = { "to-kyoto": firstSentence(g.flyingBody), stay: firstSentence(t.stay.intro), "on-the-day": g.shuttleTitle }
+  const summary = order.flatMap((id) => (lines[id] ? [[id, lines[id]] as const] : []))
+  const sections: Record<Section, React.ReactNode> = {
+    "to-kyoto": (
+        <section key="to-kyoto" id="to-kyoto" aria-labelledby="to-kyoto-title" className="travel-section flex scroll-mt-(--travel-head) flex-col gap-4">
+          <h2 id="to-kyoto-title" className="font-display text-heading text-foreground">{g.toKyotoTitle}</h2>
+          <Disclosure label={g.toKyotoTitle} {...one}>
+            <Plain value="flights" title={g.rows.flights}>
+              <p>{t.travel.items[1].body}</p><p>{g.flyingBody}</p>
+              <div className="flex flex-wrap gap-x-4"><Ext href={g.links.haruka.href}>{g.links.haruka.label}</Ext><Ext href={g.links.flights.href}>{g.links.flights.label}</Ext></div>
+            </Plain>
+            <Plain value="tokyo" title={g.tokyoTitle}><p>{g.tokyoBody}</p><Ext href={g.links.trains.href}>{g.links.trains.label}</Ext></Plain>
+            <Plain value="early" title={g.earlyTitle}><p>{g.earlyBody}</p></Plain>
+          </Disclosure>
+        </section>
+    ),
+    "stay": (
+        <section key="stay" id="stay" aria-labelledby="stay-title" className="travel-section flex scroll-mt-(--travel-head) flex-col gap-4">
+          <h2 id="stay-title" className="font-display text-heading text-foreground">{t.stay.title}</h2>
+          <p>{t.stay.intro}</p>
+          <Disclosure label={t.stay.title} {...one}>
+            {t.day.stay.map((a, i) => (
+              <Plain key={a.label} value={slug(a.label) === "area" ? `area-${i + 1}` : slug(a.label)} title={a.label}>
+                <p>{t.day.stayGood}: {a.good}</p>
+                <p className="text-muted-foreground">{t.day.stayWatch}: {a.watch}</p>
+                <Ext href={a.maps}>{g.seeOnMap}</Ext>
+              </Plain>
+            ))}
+          </Disclosure>
+          <Picks sheet={sheet} setSheet={setSheet} />
+        </section>
+    ),
+    "before": (
+        <section key="before" id="before" aria-labelledby="before-title" className="travel-section flex scroll-mt-(--travel-head) flex-col gap-4">
+          <h2 id="before-title" className="font-display text-heading text-foreground">{g.beforeTitle}</h2>
+          <p className="text-small text-muted-foreground" aria-live="polite">{g.ticked(rows.filter(([v]) => ticks[v]).length, rows.length)}</p>
+          <Disclosure label={g.beforeTitle} {...one}>
+            {rows.map(([value, title, body]) => <Row key={value} value={value} title={title} done={Boolean(ticks[value])} onTick={(v) => setTick(value, v)} tickLabel={g.tick(title)}>{body}</Row>)}
+          </Disclosure>
+        </section>
+    ),
+    "on-the-day": (
+        <section key="on-the-day" id="on-the-day" aria-labelledby="on-the-day-title" className="travel-section flex scroll-mt-(--travel-head) flex-col gap-4">
+          <h2 id="on-the-day-title" className="font-display text-heading text-foreground">{g.onTheDayTitle}</h2>
+          <DriverCard />
+          <Disclosure label={g.onTheDayTitle} {...one}>
+            <Plain value="trail" title={t.trail.label}><Trail /><p>{g.shuttleBody}</p></Plain>
+            <Plain value="walk" title={g.walkingTitle}><p>{g.walkingBody}</p><Ext href={g.links.walk.href}>{g.links.walk.label}</Ext></Plain>
+            <Plain value="around" title={t.kyotoMap.title}><KyotoMap /></Plain>
+          </Disclosure>
+        </section>
+    ),
+  }
   return (
     <>
       <PageHeader title={t.nav.travel}>
-        <JumpLinks labels={{ "to-kyoto": g.toKyotoTitle, stay: t.stay.title, before: g.beforeTitle, "on-the-day": g.onTheDayTitle }} />
+        <JumpLinks order={order} labels={{ "to-kyoto": g.toKyotoTitle, stay: t.stay.title, before: g.beforeTitle, "on-the-day": g.onTheDayTitle }} />
       </PageHeader>
 
       <ul className="travel-summary">
         {summary.map(([id, line]) => <li key={id}><a href={`#${id}`} onClick={(e) => glide(e, id)} className="travel-summary-line">{line}</a></li>)}
       </ul>
 
-      <section id="to-kyoto" aria-labelledby="to-kyoto-title" className="flex scroll-mt-(--travel-head) flex-col gap-4">
-        <h2 id="to-kyoto-title" className="font-display text-heading text-foreground">{g.toKyotoTitle}</h2>
-        <Disclosure label={g.toKyotoTitle} {...one}>
-          <Plain value="flights" title={g.rows.flights}>
-            <p>{t.travel.items[1].body}</p><p>{g.flyingBody}</p>
-            <div className="flex flex-wrap gap-x-4"><Ext href={g.links.haruka.href}>{g.links.haruka.label}</Ext><Ext href={g.links.flights.href}>{g.links.flights.label}</Ext></div>
-          </Plain>
-          <Plain value="tokyo" title={g.tokyoTitle}><p>{g.tokyoBody}</p><Ext href={g.links.trains.href}>{g.links.trains.label}</Ext></Plain>
-          <Plain value="early" title={g.earlyTitle}><p>{g.earlyBody}</p></Plain>
-        </Disclosure>
-      </section>
-
-      <section id="stay" aria-labelledby="stay-title" className="flex scroll-mt-(--travel-head) flex-col gap-4">
-        <h2 id="stay-title" className="font-display text-heading text-foreground">{t.stay.title}</h2>
-        <p>{t.stay.intro}</p>
-        <Disclosure label={t.stay.title} {...one}>
-          {t.day.stay.map((a, i) => (
-            <Plain key={a.label} value={slug(a.label) === "area" ? `area-${i + 1}` : slug(a.label)} title={a.label}>
-              <p>{t.day.stayGood}: {a.good}</p>
-              <p className="text-muted-foreground">{t.day.stayWatch}: {a.watch}</p>
-              <Ext href={a.maps}>{g.seeOnMap}</Ext>
-            </Plain>
-          ))}
-        </Disclosure>
-        <Picks sheet={sheet} setSheet={setSheet} />
-      </section>
-
-      <section id="before" aria-labelledby="before-title" className="flex scroll-mt-(--travel-head) flex-col gap-4">
-        <h2 id="before-title" className="font-display text-heading text-foreground">{g.beforeTitle}</h2>
-        <p className="text-small text-muted-foreground" aria-live="polite">{g.ticked(rows.filter(([v]) => ticks[v]).length, rows.length)}</p>
-        <Disclosure label={g.beforeTitle} {...one}>
-          {rows.map(([value, title, body]) => <Row key={value} value={value} title={title} done={Boolean(ticks[value])} onTick={(v) => setTick(value, v)} tickLabel={g.tick(title)}>{body}</Row>)}
-        </Disclosure>
-      </section>
-
-      <section id="on-the-day" aria-labelledby="on-the-day-title" className="flex scroll-mt-(--travel-head) flex-col gap-4">
-        <h2 id="on-the-day-title" className="font-display text-heading text-foreground">{g.onTheDayTitle}</h2>
-        <DriverCard />
-        <Disclosure label={g.onTheDayTitle} {...one}>
-          <Plain value="trail" title={t.trail.label}><Trail /><p>{g.shuttleBody}</p></Plain>
-          <Plain value="walk" title={g.walkingTitle}><p>{g.walkingBody}</p><Ext href={g.links.walk.href}>{g.links.walk.label}</Ext></Plain>
-          <Plain value="around" title={t.kyotoMap.title}><KyotoMap /></Plain>
-        </Disclosure>
-      </section>
+      {order.map((id) => sections[id])}
     </>
   )
 }
