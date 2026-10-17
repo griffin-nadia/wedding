@@ -392,8 +392,6 @@
 @keyframes letter-rise { from { opacity: 0; transform: translateY(48px); } to { opacity: 1; transform: none; } }
 
 /* Journey map: each route draws in once (1.2 s); a soft honey glow in Lantern mode. */
-.journey-draw { transition: stroke-dashoffset calc(var(--duration-slow) * 2) var(--ease-paper); }
-@media (prefers-reduced-motion: reduce) { .journey-draw { transition: none; } }
 
 /* Photo frames */
 @utility photo-print {
@@ -890,22 +888,12 @@ svg.lucide { stroke-width: 1.5; }
 .journey-route-nadia { stroke: var(--ink-story); }
 .journey-route-griffin { stroke: var(--ink-moss); }
 .journey-guest { fill: none; stroke: var(--ink-muted); stroke-width: 0.8; stroke-dasharray: 2 3; opacity: 0.5; }
-.journey-draw { fill: none; stroke: var(--ink-story); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: journey-draw calc(var(--duration-slow) * 2) var(--ease-paper) forwards; }
 @keyframes journey-draw { to { stroke-dashoffset: 0; } }
-.journey-stop { cursor: pointer; outline: none; }
-.journey-hit { fill: transparent; }
-.journey-dot { fill: var(--surface-raised); stroke: var(--ink-story); stroke-width: 2; transition: r var(--duration-fast) var(--ease-paper); }
-.journey-stop.is-on .journey-dot { fill: var(--ink-story); r: 7; }
-.journey-stop:focus-visible .journey-hit { stroke: var(--input-focus); stroke-width: 2; }
-.journey-label { font-family: var(--font-label); font-size: 12px; fill: var(--ink-soft); opacity: 0; transition: opacity var(--duration-fast) var(--ease-paper); }
-.journey-stop.is-on .journey-label, .journey-stop:focus-visible .journey-label { opacity: 1; }
-@media (hover: hover) { .journey-stop:hover .journey-label { opacity: 1; } .journey-stop:hover .journey-dot { r: 7; } }
 .journey-seal { fill: var(--action); }
 .journey-seal-text { fill: var(--brand-shiro-kinari); font-family: var(--font-ja); font-size: 16px; }
 .journey-dots { display: flex; gap: var(--space-1); }
 .journey-dots span { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--line-strong); transition: width var(--duration-fast) var(--ease-paper); }
 .journey-dots span.is-on { width: 24px; background: var(--action); }
-@media (prefers-reduced-motion: reduce) { .journey-draw { animation: none; stroke-dashoffset: 0; } }
 /* Arrival (v3 R): land washes in (600), the two home routes draw to Kyoto (900, the second 300 later), the seal
    lands with the hanko press, then guests' lines one by one 120 apart, each with a soft pulse at Kyoto. */
 .journey .journey-land { opacity: 0; transition: opacity var(--duration-slow) var(--ease-paper); }
@@ -915,13 +903,9 @@ svg.lucide { stroke-width: 1.5; }
 .journey.is-in .journey-reveal-2 { animation-delay: 600ms; }
 .journey.is-in .journey-reveal-guest { animation-duration: 700ms; }
 @keyframes journey-reveal { to { stroke-dashoffset: 0; } }
-.journey-seal-g { opacity: 0; transform-box: fill-box; transform-origin: center; }
-.journey.is-in .journey-seal-g { animation: journey-seal-land 300ms var(--ease-paper) 1200ms forwards; }
-@keyframes journey-seal-land { from { opacity: 0; transform: scale(1.4); } 60% { opacity: 1; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
   .journey .journey-land { opacity: 1; transition: none; }
   .journey-reveal { stroke-dashoffset: 0; animation: none !important; }
-  .journey-seal-g { opacity: 1; animation: none !important; }
 }
 /* Hold to stamp (v3 T): the ink fills left to right while held */
 /* Envelope tilts toward the mouse (v3 T, option) */
@@ -1153,30 +1137,42 @@ svg.lucide { stroke-width: 1.5; }
 /* A focused field scrolls to just above the keyboard (and Back / Next), with a little room */
 :is(input, textarea, select) { scroll-margin-block: var(--space-5); }
 
-/* Our story (APG carousel): the map on top, then one stop per screen on a sideways track that snaps; nothing scrolls
-   inside a slide. Sized so map, slide and arrows fit a 390 × 844 phone above the dock, and a 1440 × 900 laptop. */
+/* Our story (APG carousel): one stop per screen on a sideways track that snaps; nothing scrolls inside a stop. On
+   phones each stop is the print centred with its chapter line underneath; from 1024 a two-column spread, the print on
+   one side and the words on the other, the arrows and dots centred below. --print-h is a print's long side. */
 .story { display: flex; flex-direction: column; gap: var(--space-4); }
-.story-map { align-self: center; width: auto; max-width: 100%; height: min(22svh, 260px); aspect-ratio: 400 / 320; }
 .story-track { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; }
 .story-track::-webkit-scrollbar { display: none; }
 .story-track:focus-visible { outline-color: var(--input-focus); }
-.story-slide { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; gap: var(--space-2); overflow: hidden; }
-.story-slide-photo { align-self: flex-start; margin: var(--space-2); } /* room for the tilted corners */
-.story-slide-photo > div { height: min(30svh, 320px); width: auto; max-width: 100%; }
-/* Landscape prints fill the width instead, inside a margin that leaves room for the tilt's corners */
-.story-slide-photo[data-frame="landscape"] { width: calc(100% - 16px); max-width: 420px; margin-inline: 8px; }
-.story-slide-photo[data-frame="landscape"] > div { width: 100%; height: auto; max-height: min(30svh, 320px); }
-@media (max-height: 760px) { .story-slide-photo[data-frame="landscape"] { max-width: calc(22svh * 4 / 3 + 12px); } }
+.story-slide { --print-h: min(34svh, 300px); flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
+.story-media { flex: none; display: grid; place-items: center; max-width: 100%; }
+.story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
+/* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
+.story-print { margin: var(--space-2); }
+.story-print > div { height: var(--print-h); width: auto; }
+.story-print[data-frame="landscape"] > div { width: var(--print-h); height: auto; }
+.story-print-blank { display: block; width: calc(var(--print-h) * 0.75); height: var(--print-h); margin: var(--space-2); border: 6px solid var(--brand-paper-bright); border-bottom-width: 10px; border-radius: calc(var(--radius-control) / 2); background: var(--surface-alt); box-shadow: var(--elevation-paper); transform: rotate(-1deg); }
+.story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: calc(var(--print-h) * 1.1); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
+/* The journey map, once, as the last stop */
+.story-slide-map .story-media { width: 100%; max-width: 360px; }
+.story-slide-map .journey-mini { max-height: 36svh; }
 /* The list: a 48px thumbnail beside each chapter */
 .story-thumb { flex: none; width: 48px; height: 48px; border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); }
 .story-thumb figcaption { display: none; }
 .story-thumb > div { width: 48px; height: 48px; aspect-ratio: auto !important; border-radius: 0 !important; }
-.story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: min(34svh, 300px); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
 .story-controls { display: flex; align-items: center; justify-content: space-between; }
 .story-controls .utility-btn:disabled { opacity: 0.4; }
 @media (prefers-reduced-motion: reduce) { .story-track { scroll-behavior: auto; } }
-/* Short phones (an SE at 667): a smaller map and photo, so a stop still fits one screen */
-@media (max-height: 760px) { .story-map { height: 16svh; } .story-slide-photo > div { height: 22svh; } .story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: 26svh; } }
+/* Short phones (an SE at 667): a smaller print, so a stop still fits one screen */
+@media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map .journey-mini { max-height: 24svh; } }
+@media (min-width: 1024px) {
+  .story-slide { --print-h: min(42svh, 360px); flex-direction: row; gap: var(--space-6); text-align: left; padding-inline: var(--space-2); }
+  .story-media { flex: 0 1 auto; }
+  .story-words { flex: 0 1 300px; }
+  .story-slide-map .story-media { flex: 0 1 360px; }
+  .story-slide-map .journey-mini { max-height: 46svh; }
+  .story-controls { justify-content: center; gap: var(--space-5); }
+}
 
 /* Home on laptops (1024 and up): the card anchored bottom left, 20% narrower, so the photo and their faces are clear */
 @media (min-width: 1024px) {

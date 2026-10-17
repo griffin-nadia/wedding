@@ -97,12 +97,14 @@ export function JourneyMini({ you, counts, label, className }: { you: Flying | n
 
 /**
  * The guest map with everything around it: the legend, "17 of 40 lines drawn so far", and See as a list (the same
- * lines in words, counts per city, never names). Used after the fortune and in Home's sheet.
+ * lines in words, counts per city, never names). Our story's last stop shows it without its own list (the story
+ * has one).
  */
-export function GuestMap({ you, flying, label }: { you: Flying | null; flying: { counts: Partial<Record<Flying, number>>; told: number; households: number } | null; label: string }) {
+export function GuestMap({ you, flying, label, listable = true }: { you: Flying | null; flying: { counts: Partial<Record<Flying, number>>; told: number; households: number } | null; label: string; listable?: boolean }) {
   const { t } = useLang()
   const [list, setList] = useState(false)
   const name = (c: Flying) => t.flying.cities[c] ?? c
+  const told = Boolean(flying && flying.households > 0)
   const cities = flying ? (Object.entries(flying.counts) as [Flying, number][]).filter(([, n]) => n > 0) : []
   return (
     <div className="flex flex-col gap-3">
@@ -114,10 +116,10 @@ export function GuestMap({ you, flying, label }: { you: Flying | null; flying: {
             {cities.map(([c, n]) => <li key={c}>{t.journey.list.city(name(c), n)}</li>)}
           </ul>
         : <><JourneyMini you={you} counts={flying?.counts} label={label} /><JourneyLegend you={Boolean(you)} /></>}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        {flying && flying.households > 0 ? <p className="text-small text-muted-foreground">{t.journey.count(flying.told, flying.households)}</p> : <span />}
-        <button type="button" className="btn-text min-h-11" onClick={() => setList((v) => !v)}>{list ? t.journey.seeMap : t.journey.seeList}</button>
-      </div>
+      {(listable || told) && <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        {told ? <p className="text-small text-muted-foreground">{t.journey.count(flying!.told, flying!.households)}</p> : <span />}
+        {listable && <button type="button" className="btn-text min-h-11" onClick={() => setList((v) => !v)}>{list ? t.journey.seeMap : t.journey.seeList}</button>}
+      </div>}
     </div>
   )
 }
