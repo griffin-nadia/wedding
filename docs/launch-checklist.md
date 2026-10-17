@@ -1,89 +1,83 @@
 # Launch checklist
 
-A readiness check of the live site on 18 Oct 2026, before real invites go out. Nothing was changed for it (the clear
-bugs it found are fixed in the next PR and ticked below). The steps for each item are in `docs/pre-launch.md` and
-`apps-script/README.md`.
+The single list for launch day (rebuilt 18 Oct 2026, end of run 18e). Three parts: what's done, what Jehan does by
+hand, and what Griffin and Nadia still owe. The how-to for each step is linked; `npm run check:pending` prints the
+live list of placeholders and Japanese lines.
 
-## Content needed from Griffin and Nadia
+## Done
 
-`npm run check:pending` lists four placeholders still on the site and 14 Japanese lines waiting for a native read.
+- The site: five pages in English and Japanese, the envelope (floating, "Open your invite"), the reply form, the
+  fortune, the countdown, Travel, Our story, FAQs, Light and the walnut Lantern, the music, the favicon from the
+  wax seal. Nadia's art: the envelopes, the seal, the gum leaves, the names lettering (theme ink, a sage "&") and
+  her crosshatch as the paper.
+- The card is a fixed frame between the bar and the dock; only the bar stays put; Travel's jump links are the one
+  sticky row.
+- Home's next step after replying (travel dates, then Plan your trip). Email links where the words say "message
+  us". [Guest journey map](journey-map.md), no dead ends left that we can fix without N&G.
+- Quality gates on every PR (`gates`, 115 tests): every page at 390 and 1440 in both themes with axe (WCAG 2.2 AA),
+  the performance budget, 320 in English and Japanese, landscape, 200% zoom, keyboard-only reply, the after-30-Apr
+  state, back and forward, music, icons. The back-end stress test (`node scripts/stress-api.mjs`, mocks only)
+  passes 9 of 9: a household of 6, long names, slow and lost connections, a double Send, a bad link, two tabs.
+- The back end (Apps Script, version 43): emails only send from the wedding account (held otherwise); name order
+  check; Prepare for launch (report only until run for real); weekly backup; emails say Japan time.
+- The lab at a hidden path: https://griffin-nadia.github.io/wedding/lab-x2tyua87sy/ (noindex).
+- The ICOCA & HARUKA link that was broken is replaced by JR West's HARUKA One-way Ticket page (18c).
 
-- [ ] **Our story words.** Each chapter still shows "We're still writing this part in our own words. Check back
-      closer to the day." (`story.chapterBody`). Their words go in the Content tab.
-- [ ] **Griffin's kid photo** for the Our story opener (`story.kidGriffin`; a plain paper print until then).
-- [ ] **The story photos.** Any photo not yet in shows "A photo to come" (`photo.toCome`).
-- [ ] **Who to call on the day** (`contact_day` in the Content tab; FAQs shows a placeholder line until then).
-- [ ] **The fortunes.** Twelve omikuji lines, all 大吉 (Nadia's call). Are they confirmed? They're in
-      `src/content/en.ts` (FORTUNES), and the sheet's Fortunes tab replaces them when filled. Six of them are
-      travel tips, so they need to stay true: ICOCA or Suica, no tipping, the Haruka train at about 75 minutes,
-      cash-only shops, luggage delivery, temples calm before 8 am.
-- [ ] **A native read of the Japanese.** The pack: [docs/japanese-read.md](japanese-read.md) (and [the CSV](japanese-read.csv) for a sheet): every line by page, the 18 new or changed since 17 Oct marked, 43 that still show English. The translating is done; it just needs someone fluent to read it over.
-- [ ] **FAQ facts to confirm:**
-  - Kids: nothing says whether children are invited, so there's no FAQ for it.
-  - Visas: the copy only covers Australians. Griffin's side may be flying from Canada.
-  - "We'll delete it a few months after the wedding" (the details answer): still the plan?
-  - "We'll set the menu a few months before": fine until the menu is set.
-- [ ] **Nadia's art still to come** (each is one switch in `src/lib/art.ts` once the file is in): her lettering for
-      the names (`names`), the painted map land (`mapLand`), the 600 dpi envelope rescan (same file names), and her
-      handwritten sign-off (`public/brand/signoff.svg`).
-- [ ] **The music.** "A Town With an Ocean View" (Joe Hisaishi, piano by Piano ZeroL) now plays to every guest.
-      The README says `private/` is for songs not cleared yet, and "orange hues" was cleared by its artist. Is
-      there permission from Piano ZeroL for this cover? If not, switch back (README → Music, one file and one entry).
+## What Jehan does by hand, in this order
 
-## What Jehan does by hand
+1. [ ] **Real-phone test** on an iPhone (Safari) and an Android phone (Chrome), on the live site. What headless
+   Chromium can't prove:
+   - the envelope floats and opens from a tap on it or on "Open your invite"; a long press never offers to save
+     the picture; the music starts on that first tap (or the first tap anywhere for a returning guest) and fades
+     in gently, and the toggle's ring stops once it plays;
+   - the card sits 12px under the bar and above the dock and its words scroll inside it, on every tab; no strip of
+     photo shows mid-swipe; the bar and dock never change colour;
+   - the light / dark circle grows from the sun or moon, first switch and second;
+   - the reply form with the keyboard up (Back / Next never on the keyboard); the song search;
+   - Our story: a drag follows the finger and never turns the page;
+   - the music stops at once when the phone locks, and Now Playing clears;
+   - VoiceOver (iPhone) through the reply form once: each person's choice is read as a radio group.
+2. [ ] **Email queue on from the wedding account**: [docs/email-queue.md](email-queue.md). Until this is done,
+   every email is held (safely). Check `?action=ping` shows the wedding account, then send one test reply and see
+   it arrive from the wedding address.
+3. [ ] **Make the gates required on `main`** (needs an admin): https://github.com/griffin-nadia/wedding/settings/branches
+   → add a rule for `main` → Require status checks to pass → `gates`.
+4. [ ] **Weekly backup on** from the wedding account: [docs/launch.md](launch.md#weekly-backup).
+5. [ ] **Prepare for launch**: [docs/launch.md](launch.md). Run the report first (safe any time). When you say
+   "clean for launch": Prepare for launch: run for real… (type LAUNCH). It backs up both sheets, clears the test
+   rows, resets visits and the queue, copies the planner's guest list in, and makes the links.
+6. [ ] **Send**: Send invites (test, to me only)… and check it (`node scripts/render-emails.mjs` shows every email locally
+   first), then Send invites to everyone not yet invited…. For households with no email, text
+   them their link (the launch report lists them; `npm run qr-cards` for printed cards).
 
-- [ ] **Real-phone test**, on an iPhone (Safari) and an Android phone (Chrome), the live site. The things headless
-      Chromium can't prove:
-  - the top bar clears the notch, and stays put on every scroll;
-  - the first light / dark switch grows its circle from the sun or moon (the Safari fix from this run);
-  - no white flash at the top when swiping or changing tabs, and no stutter scrolling to the end of a page;
-  - the reply form: with the keyboard up, Back / Next are at the end of the form and never on the keyboard; with
-    only Other ticked, Next is reachable (the iPhone bug from this run); the song search puts the keyboard away;
-  - Our story: dragging a print follows the finger and never turns the page;
-  - the music: starts after the first tap, stops at once when the phone locks, and Now Playing clears;
-  - the envelope, the page swipe and Travel's jump links.
-- [ ] **Email queue on from the wedding account** (click by click: [docs/email-queue.md](email-queue.md)): Wedding site menu → Turn on the fast email queue, signed in as the
-      wedding account only (`?action=ping` should show `queueAccount: wedding`). Then send one test reply on a test
-      household and check it arrives from the wedding address.
-- [ ] **Clean the test rows**: Reset test households…, and Clear queued items for test households…, then delete the
-      test rows themselves; then load the real guest list into the sheet.
-- [ ] **Generate the guest links**: Make tokens + links for new rows (and `npm run qr-cards` for printed cards).
-      Send one invite to yourself with Send invites (test, to me only)… before Send invites to everyone.
-- [ ] **Weekly backup on from the wedding account**: Wedding site → Weekly backup: turn on ([docs/launch.md](launch.md#weekly-backup)).
-- [ ] **Make the gates required on `main`** (needs an admin): https://github.com/griffin-nadia/wedding/settings/branches
-      → a rule for `main` → Require status checks to pass → `gates`.
+Optional: the Cloudflare previews ([docs/previews.md](previews.md)): move `docs/ci/previews.yml` into
+`.github/workflows/` from an account with the workflow scope, and add the two secrets.
 
-## External links (checked from a script, 18 Oct)
+Also check by hand once (they refuse scripts): the DoubleTree Kyoto Higashiyama (Hilton), the JR Pass timetable,
+Ninja WiFi's SIM page, Travelkon's eSIM page, and Google Flights ("Flights to KIX") on a phone.
 
-- 26 of the 31 fixed links answer (three more are built per address), including the venue, every Google Maps link, all seven Airbnbs, the hotels that answer,
-  Smartraveller, Sakura Mobile and the og-image. Google Calendar asks a script to sign in first, as it should.
-- [ ] **Broken: JR West's ICOCA & HARUKA page** (`https://www.westjr.co.jp/global/en/ticket/icoca-haruka/`) returns
-      404. It needs the new address (JR West's site, not a guess), so it's left for a person.
-- [ ] **Check by hand (they refuse scripts, 403, so probably fine in a browser):** the DoubleTree Kyoto Higashiyama
-      (Hilton), the JR Pass timetable, Ninja WiFi's SIM page and Travelkon's Japan eSIM page.
-- [ ] Google Flights ("Flights to KIX") sends a script to an "unsupported" page; check it opens properly on a phone.
+## What Griffin and Nadia still owe
 
-## Titles and the share preview
+Placeholders still showing (`src/content/pending.ts`):
 
-- Share preview: og-image 1200 × 630 (the seal, the names, "15 October 2027, Kyoto"), og:title "Griffin & Nadia ·
-  Kyoto, 15 October 2027", og:description "You're invited.", a large-image card, and the page description. Good.
-- Icons and the manifest (name, short name G&N, the paper colour) are right.
-- [x] **Page titles**: every page was titled "Griffin & Nadia", so a screen reader heard no change between pages
-      (WCAG 2.4.2). Fixed in the next PR: "The day · Griffin & Nadia" and so on.
-- [x] **The calendar file**: right times (11:00 am to 3:30 pm Japan time), venue and map, but its long lines weren't
-      folded at 75 characters as the iCalendar standard asks. Fixed in the next PR.
+- [ ] **Our story words**, each chapter (`story.chapterBody`). In the Content tab.
+- [ ] **Griffin's kid photo** for the Our story opener (`story.kidGriffin`), and any story photo not yet in
+  (`photo.toCome`).
+- [ ] **Who to call on the day**: Jehan's and Noya's numbers (`faqs.contactDay`, the Content tab's `contact_day`).
+- [ ] **Words to approve** (written in their voice, 18e): "Add your travel dates", "Plan your trip" (Home's next
+  step) and "Email Griffin & Nadia" (closed replies and the end of FAQs).
 
-## Walking every page (390 and 1440, light and dark)
+Waiting on them:
 
-Nothing unfinished or off-scale on the live pages beyond the placeholders above. Notes:
-
-- The screenshot baselines for Home, The day, Travel and Our story had drifted (inside the 1% tolerance, so never
-  rewritten): they still showed the old music line and the old phone credit mark. Refreshed in the next PR.
-- Our story's prints are plain paper frames in the plain build until the photos are in; on the live site (with
-  `PUBLIC_PHOTOS`) they show.
-
-## Found, not fixed
-
-- WebKit (Safari's engine) couldn't be installed on the work Mac (the download times out), so nothing in this run
-  was run in real Safari: the iPhone checks above cover it.
-- The broken JR West link and the four links to check by hand (above).
+- [ ] **The 12 fortunes** confirmed, especially the six travel tips (ICOCA or Suica, no tipping, Haruka about 75
+  minutes, cash-only shops, luggage delivery, temples calm before 8 am).
+- [ ] **What time guests should arrive** on the day (The day and the invite email say nothing yet).
+- [ ] **Nadia's maple leaf on its own**, for wherever a leaf shows alone. Also still to come: the painted map land,
+  her handwritten sign-off, and a look at the open envelope's cut (18c log).
+- [ ] **A native read of the Japanese**: the pack [docs/japanese-read.md](japanese-read.md) (and the CSV), plus the
+  15 lines `check:pending` lists and the three new ones above.
+- [ ] **FAQ facts**: are children invited (no FAQ says)? Visas only cover Australians (Griffin's side may fly from
+  Canada). "We'll delete it a few months after the wedding" still the plan?
+- [ ] **The music**: is there permission from Piano ZeroL for the cover of "A Town With an Ocean View"? If not,
+  switch back (README → Music).
+- [ ] **Ideas in the lab for their yes**: the "Ask us" FAQ answer box, and the story print shadows and backdrops.
