@@ -1172,7 +1172,7 @@ svg.lucide { stroke-width: 1.5; }
 .story-thumb { flex: none; width: 48px; height: 48px; border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); }
 .story-thumb figcaption { display: none; }
 .story-thumb > div { width: 48px; height: 48px; aspect-ratio: auto !important; border-radius: 0 !important; }
-.story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: min(34svh, 300px); width: auto; aspect-ratio: 2 / 3; }
+.story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: min(34svh, 300px); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
 .story-controls { display: flex; align-items: center; justify-content: space-between; }
 .story-controls .utility-btn:disabled { opacity: 0.4; }
 @media (prefers-reduced-motion: reduce) { .story-track { scroll-behavior: auto; } }

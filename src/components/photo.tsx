@@ -4,6 +4,7 @@ import manifest from "@/content/photos.json"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
 import { printFrame } from "@/lib/print-frame"
+import { pending } from "@/content/pending"
 
 type Entry = { formats: Record<string, number[]>; wide: Record<string, number[]>; lqip: string; width: number; height: number }
 const PHOTOS = manifest as Record<string, Entry>
@@ -19,7 +20,7 @@ export type Treatment = "full" | "print" | "split"
 export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, vary = false, className, children, alt }: {
   name: string; treatment: Treatment; alt?: string; sizes?: string; priority?: boolean; wide?: boolean; vary?: boolean; className?: string; children?: ReactNode
 }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const p = PHOTOS[name]
   const words = { ...(t.photos[name] ?? { alt: "", caption: "" }), ...(alt ? { alt } : {}) }
   const [loaded, setLoaded] = useState(false)
@@ -45,7 +46,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
         className={cn("photo-img size-full object-cover object-[50%_30%] transition-opacity duration-[400ms]", loaded ? "opacity-100" : "opacity-0")} />
     </picture>
   ) : (
-    <div role="img" aria-label={words.caption || words.alt} className="photo-placeholder grid size-full place-items-center p-4 text-center">
+    <div role="img" aria-label={words.caption || pending("photo.toCome", lang)} className="photo-placeholder grid size-full place-items-center p-4 text-center">
       <span className="space-y-2">
         <Camera aria-hidden className="mx-auto size-5 text-muted-foreground" />
         {words.caption && <span className="block text-small text-muted-foreground">{words.caption}</span>}

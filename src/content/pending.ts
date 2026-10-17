@@ -13,6 +13,10 @@ export const PENDING = {
     en: "A photo of Griffin as a kid, on its way",
     ja: "グリフィンの子どもの頃の写真（準備中）",
   },
+  "photo.toCome": {
+    en: "A photo to come",
+    ja: "写真は準備中です",
+  },
   "faqs.contactDay": {
     en: "We'll add who to call on the day closer to the time.",
     ja: "当日の連絡先は、日が近づいたらここに載せます。",
