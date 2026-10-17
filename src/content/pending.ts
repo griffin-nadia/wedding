@@ -26,6 +26,11 @@ export const PENDING = {
     en: "Plan your trip",
     ja: "旅の計画を立てる",
   },
+  // The reply's dates step heading (18f, the old step 2 split into food, song, and dates)
+  "rsvp.travelTitle": {
+    en: "Your travel dates",
+    ja: "旅の日程",
+  },
   // A way to actually message them where the copy says to (18e journey map): the wedding address already used on the
   // no-invite page
   "contact.emailUs": {

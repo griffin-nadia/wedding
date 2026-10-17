@@ -16,6 +16,7 @@ import { Pill } from "@/components/pill"
 import { Skeleton } from "@/components/skeleton"
 import type { Household } from "@/lib/api"
 import { pending } from "@/content/pending"
+import type { StepId } from "@/components/rsvp-sheet"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
@@ -46,14 +47,14 @@ function Names() {
 }
 
 /** What's left, quietly (v3 J): three lines with a tick or a soft dash, each opening its step. Hidden once all three are done. */
-function YourReply({ h, open }: { h: Household; open: (step: number) => void }) {
+function YourReply({ h, open }: { h: Household; open: (step: StepId) => void }) {
   const { t } = useLang()
   const coming = h.guests.filter((g) => g.attending === "yes")
   if (!coming.length) return null
   const rows = [
-    { key: "who", label: t.home.todo.who, done: h.guests.every((g) => g.attending), step: 1 },
-    { key: "food", label: t.home.todo.food, done: h.songs.length > 0 || coming.some((g) => g.dietary && g.dietary !== "None"), step: 2 },
-    { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: 2, note: t.home.todo.datesLater },
+    { key: "who", label: t.home.todo.who, done: h.guests.every((g) => g.attending), step: "who" as const },
+    { key: "food", label: t.home.todo.food, done: h.songs.length > 0 || coming.some((g) => g.dietary && g.dietary !== "None"), step: "food" as const },
+    { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: "travel" as const, note: t.home.todo.datesLater },
   ]
   return (
     <section aria-label={t.home.yourReply}>
@@ -77,13 +78,13 @@ function YourReply({ h, open }: { h: Household; open: (step: number) => void }) 
  * reply's dates step); dates in (or past the change-by date), plan the trip on Travel. Before a reply the RSVP
  * button is the step; in the week of the wedding, The day is.
  */
-function NextStep({ h, open, locked }: { h: Household; open: (step: number) => void; locked: boolean }) {
+function NextStep({ h, open, locked }: { h: Household; open: (step: StepId) => void; locked: boolean }) {
   const { lang } = useLang()
   const dates = Boolean(h.arrival && h.departure)
   return (
     <div className="next-step">
       {!dates && !locked
-        ? <Button size="md" variant="secondary" className="w-full sm:w-auto" onClick={() => open(2)}>{pending("home.nextDates", lang)}</Button>
+        ? <Button size="md" variant="secondary" className="w-full sm:w-auto" onClick={() => open("travel")}>{pending("home.nextDates", lang)}</Button>
         : <Button asChild size="md" variant="secondary" className="w-full sm:w-auto"><Link to="/travel">{pending("home.nextTrip", lang)}</Link></Button>}
     </div>
   )
@@ -99,14 +100,14 @@ export function HomePage() {
   const { household } = useHousehold()
   const [params] = useSearchParams()
   const [tapped, setTapped] = useState(params.get("rsvp") === "1")
-  const [request, setRequest] = useState<{ at: number; step: number } | undefined>()
+  const [request, setRequest] = useState<{ at: number; step: StepId } | undefined>()
   useEffect(() => { if (params.get("rsvp") === "1") setTapped(true) }, [params])
   const done = Boolean(household?.respondedAt)
   const locked = isLocked()
   // v3 P: first names in the sheet's order; a plus one without a name yet is "your plus one"
   const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : g.firstName)).filter(Boolean) : []
   const dear = t.home.dearNames(names) || household?.displayName || ""
-  const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
+  const openAt = (step: StepId) => { setTapped(true); setRequest({ at: Date.now(), step }) }
   const { mode, contactDay } = useContent()
   const { lang } = useLang()
 
