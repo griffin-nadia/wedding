@@ -46,6 +46,8 @@ Components only use purpose or component tokens; nothing invents a colour or an 
 
 Grain sits on every paper surface (the letter and every sheet, `.letter::before`). The letter's grain and mottle are small baked WebPs (`--texture-grain`, `--texture-soft`, one pair per theme, from `scripts/bake-textures.mjs`), not live SVG noise: a phone redraws both letters in every page turn, and the live filter was about three quarters of that work. Phones under 768 show the grain only. There is one backdrop blur on the site, on the nav, and blur is never animated.
 
+Paper you could hold (`.paper-feel`): the fortune box and its slip, the flying-from card, the envelope and the sent letter carry washi fibres in the paper (`--texture-fibre`, a transparent baked tile per theme), a lighter grain over them, and an edge shadow in four parts (contact hairline, short soft, long faint, lit top and shaded bottom edges). The slip shows two fold creases. The hanko is vermilion (`--ink-stamp`) with real ink: one small SVG filter (`#ink-bleed` in `index.html`) lets its edge bleed into the paper, a baked mask (`--texture-ink`) leaves small dry specks, and on light paper it multiplies in. All images and CSS; no canvas or shader on the guest site.
+
 ## Type: one scale, six roles
 
 Three families, nothing else: **Oranienbaum** (serif display), **Inter** (sans body) and **Zen Old Mincho** (Japanese display, loaded only when someone switches to Japanese; Japanese body text uses the device's own Japanese sans).

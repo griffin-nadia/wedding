@@ -31,7 +31,7 @@ export function JourneyEnd({ token }: { token: string }) {
     .sort((a, b) => (q === name ? 0 : starts(a) - starts(b))).map((c) => ({ key: c, label: label(c), selected: c === city }))
   const choose = (c: Flying) => { pick(c); setQ(label(c)); document.getElementById("fly-from")?.blur() }
   return (
-    <section aria-label={t.flying.endTitle} className="journey-end">
+    <section aria-label={t.flying.endTitle} className="journey-end paper-feel">
       <Combobox id="fly-from" label={t.flying.endTitle} help={t.flying.hint} placeholder={t.flying.placeholder} query={q} onQuery={setQ} openOnFocus
         options={options} onPick={(o) => choose(o.key as Flying)} onSubmit={() => options[0] && choose(options[0].key as Flying)}
         status={options.length ? "results" : "empty"} emptyText={t.flying.noMatch} enterKeyHint="done" />
