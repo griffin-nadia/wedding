@@ -20,7 +20,7 @@ Also on every PR: `npm run lint`, `npm test`, `npm run check:pending` (lists, do
 
 ## In GitHub Actions
 
-`.github/workflows/quality.yml` runs all of the above on every PR to `main`, and "Quality gates" is a required status
-check there. Screenshots compare against `e2e/__screenshots__/linux/` in CI and `darwin/` on a Mac. After an intended
+`.github/workflows/quality.yml` runs all of the above on every PR to `main`. Make its `gates` check required on `main`
+(Settings, Branches, a rule for `main`, "Require status checks to pass", then pick `gates`). Screenshots compare against `e2e/__screenshots__/linux/` in CI and `darwin/` on a Mac. After an intended
 visual change, update both: `npm run test:e2e:update` on the Mac, and for Linux delete the changed images from
 `linux/`, run the workflow (the run writes the missing ones), download its `playwright` artifact and commit them.
