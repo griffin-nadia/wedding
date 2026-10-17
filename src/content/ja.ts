@@ -192,6 +192,7 @@ export const ja: DeepPartial<Content> = {
     intro: "空港から庭園まで、必要な順にまとめました。",
     rowsLabel: "会場への行き方、順番に",
     beforeTitle: "出発の前に",
+    onThisPage: "このページ",
     rows: { passport: "パスポートとビザ", flights: "航空券と到着", insurance: "海外旅行保険", booking: "宿の予約", phones: "スマホ・お金・電源", weather: "天気と持ち物", medicines: "お薬", onTheDay: "当日の移動" },
     seeStay: "宿泊先を見る",
     onTheDayTitle: "当日",
@@ -237,6 +238,8 @@ export const ja: DeepPartial<Content> = {
       sleeps: (n: string) => `${n.replace(" to ", "〜")}名まで`,
       opensHotel: "ホテルのサイトがひらきます",
       opensAirbnb: "Airbnbがひらきます",
+      filterLabel: "エリアで絞り込む",
+      count: (n: number) => `${n}件`,
       hotels: [
         { area: "京都駅" }, { area: "京都駅" }, { area: "京都駅" },
         { area: "五条", price: "~$100 AUD〜", note: "京都駅と祇園四条のあいだ" },
