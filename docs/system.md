@@ -2,7 +2,7 @@
 
 One idea runs through the whole site: **a scene behind, a letter in front.** After the envelope opens, the scene is warm paper (Nadia's painting drops into `public/art/paper/base` when it exists). The letter is the cream sheet everything is read on. Brand, tokens, type, states, motion and delight all follow from that.
 
-See it live at `/kit` (every component, Light and Lantern side by side, every state). Try changes at `/lab` or `?tune=1`. Both open only from a crew link.
+See every component, Light and Lantern side by side, in the local lab (`npm run lab`). Nothing from the lab ships to guests.
 
 ## Brand
 
@@ -25,13 +25,26 @@ See it live at `/kit` (every component, Light and Lantern side by side, every st
 
 ## Tokens: three layers
 
-| Layer | Prefix | What it is | Changes when |
-|---|---|---|---|
-| Brand | `--brand-*` | Nadia's palette (kinari, kogecha, sabi, koke, forest, hachimitsu, yoru, ai, kiri…) | Nadia changes the palette |
-| System | `--sys-*` | What a colour is for, per mode: surface, surface-raised, surface-alt, fill, ink, ink-soft, ink-muted, accent, link, line, line-strong, focus, success, moss, danger | A role needs a different colour |
-| Component | `--letter-*`, `--input-*`, `--button-*`, `--countdown-*`, `--pill-*`, `--scene-*` | One component's own values, aliasing system tokens | One component needs tuning alone |
+Tokens live in `src/styles/tokens.css`; Tailwind reads the purpose layer through `@theme` in `src/index.css`.
 
-Components only use system or component tokens; nothing invents a colour or an alpha. shadcn's names (`--background`, `--primary`…) are aliases of the system layer.
+| Layer | Names | What it is | Changes when |
+|---|---|---|---|
+| Base | `--brand-*` | Nadia's palette in oklch (kinari, kogecha, sabi, koke, forest, hachimitsu, yoru, ai…), the hex each came from beside it | Nadia changes the palette |
+| Purpose | `--surface-paper`, `--surface-raised`, `--surface-alt`, `--surface-fill`, `--ink`, `--ink-soft`, `--ink-muted`, `--ink-link`, `--ink-story`, `--line-hairline`, `--line-strong`, `--line-focus`, `--action`, `--action-ink`… | What a colour is for. **Light and Lantern swap this layer and nothing else.** Utilities: `bg-surface-paper`, `text-ink-muted`, `border-line-hairline` | A role needs a different colour |
+| Component | `--letter-*`, `--input-*`, `--button-*`, `--chip-*`, `--countdown-*`, `--pill-*`, `--scene-*` | One component's own values, aliasing the purpose layer | One component needs tuning alone |
+
+Components only use purpose or component tokens; nothing invents a colour or an alpha. shadcn's names (`--background`, `--primary`…) alias the purpose layer.
+
+### Surfaces and elevation
+
+| Surface | Token | Looks like |
+|---|---|---|
+| Paper | `--elevation-paper` | the letter: grain, one soft shadow |
+| Raised | `--elevation-raised` | cards and inputs on the letter: a hairline, no shadow |
+| Sheet | `--elevation-sheet` | the one sheet (reply, journey map, driver card): grain, the deeper shadow |
+| Overlay | `--elevation-overlay` | the dim behind a sheet |
+
+Grain sits on every paper surface (the letter and every sheet, `.letter::before`). There is one backdrop blur on the site, on the nav, and blur is never animated.
 
 ## Type: one scale, five roles
 
@@ -77,7 +90,7 @@ Three families, nothing else: **Oranienbaum** (serif display), **Inter** (sans b
 | Hover (pointer only) | same | line-strong | controls: border only, never a fill change |
 | Hover, whole rows | ink tint, `--row-hover-mix` (5%, 7% in Lantern) | same | accordion questions, tick rows, stay rows, your reply: a tint 12px wider than the text; `--row-press-mix` while a finger is down; a tick box answers its row with a stronger line; an open question shows no tint (its chevron turns moss) until the pointer is on it. Options → Row hover. |
 | Focus-visible | same | same | 2px ring in `focus`, 2px offset, on everything |
-| Pressed | fill | same | scale .98, `--duration-press` (90 ms) |
+| Pressed | fill | same | spring to .97, `--duration-fast` |
 | Selected | secondary | primary 2px | tick (a slot reserved so nothing shifts) |
 | Disabled | surface | line | 50% text, no hover |
 | Error | surface-raised | danger 2px | message under, 14px danger |
@@ -88,23 +101,27 @@ Buttons are never greyed out to stop a step: pressing Next with something missin
 
 ## Motion
 
-Paper rises and settles. Every duration and easing is a token; nothing is typed inline.
+Paper rises and settles. Three durations, two easings, one spring; nothing is typed inline. Under reduced motion all three durations are zero, so nothing transitions, animates or loops.
 
 | Token | Use |
 |---|---|
-| `--duration-press` 90 ms | pressed scale |
-| `--duration-quick` 150 ms | hover, focus, colour, ticks, toasts |
-| `--duration-slide` 200 ms | the nav and segmented markers; a short swipe springing back |
-| `--duration-turn` 280 ms | both letters on the page-turn track |
-| `--duration-settle` 300 ms | steps, accordions, the fortune slip |
-| `--duration-flap` 420 ms / `--duration-stamp` 420 ms | the envelope flap / the hanko landing |
-| `--duration-rise` 600 ms | the letter rising, the names settling |
-| `--duration-draw` 1.2 s | a line drawing itself (trail, timeline) |
-| `--duration-shake` 900 ms | the omikuji box |
-| `--duration-breathe`, `--duration-light`, `--duration-mist` | loading and the ambient paper |
-| `--ease-paper`, `--ease-letter`, `--ease-out`, `--ease-spring`, `--ease-breathe` | arriving, the letter, leaving, the one bounce, loops |
+| `--duration-fast` 150 ms | presses, hover, focus, ticks, toasts, markers sliding |
+| `--duration-base` 300 ms | steps, accordions, page turns, the flap, the stamp |
+| `--duration-slow` 600 ms | the letter rising, the Light/Lantern reveal; lines draw at ×2, loops are multiples |
+| `--ease-paper` | everything that arrives or settles |
+| `--ease-out` | things leaving |
+| `--ease-spring` | the press (scale .97), the flap, a short swipe springing back |
 
-Motion answers an action. Nothing fades up on scroll; the trail and the timeline line are the only things that draw as you scroll. Everything has a still version under reduced motion, and nothing moves while the tab is hidden.
+One frame loop runs every animation that needs script (`src/lib/frame.ts`); nothing else calls `requestAnimationFrame`. Scroll and resize work goes through IntersectionObserver, ResizeObserver or CSS scroll timelines (the timeline on The day draws with `animation-timeline: scroll(root)`). The only scroll listener left is the keyboard's VisualViewport, which has no observer. Page changes on laptops are view transitions; phones keep the page-turn track. Toasts arrive with `@starting-style`, textareas grow with `field-sizing: content`.
+
+## Components
+
+- **Button** (`ui/button`): primary, secondary, quiet, link; sizes sm 44, md (the field height), lg 56; hover, focus-visible, pressed (spring to .97), disabled, loading (`aria-busy`, a spinner). The fortune's "Save to my phone" is the link variant in the slip's own ink.
+- **Chip** (`chip-shape`, `--chip-*`): the date chip, status chips, the Replied badge, reply chips and choice chips share one height (32, a 44 tap area on the tappable ones), radius, hairline and padding.
+- **Sheet** (`ui/sheet`): the one dialog. Fixed head, scrolling body, X, Esc, focus trapped and returned.
+- **Accordion** (`ui/accordion`, `Disclosure`): one open at a time.
+- **Field** (`ui/field`): label always visible, help or an inline error. **Checkbox group** (`ui/checkbox-group`): tap chips, no keyboard.
+- **Toast** (`ui/toast`): one at a time, 4 s, never for an error.
 
 ## Delight: one moment per screen
 
@@ -119,7 +136,4 @@ Motion answers an action. Nothing fades up on scroll; the trail and the timeline
 
 ## Tools
 
-- `/kit`: the design system, every built component and state, both modes.
-- `/lab`: the options lab, with the tuning panel beside the real site in phone and desktop frames. Options are grouped by the part of the site they change and shown only where meaningful; anything settled isn't there.
-- `?tune=1` on any page: the same panel over the real site. Pin notes on anything; export writes `tune.json`.
-- The panel ships only in builds with `VITE_TUNE=1`. Changes live in the browser that made them; guests never see them.
+- `npm run lab`: the local lab (component gallery, options panel, layout and style switchers, experiments). Never built into or linked from the guest site.

@@ -41,14 +41,15 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     io.observe(el)
     return () => io.disconnect()
   }, [list])
-  // Which slide is showing, from where the track has snapped to (one passive listener, at most once a frame)
+  // Which slide is showing: the one more than half in view on the track (no scroll listener)
   useEffect(() => {
     const el = track.current
     if (!el) return
-    let raf = 0
-    const on = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() => setAt(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)))) }
-    el.addEventListener("scroll", on, { passive: true })
-    return () => { el.removeEventListener("scroll", on); cancelAnimationFrame(raf) }
+    const io = new IntersectionObserver((es) => {
+      for (const e of es) if (e.isIntersecting) setAt([...el.children].indexOf(e.target))
+    }, { root: el, threshold: 0.6 })
+    for (const c of el.children) io.observe(c)
+    return () => io.disconnect()
   }, [list])
   const go = (i: number) => {
     const el = track.current

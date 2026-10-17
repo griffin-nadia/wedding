@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react"
+import { nextFrame } from "@/lib/frame"
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -30,7 +31,7 @@ export function Segmented<T extends string>({ items, value, onChange, label, rol
     e.preventDefault()
     const n = items[(i + d + items.length) % items.length]
     onChange(n.value)
-    requestAnimationFrame(() => list.current?.querySelector<HTMLElement>(`[data-value="${n.value}"]`)?.focus())
+    nextFrame(() => list.current?.querySelector<HTMLElement>(`[data-value="${n.value}"]`)?.focus())
   }
   const tab = role === "tablist"
   return (

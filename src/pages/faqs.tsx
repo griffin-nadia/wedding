@@ -1,4 +1,4 @@
-import { Disclosure } from "@/components/disclosure"
+import { Disclosure } from "@/components/ui/accordion"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useLang } from "@/lib/lang"
 import { useContent } from "@/lib/content"

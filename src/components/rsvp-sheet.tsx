@@ -1,17 +1,18 @@
 import { DATES } from "@/lib/wedding-dates"
+import { nextFrame } from "@/lib/frame"
 import { useEffect, useRef, useState, type ReactNode } from "react"
-import { Dialog } from "radix-ui"
-import { X } from "lucide-react"
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { FormField } from "@/components/form-field"
+import { FormField } from "@/components/ui/field"
 import { Combobox } from "@/components/combobox"
 import { Segmented } from "@/components/segmented"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
-import { FieldError, ReviewRow, StepProgress } from "@/components/blocks"
+import { ReviewRow, StepProgress } from "@/components/blocks"
+import { FieldError } from "@/components/ui/field"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
 import { JourneyEnd } from "@/components/journey-end"
@@ -195,7 +196,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     setMissing(m)
     const first = Object.keys(m)[0]
     if (first) {
-      requestAnimationFrame(() => document.getElementById(first)?.focus())
+      nextFrame(() => document.getElementById(first)?.focus())
       return
     }
     setDir("fwd")
@@ -270,27 +271,24 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   )
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Trigger asChild disabled={locked}>{children}</Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay className="rsvp-overlay" />
-        <Dialog.Content className="letter paper rsvp-letter" aria-describedby={undefined}
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger asChild disabled={locked}>{children}</SheetTrigger>
+        <SheetContent aria-describedby={undefined}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}
           // Only X, Esc or "Back to your invite" close the sheet; a tap outside never does (v3 A)
           onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}
           // Escape inside an open combobox closes its list, not the sheet
           onEscapeKeyDown={(e) => { const el = e.target as HTMLElement | null; if (el?.getAttribute("role") === "combobox" && el.getAttribute("aria-expanded") === "true") e.preventDefault() }}>
-          <Dialog.Close className="rsvp-close press" aria-label={t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
-          {done ? <div className="rsvp-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
-          <header className="rsvp-head flex flex-col gap-3">
+          {done ? <div className="sheet-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
+          <header className="sheet-head flex flex-col gap-3">
             <p className="label-caps text-muted-foreground">{t.rsvp.step(step, total)}</p>
-            <Dialog.Title ref={heading} tabIndex={-1} className="heading outline-none">
+            <SheetTitle ref={heading} tabIndex={-1} className="heading outline-none">
               {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : t.rsvp.checkTitle}
-            </Dialog.Title>
+            </SheetTitle>
             <StepProgress step={step} of={total} label={t.rsvp.step(step, total)} />
           </header>
 
-          <div ref={body} className="rsvp-body">
+          <div ref={body} className="sheet-body">
           <div key={step} className={cn("rsvp-step flex flex-col gap-(--form-group-gap)", dir === "fwd" ? "step-fwd" : "step-back")}>
             {step === 1 && (
               <div className="flex flex-col">
@@ -377,15 +375,14 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
           </div>
 
           <footer className="rsvp-actions">
-            {step > 1 && <Button variant="outline" size="lg" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
+            {step > 1 && <Button variant="secondary" size="md" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
             {step < total
-              ? <Button size="lg" className="flex-1 shrink!" onClick={next}>{t.rsvp.next}</Button>
-              : <Button size="lg" className="flex-1 shrink!" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
+              ? <Button size="md" className="flex-1 shrink!" onClick={next}>{t.rsvp.next}</Button>
+              : <Button size="md" className="flex-1 shrink!" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
           </footer>
           </>}
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </SheetContent>
+    </Sheet>
   )
 }
 
@@ -405,14 +402,14 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
     <div className="flex flex-col gap-6">
       <header className="flex items-center gap-5 pr-10">
         {answer !== "none" && <Hanko stamp />}
-        <Dialog.Title ref={titleRef} tabIndex={-1} className="heading outline-none">{t.rsvp.doneTitle[answer]}</Dialog.Title>
+        <SheetTitle ref={titleRef} tabIndex={-1} className="heading outline-none">{t.rsvp.doneTitle[answer]}</SheetTitle>
       </header>
       <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
       {answer !== "none" && <div className="sent-next"><FortuneCard token={h.token} /></div>}
       {answer !== "none" && <div className="sent-next"><JourneyEnd token={h.token} /></div>}
       {answer !== "none" && <AddToCalendar />}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-6">
-        <Button size="lg" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
+        <Button size="md" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
         <button type="button" className="btn-text min-h-11" onClick={onChange}>{t.rsvp.changeReply}</button>
       </div>
     </div>

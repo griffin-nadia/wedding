@@ -7,7 +7,6 @@ import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { jstLabel, kyotoNow } from "@/lib/time"
 import { cn } from "@/lib/utils"
-import { onScroll } from "@/lib/scroll"
 
 const ICONS = [Flower2, Wine, UtensilsCrossed]
 
@@ -44,25 +43,8 @@ function Row({ i, time, label, where, local }: { i: number; time: string; label:
 function Timeline({ now }: { now: Date }) {
   const { t, lang } = useLang()
   const nowAt = nowOnTheDay(now, t.day.schedule.map((x) => x.time))
-  const ref = useRef<HTMLOListElement>(null)
-  // The line's tip follows a point 60% down the screen, so it's complete once the timeline's end reaches that point,
-  // and it snaps to full when the page can't scroll any further (a short laptop screen never gets the end that high).
-  // One path for every browser: a CSS scroll timeline can't know the page has run out of scroll.
-  useEffect(() => {
-    const el = ref.current
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
-    el.classList.add("timeline-js")
-    const tick = () => {
-      const r = el.getBoundingClientRect(), vh = window.innerHeight
-      const atEnd = window.scrollY + vh >= document.documentElement.scrollHeight - 2
-      const p = atEnd ? 1 : Math.min(1, Math.max(0, (vh * 0.6 - r.top) / r.height))
-      el.style.setProperty("--fill", p.toFixed(3))
-    }
-    tick()
-    return onScroll(tick)
-  }, [])
   return (
-    <ol ref={ref} className="timeline" aria-label={t.day.timelineLabel}>
+    <ol className="timeline" aria-label={t.day.timelineLabel}>
       <span aria-hidden className="timeline-line" />
       <span aria-hidden className="timeline-line timeline-fill" />
       {nowAt !== null && (

@@ -1,4 +1,4 @@
-import { toast } from "@/components/toast"
+import { toast } from "@/components/ui/toast"
 import { copyText } from "@/lib/copy"
 import type { useLang } from "@/lib/lang"
 

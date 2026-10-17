@@ -45,9 +45,12 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
       setPlace(ok ?? (face && hits(new DOMRect(arrow.x, arrow.y, arrow.w, arrow.h), face) ? null : arrow))
     }
     fit()
-    addEventListener("resize", fit)
+    // The viewport (the root) or the envelope changing size moves the note; no resize listener
+    const ro = new ResizeObserver(fit)
+    ro.observe(document.documentElement)
+    if (envelope.current) ro.observe(envelope.current)
     const id = setTimeout(fit, 400) // once the photo has its size
-    return () => { removeEventListener("resize", fit); clearTimeout(id) }
+    return () => { ro.disconnect(); clearTimeout(id) }
   }, [envelope])
   if (!place) return null
   return (

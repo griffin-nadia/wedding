@@ -1,59 +1,56 @@
 /*
   Design tokens for the Griffin & Nadia site. Three layers (docs/system.md):
 
-  1 Brand      --brand-*   Nadia's palette, named in the Japanese colour style. Changes only if she changes it.
-  2 System     --sys-*     What things are for (surface, ink, accent, line, focus...), per mode.
-                           Components only ever use system tokens.
-  3 Component  --input-*, --button-*, --letter-*, --countdown-*, --scene-*
-                           Alias system tokens by default, so one component can be tuned without the rest.
+  1 Base       --brand-*   Nadia's palette in oklch, named in the Japanese colour style (the hex each came from beside it).
+  2 Purpose    --surface-*, --ink-*, --line-*, --action*, --fill-*   What a colour is for. Light and Lantern swap this
+                           layer and nothing else. Components only ever use purpose or component tokens.
+  3 Component  --letter-*, --input-*, --button-*, --chip-*, --countdown-*, --scene-*   Alias the purpose layer, so one
+                           component can be tuned without the rest.
 
   Plus scales that are the same in every mode: type (--type-*), space (--space-*), radius (--radius-*),
-  motion (--duration-*, --ease-*). Every size sits on the 4px grid; vertical rhythm steps in 8.
+  motion (--duration-*, --ease-*) and elevation (--elevation-*). Every size sits on the 4px grid.
 
   Modes: <html data-theme="autumn"> (light, default) or data-theme="lantern" (dark), set before first paint
-  by the inline script in index.html. Text pairs are checked to WCAG AA (4.5:1).
-  Figma mirrors this: Tokens collection (brand/, sys/ and component groups; Light and Lantern modes)
-  and Scale collection (type, space, radius, motion).
+  by the inline script in index.html. Text pairs are checked to WCAG AA (4.5:1). Tailwind reads the purpose layer
+  through @theme in index.css (bg-surface-paper, text-ink-muted, border-line-hairline…).
 */
 
-/* ─── 1 · Brand ─────────────────────────────────────────────────────────────── */
+/* ─── 1 · Base ──────────────────────────────────────────────────────────────── */
 :root {
   /* Autumn */
-  --brand-kinari: #f3e7d3;        /* warm cream: the letter */
-  --brand-shiro-kinari: #fbf5ea;  /* lifted cream: inputs and cards on the letter */
-  --brand-wara: #e5d0a8;          /* oat straw: fills and lines only */
-  --brand-kogecha: #421a05;       /* Old Study: ink */
-  --brand-kuri: #754b38;          /* chestnut: body text */
-  --brand-nikkei: #8b5a3c;        /* cinnamon brown: muted text */
-  --brand-sabi: #a84f32;          /* maple rust: accent */
-  --brand-doro: #a43108;          /* Muddy: links and focus */
-  --brand-uguisu-cha: #5c5011;    /* Mud Brown: success text */
-  --brand-koke: #727354;          /* moss: the rule, the tick, never small text */
-  --brand-kabocha: #c8783e;       /* pumpkin: Lantern accent */
-  --brand-hachimitsu: #d5a34f;    /* honey */
-  --brand-mitsu: #ebd48f;         /* Nectar */
-  --brand-sage-paper: #e6e2cc;    /* sage paper: the second surface */
-  --brand-forest: #3e4a26;        /* forest: the letter's top edge */
-  --brand-danger: #a1260c;
-  --brand-paper-bright: #fffdf8;  /* the fortune slip and the driver card: always bright paper */
-  --brand-ink-deep: #2a1206;
+  --brand-kinari: oklch(93.2% 0.030 80.7);        /* #f3e7d3, warm cream: the letter */
+  --brand-shiro-kinari: oklch(97.2% 0.016 82.8);  /* #fbf5ea, lifted cream: inputs and cards on the letter */
+  --brand-wara: oklch(86.5% 0.058 83.4);          /* #e5d0a8, oat straw: fills and lines only */
+  --brand-kogecha: oklch(27.4% 0.070 45.5);       /* #421a05, Old Study: ink */
+  --brand-kuri: oklch(45.6% 0.065 45.0);          /* #754b38, chestnut: body text */
+  --brand-nikkei: oklch(51.5% 0.078 51.7);        /* #8b5a3c, cinnamon brown: muted text */
+  --brand-sabi: oklch(53.4% 0.125 38.5);          /* #a84f32, maple rust: accent */
+  --brand-doro: oklch(48.3% 0.157 36.8);          /* #a43108, Muddy: links and focus */
+  --brand-uguisu-cha: oklch(43.1% 0.081 97.9);    /* #5c5011, Mud Brown: success text */
+  --brand-koke: oklch(54.6% 0.046 109.4);          /* #727354, moss: the rule, the tick, never small text */
+  --brand-kabocha: oklch(64.9% 0.124 54.4);       /* #c8783e, pumpkin: Lantern accent */
+  --brand-hachimitsu: oklch(74.6% 0.117 78.2);    /* #d5a34f, honey */
+  --brand-mitsu: oklch(87.3% 0.091 91.7);         /* #ebd48f, Nectar */
+  --brand-sage-paper: oklch(91.0% 0.030 98.5);    /* #e6e2cc, sage paper: the second surface */
+  --brand-forest: oklch(38.9% 0.058 124.2);        /* #3e4a26, forest: the letter's top edge */
+  --brand-danger: oklch(46.7% 0.163 33.0);  /* #a1260c */
+  --brand-paper-bright: oklch(99.4% 0.007 88.6);  /* #fffdf8, the fortune slip and the driver card: always bright paper */
+  --brand-ink-deep: oklch(21.5% 0.045 46.7);  /* #2a1206 */
   /* Lantern (evening) */
-  --brand-yoru: #22160e;
-  --brand-ai: #0b1a2a;            /* indigo: the cool shade in the letter's lower corner, Lantern */
-  --brand-kiri: #c9b9a3;          /* mist: the Lantern mist band */
-  --brand-yoru-raised: #2f2016;
-  --brand-yoru-fill: #3d2b1d;
-  --brand-yoru-line: #5a4230;      /* the night hairline: 1.9:1 on the letter, 1.55:1 on the darker tiles (was 1.24:1) */
-  --brand-yoru-sage: #2c2a1c;
-  --brand-kare: #b8a07f;
-  --brand-sage: #a3a37e;
-  --brand-rust-light: #f08a6c;
+  --brand-yoru: oklch(21.3% 0.025 54.7);  /* #22160e */
+  --brand-ai: oklch(21.3% 0.038 251.4);            /* #0b1a2a, indigo: the cool shade in the letter's lower corner, Lantern */
+  --brand-yoru-raised: oklch(25.9% 0.029 54.7);  /* #2f2016 */
+  --brand-yoru-fill: oklch(30.6% 0.036 58.8);  /* #3d2b1d */
+  --brand-yoru-line: oklch(40.0% 0.044 58.0);      /* #5a4230, the night hairline: 1.9:1 on the letter, 1.55:1 on the darker tiles (was 1.24:1) */
+  --brand-yoru-sage: oklch(28.3% 0.024 100.9);  /* #2c2a1c */
+  --brand-kare: oklch(71.8% 0.054 75.5);  /* #b8a07f */
+  --brand-sage: oklch(70.6% 0.051 107.6);  /* #a3a37e */
+  --brand-rust-light: oklch(73.7% 0.132 37.2);  /* #f08a6c */
   /* v3 U (6 Oct): one green for every action, one story accent, one ink */
-  --brand-sage-ink: #5b6b3a;      /* sage, deep enough for cream text (5.4:1): buttons, focus, toggles, the seal */
-  --brand-shu: #b7321d;           /* vermilion: the hanko when a reply lands, nothing else */
+  --brand-sage-ink: oklch(50.2% 0.074 123.8);      /* #5b6b3a, sage, deep enough for cream text (5.4:1): buttons, focus, toggles, the seal */
+  --brand-shu: oklch(51.9% 0.173 31.8);           /* #b7321d, vermilion: the hanko when a reply lands, nothing else */
 }
-
-/* ─── 2 · System (per mode) ─────────────────────────────────────────────────── */
+/* ─── 2 · Purpose (per mode): the only layer Light and Lantern swap ────────── */
 :root, [data-theme="autumn"], .paper:not(.letter) {
   --row-hover-mix: 5%;                             /* row hover tint: this much ink (v3 T) */
   --row-press-mix: 8%;
@@ -61,58 +58,58 @@
      light"). The letter and the sheets keep their Lantern dark tokens unless the "Letter in Lantern" option is set
      to cream. Declared again on .paper so every alias below resolves to the light values. */
   color-scheme: light;
-  --sys-surface: var(--brand-kinari);              /* the letter */
-  --sys-surface-raised: var(--brand-shiro-kinari); /* inputs, cards on the letter */
-  --sys-surface-alt: var(--brand-sage-paper);      /* the second surface (driver card) */
-  --sys-fill: var(--brand-wara);                   /* pressed, selected, skeleton */
-  --sys-ink: var(--brand-kogecha);                 /* names, headings, input text */
-  --sys-ink-soft: var(--brand-kuri);               /* body: never lighter than this */
-  --sys-ink-muted: var(--brand-nikkei);            /* hints, labels */
-  --sys-accent: var(--brand-sage-ink);             /* the one action colour: buttons, toggles, the seal, "&" */
-  --sys-accent-ink: var(--brand-shiro-kinari);     /* text on accent */
-  --sys-link: var(--brand-forest);
-  --sys-story: var(--brand-sabi);                  /* Our story only: map lines, chapter labels, stop numbers; never a control */
-  --sys-stamp: var(--brand-shu);                   /* the hanko only */
-  --sys-line: var(--brand-wara);
-  --sys-line-strong: var(--brand-nikkei);          /* hover border */
-  --sys-focus: var(--brand-sage-ink);
-  --sys-success: var(--brand-uguisu-cha);
-  --sys-moss: var(--brand-koke);
-  --sys-danger: var(--brand-danger);
-  --sys-highlight: var(--brand-hachimitsu);
-  --sys-edge: var(--brand-forest);                 /* the letter's top edge */
-  --sys-scene-scrim: var(--brand-kinari);
-  --sys-shadow-tint: 66 26 5;
-  --sys-texture-blend: multiply;
+  --surface-paper: var(--brand-kinari);              /* the letter */
+  --surface-raised: var(--brand-shiro-kinari); /* inputs, cards on the letter */
+  --surface-alt: var(--brand-sage-paper);      /* the second surface (driver card) */
+  --surface-fill: var(--brand-wara);                   /* pressed, selected, skeleton */
+  --ink: var(--brand-kogecha);                 /* names, headings, input text */
+  --ink-soft: var(--brand-kuri);               /* body: never lighter than this */
+  --ink-muted: var(--brand-nikkei);            /* hints, labels */
+  --action: var(--brand-sage-ink);             /* the one action colour: buttons, toggles, the seal, "&" */
+  --action-ink: var(--brand-shiro-kinari);     /* text on accent */
+  --ink-link: var(--brand-forest);
+  --ink-story: var(--brand-sabi);                  /* Our story only: map lines, chapter labels, stop numbers; never a control */
+  --ink-stamp: var(--brand-shu);                   /* the hanko only */
+  --line-hairline: var(--brand-wara);
+  --line-strong: var(--brand-nikkei);          /* hover border */
+  --line-focus: var(--brand-sage-ink);
+  --ink-success: var(--brand-uguisu-cha);
+  --ink-moss: var(--brand-koke);
+  --ink-danger: var(--brand-danger);
+  --fill-highlight: var(--brand-hachimitsu);
+  --line-edge: var(--brand-forest);                 /* the letter's top edge */
+  --surface-scrim: var(--brand-kinari);
+  --tint-shadow: 66 26 5;
+  --grain-blend: multiply;
 }
 
 [data-theme="lantern"] {
   --row-hover-mix: 7%;
   --row-press-mix: 11%;
   color-scheme: dark;
-  --sys-texture-blend: soft-light;
-  --sys-surface: var(--brand-yoru);
-  --sys-surface-raised: var(--brand-yoru-raised);
-  --sys-surface-alt: var(--brand-yoru-sage);
-  --sys-fill: var(--brand-yoru-fill);
-  --sys-ink: var(--brand-kinari);
-  --sys-ink-soft: var(--brand-wara);
-  --sys-ink-muted: var(--brand-kare);
-  --sys-accent: var(--brand-sage);
-  --sys-accent-ink: var(--brand-yoru);
-  --sys-link: var(--brand-mitsu);
-  --sys-story: var(--brand-kabocha);
-  --sys-stamp: var(--brand-shu);
-  --sys-line: var(--brand-yoru-line);
-  --sys-line-strong: var(--brand-kare);
-  --sys-focus: var(--brand-sage);
-  --sys-success: var(--brand-sage);
-  --sys-moss: var(--brand-sage);
-  --sys-danger: var(--brand-rust-light);
-  --sys-highlight: var(--brand-hachimitsu);
-  --sys-edge: var(--brand-hachimitsu);
-  --sys-scene-scrim: var(--brand-yoru);
-  --sys-shadow-tint: 0 0 0;
+  --grain-blend: soft-light;
+  --surface-paper: var(--brand-yoru);
+  --surface-raised: var(--brand-yoru-raised);
+  --surface-alt: var(--brand-yoru-sage);
+  --surface-fill: var(--brand-yoru-fill);
+  --ink: var(--brand-kinari);
+  --ink-soft: var(--brand-wara);
+  --ink-muted: var(--brand-kare);
+  --action: var(--brand-sage);
+  --action-ink: var(--brand-yoru);
+  --ink-link: var(--brand-mitsu);
+  --ink-story: var(--brand-kabocha);
+  --ink-stamp: var(--brand-shu);
+  --line-hairline: var(--brand-yoru-line);
+  --line-strong: var(--brand-kare);
+  --line-focus: var(--brand-sage);
+  --ink-success: var(--brand-sage);
+  --ink-moss: var(--brand-sage);
+  --ink-danger: var(--brand-rust-light);
+  --fill-highlight: var(--brand-hachimitsu);
+  --line-edge: var(--brand-hachimitsu);
+  --surface-scrim: var(--brand-yoru);
+  --tint-shadow: 0 0 0;
 }
 
 /* shadcn/ui and Tailwind read these names; they only alias the system layer.
@@ -121,37 +118,36 @@
 [data-theme="autumn"],
 [data-theme="lantern"],
 .paper {
-  --background: var(--sys-surface);
-  --foreground: var(--sys-ink);
-  --card: var(--sys-surface-raised);
-  --card-foreground: var(--sys-ink);
-  --popover: var(--sys-surface-raised);
-  --popover-foreground: var(--sys-ink);
-  --primary: var(--sys-accent);
-  --primary-foreground: var(--sys-accent-ink);
-  --secondary: var(--sys-fill);
-  --secondary-foreground: var(--sys-ink);
-  --muted: var(--sys-fill);
-  --muted-foreground: var(--sys-ink-muted);
-  --accent: var(--sys-fill);
-  --accent-foreground: var(--sys-ink);
-  --destructive: var(--sys-danger);
-  --border: var(--sys-line);
-  --input: var(--sys-line);
-  --ring: var(--sys-focus);
-  --body: var(--sys-ink-soft);
-  --link: var(--sys-link);
-  --eyebrow: var(--sys-link);
-  --success: var(--sys-success);
-  --leaf: var(--sys-moss);
-  --highlight: var(--sys-highlight);
-  --section-alt: var(--sys-surface-alt);
-  --shadow-tint: var(--sys-shadow-tint);
+  --background: var(--surface-paper);
+  --foreground: var(--ink);
+  --card: var(--surface-raised);
+  --card-foreground: var(--ink);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--ink);
+  --primary: var(--action);
+  --primary-foreground: var(--action-ink);
+  --secondary: var(--surface-fill);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-fill);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--surface-fill);
+  --accent-foreground: var(--ink);
+  --destructive: var(--ink-danger);
+  --border: var(--line-hairline);
+  --input: var(--line-hairline);
+  --ring: var(--line-focus);
+  --body: var(--ink-soft);
+  --link: var(--ink-link);
+  --eyebrow: var(--ink-link);
+  --success: var(--ink-success);
+  --leaf: var(--ink-moss);
+  --highlight: var(--fill-highlight);
+  --section-alt: var(--surface-alt);
 
   /* Letter */
-  --letter-bg: var(--sys-surface);
-  --letter-ink: var(--sys-ink-soft);
-  --letter-edge-color: var(--sys-edge);
+  --letter-bg: var(--surface-paper);
+  --letter-ink: var(--ink-soft);
+  --letter-edge-color: var(--line-edge);
   --letter-edge: 6px;
   --letter-radius: var(--radius-letter);
   --letter-width: 740px; /* every page the same width on desktop, wide enough for the names on one line (v3 S) */
@@ -159,23 +155,25 @@
   --letter-top: 96px;
   --letter-pad: var(--density-letter-pad);
   --letter-gap: var(--density-gap);
-  --letter-blur: 12px;
-  /* One shadow on the site (v3 H): the letter's. The sheet uses it at 1.5×. Nothing else casts a shadow. */
-  --letter-shadow: 0 24px 48px -24px rgb(var(--sys-shadow-tint) / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.6);
-  --sheet-shadow: 0 36px 72px -36px rgb(var(--sys-shadow-tint) / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.6);
+  /* Surfaces and elevation: paper (the letter), raised (cards and inputs on it: a hairline, no shadow), sheet
+     (the reply sheet and every dialog), overlay (the dim behind a sheet). Only paper and sheet cast a shadow. */
+  --elevation-paper: 0 24px 48px -24px rgb(var(--tint-shadow) / 0.28), inset 0 1px 0 rgb(255 255 255 / 0.6);
+  --elevation-raised: 0 0 0 1px var(--line-hairline);
+  --elevation-sheet: 0 36px 72px -36px rgb(var(--tint-shadow) / 0.42), inset 0 1px 0 rgb(255 255 255 / 0.6);
+  --elevation-overlay: color-mix(in oklab, var(--brand-ink-deep) 24%, transparent);
   /* Inputs: fields, combobox, chips and choice cards share these */
-  --input-bg: var(--sys-surface-raised);
-  --input-ink: var(--sys-ink);
-  --input-line: var(--sys-line);
-  --input-line-hover: var(--sys-line-strong);
-  --input-focus: var(--sys-focus);
-  --input-caret: var(--sys-accent);
-  --input-selected-bg: var(--sys-fill);
-  --input-selected-line: var(--sys-accent);
-  --input-pressed-bg: var(--sys-fill);
-  --input-disabled-bg: var(--sys-surface);
-  --input-error: var(--sys-danger);
-  --input-tick: var(--sys-moss);
+  --input-bg: var(--surface-raised);
+  --input-ink: var(--ink);
+  --input-line: var(--line-hairline);
+  --input-line-hover: var(--line-strong);
+  --input-focus: var(--line-focus);
+  --input-caret: var(--action);
+  --input-selected-bg: var(--surface-fill);
+  --input-selected-line: var(--action);
+  --input-pressed-bg: var(--surface-fill);
+  --input-disabled-bg: var(--surface-paper);
+  --input-error: var(--ink-danger);
+  --input-tick: var(--ink-moss);
   --input-height: var(--density-field);
   --input-radius: var(--radius-chip);
   --input-pad: var(--space-4);
@@ -188,36 +186,41 @@
   --form-block-gap: var(--density-form);
   --form-group-gap: var(--space-6);
   /* Buttons */
-  --button-bg: var(--sys-accent);
-  --button-ink: var(--sys-accent-ink);
-  --button-bg-hover: color-mix(in oklab, var(--sys-accent) 92%, var(--sys-ink));
-  --button-line-hover: color-mix(in oklab, var(--sys-accent) 45%, var(--sys-ink)); /* hover: border only */
+  --button-bg: var(--action);
+  --button-ink: var(--action-ink);
+  --button-bg-hover: color-mix(in oklab, var(--action) 92%, var(--ink));
+  --button-line-hover: color-mix(in oklab, var(--action) 45%, var(--ink)); /* hover: border only */
   --button-height: var(--density-field);
   --button-radius: var(--radius-button);
   --button-pad: var(--space-5);
   --button-font-size: var(--type-ui-size);
   --button-min-width: 120px;
+  /* Chips: the date chip, status chips, the Replied badge, reply chips and choice chips share one shape */
+  --chip-height: 32px;
+  --chip-pad: var(--space-3);
+  --chip-radius: var(--radius-control);
+  --chip-line: var(--line-hairline);
   /* Countdown */
-  --countdown-ink: var(--sys-ink);
-  --countdown-bg: var(--sys-surface-raised);
-  --countdown-line: var(--sys-line);
+  --countdown-ink: var(--ink);
+  --countdown-bg: var(--surface-raised);
+  --countdown-line: var(--line-hairline);
   /* Status pill: one tint per tone (component layer, so the pill never invents an alpha) */
-  --pill-good-bg: color-mix(in oklab, var(--sys-moss) 15%, transparent);
-  --pill-warn-bg: color-mix(in oklab, var(--sys-highlight) 25%, transparent);
-  --pill-accent-bg: color-mix(in oklab, var(--sys-accent) 12%, transparent);
+  --pill-good-bg: color-mix(in oklab, var(--ink-moss) 15%, transparent);
+  --pill-warn-bg: color-mix(in oklab, var(--fill-highlight) 25%, transparent);
+  --pill-accent-bg: color-mix(in oklab, var(--action) 12%, transparent);
   /* Top bar (from 768): the current page sits on a sage tint with a sage hairline; hover is the same tint, lighter */
-  --nav-mark-bg: color-mix(in oklab, var(--sys-accent) 16%, transparent);
-  --nav-mark-line: color-mix(in oklab, var(--sys-accent) 40%, transparent);
-  --nav-hover-bg: color-mix(in oklab, var(--sys-accent) 9%, transparent);
+  --nav-mark-bg: color-mix(in oklab, var(--action) 16%, transparent);
+  --nav-mark-line: color-mix(in oklab, var(--action) 40%, transparent);
+  --nav-hover-bg: color-mix(in oklab, var(--action) 9%, transparent);
   /* Guest maps: the household's own line, honey gold on both papers */
   --journey-you: var(--brand-hachimitsu);
   /* Paper texture on the letter only: our own fine grain (feTurbulence), 256px tile, multiply */
   --texture-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85 0.6' numOctaves='3' seed='15' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23g)'/%3E%3C/svg%3E");
   --texture-opacity: var(--theme-texture);
-  --texture-blend: var(--sys-texture-blend);
+  --texture-blend: var(--grain-blend);
   /* Scene grade: saturate .92, contrast .95, warm tint 4% */
   --scene-filter: saturate(0.92) contrast(0.95) sepia(0.04);
-  --scene-scrim: var(--sys-scene-scrim);
+  --scene-scrim: var(--surface-scrim);
 }
 
 /* ─── Scales (same in every mode) ───────────────────────────────────────────── */
@@ -248,16 +251,16 @@
 
   /* Type: one scale, five roles (docs/system.md). Oranienbaum for Display and Heading, Inter for Body, Small and
      Label, Zen Old Mincho for Japanese display. Three families, nothing else. Each component uses at most two roles.
-     Display 56/88 · Heading 28 · Body 16 · Small 14 · Label 12. */
+     Display 56 to 88 · Heading 28 to 32 (fluid) · Body 16 · Small 14 · Label 12 (fixed: inputs stay 16 so iOS never zooms). */
   --font-display: "Oranienbaum", "Zen Old Mincho", Georgia, serif;
   --font-label: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: var(--font-label);
   --font-ja: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
 
-  --type-display-size: 56px;                                           /* the names; 88 from 1024 (below): two steps */
+  --type-display-size: clamp(56px, 3.2vw + 44px, 88px);                /* the names: 56 on a phone, 88 by 1440 */
   --type-display-leading: 1;
   --type-display-tracking: -0.02em;
-  --type-heading-size: 28px;                                           /* h1, h2, and the numerals */
+  --type-heading-size: clamp(28px, 0.4vw + 26.5px, 32px);              /* h1, h2, and the numerals */
   --type-heading-leading: 36px;
   --type-heading-tracking: -0.01em;
   --type-body-size: 16px;                                              /* body, inputs, buttons, links, item titles (500) */
@@ -275,32 +278,17 @@
   --rule-width: 40px;
   --tap-min: 44px;
 
-  /* Motion: paper rises and settles; nothing bounces except the one stamp */
-  --ease-paper: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --ease-letter: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out: cubic-bezier(0.4, 0, 1, 1);
-  --duration-press: 90ms;
-  --duration-quick: 150ms;
-  --duration-settle: 300ms;
-  --duration-mode: 760ms; /* the Light/Lantern reveal */
-  --ease-mode: cubic-bezier(0.65, 0, 0.35, 1);
-  --duration-rise: 600ms;
-  --duration-drift: 6s;
-  --duration-slide: 200ms;    /* the nav and segmented markers sliding to the chosen item */
-  --duration-stamp: 420ms;    /* the hanko landing: the one bounce on the site */
-  --duration-shake: 900ms;    /* the omikuji box */
-  --duration-breathe: 1.8s;   /* washi skeleton while loading */
-  --duration-light: 40s;      /* the light drifting across the paper scene */
-  --duration-mist: 12s;       /* the mist band breathing */
-  --ease-breathe: ease-in-out; /* loops that go and come back */
-  --duration-draw: 1.2s;      /* a line drawing itself in (the trail, the timeline, the journey) */
-  --duration-flap: 420ms;     /* the envelope flap springing back */
-  --duration-turn: 280ms;     /* both letters moving on the page-turn track */
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* the flap and a short swipe springing back */
-  --press-scale: 0.98;
+  /* Motion: three durations, two easings, one spring. Paper rises and settles; only the hanko and a short swipe
+     spring. Loops (the skeleton, the drifting light) are multiples of slow. All zero under reduced motion (below). */
+  --duration-fast: 150ms;    /* presses, hovers, markers sliding */
+  --duration-base: 300ms;    /* settling, page turns, the flap, the stamp */
+  --duration-slow: 600ms;    /* rising in, the Light/Lantern reveal, lines drawing (×2) */
+  --ease-paper: cubic-bezier(0.22, 1, 0.36, 1);   /* everything that arrives or settles */
+  --ease-out: cubic-bezier(0.4, 0, 1, 1);         /* things leaving */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* the press, the flap and a short swipe springing back */
+  --press-scale: 0.97;
 
   --season-green: 100%;
-  --shadow-paper: var(--letter-shadow);
 }
 /* Density (phone first; 768 and up below). Themes and the lab's density slider move these. */
 :root {
@@ -316,4 +304,9 @@
     --density-gap: var(--space-6);
     --density-letter-pad: 40px;
   }
+}
+
+/* Reduced motion: every duration is zero, so nothing transitions, animates or loops */
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration-fast: 0ms; --duration-base: 0ms; --duration-slow: 0ms; --press-scale: 1; }
 }

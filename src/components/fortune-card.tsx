@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { nextFrame } from "@/lib/frame"
 import { FORTUNES } from "@/content/en"
 import { getFortunes } from "@/lib/api"
 import { useLang } from "@/lib/lang"
@@ -57,7 +58,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     window.setTimeout(() => {
       setState("open")
       try { localStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ }
-      requestAnimationFrame(() => slip.current?.focus())
+      nextFrame(() => slip.current?.focus())
     }, still ? 0 : 900)
   }
   // Shake to draw (Android): a firm shake, not a wobble while reading
@@ -81,7 +82,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
         <div className="flex flex-1 flex-col items-start gap-2">
           <h3 id="fortune" className="text-body font-medium text-foreground">{t.fortune.title}</h3>
           <p className="text-small text-muted-foreground" aria-live="polite">{state === "drawing" ? t.fortune.drawing : shaky.current ? t.fortune.hintShake : t.fortune.hint}</p>
-          <Button variant="outline" onClick={draw} disabled={state === "drawing"} aria-busy={state === "drawing"}>{t.fortune.draw}</Button>
+          <Button variant="secondary" onClick={draw} disabled={state === "drawing"} aria-busy={state === "drawing"}>{t.fortune.draw}</Button>
         </div>
       </section>
     )
@@ -89,7 +90,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   return (
     <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip", className)}>
       <SlipWords i={i} of={tips.length} text={text} />
-      <button type="button" onClick={save} className="omikuji-save">{t.fortune.save}</button>
+      <Button variant="link" onClick={save} className="omikuji-save">{t.fortune.save}</Button>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { forwardRef, type InputHTMLAttributes, type ReactNode } from "react"
 import { ArrowRight, Loader2 } from "lucide-react"
-import { FormField, describedBy } from "@/components/form-field"
+import { FormField, describedBy } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
 
 /**
