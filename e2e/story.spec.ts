@@ -65,3 +65,29 @@ test("reduced motion: the stops fade, nothing moves or turns", async ({ page }) 
   expect((await stops(page))[1].opacity).toBe(1)
   expect(await current(page)).toBe(1)
 })
+
+// 18e: one input model on laptops. An arrow button, an arrow key and a trackpad swipe each move exactly one stop;
+// a swipe's momentum tail never adds a second, and quick presses never skip or repeat one.
+test("arrows, keys and a trackpad swipe each step exactly one stop", async ({ page }, info) => {
+  test.skip(info.project.name !== "laptop", "a trackpad and a keyboard: laptops")
+  await open(page)
+  const track = page.locator(".story-track")
+  await track.hover()
+  // One swipe as a trackpad sends it: a push, then a long tail of momentum, 16 ms apart
+  const swipe = async (dir: 1 | -1) => {
+    for (const d of [8, 22, 40, 55, 48, 36, 28, 20, 14, 10, 7, 5, 3, 2, 1, 1]) { await page.mouse.wheel(d * dir, 1); await page.waitForTimeout(16) }
+    await page.waitForTimeout(260) // the wheel goes quiet
+  }
+  await swipe(1); expect(await current(page)).toBe(1)
+  await swipe(1); expect(await current(page)).toBe(2)
+  await swipe(-1); expect(await current(page)).toBe(1)
+  // Up and down is the page's, never a stop
+  await page.mouse.wheel(0, 120); await page.waitForTimeout(260); expect(await current(page)).toBe(1)
+  await track.focus()
+  for (let i = 0; i < 3; i++) await page.keyboard.press("ArrowRight")
+  expect(await current(page)).toBe(4)
+  await page.keyboard.press("ArrowLeft"); expect(await current(page)).toBe(3)
+  const next = page.getByRole("button", { name: /next/i })
+  await next.click(); await next.click()
+  expect(await current(page)).toBe(5)
+})

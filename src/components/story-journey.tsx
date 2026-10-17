@@ -148,10 +148,26 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
       const next = flick ? from + flick : Math.abs(dx) > el.clientWidth * 0.25 ? from + (dx < 0 ? 1 : -1) : Math.round(pos.current)
       go(next, (-v * 1000) / (el.clientWidth * 0.9))
     }
+    // A trackpad's sideways swipe is one stop, like an arrow: the first push past 24px moves, and the momentum that
+    // follows (wheel events that keep arriving, smaller and smaller) is ignored until the wheel has been quiet for
+    // 200 ms. Up and down stay the page's. preventDefault keeps the browser's own swipe-back out of it.
+    let sum = 0, locked = false, quiet = 0
+    const wheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return
+      e.preventDefault()
+      window.clearTimeout(quiet)
+      quiet = window.setTimeout(() => { locked = false; sum = 0 }, 200)
+      if (locked) return
+      sum += e.deltaX
+      if (Math.abs(sum) < 24) return
+      locked = true
+      go(target.current + (sum > 0 ? 1 : -1))
+    }
+    el.addEventListener("wheel", wheel, { passive: false })
     el.addEventListener("pointerdown", down)
     el.addEventListener("pointermove", move)
     el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up)
-    return () => { el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up) }
+    return () => { window.clearTimeout(quiet); el.removeEventListener("wheel", wheel); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [list, total, paint])
   if (list) return (
@@ -181,7 +197,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
   return (
     <div className="story">
       <div ref={track} className="story-track" data-own-swipe role="region" aria-roledescription="carousel" aria-label={t.story.title} tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(at + 1) } if (e.key === "ArrowLeft") { e.preventDefault(); go(at - 1) } }}>
+        onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(target.current + 1) } if (e.key === "ArrowLeft") { e.preventDefault(); go(target.current - 1) } }}>
         {opener && slide(0, opener, null, "opener", "story-slide-opener")}
         {stops.map((c, i) => slide(i + lead, c.photo
           ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" />
@@ -190,9 +206,9 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
       </div>
 
       <div className="story-controls">
-        <button type="button" className="utility-btn" onClick={() => go(at - 1)} disabled={at === 0} aria-label={t.story.prevChapter}><ChevronLeft className="size-5" aria-hidden /></button>
+        <button type="button" className="utility-btn" onClick={() => go(target.current - 1)} disabled={at === 0} aria-label={t.story.prevChapter}><ChevronLeft className="size-5" aria-hidden /></button>
         <span aria-hidden className="journey-dots">{Array.from({ length: total }, (_, i) => <span key={i} className={cn(i === at && "is-on")} />)}</span>
-        <button type="button" className="utility-btn" onClick={() => go(at + 1)} disabled={at >= total - 1} aria-label={t.story.nextChapter}><ChevronRight className="size-5" aria-hidden /></button>
+        <button type="button" className="utility-btn" onClick={() => go(target.current + 1)} disabled={at >= total - 1} aria-label={t.story.nextChapter}><ChevronRight className="size-5" aria-hidden /></button>
       </div>
       <button type="button" className="btn-text min-h-11 self-center" onClick={() => setList(true)}>{t.story.seeList}</button>
     </div>
