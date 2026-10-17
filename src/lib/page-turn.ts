@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { nextFrame } from "@/lib/frame"
 
 /** The five letters in order (Home, The day, Travel, FAQs, Our story). */
-export const LETTERS: string[] = ["/", "/the-day", "/travel", "/faqs", "/our-story"]
+export const LETTERS: string[] = ["/", "/the-day", "/travel", "/our-story", "/faqs"]
 const indexOf = (p: string) => { const i = LETTERS.findIndex((l) => l === (p.replace(/\/+$/, "") || "/")); return i }
 
 const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches

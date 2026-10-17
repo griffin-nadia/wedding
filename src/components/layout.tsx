@@ -15,13 +15,13 @@ import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
 
-// Five items for everyone. Our story shows their words, or the planner's layout with placeholders until they arrive.
+// Five items for everyone: Home first (the way back to the start), FAQs last (reference). Our story shows their words, or the planner's layout with placeholders until they arrive.
 const links = [
   { to: "/", key: "home", icon: Home },
   { to: "/the-day", key: "day", icon: CalendarDays },
   { to: "/travel", key: "travel", icon: TrainFront },
-  { to: "/faqs", key: "faqs", icon: CircleHelp },
   { to: "/our-story", key: "story", icon: BookOpen },
+  { to: "/faqs", key: "faqs", icon: CircleHelp },
 ] as const
 
 /** Five items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
