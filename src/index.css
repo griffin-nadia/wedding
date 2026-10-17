@@ -503,8 +503,10 @@
 .site-bar > * { pointer-events: auto; }
 .site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
-.site-nav { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); border-radius: calc(var(--radius-control) + 4px); background: color-mix(in oklab, var(--letter-bg) 98%, transparent); border: 1px solid var(--line-hairline); box-shadow: var(--elevation-paper); } /* no backdrop blur on phones: re-blurring the page under it cost a frame on every scroll */
-.site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px; }
+/* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
+   its paper carries on under the home indicator (safe area), so nothing shows beneath it. */
+.site-nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: color-mix(in oklab, var(--letter-bg) 82%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.1); backdrop-filter: blur(14px) saturate(1.1); border-top: 1px solid color-mix(in oklab, var(--line-hairline) 70%, transparent); }
+.site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px 8px; }
 .site-nav li { display: flex; position: relative; }
 .nav-mark { position: absolute !important; left: 0; top: 0; border-radius: var(--radius-control); background: var(--surface-alt); transition: transform var(--duration-fast) var(--ease-paper), width var(--duration-fast) var(--ease-paper), height var(--duration-fast) var(--ease-paper); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .nav-mark { transition: none; } }
@@ -514,7 +516,7 @@
 @media (hover: hover) { .site-nav-link:hover { color: var(--ink); } }
 @media (min-width: 768px) {
   .site-bar { height: 64px; padding: 0 24px; background: color-mix(in oklab, var(--letter-bg) 97%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid color-mix(in oklab, var(--line-hairline) 60%, transparent); pointer-events: auto; }
-  .site-nav { position: static; background: none; border: 0; border-radius: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .site-nav { position: static; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .site-nav ul { display: flex; gap: var(--space-1); height: auto; padding: 0; }
   .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-4); font-size: var(--type-small-size); line-height: var(--type-small-leading); border-radius: var(--radius-control); outline-offset: 2px; }
 }
@@ -563,13 +565,22 @@
   box-shadow: var(--elevation-sheet);
 }
 @media (min-width: 768px) {
-  .sheet { --sheet-pad: var(--space-6); top: var(--letter-top); left: 50%; right: auto; translate: -50% 0; width: min(var(--letter-width), calc(100vw - 48px)); max-height: min(80dvh, calc(100dvh - var(--letter-top) - 24px)); height: min(640px, 80dvh, calc(100dvh - var(--letter-top) - 24px)); }
+  /* Laptops: the same margin above and below, so the sheet sits evenly between the bar and the bottom edge */
+  .sheet { --sheet-pad: var(--space-6); --sheet-gap: 48px; top: calc(64px + (100dvh - 64px) / 2); left: 50%; right: auto; translate: -50% -50%; width: min(var(--letter-width), calc(100vw - 48px)); max-height: calc(100dvh - 64px - 2 * var(--sheet-gap)); height: min(640px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
 }
-@media (min-width: 1024px) { .sheet { left: var(--letter-left); translate: none; } }
+@media (min-width: 1024px) { .sheet { left: var(--letter-left); translate: 0 -50%; } }
 .sheet-head { flex: none; padding: var(--sheet-pad) calc(var(--sheet-pad) + 44px) var(--space-4) var(--sheet-pad); }
 .sheet-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: var(--space-2) var(--sheet-pad) calc(var(--sheet-pad) + 16px); scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 .rsvp-done { padding-top: var(--sheet-pad); }
-.sheet-head { display: flex; flex-direction: column; gap: var(--space-3); }
+.sheet-head { display: flex; flex-direction: column; gap: var(--space-3); transition: box-shadow var(--duration-fast) var(--ease-paper); }
+/* The one page header: sticky at the top of the letter (under the bar on laptops). Once content is under it, a
+   hairline and a light paper fill appear (data-under, from an IntersectionObserver sentinel). Sheets use the same. */
+.page-header-sentinel { display: block; height: 0; margin-bottom: calc(-1 * var(--letter-gap)); } /* no gap of its own in the letter's column */
+.sheet-body > .page-header-sentinel { margin-bottom: 0; }
+.page-header:not(.sheet-head) { position: sticky; top: 0; z-index: 5; display: flex; flex-direction: column; gap: var(--space-4); margin: calc(-1 * var(--space-3)) calc(-1 * var(--letter-pad)) 0; padding: var(--space-3) var(--letter-pad); transition: background-color var(--duration-fast) var(--ease-paper), box-shadow var(--duration-fast) var(--ease-paper); }
+@media (min-width: 768px) { .page-header:not(.sheet-head) { top: 64px; } }
+.page-header[data-under] { background: var(--letter-bg); box-shadow: 0 1px 0 var(--line-hairline); }
+.sheet-head[data-under] { background: none; }
 /* A sheet that fits its content (the journey map): no taller than it needs, never taller than the reply sheet */
 .sheet.sheet-fit { height: auto; }
 @media (pointer: coarse) { .sheet-body { scrollbar-width: none; } .sheet-body::-webkit-scrollbar { display: none; } }
@@ -617,7 +628,7 @@
 .form-field > .form-label { margin-bottom: var(--field-label-gap); }
 .form-field > .form-help { margin-top: var(--field-helper-gap); font-size: var(--type-small-size); line-height: var(--type-small-leading); }
 /* Choice card: one-of-few with a consequence. 64 tall, UI face, card radius */
-.toast-region { position: fixed; z-index: 60; left: 16px; right: 16px; bottom: calc(64px + 24px + 12px + env(safe-area-inset-bottom)); display: flex; justify-content: center; pointer-events: none; }
+.toast-region { position: fixed; z-index: 60; left: 16px; right: 16px; bottom: calc(var(--dock-band) + 12px); display: flex; justify-content: center; pointer-events: none; }
 @media (min-width: 768px) { .toast-region { left: auto; right: 24px; top: 88px; bottom: auto; justify-content: flex-end; } }
 /* Combobox: the text field's states; tags sit inside the field, results open straight under it */
 .combo-field { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-height: var(--input-height); padding: 6px var(--input-pad); border-radius: var(--input-radius); cursor: text; }
@@ -933,9 +944,9 @@ svg.lucide { stroke-width: 1.5; }
 /* From 1024 to 1279 the envelope sits on warm paper, not the photo: the note is ink there, not white (from 1280 it is over the photo again) */
 @media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-note { color: var(--ink-soft); filter: none; } }
 
-/* Phones (v3 U): the letter never sits under the dock. --dock-band is the dock (64 + its border), its 12 offset,
-   the safe area and 8 of air; .scene-band repaints the scene over the letter in exactly that strip. */
-:root { --dock-band: calc(66px + 12px + env(safe-area-inset-bottom) + 8px); }
+/* Phones (v3 U): the letter never sits under the dock. --dock-band is the dock (64 + its hairline), the safe area
+   and 12 of air; .scene-band repaints the scene over the letter in exactly that strip. */
+:root { --dock-band: calc(65px + env(safe-area-inset-bottom) + 12px); }
 .scene-band { display: none; }
 @media (max-width: 767px) {
   /* The band is the strip from 8px above the dock down, plus the two squares where the letter's bottom corners
@@ -1133,7 +1144,7 @@ svg.lucide { stroke-width: 1.5; }
 .hanko-sm { font-size: 20px; }
 .hanko-lg { font-size: 40px; }
 /* Typing on a phone: the sheet runs down to the keyboard, so Back / Next sit right on it; the dock steps aside */
-[data-typing] .sheet { max-height: calc(var(--vvh, 100svh) - 12px); height: calc(var(--vvh, 100svh) - 12px); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+[data-typing] .sheet { max-height: calc(var(--vvh, 100svh) - 24px); height: calc(var(--vvh, 100svh) - 24px); } /* 12 above the keyboard, like every other edge */
 @media (max-width: 767px) { [data-typing] .site-nav { visibility: hidden; } }
 /* A focused field scrolls to just above the keyboard (and Back / Next), with a little room */
 :is(input, textarea, select) { scroll-margin-block: var(--space-5); }

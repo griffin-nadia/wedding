@@ -6,6 +6,7 @@ import { DATES } from "@/lib/wedding-dates"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { jstLabel, kyotoNow } from "@/lib/time"
+import { PageHeader } from "@/components/ui/page-header"
 import { cn } from "@/lib/utils"
 
 const ICONS = [Flower2, Wine, UtensilsCrossed]
@@ -93,10 +94,7 @@ export function DayPage() {
   )
   return (
     <>
-      <header className="flex flex-col gap-4">
-        <h1 className="heading">{t.day.title}</h1>
-        <p className="font-medium text-foreground">{t.day.dateLong}</p>
-      </header>
+      <PageHeader title={t.day.title}><p className="font-medium text-foreground">{t.day.dateLong}</p></PageHeader>
       <Details />
       {timeline}
       <div className="no-print flex flex-col gap-4">
