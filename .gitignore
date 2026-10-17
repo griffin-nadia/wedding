@@ -47,3 +47,4 @@ apps-script/Local.gs
 # Playwright
 playwright-report/
 test-results/
+cf-out/
