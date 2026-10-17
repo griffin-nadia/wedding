@@ -11,6 +11,8 @@ const FADE_IN = 2500
 /** After the first tap anywhere (usually opening the envelope) wait this long, so the song arrives with the letter. */
 const START_DELAY = 2000
 const FADE_OUT = 600
+/** Coming back to the tab: it carries on from where it stopped, back up to 30% in half a second (not the first 2.5 s fade) */
+const RESUME_FADE = 500
 
 /** One second of silence as a WAV, in case ART.music.src is ever empty. */
 function silentWav() {
@@ -62,11 +64,15 @@ function ramp(to: number, ms: number, then?: () => void) {
     then?.(); return false
   })
 }
-function play() {
+let played = false
+let starting = false
+function play(fadeMs = FADE_IN) {
   channel?.postMessage({ playing: true, tab })
   const a = el()
-  if (!a.paused) { ramp(SITE_VOLUME, FADE_IN); return }
-  void a.play().then(() => { ramp(SITE_VOLUME, FADE_IN); session("playing") }).catch(() => {})
+  if (!a.paused) { ramp(SITE_VOLUME, fadeMs); return }
+  if (starting) return // visibilitychange and pageshow can both ask at once on a phone: one start is enough
+  starting = true
+  void a.play().then(() => { played = true; ramp(SITE_VOLUME, fadeMs); session("playing") }).catch(() => {}).finally(() => { starting = false })
 }
 function pause() { if (audio && !audio.paused) ramp(0, FADE_OUT, () => { audio?.pause(); session("paused") }) }
 /**
@@ -83,7 +89,7 @@ function hardStop() {
   session("none")
 }
 // Hidden, locked, swiped away or frozen: stop now. Back again: fade in if it's on (and has played before)
-const resume = () => { if (on && audio && !document.hidden) play() }
+const resume = () => { if (on && audio && played && !document.hidden) play(RESUME_FADE) }
 if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => { if (document.hidden) hardStop(); else resume() })
   addEventListener("pagehide", hardStop)
@@ -119,6 +125,12 @@ function setOn(next: boolean) {
 function arm() {
   if (armed || !on) return
   armed = true
+  // Start downloading the song once the page has settled, so it's buffered by the time it plays (it used to start
+  // fetching on the first tap, and could stutter while it caught up)
+  const warm = () => { el().load() }
+  const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback
+  if (document.readyState === "complete") { if (idle) idle(warm); else setTimeout(warm, 1500) }
+  else addEventListener("load", () => (idle ? idle(warm) : setTimeout(warm, 1500)), { once: true })
   const first = (e: PointerEvent) => {
     if ((e.target as Element | null)?.closest?.("[data-music-toggle]")) return
     removeEventListener("pointerdown", first)
