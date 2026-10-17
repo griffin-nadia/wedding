@@ -4,6 +4,7 @@ import { useLang } from "@/lib/lang"
 import { StoryJourney } from "@/components/story-journey"
 import { Photo } from "@/components/photo"
 import photos from "@/content/photos.json"
+import { PageHeader } from "@/components/ui/page-header"
 import { STORY_PLAN } from "@/content/story-plan"
 
 /**
@@ -33,7 +34,7 @@ export function StoryPage() {
   if (ready && story.length) {
     return (
       <>
-        <h1 className="heading">{t.story.title}</h1>
+        <PageHeader title={t.story.title} />
         <StoryJourney chapters={story} opener={opener} />
       </>
     )
@@ -44,7 +45,7 @@ export function StoryPage() {
   if (ready && crew && !story.length) {
     return (
       <>
-        <h1 className="heading">{t.story.title}</h1>
+        <PageHeader title={t.story.title} />
         <StoryJourney chapters={STORY_PLAN} opener={opener} />
       </>
     )

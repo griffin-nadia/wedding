@@ -3,6 +3,7 @@ import { Dialog } from "radix-ui"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLang } from "@/lib/lang"
+import { useUnder } from "@/components/ui/page-header"
 
 /**
  * The one sheet (Open UI: dialog). Every dialog on the site is this: the reply, the journey map and the driver card.
@@ -22,7 +23,7 @@ function SheetContent({ className, children, tone = "letter", closeLabel, ...pro
       <Dialog.Overlay className="sheet-overlay" />
       <Dialog.Content className={cn(tone === "letter" ? "letter paper sheet" : "paper sheet sheet-bright", className)} {...props}>
         <Dialog.Close className="sheet-close press" aria-label={closeLabel ?? t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
-        {children}
+        <Under>{children}</Under>
       </Dialog.Content>
     </Dialog.Portal>
   )
@@ -31,8 +32,31 @@ function SheetContent({ className, children, tone = "letter", closeLabel, ...pro
 const SheetTitle = Dialog.Title
 const SheetDescription = Dialog.Description
 
-/** The fixed top of a sheet (title, step label) and the part that scrolls. */
-const SheetHead = ({ className, ...p }: React.ComponentProps<"header">) => <header className={cn("sheet-head", className)} {...p} />
-const SheetBody = ({ className, ...p }: React.ComponentProps<"div">) => <div className={cn("sheet-body", className)} {...p} />
+/* The head shows the page header's hairline and fill once the body has scrolled under it */
+const UnderCtx = React.createContext<{ under: boolean; set: (u: boolean) => void }>({ under: false, set: () => {} })
+function Under({ children }: { children: React.ReactNode }) {
+  const [under, set] = React.useState(false)
+  return <UnderCtx.Provider value={{ under, set }}>{children}</UnderCtx.Provider>
+}
+
+/** The fixed top of a sheet (step label, title): the same page header as every tab. */
+const SheetHead = ({ className, ...p }: React.ComponentProps<"header">) => {
+  const { under } = React.useContext(UnderCtx)
+  return <header className={cn("page-header sheet-head", className)} data-under={under || undefined} {...p} />
+}
+/** The part of a sheet that scrolls. */
+function SheetBody({ className, children, ref, ...p }: React.ComponentProps<"div">) {
+  const box = React.useRef<HTMLDivElement | null>(null)
+  const { sentinel, under } = useUnder(box)
+  const { set } = React.useContext(UnderCtx)
+  React.useEffect(() => set(under), [under, set])
+  const both = (el: HTMLDivElement | null) => { box.current = el; if (typeof ref === "function") ref(el); else if (ref) ref.current = el }
+  return (
+    <div ref={both} className={cn("sheet-body", className)} {...p}>
+      <span ref={sentinel} aria-hidden className="page-header-sentinel" />
+      {children}
+    </div>
+  )
+}
 
 export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetTitle, SheetDescription, SheetHead, SheetBody }

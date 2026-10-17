@@ -1,6 +1,6 @@
-import { Disclosure } from "@/components/ui/accordion"
-import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { AccordionContent, AccordionItem, AccordionTrigger, Disclosure } from "@/components/ui/accordion"
 import { useLang } from "@/lib/lang"
+import { PageHeader } from "@/components/ui/page-header"
 import { useContent } from "@/lib/content"
 
 /** FAQs: one numbered accordion (numbers help guests point to a question when they message). Answers are body.
@@ -10,7 +10,7 @@ export function FaqsPage() {
   const { contactDay } = useContent()
   return (
     <>
-      <h1 className="heading">{t.qa.title}</h1>
+      <PageHeader title={t.qa.title} />
       <Disclosure label={t.qa.title}>
         {t.qa.items.map((item, i) => (
           <AccordionItem key={item.q} value={`q${i}`}>

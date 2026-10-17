@@ -11,6 +11,7 @@ import { KyotoMap } from "@/components/kyoto-map"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { getStayPicks } from "@/lib/api"
+import { PageHeader } from "@/components/ui/page-header"
 import { pickList, type Pick, type Picks } from "@/lib/stay"
 
 function Ext({ href, children }: { href: string; children: React.ReactNode }) {
@@ -132,7 +133,7 @@ export function TravelPage() {
   ]
   return (
     <>
-      <h1 className="heading">{t.nav.travel}</h1>
+      <PageHeader title={t.nav.travel} />
 
       <section id="getting-there" aria-label={g.onTheDayTitle} className="flex scroll-mt-24 flex-col gap-4">
         <p>{g.intro}</p>

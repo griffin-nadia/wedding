@@ -1,7 +1,7 @@
 import { DATES } from "@/lib/wedding-dates"
 import { nextFrame } from "@/lib/frame"
 import { useEffect, useRef, useState, type ReactNode } from "react"
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -279,16 +279,16 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
           onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}
           // Escape inside an open combobox closes its list, not the sheet
           onEscapeKeyDown={(e) => { const el = e.target as HTMLElement | null; if (el?.getAttribute("role") === "combobox" && el.getAttribute("aria-expanded") === "true") e.preventDefault() }}>
-          {done ? <div className="sheet-body rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></div> : <>
-          <header className="sheet-head flex flex-col gap-3">
+          {done ? <SheetBody className="rsvp-done"><Done result={done} confirm={confirm} titleRef={heading} onClose={() => onOpenChange(false)} onChange={() => { setForm(formFrom(done.household)); setDone(null); setConfirm(null); setDir("back"); setStep(1) }} /></SheetBody> : <>
+          <SheetHead>
             <p className="label-caps text-muted-foreground">{t.rsvp.step(step, total)}</p>
             <SheetTitle ref={heading} tabIndex={-1} className="heading outline-none">
               {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : t.rsvp.checkTitle}
             </SheetTitle>
             <StepProgress step={step} of={total} label={t.rsvp.step(step, total)} />
-          </header>
+          </SheetHead>
 
-          <div ref={body} className="sheet-body">
+          <SheetBody ref={body}>
           <div key={step} className={cn("rsvp-step flex flex-col gap-(--form-group-gap)", dir === "fwd" ? "step-fwd" : "step-back")}>
             {step === 1 && (
               <div className="flex flex-col">
@@ -372,7 +372,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
             {step === total && <p className="text-small text-muted-foreground">{t.rsvp.privacy}</p>}
           </div>
-          </div>
+          </SheetBody>
 
           <footer className="rsvp-actions">
             {step > 1 && <Button variant="secondary" size="md" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
