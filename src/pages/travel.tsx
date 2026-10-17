@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { nextFrame } from "@/lib/frame"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { letterScroll, nextFrame } from "@/lib/frame"
 import { useLocation } from "react-router-dom"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowUpRight, ChevronRight } from "lucide-react"
@@ -12,7 +12,7 @@ import { KyotoMap } from "@/components/kyoto-map"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { getStayPicks } from "@/lib/api"
-import { PageHeader } from "@/components/ui/page-header"
+import { PageHeader, useUnder } from "@/components/ui/page-header"
 import { pickList, type Pick, type Picks } from "@/lib/stay"
 import { SECTIONS, travelOrder, type Section } from "@/lib/travel-order"
 import { config } from "@/lib/config"
@@ -162,7 +162,7 @@ function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => vo
 
 
 /**
- * Jump links under the page header (sticky with it): one per section in the page's order, the one you're reading
+ * Jump links under the page header (one slim sticky row at the card's top once scrolled past): one per section in the page's order, the one you're reading
  * marked (aria-current), from an IntersectionObserver on the sections. A tapped link is marked straight away and
  * stays marked until you scroll yourself, even if its section can't reach the top. Plain links, so Tab, Enter and
  * screen readers work.
@@ -195,14 +195,21 @@ function JumpLinks({ order, labels }: { order: readonly Section[]; labels: Recor
   }, [at])
   // The tap's own touchstart comes before the click, so the hold is set after it
   const go = (e: React.MouseEvent, id: Section) => { glide(e, id); held.current = id; setAt(id) }
+  // Once scrolled past, the links stay as one slim row at the top of the card (18e)
+  const card = useRef<HTMLElement | null>(null)
+  useLayoutEffect(() => { card.current = letterScroll() }, []) // before useUnder's observer starts
+  const { sentinel, under } = useUnder(card)
   return (
-    <nav aria-label={t.getting.onThisPage} className="jump-links">
+    <>
+    <span ref={sentinel} aria-hidden className="jump-links-sentinel" />
+    <nav aria-label={t.getting.onThisPage} className="jump-links" data-stuck={under || undefined}>
       <ul ref={strip}>
         {order.map((id) => (
           <li key={id}><a href={`#${id}`} onClick={(e) => go(e, id)} aria-current={at === id ? "true" : undefined} className="jump-link">{labels[id]}</a></li>
         ))}
       </ul>
     </nav>
+    </>
   )
 }
 
@@ -303,9 +310,9 @@ export function TravelPage() {
   }
   return (
     <>
-      <PageHeader title={t.nav.travel}>
-        <JumpLinks order={order} labels={{ "to-kyoto": g.toKyotoTitle, stay: t.stay.title, before: g.beforeTitle, "on-the-day": g.onTheDayTitle }} />
-      </PageHeader>
+      <PageHeader title={t.nav.travel} />
+      {/* Under the header, not in it: they stick to the card's top edge once scrolled past (18e), so their box is the page */}
+      <JumpLinks order={order} labels={{ "to-kyoto": g.toKyotoTitle, stay: t.stay.title, before: g.beforeTitle, "on-the-day": g.onTheDayTitle }} />
 
       <ul className="travel-summary">
         {summary.map(([id, line]) => <li key={id}><a href={`#${id}`} onClick={(e) => glide(e, id)} className="travel-summary-line">{line}</a></li>)}

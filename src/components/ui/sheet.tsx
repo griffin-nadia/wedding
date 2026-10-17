@@ -1,4 +1,5 @@
 import * as React from "react"
+import { letterScroll } from "@/lib/frame"
 import { Dialog } from "radix-ui"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -20,14 +21,15 @@ function SheetContent({ className, children, tone = "letter", closeLabel, onClos
   const { t } = useLang()
   // Closing puts the page back exactly where it was: a phone keyboard can scroll the page behind while the sheet is
   // open, and focusing the opener can scroll it again. Focus goes back without scrolling, then the page returns.
-  const back = React.useRef<{ y: number; opener: Element | null }>({ y: 0, opener: null })
+  const back = React.useRef<{ y: number; card: number; opener: Element | null }>({ y: 0, card: 0, opener: null })
   const close = (e: Event) => {
     onCloseAutoFocus?.(e)
     if (e.defaultPrevented) return
     e.preventDefault()
-    const { y, opener } = back.current
+    const { y, card, opener } = back.current
     if (opener instanceof HTMLElement && opener.isConnected) opener.focus({ preventScroll: true })
     window.scrollTo({ top: y, behavior: "instant" })
+    letterScroll()?.scrollTo({ top: card, behavior: "instant" }) // the card's own scroll too (18e: the card scrolls, not the page)
   }
   return (
     <Dialog.Portal>
@@ -42,8 +44,8 @@ function SheetContent({ className, children, tone = "letter", closeLabel, onClos
 }
 
 /** Notes the scroll position and the focused opener as the sheet opens (before focus moves into it). */
-function Remember({ to }: { to: React.RefObject<{ y: number; opener: Element | null }> }) {
-  React.useLayoutEffect(() => { to.current = { y: window.scrollY, opener: document.activeElement } }, [to])
+function Remember({ to }: { to: React.RefObject<{ y: number; card: number; opener: Element | null }> }) {
+  React.useLayoutEffect(() => { to.current = { y: window.scrollY, card: letterScroll()?.scrollTop ?? 0, opener: document.activeElement } }, [to])
   return null
 }
 

@@ -48,3 +48,4 @@ apps-script/Local.gs
 playwright-report/
 test-results/
 cf-out/
+.*-tmp.mjs

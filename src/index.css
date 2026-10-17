@@ -329,7 +329,8 @@
   /* Print (v3 S): just the letter, at the letter's width, on white, in the light palette */
   :root, [data-theme] { --letter-bg: #fff; --ink: #421a05; --ink-soft: #754b38; --ink-muted: #8b5a3c; --line-hairline: #e5d0a8; --ink-moss: #727354; --action: #a84f32; --ink-link: #3e4a26; --surface-raised: #fff; --surface-alt: #f3efe2; }
   .scene, .scene-layer, .site-bar, .site-nav, .phone-qr, .credit-mark, .chrome-lantern, .letter-end button, .skip-link { display: none !important; }
-  .letter-wrap { padding: 0 !important; min-height: 0 !important; }
+  .letter-wrap { padding: 0 !important; min-height: 0 !important; height: auto !important; overflow: visible !important; }
+  .letter, .letter-scroll { overflow: visible !important; -webkit-mask-image: none !important; mask-image: none !important; }
   .letter { max-width: var(--letter-width) !important; margin: 0 auto !important; box-shadow: none !important; border: 0 !important; background: #fff !important; padding: 0 !important; }
   .letter::before { display: none !important; }
   .timeline-row { break-inside: avoid; }
@@ -353,7 +354,7 @@
 @keyframes timeline-draw { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {
-    .timeline-fill { animation: timeline-draw linear both; animation-timeline: scroll(root); }
+    .timeline-fill { animation: timeline-draw linear both; animation-timeline: scroll(nearest); }
   }
 }
 .timeline-row { position: relative; display: grid; grid-template-columns: var(--tl-time) 40px minmax(0, 1fr); align-items: start; column-gap: var(--tl-gap); }
@@ -474,13 +475,18 @@
 }
 @media (prefers-reduced-motion: reduce) { .scene-layer { transition: none; } }
 
+/* The frame (18e): the card is a fixed rounded frame between the top bar and the dock, 12px from each on phones and
+   the same gap above and below on laptops; what's on it scrolls inside it (.letter-scroll), so the page itself never
+   scrolls and the bar is the only thing that stays put. */
 .letter-wrap {
   position: relative;
-  min-height: 100svh;
-  overflow-x: clip; /* the paper blur ring may reach past the screen edge on phones */
-  padding: calc(var(--bar-h) + 8px) 12px var(--dock-band); /* 8px under the top bar, 12px of air above the dock */
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  padding: calc(var(--bar-h) + 12px) 12px var(--dock-band);
 }
-@media (min-width: 768px) { .letter-wrap { padding: var(--letter-top) 24px var(--space-8); } }
+@media (min-width: 768px) { .letter-wrap { padding: var(--letter-top) 24px calc(var(--letter-top) - var(--bar-h)); } }
 @media (min-width: 1024px) { .letter-wrap { padding-left: var(--letter-left); } }
 
 /* The letter is the card (v3 H): cream, grain 6%, a 1px line at 60%, a warm glow top left and a cool shade
@@ -509,10 +515,24 @@
    the bottom margin (laptops), longer when its content is. So a page change never moves the card's top or its
    bottom edge, only the words in it. svh on phones: the height with the browser bar showing, so it never grows as
    the bar hides. */
-.letter { min-height: calc(100svh - var(--bar-h) - 8px - var(--dock-band)); }
-@media (min-width: 768px) { .letter { min-height: calc(100dvh - var(--letter-top) - var(--space-8)); } }
-/* Except Home (18e): its card is only as tall as what's on it */
-:root .letter[data-page="home"] { min-height: 0; }
+.letter:not(.sheet), .letter-sealed { flex: 1 1 auto; min-height: 0; }
+.letter:not(.sheet) { padding: 0; overflow: hidden; } /* not the sheets, which are letters too */
+.letter-sealed { display: flex; flex-direction: column; }
+/* Except Home: its card is only as tall as what's on it (up to the frame) */
+:root .letter[data-page="home"] { flex-grow: 0; }
+.letter-wrap:has(.letter[data-page="home"]) .letter-sealed { flex-grow: 0; }
+.letter-scroll {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--letter-gap);
+  padding: var(--letter-pad); overflow-y: auto; overscroll-behavior: contain;
+  /* A soft 16px fade where the words meet the card's top and bottom edges */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent;
+}
+/* Touch: no scrollbar at all; a mouse gets the thin one */
+@media (pointer: coarse) { .letter-scroll { scrollbar-width: none; } .letter-scroll::-webkit-scrollbar { display: none; } }
+/* Travel's jump links once stuck sit flush at the card's top edge, so the top fade steps aside for them */
+.letter-scroll:has(.jump-links[data-stuck]) { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); }
 /* Paper grain on the letter only, under the words, moving with the letter */
 .letter { isolation: isolate; }
 .letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background-image: var(--texture-grain); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
@@ -524,13 +544,13 @@
 :root { --bar-h: calc(56px + env(safe-area-inset-top)); }
 @media (min-width: 768px) { :root { --bar-h: 64px; } }
 .site-bar { position: fixed; z-index: 40; top: 0; inset-inline: 0; height: var(--bar-h); display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); padding: env(safe-area-inset-top) max(var(--space-2), env(safe-area-inset-right)) 0 max(var(--space-4), env(safe-area-inset-left)); }
-.site-bar::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: color-mix(in oklab, var(--letter-bg) 78%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.1); backdrop-filter: blur(14px) saturate(1.1); box-shadow: 0 1px 0 transparent; transition: background-color var(--duration-fast) var(--ease-paper), box-shadow var(--duration-fast) var(--ease-paper); }
-:root[data-scrolled] .site-bar::before { background: color-mix(in oklab, var(--letter-bg) 94%, transparent); box-shadow: 0 1px 0 color-mix(in oklab, var(--line-hairline) 80%, transparent); }
+/* 18e: the bar, the dock and the card are one paper (the card's colour token), with no glass and no change on scroll */
+.site-bar::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--letter-bg); }
 .site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
    its paper carries on under the home indicator (safe area), so nothing shows beneath it. */
-.site-nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: color-mix(in oklab, var(--letter-bg) 82%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.1); backdrop-filter: blur(14px) saturate(1.1); border-top: 1px solid color-mix(in oklab, var(--line-hairline) 70%, transparent); }
+.site-nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--letter-bg); border-top: 1px solid transparent; }
 .site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px 8px; }
 .site-nav li { display: flex; position: relative; }
 .nav-mark { position: absolute !important; left: 0; top: 0; border-radius: var(--radius-control); background: var(--surface-alt); transition: transform var(--duration-fast) var(--ease-paper), width var(--duration-fast) var(--ease-paper), height var(--duration-fast) var(--ease-paper); pointer-events: none; }
@@ -604,9 +624,14 @@
    hairline and a light paper fill appear (data-under, from an IntersectionObserver sentinel). Sheets use the same. */
 .page-header-sentinel { display: block; height: 0; margin-bottom: calc(-1 * var(--letter-gap)); } /* no gap of its own in the letter's column */
 .sheet-body > .page-header-sentinel { margin-bottom: 0; }
-.page-header:not(.sheet-head) { position: sticky; top: var(--bar-h); z-index: 5; display: flex; flex-direction: column; gap: var(--space-4); margin: calc(-1 * var(--space-3)) calc(-1 * var(--letter-pad)) 0; padding: var(--space-3) var(--letter-pad); transition: background-color var(--duration-fast) var(--ease-paper), box-shadow var(--duration-fast) var(--ease-paper); }
-@media (min-width: 768px) { .page-header:not(.sheet-head) { top: var(--bar-h); } }
-.page-header[data-under] { background: var(--letter-bg); box-shadow: 0 1px 0 var(--line-hairline); }
+.page-header:not(.sheet-head) { display: flex; flex-direction: column; gap: var(--space-4); }
+/* Travel's jump links (18e): the one thing that stays on the card. Scrolled past, they're one slim row flush with the
+   card's top edge, on the card's paper with a hairline under it. */
+.jump-links-sentinel { display: block; height: 0; margin: calc(var(--space-4) - 2 * var(--letter-gap)) 0 0; } /* header to links: space-4, as when they were in it */
+.jump-links { position: sticky; top: calc(-1 * var(--letter-pad)); z-index: 5; margin: calc(-1 * var(--space-1)) calc(-1 * var(--letter-pad)); padding: var(--space-1) var(--letter-pad); transition: box-shadow var(--duration-fast) var(--ease-paper); }
+/* Only paint changes when it sticks, never its size, so nothing under it moves (or scrolls) as it does */
+.jump-links[data-stuck] { background: var(--letter-bg); box-shadow: 0 1px 0 var(--line-hairline); }
+/* Sticky counts from inside the card's padding, so the row is pulled up by it to sit on the card's very edge */
 .sheet-head[data-under] { background: none; }
 /* A sheet that fits its content (the journey map): no taller than it needs, never taller than the reply sheet */
 .sheet.sheet-fit { height: auto; }
@@ -728,7 +753,7 @@ svg.lucide { stroke-width: 1.5; }
 .credit-foot { display: flex; width: fit-content; align-self: center; justify-self: center; margin: var(--space-4) auto var(--space-2); }
 @media (min-width: 1024px) {
   .credit-foot { display: none; }
-  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-3); }
+  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-1); } /* below the card's bottom edge, in the gap */
 }
 /* Names reveal once, letter by letter, the first time the letter opens (v3 L). Nothing else animates text. */
 .names-reveal .name-char { display: inline-block; animation: name-in var(--duration-slow) var(--ease-paper) both; }
@@ -945,7 +970,6 @@ svg.lucide { stroke-width: 1.5; }
    which stuttered as the browser bar moved). */
 :root { --dock-band: calc(65px + env(safe-area-inset-bottom) + 12px); }
 @media (max-width: 767px) {
-  .site-nav::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: var(--space-5); pointer-events: none; background: linear-gradient(to top, color-mix(in oklab, var(--letter-bg) 70%, transparent), transparent); }
   .letter-wrap > * { width: 100%; } /* full width from the first paint, not shrink-to-fit while the page loads */
 }
 
@@ -1184,8 +1208,7 @@ svg.lucide { stroke-width: 1.5; }
 }
 
 /* Travel: three summary lines, and jump links that stay with the page header (the current section marked) */
-:root { --travel-head: calc(var(--bar-h) + 176px); }
-@media (min-width: 768px) { :root { --travel-head: 240px; } }
+:root { --travel-head: 64px; } /* the slim jump-link row at the card's top, and a little air (18e) */
 .jump-links ul { position: relative; display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--space-1)); padding: var(--space-1); }
 .jump-links ul::-webkit-scrollbar { display: none; }
 .jump-link { display: inline-flex; align-items: center; height: var(--chip-height); padding-inline: var(--chip-pad); border-radius: var(--chip-radius); white-space: nowrap; font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); font-weight: 500; color: var(--ink-muted); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper); position: relative; }
@@ -1194,7 +1217,10 @@ svg.lucide { stroke-width: 1.5; }
 @media (hover: hover) { .jump-link:hover { color: var(--ink); } }
 .jump-link[aria-current] { color: var(--ink); background: var(--nav-mark-bg); box-shadow: inset 0 0 0 1px var(--nav-mark-line); }
 /* The last section can always scroll up to sit under the header, so its jump link lands it there */
-.travel-section:last-of-type { min-height: calc(100dvh - var(--travel-head)); }
+/* Room for the last section to reach the card's top when its jump link is tapped: the card's own height (the frame,
+   18e) less the jump-link row and the card's bottom padding */
+.travel-section:last-of-type { min-height: calc(100dvh - var(--bar-h) - 12px - var(--dock-band) - var(--travel-head) - var(--letter-pad)); }
+@media (min-width: 768px) { .travel-section:last-of-type { min-height: calc(100dvh - 2 * var(--letter-top) + var(--bar-h) - var(--travel-head) - var(--letter-pad)); } }
 .travel-summary { display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-4); border-left: 2px solid var(--leaf); }
 .travel-summary-line { color: var(--ink-soft); text-decoration: none; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
 .travel-summary-line:focus-visible { outline-color: var(--input-focus); }

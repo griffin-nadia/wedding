@@ -81,13 +81,15 @@ test("the light and dark circle grows from the button, the first time too", asyn
   expect(first!.near).toBeGreaterThan(0.25)
 })
 
-test("phones: at the end of a page the card stops 12px above the dock, with nothing repainted over it", async ({ page }, info) => {
+// 18e: the card is a fixed frame, 12px under the bar and 12px above the dock, at the top of its scroll and the end
+test("phones: the card sits 12px under the bar and 12px above the dock, scrolled or not", async ({ page }, info) => {
   test.skip(info.project.name !== "phone", "phones only")
   await go(page, "travel")
-  await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" }))
+  const gaps = () => page.evaluate(() => { const l = document.getElementById("letter")!.getBoundingClientRect(); return [Math.round(l.top - document.querySelector(".site-bar")!.getBoundingClientRect().bottom), Math.round(document.querySelector(".site-nav")!.getBoundingClientRect().top - l.bottom)] })
+  expect(await gaps()).toEqual([12, 12])
+  await page.evaluate(() => { const s = document.querySelector(".letter-scroll")!; s.scrollTo({ top: s.scrollHeight, behavior: "instant" }) })
   await page.waitForTimeout(300)
-  const gap = await page.evaluate(() => document.querySelector(".site-nav")!.getBoundingClientRect().top - document.getElementById("letter")!.getBoundingClientRect().bottom)
-  expect(Math.round(gap)).toBe(12)
+  expect(await gaps()).toEqual([12, 12])
   await expect(page.locator(".scene")).toHaveCount(1)
 })
 

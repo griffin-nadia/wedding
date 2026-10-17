@@ -14,7 +14,8 @@ export function useUnder(root?: React.RefObject<HTMLElement | null>) {
     if (!s) return
     // The page's header sticks under the top bar
     const top = root ? 0 : Math.round(document.querySelector(".site-bar")?.getBoundingClientRect().height ?? 0)
-    const io = new IntersectionObserver(([e]) => setUnder(!e.isIntersecting && e.boundingClientRect.top < top + 1), { root: root?.current ?? null, rootMargin: `-${top}px 0px 0px 0px` })
+    // Gone above the top edge of the box it scrolls in (the window's, or the card's or a sheet's own top)
+    const io = new IntersectionObserver(([e]) => setUnder(!e.isIntersecting && e.boundingClientRect.top < (e.rootBounds?.top ?? 0) + 1), { root: root?.current ?? null, rootMargin: `-${top}px 0px 0px 0px` })
     io.observe(s)
     return () => io.disconnect()
   }, [root])
@@ -23,18 +24,14 @@ export function useUnder(root?: React.RefObject<HTMLElement | null>) {
 
 /**
  * The one page header (every tab, and every sheet through SheetHead): the title with its moss rule, then anything
- * that should stay with it (Travel's jump links). Sticky; once content has scrolled under it, a hairline and a light
- * paper fill appear.
+ * that belongs with it (Travel's jump links). It scrolls away with the page (18e: the top bar is the only thing that
+ * stays put; Travel's jump links stay as one slim row at the top of the card).
  */
 export function PageHeader({ title, children, className, as: H = "h1" }: { title: ReactNode; children?: ReactNode; className?: string; as?: "h1" | "h2" }) {
-  const { sentinel, under } = useUnder()
   return (
-    <>
-      <span ref={sentinel} aria-hidden className="page-header-sentinel" />
-      <header className={cn("page-header", className)} data-under={under || undefined}>
-        <H className="heading">{title}</H>
-        {children}
-      </header>
-    </>
+    <header className={cn("page-header", className)}>
+      <H className="heading">{title}</H>
+      {children}
+    </header>
   )
 }

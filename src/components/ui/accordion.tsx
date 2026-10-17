@@ -88,7 +88,7 @@ export function Disclosure({ label, children, onValueChange, ...props }: { label
     const el = tapped.current
     if (v && el) {
       const top = el.getBoundingClientRect().top, until = performance.now() + 450
-      loop((now) => { const d = el.getBoundingClientRect().top - top; if (Math.abs(d) >= 1) window.scrollBy({ top: d, behavior: "instant" }); return now < until })
+      loop((now) => { const d = el.getBoundingClientRect().top - top; if (Math.abs(d) >= 1) (el.closest<HTMLElement>(".letter-scroll, .sheet-body") ?? window).scrollBy({ top: d, behavior: "instant" }); return now < until })
     }
     onValueChange?.(v)
   }

@@ -11,6 +11,7 @@ import { ModeSwitches } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
+import { letterScroll } from "@/lib/frame"
 // Loaded after the first screen: the credit and the phone QR
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
@@ -71,7 +72,8 @@ function Nav() {
 
 /**
  * Scene behind, letter in front, and one top bar over both on every screen: the mark, the nav from 768, RSVP from
- * 768, then あ / A, music and the sun or moon. The bar never hides; once the page scrolls a hairline shows under it.
+ * 768, then あ / A, music and the sun or moon. The bar is the only thing that stays put and never changes; the card
+ * under it is a fixed frame whose content scrolls inside it.
  * No site footer: the letter ends with the sign-off.
  */
 export function Layout() {
@@ -93,19 +95,12 @@ export function Layout() {
   // "Put it back in the envelope" (Home): seal it again; tapping opens it as on the first visit
   const [resealed, setResealed] = useState(0)
   useEffect(() => {
-    const on = () => { resetArrival(); window.scrollTo(0, 0); setSealed(true); setResealed((n) => n + 1) }
+    const on = () => { resetArrival(); letterScroll()?.scrollTo(0, 0); setSealed(true); setResealed((n) => n + 1) }
     window.addEventListener("ng-reseal", on)
     return () => window.removeEventListener("ng-reseal", on)
   }, [])
-  // The top bar's hairline shows once the page has scrolled at all (one attribute write per change)
-  useEffect(() => {
-    const root = document.documentElement
-    let on = false
-    const check = () => { const now = window.scrollY > 0; if (now !== on) { on = now; root.toggleAttribute("data-scrolled", now) } }
-    check()
-    window.addEventListener("scroll", check, { passive: true })
-    return () => { window.removeEventListener("scroll", check); root.removeAttribute("data-scrolled") }
-  }, [])
+  // A new page starts at its top (the card scrolls, not the window), unless a link asked for a section (#hash)
+  useLayoutEffect(() => { if (!location.hash) letterScroll()?.scrollTo(0, 0) }, [pathname])
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sealed", sealed)
     return () => document.documentElement.removeAttribute("data-sealed")
@@ -124,6 +119,8 @@ export function Layout() {
       <main className="letter-wrap">
         <Arrival key={resealed} sealedAgain={resealed > 0} enabled={page === "home"} onOpened={() => setSealed(false)}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
+            {/* The card is a fixed frame between the bar and the dock; what's on it scrolls in here (18e) */}
+            <div className="letter-scroll">
             <Suspense>
               <div key={pathname} className="letter-body">
                 <Outlet />
@@ -133,6 +130,7 @@ export function Layout() {
               // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
               ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
               : null} />}
+            </div>
           </Letter>
           {page === "home" && !sealed && <Suspense><CreditMark foot /></Suspense>}
         </Arrival>
