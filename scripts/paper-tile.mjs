@@ -1,4 +1,4 @@
-// node scripts/paper-tile.mjs — the paper tile (18e): Nadia's crosshatch, sampled from a plain patch of the closed
+// node scripts/paper-tile.mjs — Nadia's crosshatch (18e; a lab option in Paper since 18f), sampled from a plain patch of the closed
 // envelope's bottom flap (private/nadia-art-17oct, 768px square at x 1620, y 2420 of the 4000px original), turned
 // into strokes only (how much darker each pixel is than the paper around it, as alpha), shrunk to 512 and made
 // seamless (crossfaded with itself shifted half a tile, so every edge shows the tile's own middle). Two opaque WebPs:
@@ -49,7 +49,7 @@ const out = await p.evaluate(async (src) => {
   return files
 }, src)
 for (const [name, data] of Object.entries(out)) {
-  const f = `src/assets/texture-hatch-${name}.webp`
+  const f = `src/lab/playground/x/micro/hatch-${name}.webp`
   fs.writeFileSync(f, Buffer.from(data, "base64"))
   console.log(f, Math.round(fs.statSync(f).size / 1024), "kB")
 }

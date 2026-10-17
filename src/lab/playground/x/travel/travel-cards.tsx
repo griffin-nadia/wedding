@@ -28,7 +28,7 @@ const css = `
   box-shadow: 0 1px 1px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.14), inset 0 0 0 1px var(--line-hairline);
   transform: translateY(calc(var(--lift) * -1)) rotateX(var(--rx)) rotateY(var(--ry)); transform-style: preserve-3d;
   transition: transform 420ms var(--ease-spring), box-shadow 320ms var(--ease-paper); outline: 2px solid transparent; outline-offset: 3px; -webkit-tap-highlight-color: transparent; }
-.x-travel-cards-card::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--texture-grain); background-size: 256px; opacity: calc(var(--texture-opacity) * 1.4); mix-blend-mode: var(--texture-blend); pointer-events: none; }
+.x-travel-cards-card::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
 /* A folded corner, like a card from a stack */
 .x-travel-cards-card::after { content: ""; position: absolute; top: 0; right: 0; width: 26px; height: 26px; border-bottom-left-radius: 8px;
   background: linear-gradient(225deg, var(--letter-bg) 50%, color-mix(in oklab, var(--surface-alt) 80%, var(--ink) 8%) 50%); box-shadow: -1px 1px 2px rgb(0 0 0 / 0.1); }

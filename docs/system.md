@@ -57,14 +57,25 @@ Components only use purpose or component tokens; nothing invents a colour or an 
 
 | Surface | Token | Looks like |
 |---|---|---|
-| Paper | `--elevation-paper` | the letter: grain, one soft shadow |
+| Paper | `--elevation-paper` | the letter: the paper, one soft shadow |
 | Raised | `--elevation-raised` | cards and inputs on the letter: a hairline, no shadow |
-| Sheet | `--elevation-sheet` | the one sheet (reply, journey map, driver card): grain, the deeper shadow |
+| Sheet | `--elevation-sheet` | the one sheet (reply, journey map, driver card): the paper, the deeper shadow |
 | Overlay | `--elevation-overlay` | the dim behind a sheet |
 
-Grain sits on every paper surface (the letter and every sheet, `.letter::before`). The letter's grain and mottle are small baked WebPs (`--texture-grain`, `--texture-soft`, one pair per theme, from `scripts/bake-textures.mjs`), not live SVG noise: a phone redraws both letters in every page turn, and the live filter was about three quarters of that work. Phones under 768 show the grain only. There is one backdrop blur on the site, on the nav, and blur is never animated.
+The paper (18f) is Paper's PaperTexture shader with no image, baked once per theme to a seamless opaque WebP tile
+(`--paper`: `paper-light.webp` cream, `paper-lantern.webp` walnut, and `--paper-bright` for the fortune slip and the
+driver card; 480px on screen, baked at 2x) by `scripts/paper-bake.mjs` from the preset in `src/lib/paper.ts`. It is the
+bottom layer of the letter, every sheet, `.paper-feel` and the sent letter. Lantern keeps drops and wrinkles lower, so
+dark paper never reads as scratched. Guests only get the images: no WebGL, nothing animated. To change it, pick in
+the lab's Paper experiment, put the settings in `PAPER` and re-run the bake. There is one backdrop blur on the site,
+on the nav, and blur is never animated.
 
-Paper you could hold (`.paper-feel`): the fortune box and its slip, the flying-from card, the envelope and the sent letter carry washi fibres in the paper (`--texture-fibre`, a transparent baked tile per theme), a lighter grain over them, and an edge shadow in four parts (contact hairline, short soft, long faint, lit top and shaded bottom edges). The slip shows two fold creases. The hanko is vermilion (`--ink-stamp`) with real ink: one small SVG filter (`#ink-bleed` in `index.html`) lets its edge bleed into the paper, a baked mask (`--texture-ink`) leaves small dry specks, and on light paper it multiplies in. All images and CSS; no canvas or shader on the guest site.
+Paper you could hold (`.paper-feel`): the fortune box and its slip, the flying-from card, the envelope and the sent
+letter carry the paper and an edge shadow in four parts (contact hairline, short soft, long faint, lit top and
+shaded bottom edges). The slip shows two fold creases. The hanko is vermilion (`--ink-stamp`) with real ink: one
+small SVG filter (`#ink-bleed` in `index.html`) lets its edge bleed into the paper, a baked mask (`--texture-ink`)
+leaves small dry specks, and on light paper it multiplies in. All images and CSS; no canvas or shader on the guest
+site.
 
 ## Type: one scale, six roles
 

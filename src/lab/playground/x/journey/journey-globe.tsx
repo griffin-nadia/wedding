@@ -16,7 +16,7 @@ const START: [number, number] = [14, -172] // over the Pacific, with both cities
 const css = `
 .x-globe2 { position: relative; isolation: isolate; height: 100svh; min-height: 100svh; overflow: hidden; touch-action: none; background: radial-gradient(ellipse at 50% 42%, var(--letter-bg) 0%, color-mix(in oklab, var(--letter-bg) 50%, var(--surface-alt)) 55%, var(--surface-alt) 100%); color: var(--ink); cursor: grab; }
 .x-globe2:active { cursor: grabbing; }
-.x-globe2::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--texture-grain); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
+.x-globe2::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
 .x-globe2-stage { position: absolute; inset: 0; }
 .x-globe2-stage canvas, .x-globe2-stage img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .x-globe2-label { position: absolute; left: 0; top: 0; padding: 3px 8px; border-radius: var(--radius-pill); background: var(--letter-bg); color: var(--ink); box-shadow: var(--elevation-raised); font: 500 var(--type-label-size) / var(--type-label-leading) var(--font-label); white-space: nowrap; pointer-events: none; transition: opacity 200ms linear; will-change: transform; }

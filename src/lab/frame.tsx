@@ -13,6 +13,7 @@ import { createRoot } from "react-dom/client"
 import { createPortal } from "react-dom"
 import { MemoryRouter } from "react-router-dom"
 import { PaperTexture } from "@paper-design/shaders-react"
+import { COLOURS, PAPER, forTone } from "@/lib/paper"
 import { ThemeProvider, useTheme } from "@/lib/theme"
 import { LangProvider, useLang } from "@/lib/lang"
 import { HouseholdProvider } from "@/lib/household"
@@ -50,8 +51,7 @@ function PaperLetters() {
   }, [])
   const dark = theme === "lantern"
   return <>{letters.map((el, i) => createPortal(
-    <PaperTexture key={i} className="lab-paper" speed={0} frame={0} colorBack={dark ? "#22160e" : "#f3e7d3"} colorPaper={dark ? "#2f2016" : "#fbf5ea"} colorShadow={dark ? "#0b0705" : "#c9b48f"}
-      fiber={0.35} crumples={0.2} folds={0.15} drops={0.1} roughness={0.35} fit="cover" />, el))}</>
+    <PaperTexture key={i} className="lab-paper" speed={0} frame={0} {...forTone(PAPER, dark ? "lantern" : "light")} {...COLOURS[dark ? "lantern" : "light"]} fit="cover" />, el))}</>
 }
 
 const PAGES: [string, () => ReactNode][] = [["The day", () => <DayPage />], ["Travel", () => <TravelPage />], ["FAQs", () => <FaqsPage />], ["Our story", () => <StoryPage />]]

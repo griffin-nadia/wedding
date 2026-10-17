@@ -11,7 +11,7 @@ import { useLang } from "@/lib/lang"
  */
 const css = `
 .x-ink { position: relative; isolation: isolate; min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px 16px; background: var(--letter-bg); color: var(--ink); }
-.x-ink::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--texture-hatch), var(--texture-grain); background-size: 512px, 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
+.x-ink::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
 .x-ink-eyebrow { margin: 0; font: 500 var(--type-label-size) / var(--type-label-leading) var(--font-label); letter-spacing: var(--type-label-tracking); text-transform: uppercase; color: var(--ink-story); }
 .x-ink-card { position: relative; width: min(100%, 980px, 125svh); border-radius: var(--radius-section); box-shadow: var(--elevation-paper); }
 .x-ink-card svg { display: block; }
