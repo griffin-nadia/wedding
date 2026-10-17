@@ -75,3 +75,8 @@ function AccordionContent({
 }
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
+
+/** The site's accordion: one open at a time everywhere (Jehan, 6 Oct). */
+export function Disclosure({ label, children, ...props }: { label: string; children: React.ReactNode } & Omit<React.ComponentProps<typeof AccordionPrimitive.Root>, "type" | "children">) {
+  return <Accordion type="single" collapsible aria-label={label} {...(props as object)}>{children}</Accordion>
+}

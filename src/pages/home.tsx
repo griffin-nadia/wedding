@@ -91,7 +91,7 @@ export function HomePage() {
 
   const rsvpButton = done
     ? <button type="button" className="btn-text min-h-11" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.changeReply}</button>
-    : <Button size="lg" className="home-rsvp w-full sm:w-auto" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.rsvpButton}</Button>
+    : <Button size="md" className="home-rsvp w-full sm:w-auto" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.rsvpButton}</Button>
 
   return (
     <>
@@ -107,7 +107,7 @@ export function HomePage() {
       {/* Later modes (v3 S): the week of the wedding points at the day; the keepsake is a thank-you letter */}
       {household && mode === "week-of" && (
         <div className="flex flex-col gap-3">
-          <Button asChild size="lg" className="w-full sm:w-auto sm:self-start"><Link to="/the-day">{t.home.week.day}</Link></Button>
+          <Button asChild size="md" className="w-full sm:w-auto sm:self-start"><Link to="/the-day">{t.home.week.day}</Link></Button>
           <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{t.home.week.directions}</a>
           {contactDay && <p className="text-small">{t.qa.onTheDay} {contactDay}</p>}
         </div>

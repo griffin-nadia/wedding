@@ -6,7 +6,7 @@ import { HouseholdProvider, useHousehold } from "@/lib/household"
 import { LangProvider } from "@/lib/lang"
 import { ThemeProvider } from "@/lib/theme"
 import { SceneDimProvider } from "@/components/letter/letter"
-import { Toaster } from "@/components/toast"
+import { Toaster } from "@/components/ui/toast"
 import { HomePage } from "@/pages/home"
 
 // Pages beyond Home load when first visited, so the greeting paints sooner.

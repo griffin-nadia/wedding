@@ -41,6 +41,8 @@ function Nav() {
   const linksKey = links.map((l) => `${l.to}:${t.nav[l.key]}`).join("|")
   useEffect(() => { setStoryLetter(hasStory) }, [hasStory])
   const { pathname } = useLocation()
+  // Laptops: page changes are a view transition; phones have the page-turn track
+  const wide = typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches
   const list = useRef<HTMLUListElement>(null)
   const [mark, setMark] = useState<{ x: number; w: number; h: number; y: number } | null>(null)
   useLayoutEffect(() => {
@@ -56,10 +58,9 @@ function Nav() {
     if (ul) observer?.observe(ul)
     const active = ul?.querySelector<HTMLElement>("a.is-active")
     if (active) observer?.observe(active)
-    window.addEventListener("resize", place)
     let cancelled = false
     document.fonts?.ready.then(() => { if (!cancelled) place() })
-    return () => { cancelled = true; observer?.disconnect(); window.removeEventListener("resize", place) }
+    return () => { cancelled = true; observer?.disconnect() }
   }, [pathname, linksKey])
   return (
     <nav aria-label="Main" className="site-nav">
@@ -67,7 +68,7 @@ function Nav() {
         {mark && <li aria-hidden className="nav-mark" style={{ transform: `translate(${mark.x}px, ${mark.y}px)`, width: mark.w, height: mark.h }} />}
         {links.map((l) => (
           <li key={l.to}>
-            <NavLink to={l.to} end className={({ isActive }) => cn("site-nav-link", isActive && "is-active")}>
+            <NavLink to={l.to} end viewTransition={wide} className={({ isActive }) => cn("site-nav-link", isActive && "is-active")}>
               <l.icon className="size-5 md:hidden" aria-hidden />
               <span>{t.nav[l.key]}</span>
             </NavLink>

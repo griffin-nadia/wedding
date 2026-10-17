@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Chip, ReviewRow, Skeleton, StepProgress } from "@/components/blocks"
+import { ReviewRow, Skeleton, StepProgress } from "@/components/blocks"
+import { Chip } from "@/components/ui/checkbox-group"
 import { Pill } from "@/components/pill"
 import { DATES } from "@/lib/wedding-dates"
 import { fmtShort } from "@/lib/dates"
@@ -16,11 +17,11 @@ import { DriverCard } from "@/components/driver-card"
 import { LanternToggle } from "@/components/lantern-toggle"
 import { Trail } from "@/components/trail"
 import { InlineSubmit } from "@/components/inline-submit"
-import { FormField } from "@/components/form-field"
+import { FormField } from "@/components/ui/field"
 import { SongPicker } from "@/components/song-picker"
 import { Combobox } from "@/components/combobox"
 import { Segmented } from "@/components/segmented"
-import { toast } from "@/components/toast"
+import { toast } from "@/components/ui/toast"
 import { COUPLE, en } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { SCENES } from "@/lib/scenes"
@@ -67,12 +68,12 @@ const GROUPS: Group[] = [
         <>
           {STATES.filter((s) => s !== "selected" && s !== "error").map((s) => (
             <Row key={s} label={s}>
-              <Button size="lg" disabled={s === "disabled"} {...force(s)}>{en.home.rsvpButton}</Button>
-              <Button size="lg" variant="outline" disabled={s === "disabled"} {...force(s)}>Back</Button>
+              <Button size="md" disabled={s === "disabled"} {...force(s)}>{en.home.rsvpButton}</Button>
+              <Button size="md" variant="secondary" disabled={s === "disabled"} {...force(s)}>Back</Button>
               <button type="button" className="btn-text min-h-11" disabled={s === "disabled"} {...force(s)}>Change my reply</button>
             </Row>
           ))}
-          <Row label="loading"><Button size="lg" aria-busy>Sending…</Button></Row>
+          <Row label="loading"><Button size="md" aria-busy>Sending…</Button></Row>
         </>
       ) },
       { id: "field", name: "Text field", tokens: "--input-*", purpose: "Label above, 52 tall on phones and 48 from 768, control radius, Inter 16, a moss tick when filled.", render: () => (
@@ -141,7 +142,7 @@ const GROUPS: Group[] = [
       { id: "pill", name: "Status pill", purpose: "The only other round thing besides the seal.", render: () => (
         <div className="flex flex-wrap gap-3"><Pill tone="good">Replied</Pill><Pill tone="warn">Not yet</Pill><Pill>{`Changes lock ${fmtShort(DATES.changesLock)}`}</Pill><Pill tone="accent">New</Pill></div>
       ) },
-      { id: "hanko", name: "Hanko", purpose: "The success stamp, 京, the one thing that lands with a little weight (--duration-stamp).", render: () => <HankoDemo /> },
+      { id: "hanko", name: "Hanko", purpose: "The success stamp, 京, the one thing that lands with a little weight (--duration-base).", render: () => <HankoDemo /> },
       { id: "countdown", name: "Countdown", tokens: "--countdown-*", purpose: "Home only, inside the letter: paper boxes for days, hrs, mins and secs that flip only when their number changes, with a line saying what it counts.", render: () => <div className="flex max-w-md flex-col gap-6"><HomeCountdown /></div> },
       { id: "timeline", name: "Timeline", purpose: "The day: one thin moss line that draws in as you scroll (the only thing that moves); times and labels swap sides; a Now marker on the day.", render: () => (
         <p>See it live on <a className="btn-text" href={`${import.meta.env.BASE_URL}the-day`}>The day</a>; the moss line draws in as you scroll.</p>
@@ -150,7 +151,7 @@ const GROUPS: Group[] = [
       { id: "fortune", name: "Fortune card", purpose: "After a yes: one fortune per household, the same on every device.", render: () => <div className="flex max-w-md flex-col gap-4"><FortuneCard token="kit-closed" /><FortuneCard token="kit-open" /></div> },
       { id: "driver", name: "Driver card", purpose: "Sage paper in the page; Show the driver opens a modal above everything (dock and toggle hidden), Japanese on the type scale, Done in the footer, Esc closes.", render: () => <div className="max-w-md"><DriverCard /></div> },
       { id: "sound", name: "Mode toggle", purpose: "Sun or moon, top right, outside the letter. The only switch on the site.", render: () => <LanternToggle /> },
-      { id: "toast", name: "Toast", purpose: "One line, bottom of the screen, 2.4 s (copy confirmations only).", render: () => <Button variant="outline" onClick={() => toast("Address copied")}><Copy aria-hidden />Show a toast</Button> },
+      { id: "toast", name: "Toast", purpose: "One line, bottom of the screen, 2.4 s (copy confirmations only).", render: () => <Button variant="secondary" onClick={() => toast("Address copied")}><Copy aria-hidden />Show a toast</Button> },
       { id: "skeleton", name: "Skeleton", purpose: "Washi breathing; only appears after 300 ms so fast loads never flash it.", render: () => <div className="flex max-w-xs flex-col gap-3"><Skeleton className="h-7 w-40" /><Skeleton className="h-13 w-full rounded-lg!" /></div> },
     ],
   },
@@ -158,9 +159,9 @@ const GROUPS: Group[] = [
     group: "Surfaces",
     pages: [
       { id: "letter", name: "Letter and scene", tokens: "--letter-*, --scene-*", purpose: "The only UI surface. 620 wide on desktop, texture on the card, one shadow, a 1px line, no top bar, no blur ring. The RSVP sheet is the same surface at 1.5× shadow.", render: () => <LetterDemo /> },
-      { id: "envelope", name: "Envelope", purpose: "Arrival, first visit only, their photo behind it. Hover lifts the flap; pull or tap opens it (flap --duration-flap, letter rises --duration-rise); the paper sound plays on that tap only.", render: () => <EnvelopeDemo /> },
-      { id: "segmented", name: "Tabs and segmented", purpose: "One control for every set of choices (Coming / Can't make it, /kit modes, the lab): content width, centred on phones, the sliding marker (--duration-slide), a tick on a selected choice, arrow keys move and choose.", render: () => <SegDemo /> },
-      { id: "nav", name: "Nav", purpose: "Four items, rendered once: a floating dock on phones, a thin top bar from 768 with RSVP as a button. A sage marker slides to the current page (--duration-slide).", render: () => (
+      { id: "envelope", name: "Envelope", purpose: "Arrival, first visit only, their photo behind it. Hover lifts the flap; pull or tap opens it (flap --duration-base, letter rises --duration-slow); the paper sound plays on that tap only.", render: () => <EnvelopeDemo /> },
+      { id: "segmented", name: "Tabs and segmented", purpose: "One control for every set of choices (Coming / Can't make it, /kit modes, the lab): content width, centred on phones, the sliding marker (--duration-fast), a tick on a selected choice, arrow keys move and choose.", render: () => <SegDemo /> },
+      { id: "nav", name: "Nav", purpose: "Four items, rendered once: a floating dock on phones, a thin top bar from 768 with RSVP as a button. A sage marker slides to the current page (--duration-fast).", render: () => (
         <div className="flex max-w-sm flex-col gap-3">
           <div className="relative grid h-16 grid-cols-4 rounded-[calc(var(--radius-control)+4px)] border bg-background p-1 shadow-paper">
             <span aria-hidden className="absolute top-1 bottom-1 left-1 w-[calc(25%-2px)] rounded-(--radius-control) bg-section-alt" />
@@ -190,7 +191,7 @@ const na = <span className="text-small text-muted-foreground">n/a</span>
 function Between() {
   const cols = ["Idle", "Loading", "Success", "Error", "Empty"]
   const rows: [string, ReactNode[]][] = [
-    ["Button", [<Button key="i">Send our reply</Button>, <Button key="l" aria-busy>Sending…</Button>, <Button key="s" variant="outline">Sent</Button>, <span key="e" className="flex flex-col gap-2"><Button>Try again</Button><span className="text-small text-destructive">We couldn't send that. Try again.</span></span>, na]],
+    ["Button", [<Button key="i">Send our reply</Button>, <Button key="l" aria-busy>Sending…</Button>, <Button key="s" variant="secondary">Sent</Button>, <span key="e" className="flex flex-col gap-2"><Button>Try again</Button><span className="text-small text-destructive">We couldn't send that. Try again.</span></span>, na]],
     ["Inline submit", [
       <InlineSubmit key="i" id="b-i1" label="Your email" submitLabel="Send my link" onSubmit={() => {}} />,
       <InlineSubmit key="l" id="b-i2" label="Your email" submitLabel="Send my link" busy defaultValue="sam@example.com" onSubmit={() => {}} />,
@@ -254,7 +255,7 @@ function SongDemo() {
 
 function HankoDemo() {
   const [n, setN] = useState(0)
-  return <div className="flex items-center gap-6"><Hanko key={n} stamp /><Button variant="outline" onClick={() => setN(n + 1)}>Stamp again</Button></div>
+  return <div className="flex items-center gap-6"><Hanko key={n} stamp /><Button variant="secondary" onClick={() => setN(n + 1)}>Stamp again</Button></div>
 }
 
 function LetterDemo() {
@@ -282,7 +283,7 @@ function EnvelopeDemo() {
           <span className="envelope-seal">{COUPLE.first[0]}&amp;{COUPLE.second[0]}</span>
         </span>
       </div>
-      <Button variant="outline" onClick={() => { if (opening) { setOpening(false); setN(n + 1) } else setOpening(true) }}>{opening ? "Seal it again" : "Open"}<ArrowRight aria-hidden /></Button>
+      <Button variant="secondary" onClick={() => { if (opening) { setOpening(false); setN(n + 1) } else setOpening(true) }}>{opening ? "Seal it again" : "Open"}<ArrowRight aria-hidden /></Button>
     </div>
   )
 }
@@ -314,7 +315,7 @@ function Swatch({ name, role, on }: { name: string; role?: string; on?: string }
   const ref = useRef<HTMLDivElement>(null)
   const tick = useTune()
   const c = useVar(ref, name, tick)
-  const bg = useVar(ref, on || "--sys-surface", tick)
+  const bg = useVar(ref, on || "--surface-paper", tick)
   return (
     <div ref={ref} className="flex items-center gap-3 py-2">
       <span className="size-10 shrink-0 rounded-sm border" style={{ background: `var(${name})` }} />
@@ -338,7 +339,7 @@ function Colour() {
       <h3 className="label-caps text-muted-foreground">Brand · Nadia's palette</h3>
       <div className="grid gap-x-6 sm:grid-cols-2">{BRAND.map((b) => <Swatch key={b} name={`--brand-${b}`} />)}</div>
       <h3 className="label-caps mt-6 text-muted-foreground">System · this mode (text pairs show contrast on the letter)</h3>
-      <div className="grid gap-x-6 sm:grid-cols-2">{SYS.map(([s, role, text]) => <Swatch key={s} name={`--sys-${s}`} role={role} on={text ? "--sys-surface" : undefined} />)}</div>
+      <div className="grid gap-x-6 sm:grid-cols-2">{SYS.map(([s, role, text]) => <Swatch key={s} name={`--sys-${s}`} role={role} on={text ? "--surface-paper" : undefined} />)}</div>
     </>
   )
 }
@@ -384,10 +385,10 @@ const MOMENTS: [string, string][] = [
 ]
 function Motion() {
   const [go, setGo] = useState(0)
-  const rows: [string, string, string][] = [["press", "--duration-press", "--ease-paper"], ["quick", "--duration-quick", "--ease-paper"], ["settle", "--duration-settle", "--ease-paper"], ["rise", "--duration-rise", "--ease-letter"]]
+  const rows: [string, string, string][] = [["press", "--duration-fast", "--ease-paper"], ["quick", "--duration-fast", "--ease-paper"], ["settle", "--duration-base", "--ease-paper"], ["rise", "--duration-slow", "--ease-paper"]]
   return (
     <>
-      <Button variant="outline" onClick={() => setGo(go + 1)} className="self-start">Play</Button>
+      <Button variant="secondary" onClick={() => setGo(go + 1)} className="self-start">Play</Button>
       {rows.map(([n, d, e]) => (
         <div key={n} className="flex items-center gap-4 py-2">
           <span className="w-32 text-small text-muted-foreground">{n} · {d.replace("--duration-", "")}</span>

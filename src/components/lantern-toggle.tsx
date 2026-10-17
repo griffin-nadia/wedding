@@ -41,10 +41,10 @@ export function LanternToggle({ className }: { className?: string }) {
           // Driven from here rather than a keyframe reading CSS variables, which not every browser resolves on the
           // transition's snapshot: that left the circle starting from the top of the page instead of the button
           void vt.ready?.then(() => {
-            const css = getComputedStyle(root), d = css.getPropertyValue("--duration-mode").trim()
+            const css = getComputedStyle(root), d = css.getPropertyValue("--duration-slow").trim()
             const duration = d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000 // the token can compute to "0.76s"
             root.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${reach}px at ${x}px ${y}px)`] },
-              { duration: duration || 760, easing: css.getPropertyValue("--ease-mode").trim() || "ease-in-out", fill: "both", pseudoElement: "::view-transition-new(root)" })
+              { duration: duration || 760, easing: css.getPropertyValue("--ease-paper").trim() || "ease-in-out", fill: "both", pseudoElement: "::view-transition-new(root)" })
           })
           vt.finished?.finally(clear)
           window.setTimeout(clear, 1200)

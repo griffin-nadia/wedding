@@ -13,8 +13,8 @@ export function AddToCalendar() {
     <div role="group" aria-labelledby="add-cal" className="flex flex-col gap-3">
       <p id="add-cal" className="label-caps text-muted-foreground">{t.day.addToCalendar}</p>
       <div className="grid gap-3 sm:flex sm:flex-wrap">
-        <Button asChild variant="outline" size="lg"><a href={googleCalendarUrl} target="_blank" rel="noreferrer" onClick={() => setNote("opened")}>{t.day.googleCalendar}</a></Button>
-        <Button asChild variant="outline" size="lg"><a href={icsHref()} download="nadia-griffin-wedding.ics" onClick={() => setNote("saved")}>{t.day.appleCalendar}</a></Button>
+        <Button asChild variant="secondary" size="md"><a href={googleCalendarUrl} target="_blank" rel="noreferrer" onClick={() => setNote("opened")}>{t.day.googleCalendar}</a></Button>
+        <Button asChild variant="secondary" size="md"><a href={icsHref()} download="nadia-griffin-wedding.ics" onClick={() => setNote("saved")}>{t.day.appleCalendar}</a></Button>
       </div>
       <p role="status" aria-live="polite" className={note ? "cal-note is-on text-small text-success" : "cal-note text-small text-success"}>{note === "opened" ? t.day.calendarOpened : note === "saved" ? t.day.calendarSaved : ""}</p>
     </div>

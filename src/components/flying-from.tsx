@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Chip } from "@/components/blocks"
+import { Chip } from "@/components/ui/checkbox-group"
 import { FLYING, setFlying, type Flying } from "@/lib/api"
 import { useLang } from "@/lib/lang"
 

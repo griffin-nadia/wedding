@@ -1,4 +1,5 @@
 import { ART } from "@/lib/art"
+import { nextFrame } from "@/lib/frame"
 import { BrandSeal } from "@/components/brand-seal"
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
 import { useHousehold } from "@/lib/household"
@@ -78,7 +79,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
     try { localStorage.setItem(KEY, "1") } catch { /* private mode */ }
     setPhase("open")
     onOpened?.()
-    requestAnimationFrame(() => document.getElementById("letter")?.focus({ preventScroll: true }))
+    nextFrame(() => document.getElementById("letter")?.focus({ preventScroll: true }))
   }
   const open = () => {
     if (phase !== "sealed") return finish()

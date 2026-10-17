@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
+import { nextFrame } from "@/lib/frame"
 
 /** The four letters in order (Home, The day, Travel, FAQs). */
 export const LETTERS: string[] = ["/", "/the-day", "/travel", "/faqs"]
@@ -19,9 +20,9 @@ const inSideScroller = (t: Element | null) => {
   return false
 }
 
-const TRACK = "transform var(--duration-turn) var(--ease-letter)"
+const TRACK = "transform var(--duration-base) var(--ease-paper)"
 const turnMs = () => {
-  const d = getComputedStyle(document.documentElement).getPropertyValue("--duration-turn").trim()
+  const d = getComputedStyle(document.documentElement).getPropertyValue("--duration-base").trim()
   return (d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000) || 280
 }
 let dragging = false
@@ -46,7 +47,7 @@ function leave(dir: number, fromX = 0) {
   g.classList.add("letter-ghost")
   Object.assign(g.style, { position: "fixed", top: `${r.top}px`, left: `${r.left - fromX}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", transition: "none", transform: `translateX(${fromX}px)` })
   document.body.appendChild(g)
-  requestAnimationFrame(() => { g.style.transition = TRACK; g.style.transform = `translateX(${-dir * innerWidth}px)` })
+  nextFrame(() => { g.style.transition = TRACK; g.style.transform = `translateX(${-dir * innerWidth}px)` })
   // Gone the moment it's off screen, with a fallback in case the transition never reports back
   const done = () => g.remove()
   g.addEventListener("transitionend", (e) => { if (e.target === g) done() })
@@ -74,19 +75,19 @@ export function usePageTurn(enabled: boolean) {
     const el = letter(); if (!el || !p || still()) return
     el.style.transition = "none"; el.style.willChange = "transform"
     el.style.transform = `translateX(${p.at + p.dir * innerWidth}px)`
-    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = TRACK; el.style.transform = ""; settle(el) }))
+    nextFrame(() => nextFrame(() => { el.style.transition = TRACK; el.style.transform = ""; settle(el) }))
   }, [pathname])
 
   useEffect(() => {
     if (!enabled) return
-    let start: { x: number; y: number; t: number } | null = null, dx = 0, active = false, frame = 0
+    let start: { x: number; y: number; t: number } | null = null, dx = 0, active = false, frame: (() => void) | null = null
     // One write per frame while dragging, however often the finger reports
-    const paint = () => { frame = 0; const el = letter(); if (el && start) el.style.transform = `translateX(${dx}px)` }
+    const paint = () => { frame = null; const el = letter(); if (el && start) el.style.transform = `translateX(${dx}px)` }
     const wide = () => window.matchMedia("(min-width: 768px)").matches
     const here = () => indexOf(location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/")
     const down = (e: PointerEvent) => {
       const t = e.target as Element
-      if (wide() || e.pointerType === "mouse" || t.closest("input, textarea, [role=slider], .combo-field, .rsvp-letter, .driver-modal") || inSideScroller(t)) return
+      if (wide() || e.pointerType === "mouse" || t.closest("input, textarea, [role=slider], .combo-field, .sheet") || inSideScroller(t)) return
       start = { x: e.clientX, y: e.clientY, t: performance.now() }; dx = 0; active = false
     }
     const move = (e: PointerEvent) => {
@@ -101,18 +102,18 @@ export function usePageTurn(enabled: boolean) {
       const i = here()
       const edge = (x > 0 && i === 0) || (x < 0 && i === LETTERS.length - 1)
       dx = edge ? x * 0.25 : x // resist at the ends
-      if (!frame) frame = requestAnimationFrame(paint)
+      if (!frame) frame = nextFrame(paint)
     }
     const up = () => {
       if (!start) return
       const el = letter(), v = Math.abs(dx) / Math.max(1, performance.now() - start.t)
       start = null; dragging = false
-      if (frame) { cancelAnimationFrame(frame); frame = 0 }
+      if (frame) { frame(); frame = null }
       if (!active || !el) return
       const i = here(), dir = dx < 0 ? 1 : -1, to = i + dir
       const go = (Math.abs(dx) > innerWidth * 0.25 || v > 0.5) && to >= 0 && to < LETTERS.length
       if (!go) {
-        el.style.transition = "transform var(--duration-slide) var(--ease-spring)"; el.style.transform = ""; settle(el)
+        el.style.transition = "transform var(--duration-fast) var(--ease-spring)"; el.style.transform = ""; settle(el)
         return
       }
       if (!still()) leave(dir, dx)
@@ -134,7 +135,7 @@ export function usePageTurn(enabled: boolean) {
       window.removeEventListener("pointerdown", down); window.removeEventListener("pointermove", move)
       window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up)
       document.removeEventListener("click", tap, true)
-      cancelAnimationFrame(frame)
+      frame?.()
     }
   }, [enabled, nav])
 }

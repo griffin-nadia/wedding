@@ -24,7 +24,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
             <p className="label-caps text-muted-foreground">{t.home.label}</p>
             <h1 className="heading">{copy.title}</h1>
             <p>{copy.body}</p>
-            {reason === "error" || reason === "paused" ? <Button size="lg" className="self-start" onClick={retry}>{reason === "paused" ? t.paused.retry : t.offline.retry}</Button> : <ResendForm />}
+            {reason === "error" || reason === "paused" ? <Button size="md" className="self-start" onClick={retry}>{reason === "paused" ? t.paused.retry : t.offline.retry}</Button> : <ResendForm />}
           </div>
           <SignOff />
         </Letter>

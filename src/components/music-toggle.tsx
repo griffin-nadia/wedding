@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from "react"
 import { Volume2, VolumeX } from "lucide-react"
 import { ART } from "@/lib/art"
 import { useLang } from "@/lib/lang"
+import { loop } from "@/lib/frame"
 
 const KEY = "ng-music"
 /** The site's only sound is the music, at this level. */
@@ -27,7 +28,7 @@ function silentWav() {
  * copies of the song playing over each other, or restarting, when you change page.
  */
 let audio: HTMLAudioElement | null = null
-let fade = 0
+let fade = () => {}
 // On by default: with nothing remembered, the song starts on their first tap anywhere (usually opening the envelope)
 let on = (() => { try { return localStorage.getItem(KEY) !== "off" } catch { return true } })()
 let armed = false
@@ -51,15 +52,15 @@ function el() {
 }
 function ramp(to: number, ms: number, then?: () => void) {
   const a = el(), from = a.volume, start = performance.now()
-  cancelAnimationFrame(fade)
-  const step = (now: number) => {
+  fade()
+  fade = loop((now) => {
     const k = Math.min(1, (now - start) / ms)
     // Eased (slow start, gentle landing) so the fade sounds smooth rather than switched on
     const eased = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2
     a.volume = Math.max(0, Math.min(1, from + (to - from) * eased))
-    if (k < 1) fade = requestAnimationFrame(step); else then?.()
-  }
-  fade = requestAnimationFrame(step)
+    if (k < 1) return true
+    then?.(); return false
+  })
 }
 function play() {
   channel?.postMessage({ playing: true, tab })
@@ -73,7 +74,7 @@ function pause() { if (audio && !audio.paused) ramp(0, FADE_OUT, () => { audio?.
  * the song would carry on in the phone's media controls. This never waits on a frame.
  */
 function hardStop() {
-  cancelAnimationFrame(fade)
+  fade()
   if (!audio) return
   audio.volume = 0
   audio.pause()

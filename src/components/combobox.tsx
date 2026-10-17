@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type ReactNode } from "react"
 import { Check, X } from "lucide-react"
-import { FormField, describedBy } from "@/components/form-field"
+import { FormField, describedBy } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
 
 export type Option = { key: string; label: string; sub?: string; img?: string | null; selected?: boolean; kind?: "more" | "version" }

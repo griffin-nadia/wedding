@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
+import { Sheet, SheetBody, SheetContent, SheetDescription, SheetHead, SheetTitle } from "@/components/ui/sheet"
 import { GuestMap, JourneyMini } from "@/components/journey-mini"
 import { FlyingFrom } from "@/components/flying-from"
 import { getFlying, type Flying } from "@/lib/api"
@@ -35,15 +35,17 @@ export default function JourneyCard({ token }: { token: string }) {
         </span>
       </button>
       <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (!o) setChanging(false) }}>
-        <SheetContent side="bottom" className="mx-auto max-w-xl gap-4 rounded-t-(--radius-section) bg-background p-6">
-          <SheetTitle className="font-display text-heading font-normal">{t.journey.onMap}</SheetTitle>
-          <SheetDescription className="text-small text-muted-foreground">
-            {t.flying.hint}
-          </SheetDescription>
+        <SheetContent className="sheet-fit">
+          <SheetHead>
+            <SheetTitle className="heading">{t.journey.onMap}</SheetTitle>
+            <SheetDescription className="text-small text-muted-foreground">{t.flying.hint}</SheetDescription>
+          </SheetHead>
+          <SheetBody className="flex flex-col gap-4">
           {open && <GuestMap you={city} flying={counts} label={t.journey.map(name)} />}
           {changing
             ? <FlyingFrom token={token} initial={city} onSaved={(c) => { keepFlying(token, c); setCity(c); setChanging(false) }} />
             : <p className="text-small text-muted-foreground">{t.flying.yours(name)} <button type="button" className="btn-text" onClick={() => setChanging(true)}>{t.flying.change}</button></p>}
+          </SheetBody>
         </SheetContent>
       </Sheet>
     </>

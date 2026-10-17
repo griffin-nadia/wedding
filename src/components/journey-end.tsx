@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Chip } from "@/components/blocks"
+import { Chip } from "@/components/ui/checkbox-group"
 import { JourneyMini } from "@/components/journey-mini"
 import { FLYING, getFlying, setFlying, type Flying } from "@/lib/api"
 import { keepFlying, readFlying } from "@/lib/journey"

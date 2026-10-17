@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
+import { nextFrame } from "@/lib/frame"
 import { useLocation } from "react-router-dom"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowUpRight } from "lucide-react"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Disclosure } from "@/components/disclosure"
+import { Disclosure } from "@/components/ui/accordion"
 import { DriverCard } from "@/components/driver-card"
 import { Trail } from "@/components/trail"
 import { KyotoMap } from "@/components/kyoto-map"
@@ -115,7 +116,7 @@ export function TravelPage() {
   const { hash } = useLocation()
   useEffect(() => {
     const id = hash.slice(1)
-    if (id) requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView())
+    if (id) nextFrame(() => document.getElementById(id)?.scrollIntoView())
   }, [hash])
   const goStay = () => document.getElementById("stay")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
   const rows: [string, string, React.ReactNode][] = [
