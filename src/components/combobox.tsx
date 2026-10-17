@@ -13,8 +13,10 @@ export type ComboStatus = "idle" | "loading" | "results" | "empty" | "error"
  * empty and error rows say what to do ("just type it"). WAI-ARIA combobox with listbox.
  */
 export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag, query, onQuery, options, onPick, status, emptyText, errorText,
-  placeholder, action, maxLength = 200, removeLabel = (s) => `Remove ${s}`, openOnFocus = false, forceOpen = false, multi = false, className }: {
+  placeholder, action, maxLength = 200, removeLabel = (s) => `Remove ${s}`, openOnFocus = false, forceOpen = false, multi = false, className, enterKeyHint, inputMode, onSubmit }: {
   id?: string; label: string; help?: ReactNode; error?: string
+  /** The keyboard's Enter key label and layout; onSubmit runs on Enter when no option is highlighted */
+  enterKeyHint?: React.HTMLAttributes<HTMLInputElement>["enterKeyHint"]; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]; onSubmit?: () => void
   tags?: Option[]; onRemoveTag?: (o: Option) => void
   query: string; onQuery: (q: string) => void
   options: Option[]; onPick: (o: Option) => void
@@ -55,14 +57,14 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
           <input id={id} role="combobox" aria-autocomplete="list" aria-expanded={showList} aria-controls={`${id}-list`}
             aria-activedescendant={showList && active >= 0 ? `${id}-o${active}` : undefined} aria-describedby={describedBy(id, help, error)}
             aria-busy={status === "loading"} aria-invalid={Boolean(error) || undefined}
-            value={query} maxLength={maxLength} autoComplete="off" placeholder={tags.length ? "" : placeholder}
+            value={query} maxLength={maxLength} autoComplete="off" autoCorrect="off" spellCheck={false} enterKeyHint={enterKeyHint} inputMode={inputMode} placeholder={tags.length ? "" : placeholder}
             onChange={(e) => { onQuery(e.target.value); setOpen(true) }}
             onFocus={() => (openOnFocus || query.trim().length > 1) && setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(forceOpen), 150)}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, options.length - 1)) }
               else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)) }
-              else if (e.key === "Enter") { const o = active >= 0 ? options[active] : undefined; if (o) { e.preventDefault(); pick(o) } }
+              else if (e.key === "Enter") { const o = active >= 0 ? options[active] : undefined; if (o) { e.preventDefault(); pick(o) } else if (onSubmit) { e.preventDefault(); e.stopPropagation(); onSubmit(); setOpen(true) } }
               // Escape closes the list only; the sheet around it stays open
               else if (e.key === "Escape" && showList) setOpen(false)
               else if (e.key === "Backspace" && !query && tags.length && onRemoveTag) onRemoveTag(tags[tags.length - 1])

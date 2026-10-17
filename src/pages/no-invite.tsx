@@ -53,7 +53,7 @@ function ResendForm() {
   if (state === "sent") return <p role="status" className="rounded-md bg-section-alt p-4">{t.notFound.sent}</p>
   return (
     <form onSubmit={send} noValidate>
-      <InlineSubmit id="resend-email" type="email" inputMode="email" autoComplete="email" maxLength={120} value={email}
+      <InlineSubmit id="resend-email" type="email" inputMode="email" autoComplete="email" enterKeyHint="send" autoCapitalize="off" spellCheck={false} maxLength={120} value={email}
         label={t.notFound.emailLabel} helper={t.notFound.helper} submitLabel={t.notFound.send} busy={state === "sending"}
         error={state === "bad" ? t.notFound.badEmail : state === "failed" ? t.notFound.failed : state === "paused" ? t.paused.line : undefined}
         onChange={(e) => { setEmail(e.target.value); if (state !== "sending") setState("idle") }}

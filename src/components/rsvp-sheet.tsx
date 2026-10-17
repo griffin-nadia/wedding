@@ -7,12 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { FormField } from "@/components/ui/field"
-import { Combobox } from "@/components/combobox"
 import { Segmented } from "@/components/segmented"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
 import { ReviewRow, StepProgress } from "@/components/blocks"
 import { FieldError } from "@/components/ui/field"
+import { CheckboxGroup } from "@/components/ui/checkbox-group"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
 import { JourneyEnd } from "@/components/journey-end"
@@ -58,28 +58,19 @@ export function dietString(d: Diet) {
   return out.length ? out.join(", ") : "None"
 }
 
-/** "Any dietary needs?" for one person: the shared combobox, many picks as tags, Other asks for a word. */
-function DietField({ g, name, error, onChange }: { g: Guest; name: string; error?: string; onChange: (dietary: string) => void }) {
+/**
+ * "Any dietary needs?" for one person: tap chips, as many as apply, no typing (so no keyboard on a phone). Other
+ * says to tell them in the message. An older answer's own words ("Other: kiwi") are kept as they were.
+ */
+function DietField({ g, name, onChange }: { g: Guest; name: string; onChange: (dietary: string) => void }) {
   const { t } = useLang()
   const options = t.rsvp.dietaryOptions
   const d = parseDiet(g.dietary, options)
-  const [q, setQ] = useState("")
-  // Picked items stay in the list with a tick, so nothing moves under the finger (v3 A)
-  const shown = options.filter((o) => o.toLowerCase().includes(q.trim().toLowerCase()))
-  const set = (next: Diet) => onChange(dietString(next))
   return (
-    <div className="flex flex-col gap-(--form-block-gap)">
-      <Combobox id={`diet-${g.id}`} label={name} placeholder={t.rsvp.dietaryPlaceholder} openOnFocus multi
-        tags={d.picked.map((x) => ({ key: x, label: x }))} onRemoveTag={(o) => set({ ...d, picked: d.picked.filter((x) => x !== o.key), other: o.key === OTHER ? "" : d.other })}
-        query={q} onQuery={setQ} options={shown.map((x) => ({ key: x, label: x, selected: d.picked.includes(x) }))}
-        onPick={(o) => { set(d.picked.includes(o.key) ? { ...d, picked: d.picked.filter((x) => x !== o.key), other: o.key === OTHER ? "" : d.other } : { ...d, picked: [...d.picked, o.key] }); setQ("") }}
-        status={shown.length ? "results" : "empty"} emptyText={t.rsvp.dietaryEmpty} removeLabel={t.rsvp.removeSong} />
-      {d.picked.includes(OTHER) && (
-        <FormField id={`diet-other-${g.id}`} label={t.rsvp.dietaryOther(name)} error={error}>
-          <Input id={`diet-other-${g.id}`} value={d.other} maxLength={60} data-filled={Boolean(d.other.trim())} aria-invalid={Boolean(error) || undefined}
-            aria-describedby={error ? `diet-other-${g.id}-err` : undefined} onChange={(e) => set({ ...d, other: e.target.value })} />
-        </FormField>
-      )}
+    <div className="flex flex-col gap-2">
+      <CheckboxGroup labelId={`diet-${g.id}`} label={name} options={options.map((o) => ({ value: o, label: o }))} value={d.picked}
+        onChange={(picked) => onChange(dietString({ picked, other: picked.includes(OTHER) || picked.includes(options[options.length - 1]) ? d.other : "" }))} />
+      {(d.picked.includes(OTHER) || d.picked.includes(options[options.length - 1])) && <p className="text-small text-muted-foreground">{t.rsvp.dietaryOtherHint}</p>}
     </div>
   )
 }
@@ -183,10 +174,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     const m: Record<string, string> = {}
     if (step === 1) for (const g of form.guests) if (!g.plusOne && !g.attending) m[`answer-${g.id}`] = t.rsvp.answerMissing(nameOf(g))
     if (step === 2) {
-      for (const g of coming) {
-        const d = parseDiet(g.dietary, t.rsvp.dietaryOptions)
-        if (d.picked.includes(OTHER) && !d.other.trim()) m[`diet-other-${g.id}`] = t.rsvp.dietaryOtherMissing
-      }
       if (dateError) m.arr = dateError
     }
     return m
@@ -266,7 +253,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
       </div>
       {dateError
         ? <FieldError id="date-error" className="mt-(--field-helper-gap)">{dateError}</FieldError>
-        : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-small text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.datesHint}</p>}
+        : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-small text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.stayLine) : t.rsvp.datesHint}</p>}
     </div>
   )
 
@@ -274,6 +261,12 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild disabled={locked}>{children}</SheetTrigger>
         <SheetContent aria-describedby={undefined}
+          // Enter in a text or date field moves on (Next, or Send on the last step); the song search and the message keep theirs
+          onKeyDown={(e) => {
+            const el = e.target as HTMLElement
+            if (done || e.key !== "Enter" || e.shiftKey || e.defaultPrevented || !(el instanceof HTMLInputElement) || el.type === "checkbox" || el.getAttribute("role") === "combobox") return
+            e.preventDefault(); if (step < total) next(); else send()
+          }}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}
           // Only X, Esc or "Back to your invite" close the sheet; a tap outside never does (v3 A)
           onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}
@@ -314,7 +307,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                     </label>
                     {g.attending === "yes" && (
                       <FormField id={`name-${g.id}`} label={t.rsvp.plusOne} help={t.rsvp.plusOneHint}>
-                        <Input id={`name-${g.id}`} value={g.firstName} maxLength={MAX.name} autoComplete="off" data-filled={Boolean(g.firstName.trim())}
+                        <Input id={`name-${g.id}`} value={g.firstName} maxLength={MAX.name} autoComplete="off" autoCapitalize="words" enterKeyHint="next" data-filled={Boolean(g.firstName.trim())}
                           aria-describedby={`name-${g.id}-help`} onChange={(e) => setGuest(g.id, { firstName: e.target.value })} />
                       </FormField>
                     )}
@@ -329,7 +322,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                   <section aria-labelledby="diet-q" className="flex flex-col gap-4">
                     <h3 id="diet-q" className="font-medium text-foreground">{t.rsvp.dietary}</h3>
                     {coming.map((g) => (
-                      <DietField key={g.id} g={g} name={nameOf(g)} error={missing[`diet-other-${g.id}`]} onChange={(dietary) => setGuest(g.id, { dietary })} />
+                      <DietField key={g.id} g={g} name={nameOf(g)} onChange={(dietary) => setGuest(g.id, { dietary })} />
                     ))}
                   </section>
                 )}
@@ -338,7 +331,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                   t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded, versions: t.rsvp.versions, hideVersions: t.rsvp.hideVersions }} />
                 {datesBlock}
                 </>}
-                <FormField id="msg" label={t.rsvp.message}><Textarea id="msg" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></FormField>
+                <FormField id="msg" label={t.rsvp.message}><Textarea id="msg" autoComplete="off" autoCapitalize="sentences" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></FormField>
               </>
             )}
 
@@ -354,7 +347,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                     <ReviewRow label={t.rsvp.songs} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.songs)}>{songsFilled.join(", ") || t.rsvp.noSongs}</ReviewRow>
                   )}
                   {coming.length > 0 && (
-                    <ReviewRow label={t.rsvp.dates} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.notSet) : t.rsvp.notSet}</ReviewRow>
+                    <ReviewRow label={t.rsvp.dates} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.stayLine) : t.rsvp.notSet}</ReviewRow>
                   )}
                   <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
                 </dl>

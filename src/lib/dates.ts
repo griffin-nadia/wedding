@@ -14,7 +14,8 @@ export function fmtDay(ymd: string) {
   return `${DAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`
 }
 
-/** "Tue 12 Oct 2027 to Sat 16 Oct 2027", or whichever half is set. */
-export function fmtStay(arrival: string, departure: string, notSet: string) {
-  return `${arrival ? fmtDay(arrival) : notSet} to ${departure ? fmtDay(departure) : notSet}`
+/** "Tue 12 Oct 2027 to Sat 16 Oct 2027"; with one half set, "From Fri 10 Sep 2027, leaving date to come" (or the reverse). */
+export function fmtStay(arrival: string, departure: string, line: { both: (a: string, d: string) => string; from: (a: string) => string; until: (d: string) => string }) {
+  if (arrival && departure) return line.both(fmtDay(arrival), fmtDay(departure))
+  return arrival ? line.from(fmtDay(arrival)) : line.until(fmtDay(departure))
 }

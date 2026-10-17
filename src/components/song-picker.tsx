@@ -27,6 +27,9 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
   const [art, setArt] = useState<Record<string, string>>({})
   const cache = useRef(new Map<string, SongHit[]>())
   const seq = useRef(0)
+  // Enter on the keyboard searches straight away instead of waiting for the pause after typing
+  const [now, setNow] = useState(0)
+  const immediate = useRef(false)
   const list = songs.filter(Boolean)
   const full = list.length >= max
 
@@ -45,9 +48,10 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
         cache.current.set(term.toLowerCase(), r)
         setHits(r); setShown(term); setOpen(null); setStatus(r.length ? "results" : "empty")
       })
-    }, 250)
+    }, immediate.current ? 0 : 250)
+    immediate.current = false
     return () => { clearTimeout(timer); ctrl.abort() }
-  }, [q, token])
+  }, [q, token, now])
 
   // Ranked groups, at most six rows before any versions are opened
   const groups = shown ? rankSongs(shown, hits).slice(0, 6) : []
@@ -78,7 +82,7 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200, t
         <p className="text-success">{t.full(list.length)}</p>
       ) : (
         <>
-          <Combobox label={t.label} help={t.hint} placeholder={t.placeholder} query={q} onQuery={setQ} maxLength={maxLength}
+          <Combobox label={t.label} help={t.hint} placeholder={t.placeholder} query={q} onQuery={setQ} maxLength={maxLength} enterKeyHint="search" inputMode="search" onSubmit={() => { immediate.current = true; setNow((n) => n + 1) }}
             options={options}
             onPick={(o) => {
               if (o.key.startsWith("more:")) { const k = o.key.slice(5); setOpen((v) => (v === k ? null : k)); return }

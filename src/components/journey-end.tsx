@@ -31,8 +31,8 @@ export function JourneyEnd({ token }: { token: string }) {
       <div role="group" aria-labelledby="fly-end" className="flex flex-wrap gap-2">
         {FLYING.map((c) => <Chip key={c} on={city === c} onClick={() => pick(c)}>{t.flying.cities[c] ?? c}</Chip>)}
       </div>
-      <JourneyMini you={city} counts={counts} label={t.journey.map(name)} className="journey-end-map" />
-      {name && <p role="status" className="text-small text-muted-foreground">{t.flying.yours(name)}</p>}
+      <JourneyMini you={city} counts={counts} label={t.journey.map(name, city ?? undefined)} className="journey-end-map" />
+      {name && <p role="status" className="text-small text-muted-foreground">{t.flying.yours(city!, name)}</p>}
     </section>
   )
 }
