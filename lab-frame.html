@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" data-theme="autumn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <!-- Private site: keep it out of search engines -->
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- The lab: local only (npm run lab). Never built, deployed or linked from the guest site. -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f3e7d3" />
+    <script>
+      // Lantern mode: pick the theme before first paint so there's no flash.
+      // A saved choice wins; otherwise follow the device's light or dark setting.
+      (function () {
+        var saved = null
+        try { saved = localStorage.getItem("ng-theme") } catch (e) {}
+        var dark = saved ? saved === "lantern" : window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches
+        document.documentElement.setAttribute("data-theme", dark ? "lantern" : "autumn")
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#22160e" : "#f3e7d3")
+        // Their photo is the largest paint on every page: start fetching this mode's one now, not after the app script
+        var n = dark ? "night-lane" : "kyoto-view"
+        try { var po = (JSON.parse(localStorage.getItem("ng-tune") || "{}").options || {}).photo; if (po === "day") n = "kyoto-view"; else if (po === "night") n = "night-lane" } catch (e) {}
+        var l = document.createElement("link"), b = "%BASE_URL%scenes/" + n + "-"
+        l.rel = "preload"; l.as = "image"; l.type = "image/avif"; l.setAttribute("fetchpriority", "high")
+        if (innerWidth >= 1280) { l.setAttribute("imagesrcset", b + "wide-1600.avif 1600w, " + b + "wide-2400.avif 2400w"); l.setAttribute("imagesizes", "100vw") }
+        else { l.setAttribute("imagesrcset", b + "800.avif 800w, " + b + "1200.avif 1200w, " + b + "1600.avif 1600w, " + b + "2000.avif 2000w, " + b + "2400.avif 2400w"); l.setAttribute("imagesizes", "max(100vw, 75vh)") }
+        document.head.appendChild(l)
+        window.__ngScene = { n: n, b: b }
+      })()
+    </script>
+    <title>G&N lab frame</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/lab/frame.tsx"></script>
+  </body>
+</html>
