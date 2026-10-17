@@ -50,6 +50,9 @@ live list of placeholders and Japanese lines.
    first), then Send invites to everyone not yet invited…. For households with no email, text
    them their link (the launch report lists them; `npm run qr-cards` for printed cards).
 
+Before launch, Jehan picks the paper in the lab (the Paper experiment, or the Paper option on any experiment); the
+guest site's paper is plain until then (18f).
+
 Optional: the Cloudflare previews ([docs/previews.md](previews.md)): move `docs/ci/previews.yml` into
 `.github/workflows/` from an account with the workflow scope, and add the two secrets.
 
@@ -64,8 +67,9 @@ Placeholders still showing (`src/content/pending.ts`):
 - [ ] **Griffin's kid photo** for the Our story opener (`story.kidGriffin`), and any story photo not yet in
   (`photo.toCome`).
 - [ ] **Who to call on the day**: Jehan's and Noya's numbers (`faqs.contactDay`, the Content tab's `contact_day`).
-- [ ] **Words to approve** (written in their voice, 18e): "Add your travel dates", "Plan your trip" (Home's next
-  step) and "Email Griffin & Nadia" (closed replies and the end of FAQs).
+- [ ] **Words to approve** (written in their voice, 18e and 18f): "Add your travel dates", "Plan your trip" (Home's
+  next step), "Email Griffin & Nadia" (closed replies and the end of FAQs) and "Your travel dates" (the reply's
+  dates step).
 
 Waiting on them:
 
@@ -75,7 +79,8 @@ Waiting on them:
 - [ ] **Nadia's maple leaf on its own**, for wherever a leaf shows alone. Also still to come: the painted map land,
   her handwritten sign-off, and a look at the open envelope's cut (18c log).
 - [ ] **A native read of the Japanese**: the pack [docs/japanese-read.md](japanese-read.md) (and the CSV), plus the
-  15 lines `check:pending` lists and the three new ones above.
+  15 lines `check:pending` lists, the new ones above, and the city names for "Where are you flying from?"
+  (`src/lib/places.ts`, katakana and kanji, 18f).
 - [ ] **FAQ facts**: are children invited (no FAQ says)? Visas only cover Australians (Griffin's side may fly from
   Canada). "We'll delete it a few months after the wedding" still the plan?
 - [ ] **The music**: is there permission from Piano ZeroL for the cover of "A Town With an Ocean View"? If not,
