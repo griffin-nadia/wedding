@@ -3,7 +3,7 @@ import { useLang } from "@/lib/lang"
 import { useHousehold } from "@/lib/household"
 import { Qr } from "@/components/qr"
 
-/** Laptops (1024 and up) only: "Open on your phone" with the QR, in Home's card footer, so nothing floats over the photo. */
+/** Laptops (1024 and up) only: "Open on your phone" with the QR, its own small paper card bottom right, below the faces. */
 export function PhoneQr() {
   const { t } = useLang()
   const { household } = useHousehold()
@@ -20,7 +20,7 @@ export function PhoneQr() {
     <aside aria-label={t.letter.phoneTitle} className="phone-qr">
       <Qr value={url} label={t.letter.phoneTitle} className="size-16 shrink-0 text-foreground" />
       <div className="flex flex-col gap-1">
-        <p className="label-caps text-foreground">{t.letter.phoneTitle}</p>
+        <p className="text-small font-medium text-foreground">{t.letter.phoneTitle}</p>
         <p className="text-small">{t.letter.phoneBody}</p>
       </div>
     </aside>
