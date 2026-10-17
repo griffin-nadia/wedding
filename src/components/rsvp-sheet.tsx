@@ -7,7 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { FormField } from "@/components/ui/field"
-import { Segmented } from "@/components/segmented"
+import { RadioGroup } from "@/components/ui/radio-group"
+import { dietString, OTHER_MAX, parseDiet } from "@/lib/diet"
 import { Hanko } from "@/components/hanko"
 import { SongPicker } from "@/components/song-picker"
 import { ReviewRow, StepProgress } from "@/components/blocks"
@@ -30,47 +31,25 @@ const MAX = { name: 40, song: 200, message: 2000 }
 const TRIP = { from: DATES.travelFrom, to: DATES.travelTo }
 
 /**
- * Dietary is saved as words: "Vegetarian, Nut allergy, Other: kiwi". Older answers ("Allergy: Peanuts / Sesame")
- * map onto the new options, anything unknown becomes Other.
- */
-const OTHER = "Other"
-type Diet = { picked: string[]; other: string }
-export function parseDiet(v: string, options: readonly string[]): Diet {
-  const picked: string[] = [], other: string[] = []
-  const add = (x: string) => { if (!picked.includes(x)) picked.push(x) }
-  for (const part of (v || "").split(",").map((x) => x.trim()).filter((x) => x && x !== "None")) {
-    const known = options.find((o) => o.toLowerCase() === part.toLowerCase())
-    if (known) add(known)
-    else if (/^other:/i.test(part)) { add(OTHER); other.push(part.slice(part.indexOf(":") + 1).trim()) }
-    else if (/^allergy/i.test(part)) {
-      for (const item of part.slice(part.indexOf(":") + 1).split("/").map((x) => x.trim()).filter(Boolean)) {
-        if (/nut|peanut/i.test(item)) add("Nut allergy")
-        else if (/shellfish/i.test(item)) add("Shellfish allergy")
-        else if (/egg/i.test(item)) add("Egg allergy")
-        else { add(OTHER); other.push(item) }
-      }
-    } else { add(OTHER); other.push(part) }
-  }
-  return { picked, other: other.filter(Boolean).join(" ") }
-}
-export function dietString(d: Diet) {
-  const out = d.picked.map((x) => (x === OTHER ? `${OTHER}: ${d.other.replace(/[,]/g, " ").replace(/\s+/g, " ").trim()}`.trim() : x))
-  return out.length ? out.join(", ") : "None"
-}
-
-/**
- * "Any dietary needs?" for one person: tap chips, as many as apply, no typing (so no keyboard on a phone). Other
- * says to tell them in the message. An older answer's own words ("Other: kiwi") are kept as they were.
+ * "Any dietary needs?" for one person: tap chips, as many as apply, no typing. Other opens a short optional "Tell us
+ * more" field right under the chips, saved with the reply ("Other: no kiwi"). An older answer's own words are kept.
  */
 function DietField({ g, name, onChange }: { g: Guest; name: string; onChange: (dietary: string) => void }) {
   const { t } = useLang()
   const options = t.rsvp.dietaryOptions
+  const other = options[options.length - 1]
   const d = parseDiet(g.dietary, options)
+  const otherOn = d.picked.includes(other)
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       <CheckboxGroup labelId={`diet-${g.id}`} label={name} options={options.map((o) => ({ value: o, label: o }))} value={d.picked}
-        onChange={(picked) => onChange(dietString({ picked, other: picked.includes(OTHER) || picked.includes(options[options.length - 1]) ? d.other : "" }))} />
-      {(d.picked.includes(OTHER) || d.picked.includes(options[options.length - 1])) && <p className="text-small text-muted-foreground">{t.rsvp.dietaryOtherHint}</p>}
+        onChange={(picked) => onChange(dietString({ picked, other: picked.includes(other) ? d.other : "" }, options))} />
+      {otherOn && (
+        <FormField id={`diet-other-${g.id}`} label={t.rsvp.dietaryOther}>
+          <Input id={`diet-other-${g.id}`} value={d.other} maxLength={OTHER_MAX} autoComplete="off" autoCapitalize="sentences" enterKeyHint="done" data-filled={Boolean(d.other.trim())}
+            onChange={(e) => onChange(dietString({ picked: d.picked, other: e.target.value }, options))} />
+        </FormField>
+      )}
     </div>
   )
 }
@@ -183,7 +162,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     setMissing(m)
     const first = Object.keys(m)[0]
     if (first) {
-      nextFrame(() => document.getElementById(first)?.focus())
+      // Its first radio (a radio group) or the field itself
+      nextFrame(() => { const el = document.getElementById(first); (el?.querySelector<HTMLElement>("input") ?? el)?.focus() })
       return
     }
     setDir("fwd")
@@ -239,6 +219,13 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     }
   }
 
+  const actions = <>
+    {step > 1 && <Button variant="secondary" size="md" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
+    {step < total
+      ? <Button size="md" className="flex-1 shrink!" onClick={next}>{t.rsvp.next}</Button>
+      : <Button size="md" className="flex-1 shrink!" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
+  </>
+
   const datesBlock = (
     <div className="flex flex-col">
       <div className="grid grid-cols-1 gap-x-3 gap-y-(--form-block-gap) min-[400px]:grid-cols-2">
@@ -261,10 +248,10 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild disabled={locked}>{children}</SheetTrigger>
         <SheetContent aria-describedby={undefined}
-          // Enter in a text or date field moves on (Next, or Send on the last step); the song search and the message keep theirs
+          // Enter in a text or date field moves on (Next, or Send on the last step); the song search, the radios and the message keep theirs
           onKeyDown={(e) => {
             const el = e.target as HTMLElement
-            if (done || e.key !== "Enter" || e.shiftKey || e.defaultPrevented || !(el instanceof HTMLInputElement) || el.type === "checkbox" || el.getAttribute("role") === "combobox") return
+            if (done || e.key !== "Enter" || e.shiftKey || e.defaultPrevented || !(el instanceof HTMLInputElement) || el.type === "checkbox" || el.type === "radio" || el.type === "search" || el.getAttribute("role") === "combobox") return
             e.preventDefault(); if (step < total) next(); else send()
           }}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus({ preventScroll: true }) }}
@@ -287,13 +274,10 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
               <div className="flex flex-col">
                 {form.guests.filter((g) => !g.plusOne).map((g) => (
                   <div key={g.id} className="flex flex-col">
-                    <div className="choice-row">
-                      <span className="font-medium text-foreground">{g.firstName}</span>
-                      <Segmented id={`answer-${g.id}`} label={g.firstName} value={g.attending ?? ""} invalid={Boolean(missing[`answer-${g.id}`])}
-                        describedBy={missing[`answer-${g.id}`] ? `answer-${g.id}-err` : undefined}
-                        onChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })}
-                        items={[{ value: "yes", label: t.rsvp.coming }, { value: "no", label: t.rsvp.notComing }]} />
-                    </div>
+                    <RadioGroup id={`answer-${g.id}`} name={`answer-${g.id}`} label={g.firstName} value={g.attending ?? ""} invalid={Boolean(missing[`answer-${g.id}`])}
+                      describedBy={missing[`answer-${g.id}`] ? `answer-${g.id}-err` : undefined}
+                      onChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })}
+                      options={[{ value: "yes", label: t.rsvp.coming }, { value: "no", label: t.rsvp.notComing }]} />
                     <FieldError id={`answer-${g.id}-err`} className="pb-2">{missing[`answer-${g.id}`]}</FieldError>
                   </div>
                 ))}
@@ -327,8 +311,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                   </section>
                 )}
                 {coming.length > 0 && <>
-                <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song}
-                  t={{ label: t.rsvp.song, hint: t.rsvp.songHint, placeholder: t.rsvp.songPlaceholder, addTyped: t.rsvp.addTyped, justType: t.rsvp.justType, searching: t.rsvp.searching, noMatch: t.rsvp.noMatch, error: t.rsvp.searchError, remove: t.rsvp.removeSong, full: t.rsvp.songsFull, added: t.rsvp.songsAdded, versions: t.rsvp.versions, hideVersions: t.rsvp.hideVersions }} />
+                <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song} />
                 {datesBlock}
                 </>}
                 <FormField id="msg" label={t.rsvp.message}><Textarea id="msg" autoComplete="off" autoCapitalize="sentences" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></FormField>
@@ -364,15 +347,12 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
               : <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>)}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
             {step === total && <p className="text-small text-muted-foreground">{t.rsvp.privacy}</p>}
+            {/* Keyboard up on a phone: the footer steps aside, and the same Back / Next wait here at the end of the form */}
+            <div className="rsvp-actions-inline">{actions}</div>
           </div>
           </SheetBody>
 
-          <footer className="rsvp-actions">
-            {step > 1 && <Button variant="secondary" size="md" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
-            {step < total
-              ? <Button size="md" className="flex-1 shrink!" onClick={next}>{t.rsvp.next}</Button>
-              : <Button size="md" className="flex-1 shrink!" onClick={send}>{error ? t.rsvp.tryAgain : t.rsvp.send}</Button>}
-          </footer>
+          <footer className="rsvp-actions">{actions}</footer>
           </>}
         </SheetContent>
     </Sheet>

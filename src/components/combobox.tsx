@@ -1,7 +1,8 @@
-import { useEffect, useId, useState, type ReactNode } from "react"
+import { useEffect, useId, useRef, useState, type ReactNode } from "react"
 import { Check, X } from "lucide-react"
 import { FormField, describedBy } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
+import { useLang } from "@/lib/lang"
 
 export type Option = { key: string; label: string; sub?: string; img?: string | null; selected?: boolean; kind?: "more" | "version" }
 export type ComboStatus = "idle" | "loading" | "results" | "empty" | "error"
@@ -23,10 +24,13 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
   status: ComboStatus; emptyText?: string; errorText?: string
   placeholder?: string; action?: ReactNode; maxLength?: number; removeLabel?: (s: string) => string; openOnFocus?: boolean; forceOpen?: boolean; multi?: boolean; className?: string
 }) {
+  const { t } = useLang()
   const auto = useId()
   const id = given ?? `cb-${auto}`
   const [open, setOpen] = useState(forceOpen)
   const [active, setActive] = useState(-1)
+  // Leaving the field closes the list a beat later (so a tapped option still lands); coming back cancels that
+  const closing = useRef(0)
   // Skeleton rows only once loading has lasted 150 ms; the last results stay on screen meanwhile
   const [slow, setSlow] = useState(forceOpen && status === "loading")
   useEffect(() => {
@@ -59,8 +63,8 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
             aria-busy={status === "loading"} aria-invalid={Boolean(error) || undefined}
             value={query} maxLength={maxLength} autoComplete="off" autoCorrect="off" spellCheck={false} enterKeyHint={enterKeyHint} inputMode={inputMode} placeholder={tags.length ? "" : placeholder}
             onChange={(e) => { onQuery(e.target.value); setOpen(true) }}
-            onFocus={() => (openOnFocus || query.trim().length > 1) && setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(forceOpen), 150)}
+            onFocus={() => { clearTimeout(closing.current); if (openOnFocus || query.trim().length > 1) setOpen(true) }}
+            onBlur={() => { closing.current = window.setTimeout(() => setOpen(forceOpen), 150) }}
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setActive((a) => Math.min(a + 1, options.length - 1)) }
               else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)) }
@@ -95,7 +99,7 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
             {status === "error" && <p className="combo-note">{errorText}</p>}
           </div>
         )}
-        <p aria-live="polite" className="sr-only">{status === "loading" ? "Searching" : status === "results" ? `${options.length} results` : status === "empty" ? emptyText : ""}</p>
+        <p aria-live="polite" className="sr-only">{status === "loading" ? t.rsvp.searching : status === "results" ? t.rsvp.listResults(options.length) : status === "empty" ? emptyText : ""}</p>
       </div>
     </FormField>
   )
