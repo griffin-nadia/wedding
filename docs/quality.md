@@ -13,6 +13,9 @@ sample household, with the clock fixed and reduced motion on:
   scene photo on every page, already preloaded from the HTML at high priority and painted before the app script.
 - **No jumping (phones):** opening a Travel row while one above it is open keeps the tapped row in place, and
   closing a sheet puts the page back at the same scroll position (`e2e/no-jump.spec.ts`).
+- **Page changes:** the card's top and visible bottom are the same on every page; the page behind is the theme's
+  paper and matches theme-color; the light / dark circle starts at the button on a first visit; on phones the card
+  ends 12px above the dock (`e2e/page-change.spec.ts`).
 - **Top bar:** the switches are in the bar, none in the letter, and the bar stays at the top and visible through
   scrolls down and back up, with its hairline once scrolled (`e2e/top-bar.spec.ts`).
 - **Music:** hiding the page (pagehide) stops the song at once and clears the phone's Now Playing entry

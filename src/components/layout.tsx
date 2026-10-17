@@ -109,9 +109,6 @@ export function Layout() {
     <>
       <a href="#letter" className="skip-link">{t.letter.skip}</a>
       <Scene source={sceneFor(theme)} dim={dim} />
-      {/* Phones (v3 U): the same scene again, clipped to the strip from 8px above the dock down. The scene never
-          moves, so the copy matches it exactly and the letter seems to end 8px above the dock, even on a bounce. */}
-      {!sealed && <Scene source={sceneFor(theme)} dim={dim} className="scene-band" />}
       <header className="site-bar">
         <Link to="/" className="site-mark">{t.meta.shortTitle}</Link>
         <Nav />
@@ -133,9 +130,6 @@ export function Layout() {
               : null} foot={!sealed && <Suspense><CreditMark foot /></Suspense>} />}
           </Letter>
         </Arrival>
-        {/* Phones: the made-by mark waits in the hidden strip under the letter. A bounce past the end shows it;
-            on a short page it simply sits under the letter. */}
-        {!sealed && <Suspense><CreditMark inline /></Suspense>}
       </main>
       <Suspense><CreditMark /></Suspense>
       {page === "home" && !sealed && <Suspense><PhoneQr /></Suspense>}

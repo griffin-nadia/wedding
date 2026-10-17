@@ -89,12 +89,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* The page behind everything is the theme's paper (the same colour as theme-color), so nothing white ever shows
+     behind a page change, an overscroll or the browser bar. Native parts (scrollbars, overscroll) follow the theme. */
   html {
     -webkit-text-size-adjust: 100%;
     overflow-x: clip;
+    background-color: var(--surface-paper);
+    color-scheme: light;
   }
+  :root[data-theme="lantern"] { color-scheme: dark; }
+  /* No background of its own: the html paper shows through, and the scene (z -10) paints above that */
   body {
-    @apply bg-background text-body font-sans antialiased;
+    @apply text-body font-sans antialiased;
     color: var(--body);
     font-feature-settings: "kern", "liga";
   }
@@ -466,7 +472,7 @@
   position: relative;
   min-height: 100svh;
   overflow-x: clip; /* the paper blur ring may reach past the screen edge on phones */
-  padding: calc(var(--bar-h) + 8px) 12px var(--dock-band); /* 8px under the top bar; the letter ends 8px above the dock (v3 U) */
+  padding: calc(var(--bar-h) + 8px) 12px var(--dock-band); /* 8px under the top bar, 12px of air above the dock */
 }
 @media (min-width: 768px) { .letter-wrap { padding: var(--letter-top) 24px var(--space-8); } }
 @media (min-width: 1024px) { .letter-wrap { padding-left: var(--letter-left); } }
@@ -493,6 +499,12 @@
 }
 @media (min-width: 1024px) { .letter { margin-inline: 0; } }
 .letter-body { display: flex; flex-direction: column; gap: var(--letter-gap); }
+/* Every page's card has the same height behaviour: at least the screen between the top bar and the dock (phones) or
+   the bottom margin (laptops), longer when its content is. So a page change never moves the card's top or its
+   bottom edge, only the words in it. svh on phones: the height with the browser bar showing, so it never grows as
+   the bar hides. */
+.letter { min-height: calc(100svh - var(--bar-h) - 8px - var(--dock-band)); }
+@media (min-width: 768px) { .letter { min-height: calc(100dvh - var(--letter-top) - var(--space-8)); } }
 /* Paper grain on the letter only, under the words, moving with the letter */
 .letter { isolation: isolate; }
 .letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background-image: var(--texture-grain); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
@@ -730,9 +742,6 @@ svg.lucide { stroke-width: 1.5; }
 @media (max-width: 767px) { .letter-wrap { touch-action: pan-y; } }
 /* The leaving copy is a still picture of the letter: nothing inside it replays its entrance or eases */
 .letter-ghost { pointer-events: none; will-change: transform; contain: layout paint; }
-/* A page turn in progress (page-turn.ts): each letter is clipped to a sheet with its own corners, so the strip that
-   usually trims the letter above the dock steps aside. */
-[data-turning] .scene-band { visibility: hidden; }
 .letter-ghost, .letter-ghost * { animation: none !important; }
 .letter-ghost * { transition: none !important; }
 /* The paper shader draws over the CSS paper (its fallback) once it's running */
@@ -852,7 +861,8 @@ svg.lucide { stroke-width: 1.5; }
 :root[data-vt="fade"]::view-transition-new(root) { animation: mode-fade var(--duration-slow) var(--ease-paper); }
 :root[data-vt="fade"]::view-transition-old(root) { animation: none; } /* the old mode stays put underneath, so the page never dips mid-fade */
 /* The new mode waits hidden until the circle starts, so it never flashes in full for a frame */
-:root[data-vt="circle"]::view-transition-new(root) { clip-path: circle(0px at 50% 50%); }
+/* (lantern-toggle.tsx writes the circle's resting clip and its keyframes in literal pixels at the button, before the
+   transition starts, so even its first frame is centred on the button.) */
 @keyframes mode-fade { from { opacity: 0; } to { opacity: 1; } }
 :root[data-vt] .scene-layer, :root[data-vt] * { transition: none !important; }
 /* The page's words are their own group for page changes (polish.css); in a mode switch they join the page, so the
@@ -937,34 +947,15 @@ svg.lucide { stroke-width: 1.5; }
 /* From 1024 to 1279 the envelope sits on warm paper, not the photo: the note is ink there, not white (from 1280 it is over the photo again) */
 @media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-note { color: var(--ink-soft); filter: none; } }
 
-/* Phones (v3 U): the letter never sits under the dock. --dock-band is the dock (64 + its hairline), the safe area
-   and 12 of air; .scene-band repaints the scene over the letter in exactly that strip. */
+/* Phones: the letter's gap above the dock is the dock (64 + its hairline), the safe area and 12 of air. Content that
+   scrolls on past it goes under the dock's paper glass, softened by a short paper fade along the dock's top edge, so
+   nothing is ever cut or repainted there (the old strip copied the photo over the letter from JS-written heights,
+   which stuttered as the browser bar moved). */
 :root { --dock-band: calc(65px + env(safe-area-inset-bottom) + 12px); }
-.scene-band { display: none; }
 @media (max-width: 767px) {
-  /* The band is the strip from 8px above the dock down, plus the two squares where the letter's bottom corners
-     would be, minus the corner circles: so the paper ends above the dock with its real rounded corners (v3 R). */
-  .scene.scene-band {
-    display: block; z-index: 10; pointer-events: none;
-    --band-top: calc(var(--vvh, 100dvh) - var(--dock-band));
-    --corner: var(--letter-radius);
-    -webkit-mask-image: linear-gradient(#000, #000), radial-gradient(circle at 100% 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px)), radial-gradient(circle at 0 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px));
-    mask-image: linear-gradient(#000, #000), radial-gradient(circle at 100% 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px)), radial-gradient(circle at 0 0, transparent calc(var(--corner) - 0.5px), #000 calc(var(--corner) + 0.5px));
-    -webkit-mask-size: 100% 100lvh, var(--corner) var(--corner), var(--corner) var(--corner);
-    mask-size: 100% 100lvh, var(--corner) var(--corner), var(--corner) var(--corner);
-    -webkit-mask-position: 0 var(--band-top), 12px calc(var(--band-top) - var(--corner)), calc(100% - 12px) calc(var(--band-top) - var(--corner));
-    mask-position: 0 var(--band-top), 12px calc(var(--band-top) - var(--corner)), calc(100% - 12px) calc(var(--band-top) - var(--corner));
-    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-    -webkit-mask-composite: source-over; mask-composite: add;
-  }
-  /* Always in the strip (a short page pushes it to the bottom), so only a bounce past the end shows it, never over a face */
-  .letter-wrap { display: flex; flex-direction: column; }
-  .letter-wrap > :not(.credit-inline) { width: 100%; } /* full width from the first paint, not shrink-to-fit while the page loads */
-  .credit-inline { position: relative; z-index: 1; display: grid; place-items: center; align-self: flex-start; width: 44px; height: 44px; margin: auto 0 -52px 4px; padding-top: 8px; box-sizing: content-box; color: var(--ink-muted); opacity: 0.7; }
-  .credit-inline .credit-tip { display: none; }
+  .site-nav::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: var(--space-5); pointer-events: none; background: linear-gradient(to top, color-mix(in oklab, var(--letter-bg) 70%, transparent), transparent); }
+  .letter-wrap > * { width: 100%; } /* full width from the first paint, not shrink-to-fit while the page loads */
 }
-@media (min-width: 768px) { .credit-inline { display: none; } }
-[data-sheet] .scene-band, [data-modal] .scene-band { visibility: hidden; }
 
 
 /* Times tick in, where scroll-driven animations are missing (iOS): rows settle as the line's tip reaches them */
@@ -1177,10 +1168,6 @@ svg.lucide { stroke-width: 1.5; }
   .story-controls { justify-content: center; gap: var(--space-5); }
 }
 
-/* Home on laptops (1024 and up): the card anchored bottom left, 20% narrower, so the photo and their faces are clear */
-@media (min-width: 1024px) {
-  .letter-wrap:has(> .arrival .letter[data-page="home"]), .letter-wrap:has(> .letter[data-page="home"]) { display: flex; flex-direction: column; justify-content: flex-end; min-height: 100dvh; padding-top: 88px; padding-bottom: var(--space-7); }
-}
 /* Shorter laptop screens: smaller names and tighter blocks, so the whole card still fits */
 @media (min-width: 1024px) and (max-height: 860px) {
   .letter[data-page="home"] { --type-display-size: 64px; --letter-gap: var(--space-5); --letter-pad: var(--space-6); }
