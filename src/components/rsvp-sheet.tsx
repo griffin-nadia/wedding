@@ -393,7 +393,7 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
   }, [answer, titleRef])
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex items-center gap-5 pr-10">
+      <header className="flex items-center gap-6 pr-10">
         {answer !== "none" && <Hanko stamp />}
         <SheetTitle ref={titleRef} tabIndex={-1} className="heading outline-none">{t.rsvp.doneTitle[answer]}</SheetTitle>
       </header>

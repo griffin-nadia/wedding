@@ -75,7 +75,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
 
   if (state !== "open") {
     return (
-      <section aria-labelledby="fortune" className={cn("omikuji flex items-center gap-5 rounded-md border bg-card p-4", className)}>
+      <section aria-labelledby="fortune" className={cn("omikuji flex items-center gap-6 rounded-md border bg-card p-4", className)}>
         <button type="button" onClick={draw} disabled={state === "drawing"} aria-label={t.fortune.boxLabel} className="omikuji-hit">
           <Box drawing={state === "drawing"} />
         </button>

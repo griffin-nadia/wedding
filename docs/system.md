@@ -46,22 +46,23 @@ Components only use purpose or component tokens; nothing invents a colour or an 
 
 Grain sits on every paper surface (the letter and every sheet, `.letter::before`). There is one backdrop blur on the site, on the nav, and blur is never animated.
 
-## Type: one scale, five roles
+## Type: one scale, six roles
 
 Three families, nothing else: **Oranienbaum** (serif display), **Inter** (sans body) and **Zen Old Mincho** (Japanese display, loaded only when someone switches to Japanese; Japanese body text uses the device's own Japanese sans).
 
 | Role | Class | Face | Size / line | Weight | Used for |
 |---|---|---|---|---|---|
 | Display | `text-display` (`names`) | Oranienbaum | 56/56 on phones, 88/88 from 1024 | 400 | The names on Home, the driver card's address |
-| Heading | `text-heading` (`heading` adds the moss rule) | Oranienbaum | 28/36 | 400 | Page titles (h1), section titles (h2), numerals (countdown, timeline times) |
+| Heading | `text-heading` (`heading` adds the moss rule) | Oranienbaum | 28/36 on phones, 32/36 by 1440 | 400 | Page titles (h1), section titles (h2), numerals (timeline times) |
+| Accent | `--type-accent-size` | system font (countdown), their hand (arrival note) | 70% of Heading: 20 on phones, 22 by 1440 | 400 | Home's countdown digits, the handwritten arrival note |
 | Body | `text-body` | Inter | 16/24 | 400; 500 for item titles | Everything you read, inputs, buttons, links, row titles |
 | Small | `text-small` (`label-caps` is Small at 500) | Inter | 14/20 | 400; 500 for labels | Help, notes, errors, prices, step labels, card labels |
-| Label | `text-label` | Inter | 12/16 | 500 | Countdown units and the status pill (the only caps) |
+| Label | `text-label` | Inter | 12/16 | 500 | The dock's tab names on phones only |
 
 - **Their voice** (the sign-off, the fortune slip, "open your invite"): `voice`, Oranienbaum at the Body size.
-- Tokens are `--type-{display,heading,body,small,label}-{size,leading}`; controls read `--type-ui-*`, which point at Body and Small.
-- Tailwind's own sizes are switched off (`--text-*: initial`), so `text-sm`, `text-xl` or `text-[13px]` won't build: use a role. The hanko's 京 is part of the seal's drawing (`hanko-sm`, `hanko-lg`), not text.
-- At most two roles in any one component. Sentence case everywhere; caps only on the status pill. Semibold and bold aren't used.
+- Tokens are `--type-{display,heading,accent,body,small,label}-{size,leading}`; controls read `--type-ui-*`, which point at Body and Small.
+- Tailwind's own sizes are switched off (`--text-*: initial`), so `text-sm`, `text-xl` or `text-[13px]` won't build: use a role. The hanko's 京, the fortune's 大吉 and the map labels inside an SVG are part of their drawing and scale with it, not text roles.
+- At most two roles in any one component. Sentence case everywhere; caps only for the place names drawn on the maps. Semibold and bold aren't used.
 
 ### One link style
 
@@ -70,8 +71,8 @@ Three families, nothing else: **Oranienbaum** (serif display), **Inter** (sans b
 ## Space and shape
 
 - 4px grid, 8px vertical rhythm: related things 8 apart, unrelated 24, sections 32. Control padding never under 12.
-- Letter padding 24 / 40. Tap targets 44 minimum; buttons and inputs 52 on phones, 48 from 768.
-- Radius, one family scaled together by the lab's Roundness: **control 8** (inputs, buttons, chips, choice rows, list rows, nav items, segmented), **section 16**, **letter 24**. Nesting: outer = inner + the padding between. Only pills and the seal are fully round.
+- Letter padding 24 on phones, 48 from 768 (32 on Home on short laptop screens). Every padding, margin and gap is a `--space-*` step; the only other values on screen are sums the layout works out (the letter's offset from the left, room for the dock or a sheet's X) and a 2px optical nudge that lines a tick box up with its first line. Tap targets 44 minimum; buttons and inputs 52 on phones, 48 from 768.
+- Radius, one family scaled together by the lab's Roundness: **control 8** (inputs, buttons, chips, choice rows, list rows, nav items, segmented, prints), **section 16**, **letter 24**, and **pill** for thin lines, dots and round buttons (Tailwind's `rounded-full` lands on it). Nesting: outer = inner + the padding between. Only pills and the seal are fully round.
 - One shadow: `--letter-shadow`. The RSVP sheet uses `--sheet-shadow` (the same at 1.5×). Nothing else casts one.
 
 ## Layout

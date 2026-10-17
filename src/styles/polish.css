@@ -98,7 +98,7 @@ html { scrollbar-gutter: stable; }
 }
 /* The note (6 Oct): written at a slight tilt, the line draws with a little ease, its head lands after it,
    then the whole note sways a degree or so, like paper in a draught. */
-.arrival-note-words { font-size: 22px; rotate: -5deg; transform-origin: 0 100%; padding-inline: 4px; }
+.arrival-note-words { font-size: var(--type-accent-size); rotate: -5deg; transform-origin: 0 100%; padding-inline: var(--space-1); }
 .arrival-note[data-side="right"] .arrival-note-words { rotate: 4deg; transform-origin: 100% 100%; }
 .arrival-note-arrow { stroke-width: 1.75; overflow: visible; }
 .arrival-note-arrow path { animation-duration: 950ms; animation-timing-function: cubic-bezier(0.45, 0.05, 0.25, 1); }
