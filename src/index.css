@@ -511,6 +511,8 @@
    the bar hides. */
 .letter { min-height: calc(100svh - var(--bar-h) - 8px - var(--dock-band)); }
 @media (min-width: 768px) { .letter { min-height: calc(100dvh - var(--letter-top) - var(--space-8)); } }
+/* Except Home (18e): its card is only as tall as what's on it */
+:root .letter[data-page="home"] { min-height: 0; }
 /* Paper grain on the letter only, under the words, moving with the letter */
 .letter { isolation: isolate; }
 .letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background-image: var(--texture-grain); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
@@ -567,8 +569,6 @@
 .phone-qr { position: fixed; z-index: 20; right: var(--space-5); bottom: var(--space-5); display: flex; align-items: center; gap: var(--space-3); max-width: 280px; padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3); border-radius: var(--radius-section); background: var(--letter-bg); color: var(--letter-ink); box-shadow: var(--elevation-paper); }
 /* Under 1280 the letter takes most of the width, so the card is just the code */
 @media (max-width: 1279px) { .phone-qr { padding: var(--space-3); } .phone-qr > div { display: none; } }
-.credit-mark.credit-foot { position: relative; left: auto; bottom: auto; }
-@media (min-width: 1024px) { :root:has(.letter[data-page="home"]) .credit-mark:not(.credit-foot) { display: none; } }
 
 .skip-link { position: absolute; left: 12px; top: -64px; z-index: 60; padding: var(--space-2) var(--space-4); border-radius: var(--radius-chip); background: var(--letter-bg); color: var(--ink); }
 .skip-link:focus { top: 12px; }
@@ -718,14 +718,17 @@
 @media (min-width: 1024px) { .arrival { align-content: end; padding-bottom: 14svh; } }
 /* Icons: Lucide everywhere at 1.5 stroke (v3 A) */
 svg.lucide { stroke-width: 1.5; }
-/* Credit mark (v3 A): 24px seal, bottom left of the scene, 18% until hovered or focused. Not on phones. */
-.credit-mark { display: none; }
+/* The credit (18e): a small plain link outside the card, on a small chip of the letter's paper so it stays readable
+   (AA) over any photo; quiet through size and the muted ink rather than transparency. Laptops: fixed at the very
+   bottom left, on every page. Phones: the last line of Home, centred under the card. */
+.credit-mark { display: inline-flex; align-items: center; min-height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-chip); background: var(--letter-bg); color: var(--ink-muted); font-size: var(--type-small-size); line-height: var(--type-small-leading); outline: 2px solid transparent; outline-offset: 2px; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--duration-fast), text-decoration-color var(--duration-fast); }
+.credit-mark:hover, .credit-mark:focus-visible { color: var(--ink); text-decoration-color: currentColor; }
+.credit-mark:focus-visible { outline-color: var(--input-focus); }
+.credit-mark:not(.credit-foot) { display: none; }
+.credit-foot { display: flex; width: fit-content; align-self: center; justify-self: center; margin: var(--space-4) auto var(--space-2); }
 @media (min-width: 1024px) {
-  .credit-mark { position: fixed; z-index: 20; left: 24px; bottom: 24px; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-pill); opacity: 0.18; transition: opacity var(--duration-fast) var(--ease-paper); outline: 2px solid transparent; outline-offset: 2px; }
-  .credit-mark:hover, .credit-mark:focus-visible { opacity: 1; }
-  .credit-mark:focus-visible { outline-color: var(--input-focus); }
-  .credit-tip { position: absolute; left: 48px; white-space: nowrap; padding: var(--space-1) var(--space-3); border-radius: var(--radius-control); background: var(--ink); color: var(--surface-paper); font-size: var(--type-small-size); line-height: var(--type-small-leading); opacity: 0; transform: translateX(-4px); transition: opacity var(--duration-fast), transform var(--duration-fast); pointer-events: none; }
-  .credit-mark:hover .credit-tip, .credit-mark:focus-visible .credit-tip { opacity: 1; transform: none; }
+  .credit-foot { display: none; }
+  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-3); }
 }
 /* Names reveal once, letter by letter, the first time the letter opens (v3 L). Nothing else animates text. */
 .names-reveal .name-char { display: inline-block; animation: name-in var(--duration-slow) var(--ease-paper) both; }
@@ -1065,7 +1068,7 @@ svg.lucide { stroke-width: 1.5; }
 .names-art-wrap { position: relative; display: block; }
 .names-art-ink, .names-art-amp { position: absolute; inset: 0; -webkit-mask: var(--names-mask) left center / contain no-repeat; mask: var(--names-mask) left center / contain no-repeat; background: var(--ink); }
 .names-art-amp { -webkit-mask-image: var(--amp-mask); mask-image: var(--amp-mask); background: var(--action); }
-.names-lettering { width: min(100%, 520px); }
+.names-lettering { width: min(100%, 442px); } /* 15% under the 520 it was (18e) */
 /* On the letter inside the envelope: centred, brown always (the envelope stays cream) */
 .envelope-paper { display: grid; place-items: start center; padding-top: 12%; }
 .envelope-names { width: 72%; }

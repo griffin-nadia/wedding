@@ -8,9 +8,10 @@ const go = async (page: Page, path: string, theme = "autumn") => {
   await page.waitForLoadState("networkidle")
 }
 
+// Home's card is only as tall as what's on it (18e), so its bottom is left out; its top is the same as the others'
 test("the card's top and visible bottom don't move between pages", async ({ page }) => {
   await go(page, "")
-  const edges = []
+  const edges = [], tops = []
   for (const i of [1, 2, 3, 4, 0]) {
     await page.locator(".site-nav a").nth(i).click()
     await page.waitForTimeout(700)
@@ -19,8 +20,11 @@ test("the card's top and visible bottom don't move between pages", async ({ page
       const wide = innerWidth >= 768, limit = wide ? innerHeight - 64 : document.querySelector(".site-nav")!.getBoundingClientRect().top - 12
       return [Math.round(l.top), Math.round(Math.min(l.bottom, limit))]
     }))
+    tops.push(edges.at(-1)![0])
+    if (i === 0) edges.pop()
   }
   expect(new Set(edges.map((e) => e.join())).size).toBe(1)
+  expect(new Set(tops).size).toBe(1)
 })
 
 test("the paper behind the page is the theme's colour, and theme-color matches it", async ({ page }) => {
