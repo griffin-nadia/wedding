@@ -258,3 +258,25 @@ test("after a reply, Home's next step is the travel dates, then the trip", async
   await expect(page.getByRole("dialog")).toContainText(/arriv|dates/i)
 })
 
+// 18f: "You're all set" is one column: the hanko and heading in the sheet's head (the X beside them, never on a
+// card), then the line, the fortune, flying from, add to calendar and the buttons, each the same distance apart
+for (const theme of ["autumn", "lantern"] as const) test(`the done screen (${theme}): one column, even gaps, the X clear of everything`, async ({ page }) => {
+  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
+  await page.addInitScript((t) => localStorage.setItem("ng-theme", t), theme)
+  await openForm(page)
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
+  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
+  await toCheck(page); await press(page, /^Send our reply$/)
+  await expect(dialog.locator(".done-head").getByRole("heading", { name: /all set|got it/ })).toBeVisible()
+  await expect(dialog.locator(".done-head .hanko")).toBeVisible()
+  const layout = await page.evaluate(() => {
+    const x = document.querySelector(".sheet-close")!.getBoundingClientRect()
+    const blocks = [...document.querySelectorAll(".done-column > *")].map((e) => e.getBoundingClientRect())
+    const hit = (r: DOMRect) => r.left < x.right && r.right > x.left && r.top < x.bottom && r.bottom > x.top
+    const head = document.querySelector(".done-head h2, .done-head [role=heading], .done-head .heading")!.getBoundingClientRect()
+    return { gaps: blocks.slice(1).map((r, i) => Math.round(r.top - blocks[i].bottom)), overlaps: [head, ...blocks].filter(hit).length }
+  })
+  expect(layout.overlaps).toBe(0)
+  expect(new Set(layout.gaps).size, `gaps ${layout.gaps}`).toBe(1)
+})
