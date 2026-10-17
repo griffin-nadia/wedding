@@ -7,7 +7,6 @@ import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { jstLabel, kyotoNow } from "@/lib/time"
 import { PageHeader } from "@/components/ui/page-header"
-import { cn } from "@/lib/utils"
 
 const ICONS = [Flower2, Wine, UtensilsCrossed]
 
@@ -26,9 +25,8 @@ function nowOnTheDay(real: Date, times: string[]) {
 
 function Row({ i, time, label, where, local }: { i: number; time: string; label: string; where: string; local: string | null }) {
   const Icon = ICONS[i] ?? Flower2
-  const left = i % 2 === 0
   return (
-    <li className={cn("timeline-row", left ? "is-left" : "is-right")}>
+    <li className="timeline-row">
       <p className="timeline-time numerals text-foreground">{time}</p>
       <span aria-hidden className="timeline-icon"><Icon className="size-5" /></span>
       <div className="timeline-text">
@@ -40,7 +38,7 @@ function Row({ i, time, label, where, local }: { i: number; time: string; label:
   )
 }
 
-/** The timeline: one thin moss line that draws in as you scroll (the only thing that moves); time and label swap sides down it. */
+/** The timeline: one thin moss line that draws in as you scroll (the only thing that moves); times on the left, what happens on the right. */
 function Timeline({ now }: { now: Date }) {
   const { t, lang } = useLang()
   const nowAt = nowOnTheDay(now, t.day.schedule.map((x) => x.time))

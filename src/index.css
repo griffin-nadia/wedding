@@ -335,9 +335,12 @@
   padding-inline: max(1rem, calc(50vw - 50%));
 }
 
-/* The day timeline: one thin moss line down the middle that draws in as you scroll; rows alternate sides */
-.timeline { position: relative; display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-2); }
-.timeline-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; translate: -1px 0; background: var(--line-hairline); border-radius: var(--radius-pill); }
+/* The day timeline: times on the left, a thin moss line with the icons on it, what happens on the right, every row
+   the same way round. The time column is one fixed width, so the line runs straight through every icon. The line
+   draws in as you scroll. */
+.timeline { --tl-time: 7rem; --tl-gap: var(--space-3); position: relative; display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-2); }
+@media (min-width: 768px) { .timeline { --tl-time: 8rem; --tl-gap: var(--space-4); } }
+.timeline-line { position: absolute; top: 0; bottom: 0; left: calc(var(--tl-time) + var(--tl-gap) + 20px); width: 2px; translate: -1px 0; background: var(--line-hairline); border-radius: var(--radius-pill); }
 .timeline-fill { background: var(--ink-moss); transform-origin: top; }
 /* The line draws with the page's scroll (a CSS scroll timeline, no listener): empty at the top, complete when the
    page can't scroll any further. Complete and still where scroll timelines are missing, and under reduced motion. */
@@ -347,14 +350,11 @@
     .timeline-fill { animation: timeline-draw linear both; animation-timeline: scroll(root); }
   }
 }
-.timeline-row { position: relative; display: grid; grid-template-columns: 1fr 40px 1fr; align-items: start; column-gap: var(--space-3); }
+.timeline-row { position: relative; display: grid; grid-template-columns: var(--tl-time) 40px minmax(0, 1fr); align-items: start; column-gap: var(--tl-gap); }
 .timeline-icon { grid-column: 2; grid-row: 1; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-pill); background: var(--letter-bg); border: 1px solid var(--ink-moss); color: var(--ink-moss); position: relative; z-index: 1; }
-.timeline-time { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); }
-.is-left .timeline-time { grid-column: 1; grid-row: 1; text-align: right; }
-.is-left .timeline-text { grid-column: 3; grid-row: 1; }
-.is-right .timeline-time { grid-column: 3; grid-row: 1; }
-.is-right .timeline-text { grid-column: 1; grid-row: 1; text-align: right; }
-.timeline-now { position: absolute; left: 50%; z-index: 2; translate: -50% -50%; list-style: none; }
+.timeline-time { grid-column: 1; grid-row: 1; text-align: right; white-space: nowrap; font-size: var(--type-heading-size); line-height: var(--type-heading-leading); }
+.timeline-text { grid-column: 3; grid-row: 1; }
+.timeline-now { position: absolute; left: calc(var(--tl-time) + var(--tl-gap) + 20px); z-index: 2; translate: -50% -50%; list-style: none; }
 @media print { .timeline-fill { animation: none !important; transform: none !important; } }
 
 /* Seal fill on the chosen answer: a small press when it lands. */
