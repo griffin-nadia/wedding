@@ -308,8 +308,7 @@
 /* Lantern letter (the default; "Letter in Lantern" = cream turns the letter into paper under a lamp instead) */
 :root[data-theme="lantern"] .letter::before { background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 8%, transparent), transparent 60%),
-    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%),
-    var(--paper) 0 0 / var(--paper-size); }
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%); }
 :root[data-theme="lantern"] .letter .photo-img { filter: saturate(0.95) brightness(0.92); }
 :root[data-theme="lantern"] .field[data-filled="true"]:not([type="date"]):not(textarea) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a37e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
 [data-theme="lantern"] .scene img {
@@ -441,7 +440,7 @@
 }
 /* Driver card full screen: bigger in landscape */
 /* Show the driver (v3 Q4): the shared sheet on the brightest paper, big Japanese, Done in the footer */
-.sheet.sheet-bright { background: var(--paper-bright) 0 0 / var(--paper-size), var(--brand-paper-bright); color: var(--brand-ink-deep); border-radius: var(--radius-letter); }
+.sheet.sheet-bright { background: var(--brand-paper-bright); color: var(--brand-ink-deep); border-radius: var(--radius-letter); }
 .sheet.sheet-driver { justify-content: space-between; overflow: auto; }
 .driver-body { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5); padding: var(--space-8) var(--space-5); text-align: center; }
 .driver-please { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); color: var(--brand-doro); }
@@ -529,13 +528,24 @@
 @media (pointer: coarse) { .letter-scroll { scrollbar-width: none; } .letter-scroll::-webkit-scrollbar { display: none; } }
 /* Travel's jump links once stuck sit flush at the card's top edge, so the top fade steps aside for them */
 .letter-scroll:has(.jump-links[data-stuck]) { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); }
-/* The paper, a warm glow top left and a cool shade bottom right, on a layer under the words (so the tile isn't the
-   page's largest paint) */
+/* A warm glow top left and a cool shade bottom right, under the words */
 .letter { isolation: isolate; }
 .letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
-    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
-    var(--paper) 0 0 / var(--paper-size); }
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%); }
+/* The paper itself (18f), over everything on it, like Paper's printed example: one sheet made in the browser at the
+   screen's size (--paper-live, src/lib/paper-live.ts), so the words, fields and buttons take the paper too. On the
+   letter, every sheet, the driver card and paper you could hold (not twice when one sits on another). Never in the
+   way of a tap. Until it's made (or without WebGL) the paper is plain. */
+.letter::after, .sheet-bright::after, .paper-feel::after, .envelope-paper::after {
+  content: ""; position: absolute; inset: 0; z-index: 30; border-radius: inherit; pointer-events: none;
+  background: var(--paper-live, none) center / cover no-repeat;
+  mix-blend-mode: var(--paper-blend); opacity: var(--paper-strength);
+}
+/* The driver card stays bright paper in Lantern, where the sheet made is the night one: plain there */
+[data-theme="lantern"] .sheet-bright::after { display: none; }
+.letter .paper-feel::after, .sheet .paper-feel::after { display: none; }
+@media print { .letter::after, .paper-feel::after { display: none; } }
 
 /* The top bar, on every screen and never hidden: the mark on the left, the switches on the right (the nav and RSVP
    join it from 768; on phones the nav is the dock). Its paper is a layer of its own (::before), so the blur doesn't
@@ -1137,10 +1147,17 @@ svg.lucide { stroke-width: 1.5; }
 .kmap-pin-venue .kmap-dot { border-color: var(--brand-sabi); }
 .kmap-tag { position: absolute; top: 50%; left: 34px; translate: 0 -50%; pointer-events: none; display: flex; flex-direction: column; padding: var(--space-1) var(--space-2); border-radius: var(--radius-control); background: color-mix(in oklab, var(--letter-bg) 92%, transparent); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); font-family: var(--font-label); font-size: 11px; line-height: 1.25; text-align: left; color: var(--ink); white-space: nowrap; }
 .kmap-pin.is-east .kmap-tag { left: auto; right: 34px; text-align: right; align-items: flex-end; }
+/* The venue's tag sits under its dot, a little right (18f): to the left it lay over the river on a phone */
+/* Kyoto Station's and Gion-Shijo's tags sit above their dots (18f): beside them they lay on the taxi line and the river */
+.kmap-pin-station .kmap-tag, .kmap-pin-gion .kmap-tag { top: auto; bottom: 34px; left: 50%; translate: -50% 0; }
+.kmap-pin-gion.is-east .kmap-tag { right: auto; left: 6px; translate: 0 0; align-items: flex-start; text-align: left; }
+.kmap-pin-venue.is-east .kmap-tag { top: 34px; right: auto; left: 16px; translate: 0 0; align-items: flex-start; text-align: left; } /* clear of the taxi line coming in from the left */
 .kmap-tag .font-ja { font-size: var(--type-label-size); color: var(--ink-muted); }
 .kmap-pin.is-on .kmap-tag { box-shadow: inset 0 0 0 1.5px var(--brand-sabi), 0 1px 2px rgb(0 0 0 / 0.12); }
 /* Phones: the plate is narrow, so the tags hide except the chosen one (the card names it anyway) */
-@media (max-width: 479px) { .kmap-pin:not(.is-on) .kmap-tag { display: none; } }
+/* Phones: no tags on the plate (at that size any tag covers the river, a route or a leaf); the chosen place is named
+   in its card right under the map (18f) */
+@media (max-width: 479px) { .kmap-tag { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; box-shadow: none !important; } } /* still each pin's name */
 @media (hover: hover) { .kmap-pin:hover .kmap-dot { transform: scale(1.15); } }
 .kmap-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-control); background: var(--section-alt); animation: toast-in var(--duration-fast) var(--ease-paper) both; }
 .kmap-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
@@ -1225,7 +1242,13 @@ svg.lucide { stroke-width: 1.5; }
 
 /* Travel: three summary lines, and jump links that stay with the page header (the current section marked) */
 :root { --travel-head: 64px; } /* the slim jump-link row at the card's top, and a little air (18e) */
-.jump-links ul { position: relative; display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--space-1)); padding: var(--space-1); }
+.jump-links ul { position: relative; display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--space-1)); padding: var(--space-1); scroll-padding-inline: var(--space-6);
+  /* A soft fade at whichever edge has more links past it (18f), never a hard cut through a word */
+  --fade-l: 0px; --fade-r: 0px;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent); }
+.jump-links ul[data-more-left] { --fade-l: var(--space-6); }
+.jump-links ul[data-more-right] { --fade-r: var(--space-6); }
 .jump-links ul::-webkit-scrollbar { display: none; }
 .jump-link { display: inline-flex; align-items: center; height: var(--chip-height); padding-inline: var(--chip-pad); border-radius: var(--chip-radius); white-space: nowrap; font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); font-weight: 500; color: var(--ink-muted); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper); position: relative; }
 .jump-link::after { content: ""; position: absolute; inset: calc((var(--chip-height) - 44px) / 2) 0; }
@@ -1280,14 +1303,12 @@ svg.lucide { stroke-width: 1.5; }
 @media (hover: hover) { .remove-btn:hover { color: var(--foreground); } }
 .song-card { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--card); }
 
-/* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): the baked
-   paper (--paper) and an edge that sits on what's under it: a hairline contact shadow, a short soft shadow and a
+/* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): the paper
+   over it (above) and an edge that sits on what's under it: a hairline contact shadow, a short soft shadow and a
    long faint one, a lit top edge and a faintly shaded bottom edge. All images, nothing drawn live. */
 .paper-feel { /* a plain class, last in the file: it wins over each card's own background and shadow */
   position: relative;
   isolation: isolate;
-  background-image: var(--paper);
-  background-size: var(--paper-size);
   box-shadow:
     0 0 0 0.5px rgb(var(--tint-shadow) / 0.14),
     0 1px 2px rgb(var(--tint-shadow) / 0.12),
@@ -1302,11 +1323,8 @@ svg.lucide { stroke-width: 1.5; }
   --tint-shadow: 66 26 5;
   background-image:
     linear-gradient(to bottom, transparent calc(33.33% - 3px), rgb(var(--tint-shadow) / 0.05) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 3px)),
-    linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px)),
-    var(--paper-bright);
-  background-size: 100% 100%, 100% 100%, var(--paper-size);
+    linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px));
+  background-size: 100% 100%, 100% 100%;
 }
-/* The sent letter: the same paper, scrolling with the words */
-.rsvp-done { background-image: var(--paper); background-size: var(--paper-size); background-attachment: local; }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }

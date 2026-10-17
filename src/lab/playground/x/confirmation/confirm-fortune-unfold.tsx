@@ -25,7 +25,7 @@ const css = `
 .x-fu-top .x-fu-face .omikuji-slip { top: 0; }
 .x-fu-mid .x-fu-face .omikuji-slip { top: -${H / 3}px; }
 .x-fu-bot .x-fu-face .omikuji-slip { top: -${(2 * H) / 3}px; }
-.x-fu-back { transform: rotateX(180deg); background: var(--paper-bright) 0 0 / var(--paper-size), var(--brand-paper-bright); }
+.x-fu-back { transform: rotateX(180deg); background: var(--brand-paper-bright); }
 .x-fu-back::after { content: "大吉"; position: absolute; inset: 0; display: grid; place-items: center; font: 2.6rem/1 var(--font-ja); color: var(--brand-doro); opacity: 0.08; transform: scaleY(-1); } /* the ink showing through the paper */
 .x-fu-shade { position: absolute; inset: 0; pointer-events: none; }
 .x-fu-mid { box-shadow: 0 18px 30px -18px rgb(var(--tint-shadow) / 0.4); }
