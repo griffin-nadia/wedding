@@ -93,8 +93,8 @@ test("arrows, keys and a trackpad swipe each step exactly one stop", async ({ pa
 })
 
 // 18f: every photo stop's print ends on the same line, so its caption sits in the same spot on every stop (a
-// two-line title or a landscape print never moves it); on laptops a small map shows where the chapter was
-test("each print ends on the same line on every stop, captions right under it", async ({ page }, info) => {
+// two-line title or a landscape print never moves it)
+test("each print ends on the same line on every stop, captions right under it", async ({ page }) => {
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
   await page.goto("our-story?h=sample")
   await page.waitForTimeout(800)
@@ -102,6 +102,4 @@ test("each print ends on the same line on every stop, captions right under it", 
     .map((s) => s.querySelector(".story-print > div, .story-print-blank")!.getBoundingClientRect().bottom))
   expect(bottoms.length).toBeGreaterThan(3)
   expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThanOrEqual(6) // the prints' own small tilts
-  const maps = await page.locator(".story-stop-map").evaluateAll((m) => m.filter((e) => getComputedStyle(e).display !== "none").length)
-  expect(maps > 0).toBe(info.project.name === "laptop")
 })

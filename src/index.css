@@ -1197,14 +1197,6 @@ svg.lucide { stroke-width: 1.5; }
 .story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: flex-start; }
 
 .story-print figcaption { min-height: 1.25rem; }
-/* Laptops: a small map of where the chapter happened, under its words */
-.story-stop-map { display: none; }
-@media (min-width: 1024px) {
-  .story-stop-map { display: block; width: 150px; height: auto; margin-top: var(--space-3); }
-  .story-stop-map .journey-land { fill: color-mix(in oklab, var(--ink-soft) 16%, transparent); } /* no box round it, so the land carries it */
-  .story-stop-ring { fill: color-mix(in oklab, var(--brand-sabi) 18%, transparent); }
-  .story-stop-dot { fill: var(--brand-sabi); stroke: var(--brand-paper-bright); stroke-width: 2; }
-}
 /* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
 .story-print { margin: var(--space-2); }
 .story-print > div { height: var(--print-h); width: auto; }
@@ -1230,11 +1222,8 @@ svg.lucide { stroke-width: 1.5; }
 @media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map .journey-mini { max-height: 24svh; } }
 @media (min-width: 1024px) {
   /* Laptops as phones (18f, Jehan: "too big… like we did with mobile"): the print centred like a photo, its chapter
-     under it, smaller, so the page isn't so tall; the chapter's words with a small map beside them */
+     under it, smaller, so the page isn't so tall (a small map beside the words was tried and left out) */
   .story-slide { --print-h: min(32svh, 260px); gap: var(--space-4); }
-  .story-words { width: min(100%, 560px); max-width: none; display: grid; grid-template-columns: 1fr auto; column-gap: var(--space-5); align-items: start; text-align: left; }
-  .story-words > :not(.story-stop-map) { grid-column: 1; }
-  .story-words > .story-stop-map { grid-column: 2; grid-row: 1 / span 6; margin-top: 0; }
   .story-slide-map .story-media { flex: 0 1 360px; }
   .story-slide-map .journey-mini { max-height: 46svh; }
   .story-controls { justify-content: center; gap: var(--space-5); }
