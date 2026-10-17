@@ -5,8 +5,8 @@ import { useLang } from "@/lib/lang"
 import { useHousehold } from "@/lib/household"
 import { cn } from "@/lib/utils"
 import { readFlying } from "@/lib/journey"
-import { getFlying, type Flying } from "@/lib/api"
-import { GuestMap } from "@/components/journey-mini"
+import { getFlying } from "@/lib/api"
+import { GuestMap, usePlaceName } from "@/components/journey-mini"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
 
@@ -25,7 +25,8 @@ function JourneyMap() {
   const you = readFlying(household?.token)
   const [flying, setFlying] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
   useEffect(() => { void getFlying().then(setFlying) }, [])
-  const name = you ? t.flying.cities[you as Flying] ?? you : null
+  const nameOf = usePlaceName()
+  const name = you ? nameOf(you) : null
   return <GuestMap you={you} flying={flying} label={t.journey.map(name, you ?? undefined)} listable={false} />
 }
 
