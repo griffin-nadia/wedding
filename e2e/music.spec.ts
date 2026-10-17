@@ -39,7 +39,7 @@ test("the music credit is only in FAQs, in the last answer", async ({ page }) =>
   const last = page.locator("#letter [data-slot=accordion-item]").last()
   await last.locator("[data-slot=accordion-trigger]").click()
   await expect(last).toContainText("Who made this site?")
-  await expect(last).toContainText("Music: “A Town With an Ocean View” by Joe Hisaishi, piano by Piano ZeroL.")
+  await expect(last).toContainText("Music: “A Town With an Ocean View” (Joe Hisaishi).")
 })
 
 // Coming back to the tab: it carries on from where it stopped and is back at 30% within a second, not a slow restart

@@ -43,7 +43,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.plusOne.a", ja: "不明な点は、メッセージか griffinandnadia@gmail.com までどうぞ。" },
   { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
   { key: "faqs.whoMade.a", ja: "ナディアの兄のジェハンがデザインと制作をしました。絵はナディア、写真はわたしたちのものです。" },
-  { key: "music.credit.ja", ja: "久石譲「A Town With an Ocean View」（ピアノ：Piano ZeroL）" },
+  { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]
 
 export type PendingKey = keyof typeof PENDING
