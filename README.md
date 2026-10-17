@@ -50,6 +50,14 @@ the back end exists. Copy `.env.example` to `.env` and paste the Apps Script URL
 - Content slots for later (`src/content/slots.json`): lettering, our story, paintings, travel dates.
 - `npm run qr-cards -- path/to/Guests.csv` makes printable QR cards in `private/` (gitignored).
 
+## Music
+
+The guest site always plays `public/audio/song.mp3`. To swap the song, replace that file and change the title and
+artist in `ART.music` (`src/lib/art.ts`); the credit under the sign-off follows. That's the whole change.
+
+For a local preview of a song that isn't cleared yet, put it at `private/song.mp3` (gitignored). `npm run dev` and
+`npm run lab` play it instead; it is never copied into `dist`, and the build fails if anything from `private/` is.
+
 ## Content
 
 All words live in `src/content/en.ts`, taken from their Inv details tab. Japanese goes in `ja.ts` with the

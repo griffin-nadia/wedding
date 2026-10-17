@@ -2,7 +2,6 @@ import { Disclosure } from "@/components/disclosure"
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { useLang } from "@/lib/lang"
 import { useContent } from "@/lib/content"
-import { ART } from "@/lib/art"
 
 /** FAQs: one numbered accordion (numbers help guests point to a question when they message). Answers are body.
  * Who to contact on the day appears once Griffin and Nadia fill contact_day in the Content tab. */
@@ -27,7 +26,6 @@ export function FaqsPage() {
       </Disclosure>
       <p className="text-small">{t.qa.contact}</p>
       {contactDay && <p className="text-small">{t.qa.onTheDay} {contactDay}</p>}
-      <p className="text-small text-muted-foreground">{t.music.credit(ART.music.title, ART.music.artist, ART.music.year)}</p>
     </>
   )
 }
