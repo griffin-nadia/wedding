@@ -32,7 +32,6 @@ export const ja: DeepPartial<Content> = {
     openLabel: (name: string) => `招待状をひらく${name ? `（${name}さん）` : ""}`,
     phoneTitle: "スマホでひらく",
     phoneBody: "読み取ると、この招待状をスマホで見られます。",
-    comingSoon: "近日公開",
   },
   photos: {
     "couple-kyoto-view": { alt: `京都の丘で微笑む${A}と${B}。後ろには秋の木々`, caption: "すべてが始まった京都" },
@@ -70,7 +69,6 @@ export const ja: DeepPartial<Content> = {
     ],
   },
   story: {
-    soonBody: "ふたりの話は、まもなく公開します。",
     title: "ふたりのこと",
     prevChapter: "前の章", nextChapter: "次の章",
     page: (n: number, of: number) => `第${n}章（全${of}章）`,

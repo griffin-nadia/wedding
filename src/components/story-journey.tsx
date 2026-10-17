@@ -105,19 +105,14 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
       <div ref={track} className="story-track" role="region" aria-roledescription="carousel" aria-label={t.story.title} tabIndex={0}
         onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(at + 1) } if (e.key === "ArrowLeft") { e.preventDefault(); go(at - 1) } }}>
         {opener && <section className="story-slide" role="group" aria-roledescription="slide" aria-label={t.story.slide(1, total)}>{opener}</section>}
-        {chapters.length ? chapters.map((c, i) => (
+        {chapters.map((c, i) => (
           <section key={c.key} className="story-slide" role="group" aria-roledescription="slide" aria-label={t.story.slide(i + 1 + lead, total)} inert={i !== on || undefined}>
             {c.photo && <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 420px, 80vw" alt={`${c.title}, ${c.year}`} className="story-slide-photo" />}
             <p className="text-small text-muted-foreground">{t.story.page(i + 1, chapters.length)}, {c.year}{c.place ? ` · ${c.place}` : ""}</p>
             <h2 className="font-display text-heading text-foreground">{c.title}</h2>
             {c.body.map((p, k) => <p key={k}>{p}</p>)}
           </section>
-        )) : (
-          <section className="story-slide" role="group" aria-roledescription="slide">
-            <h2 className="font-display text-heading text-foreground">{t.letter.comingSoon}</h2>
-            <p>{t.story.soonBody}</p>
-          </section>
-        )}
+        ))}
       </div>
 
       <div className="story-controls">

@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { useContent } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { StoryJourney } from "@/components/story-journey"
@@ -6,56 +5,38 @@ import { Photo } from "@/components/photo"
 import photos from "@/content/photos.json"
 import { PageHeader } from "@/components/ui/page-header"
 import { STORY_PLAN } from "@/content/story-plan"
+import { pending } from "@/content/pending"
 
 /**
- * The opener (Figma 3b): one kid photo each, Griffin then Nadia, as the first slide. The photos stay in photos-private/
- * until Our story is switched on. Guests see the opener only once both exist; crew see it as soon as Nadia's does,
- * with Griffin's slot as an empty paper frame.
+ * The opener (Figma 3b): one kid photo each, Griffin then Nadia, as the first slide. A photo that isn't here yet is a
+ * plain paper print of the same size (no badge), described for screen readers from pending.ts.
  */
-function useOpener() {
-  const [crew] = useState(() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })
+function Opener() {
+  const { lang } = useLang()
   const has = (name: string) => name in photos
-  if (!has("kid-nadia") || (!has("kid-griffin") && !crew)) return null
+  if (!has("kid-nadia")) return null
   return (
     <div className="story-kids">
       {has("kid-griffin")
         ? <Photo name="kid-griffin" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
-        : <div className="story-kid-slot" aria-hidden />}
+        : <div className="story-kid-slot" role="img" aria-label={pending("story.kidGriffin", lang)} />}
       <Photo name="kid-nadia" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
     </div>
   )
 }
 
-/** Our story (hidden until the story text exists in the Content tab): the journey map, their Figma plan. */
+/**
+ * Our story, for everyone: their chapters from the Content tab once they're written; until then the planner's
+ * layout (the kid opener, the eight photo stops, Kyoto) with a placeholder line where their words will go.
+ */
 export function StoryPage() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const { story, ready } = useContent()
-  const opener = useOpener()
-  if (ready && story.length) {
-    return (
-      <>
-        <PageHeader title={t.story.title} />
-        <StoryJourney chapters={story} opener={opener} />
-      </>
-    )
-  }
-  // Crew devices: the whole flow from the planner's Photos + story tab (kid opener, the eight photo stops, Kyoto),
-  // with their own words to come. Guests never reach this page while the Content tab is empty.
-  const crew = (() => { try { return Boolean(localStorage.getItem("ng-crew")) } catch { return false } })()
-  if (ready && crew && !story.length) {
-    return (
-      <>
-        <PageHeader title={t.story.title} />
-        <StoryJourney chapters={STORY_PLAN} opener={opener} />
-      </>
-    )
-  }
+  const chapters = ready && story.length ? story : STORY_PLAN.map((c) => (c.body.length ? c : { ...c, body: [pending("story.chapterBody", lang)] }))
   return (
-    <div className="grid min-h-64 place-items-center text-center">
-      <div className="flex flex-col items-center gap-4">
-        <h1 className="heading">{t.letter.comingSoon}</h1>
-        <p>{t.story.soonBody}</p>
-      </div>
-    </div>
+    <>
+      <PageHeader title={t.story.title} />
+      <StoryJourney chapters={chapters} opener={<Opener />} />
+    </>
   )
 }
