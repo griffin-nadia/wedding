@@ -495,7 +495,7 @@
 .letter-body { display: flex; flex-direction: column; gap: var(--letter-gap); }
 /* Paper grain on the letter only, under the words, moving with the letter */
 .letter { isolation: isolate; }
-.letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background-image: var(--texture-paper); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
+.letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background-image: var(--texture-grain); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
 
 /* Site bar and nav, rendered once: a floating dock on phones, a thin bar along the top from 768 */
 .site-bar { position: fixed; z-index: 40; top: 0; inset-inline: 0; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); pointer-events: none; }
@@ -1155,6 +1155,8 @@ svg.lucide { stroke-width: 1.5; }
 .story-print-blank { display: block; width: calc(var(--print-h) * 0.75); height: var(--print-h); margin: var(--space-2); border: var(--space-2) solid var(--brand-paper-bright); border-bottom-width: var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); box-shadow: var(--elevation-paper); transform: rotate(-1deg); }
 .story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: calc(var(--print-h) * 1.1); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
 /* The journey map, once, as the last stop */
+/* Its lines wait until the stop is showing (no drawing off screen, and they draw in as you arrive) */
+.story-slide[inert] .journey, .story-slide[inert] .journey * { animation-play-state: paused !important; }
 .story-slide-map .story-media { width: 100%; max-width: 360px; }
 .story-slide-map .journey-mini { max-height: 36svh; }
 /* The list: a 48px thumbnail beside each chapter */

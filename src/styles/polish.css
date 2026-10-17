@@ -52,7 +52,7 @@ html { scrollbar-gutter: stable; }
   }
   .scene-photo::after {
     content: ""; position: absolute; inset: 0; pointer-events: none;
-    background-image: var(--texture-paper); background-size: 256px;
+    background-image: var(--texture-grain); background-size: 256px;
     opacity: 0.05; mix-blend-mode: var(--texture-blend);
   }
 }
@@ -74,9 +74,12 @@ html { scrollbar-gutter: stable; }
 }
 .letter::after {
   content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
-  background-image: var(--texture-mottle); background-size: 480px;
+  background-image: var(--texture-soft); background-size: 480px;
   opacity: calc(var(--texture-opacity) * 0.9); mix-blend-mode: var(--texture-blend);
 }
+/* Phones: grain only. The mottle is too faint to see on a small screen but it was a quarter of the drawing work in
+   every page turn there */
+@media (max-width: 767px) { .letter::after { display: none; } }
 @media print { .letter::after { display: none !important; } }
 .envelope::after {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;

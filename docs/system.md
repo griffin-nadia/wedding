@@ -44,7 +44,7 @@ Components only use purpose or component tokens; nothing invents a colour or an 
 | Sheet | `--elevation-sheet` | the one sheet (reply, journey map, driver card): grain, the deeper shadow |
 | Overlay | `--elevation-overlay` | the dim behind a sheet |
 
-Grain sits on every paper surface (the letter and every sheet, `.letter::before`). There is one backdrop blur on the site, on the nav, and blur is never animated.
+Grain sits on every paper surface (the letter and every sheet, `.letter::before`). The letter's grain and mottle are small baked WebPs (`--texture-grain`, `--texture-soft`, one pair per theme, from `scripts/bake-textures.mjs`), not live SVG noise: a phone redraws both letters in every page turn, and the live filter was about three quarters of that work. Phones under 768 show the grain only. There is one backdrop blur on the site, on the nav, and blur is never animated.
 
 ## Type: one scale, six roles
 

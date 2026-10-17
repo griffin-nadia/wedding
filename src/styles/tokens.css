@@ -81,6 +81,9 @@
   --surface-scrim: var(--brand-kinari);
   --tint-shadow: 66 26 5;
   --grain-blend: multiply;
+  /* The letter's grain and mottle, baked from the SVGs below by scripts/bake-textures.mjs (cheap to draw mid-turn) */
+  --texture-grain: url("../assets/texture-grain-light.webp");
+  --texture-soft: url("../assets/texture-mottle-light.webp");
 }
 
 [data-theme="lantern"] {
@@ -88,6 +91,8 @@
   --row-press-mix: 11%;
   color-scheme: dark;
   --grain-blend: soft-light;
+  --texture-grain: url("../assets/texture-grain-lantern.webp");
+  --texture-soft: url("../assets/texture-mottle-lantern.webp");
   --surface-paper: var(--brand-yoru);
   --surface-raised: var(--brand-yoru-raised);
   --surface-alt: var(--brand-yoru-sage);
