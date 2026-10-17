@@ -71,14 +71,16 @@ function play() {
 function pause() { if (audio && !audio.paused) ramp(0, FADE_OUT, () => { audio?.pause(); session("paused") }) }
 /**
  * Stops at once, with no fade. Hidden pages don't run frames, so a fade's last step (the pause) would never come and
- * the song would carry on in the phone's media controls. This never waits on a frame.
+ * the song would carry on in the phone's media controls. This never waits on a frame. It also clears the Now Playing
+ * entry (iPhone lock screen, Android's media notification): a paused song with its title still set lingers there
+ * after the page is gone. Coming back sets it again.
  */
 function hardStop() {
   fade()
   if (!audio) return
   audio.volume = 0
   audio.pause()
-  session("paused")
+  session("none")
 }
 // Hidden, locked, swiped away or frozen: stop now. Back again: fade in if it's on (and has played before)
 const resume = () => { if (on && audio && !document.hidden) play() }
@@ -94,6 +96,11 @@ function session(state: MediaSessionPlaybackState) {
   if (!("mediaSession" in navigator)) return
   const ms = navigator.mediaSession
   ms.playbackState = state
+  if (state === "none") {
+    ms.metadata = null
+    try { ms.setActionHandler("play", null); ms.setActionHandler("pause", null) } catch { /* older browsers */ }
+    return
+  }
   if (ms.metadata) return
   try {
     ms.metadata = new MediaMetadata({ title: "Griffin & Nadia", artist: ART.music.artist, artwork: [{ src: `${import.meta.env.BASE_URL}og-image.png`, sizes: "1200x630", type: "image/png" }] })

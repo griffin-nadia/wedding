@@ -11,6 +11,8 @@ sample household, with the clock fixed and reduced motion on:
   phone over 4G (4× CPU, 1.6 Mbps, 150 ms) and CLS under 0.01.
 - **No jumping (phones):** opening a Travel row while one above it is open keeps the tapped row in place, and
   closing a sheet puts the page back at the same scroll position (`e2e/no-jump.spec.ts`).
+- **Music:** hiding the page (pagehide) stops the song at once and clears the phone's Now Playing entry
+  (`e2e/music.spec.ts`).
 
 Also on every PR: `npm run lint`, `npm test`, `npm run check:pending` (lists, doesn't fail, while placeholders remain).
 
