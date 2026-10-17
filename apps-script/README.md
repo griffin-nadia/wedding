@@ -29,6 +29,7 @@ still point at the old one.
 | Reset test households… | Clears answers, songs, Log rows, visits, stamps and duplicate flags for households named "Test …" or "… (Test)" |
 | Send the "Final numbers soon" note… | Before changes lock, asks households who are coming to check their reply (Emails tab keys `final_*`; test households skipped) |
 | Make crew links | Makes the Crew tab (Jehan, Griffin, Nadia, wedding Gmail) and writes each person's /kit and /lab link. No guest data |
+| Name order: find and fix "Nadia & Griffin"… | Finds "Nadia & Griffin" or "Nadia and Griffin" in any tab (the Summary heading, the Emails tab's wording), lists each cell and only changes them if you say yes. Formulas are listed, not changed |
 
 ## Script properties (all optional)
 

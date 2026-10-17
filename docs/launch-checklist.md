@@ -4,7 +4,7 @@ A readiness check of the live site on 18 Oct 2026, before real invites go out. N
 bugs it found are fixed in the next PR and ticked below). The steps for each item are in `docs/pre-launch.md` and
 `apps-script/README.md`.
 
-## Content needed from Nadia and Griffin
+## Content needed from Griffin and Nadia
 
 `npm run check:pending` lists four placeholders still on the site and 14 Japanese lines waiting for a native read.
 
