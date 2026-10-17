@@ -124,7 +124,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   const firstStep = useRef(true)
   useEffect(() => {
     if (firstStep.current) { firstStep.current = false; return }
-    heading.current?.focus()
+    heading.current?.focus({ preventScroll: true })
     body.current?.scrollTo({ top: 0 })
   }, [step])
   useEffect(() => { setDim(open) }, [open, setDim])
@@ -267,7 +267,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
             if (done || e.key !== "Enter" || e.shiftKey || e.defaultPrevented || !(el instanceof HTMLInputElement) || el.type === "checkbox" || el.getAttribute("role") === "combobox") return
             e.preventDefault(); if (step < total) next(); else send()
           }}
-          onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus() }}
+          onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus({ preventScroll: true }) }}
           // Only X, Esc or "Back to your invite" close the sheet; a tap outside never does (v3 A)
           onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}
           // Escape inside an open combobox closes its list, not the sheet
@@ -389,7 +389,7 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
   const h = result.household
   const answer = answerOf(h)
   useEffect(() => {
-    titleRef.current?.focus()
+    titleRef.current?.focus({ preventScroll: true })
   }, [answer, titleRef])
   return (
     <div className="flex flex-col gap-6">

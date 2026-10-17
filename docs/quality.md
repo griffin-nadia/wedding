@@ -12,6 +12,9 @@ sample household, with the clock fixed and reduced motion on:
 
 Also on every PR: `npm run lint`, `npm test`, `npm run check:pending` (lists, doesn't fail, while placeholders remain).
 
+- **No jumping (phones):** opening a Travel row while one above it is open keeps the tapped row in place, and
+  closing a sheet puts the page back at the same scroll position (`e2e/no-jump.spec.ts`).
+
 ## In GitHub Actions
 
 The workflow is in `docs/ci/quality.yml`. Move it to `.github/workflows/quality.yml` from a machine whose GitHub

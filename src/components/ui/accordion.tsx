@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { loop } from "@/lib/frame"
 import { Accordion as AccordionPrimitive } from "radix-ui"
 import { ChevronDownIcon } from "lucide-react"
 
@@ -76,7 +77,25 @@ function AccordionContent({
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
 
-/** The site's accordion: one open at a time everywhere (Jehan, 6 Oct). */
-export function Disclosure({ label, children, ...props }: { label: string; children: React.ReactNode } & Omit<React.ComponentProps<typeof AccordionPrimitive.Root>, "type" | "children">) {
-  return <Accordion type="single" collapsible aria-label={label} {...(props as object)}>{children}</Accordion>
+/**
+ * The site's accordion: one open at a time everywhere (Jehan, 6 Oct). Opening a row closes the open one, and when
+ * that one is above it the page would pull the tapped row up as it closes; the page scrolls with it instead, so the
+ * row you tapped stays exactly under your finger.
+ */
+export function Disclosure({ label, children, onValueChange, ...props }: { label: string; children: React.ReactNode; onValueChange?: (v: string) => void } & Omit<React.ComponentProps<typeof AccordionPrimitive.Root>, "type" | "children" | "onValueChange">) {
+  const tapped = React.useRef<HTMLElement | null>(null)
+  const change = (v: string) => {
+    const el = tapped.current
+    if (v && el) {
+      const top = el.getBoundingClientRect().top, until = performance.now() + 450
+      loop((now) => { const d = el.getBoundingClientRect().top - top; if (Math.abs(d) >= 1) window.scrollBy({ top: d, behavior: "instant" }); return now < until })
+    }
+    onValueChange?.(v)
+  }
+  return (
+    <Accordion type="single" collapsible aria-label={label} onValueChange={change} {...(props as object)}
+      onClickCapture={(e: React.MouseEvent) => { tapped.current = (e.target as HTMLElement).closest<HTMLElement>("[data-slot=accordion-trigger]") }}>
+      {children}
+    </Accordion>
+  )
 }

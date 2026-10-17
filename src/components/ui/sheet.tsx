@@ -15,18 +15,36 @@ const Sheet = Dialog.Root
 const SheetTrigger = Dialog.Trigger
 const SheetClose = Dialog.Close
 
-function SheetContent({ className, children, tone = "letter", closeLabel, ...props }:
+function SheetContent({ className, children, tone = "letter", closeLabel, onCloseAutoFocus, ...props }:
   React.ComponentProps<typeof Dialog.Content> & { tone?: "letter" | "bright"; closeLabel?: string }) {
   const { t } = useLang()
+  // Closing puts the page back exactly where it was: a phone keyboard can scroll the page behind while the sheet is
+  // open, and focusing the opener can scroll it again. Focus goes back without scrolling, then the page returns.
+  const back = React.useRef<{ y: number; opener: Element | null }>({ y: 0, opener: null })
+  const close = (e: Event) => {
+    onCloseAutoFocus?.(e)
+    if (e.defaultPrevented) return
+    e.preventDefault()
+    const { y, opener } = back.current
+    if (opener instanceof HTMLElement && opener.isConnected) opener.focus({ preventScroll: true })
+    window.scrollTo({ top: y, behavior: "instant" })
+  }
   return (
     <Dialog.Portal>
       <Dialog.Overlay className="sheet-overlay" />
-      <Dialog.Content className={cn(tone === "letter" ? "letter paper sheet" : "paper sheet sheet-bright", className)} {...props}>
+      <Dialog.Content className={cn(tone === "letter" ? "letter paper sheet" : "paper sheet sheet-bright", className)} onCloseAutoFocus={close} {...props}>
+        <Remember to={back} />
         <Dialog.Close className="sheet-close press" aria-label={closeLabel ?? t.rsvp.close}><X className="size-5" aria-hidden /></Dialog.Close>
         <Under>{children}</Under>
       </Dialog.Content>
     </Dialog.Portal>
   )
+}
+
+/** Notes the scroll position and the focused opener as the sheet opens (before focus moves into it). */
+function Remember({ to }: { to: React.RefObject<{ y: number; opener: Element | null }> }) {
+  React.useLayoutEffect(() => { to.current = { y: window.scrollY, opener: document.activeElement } }, [to])
+  return null
 }
 
 const SheetTitle = Dialog.Title
