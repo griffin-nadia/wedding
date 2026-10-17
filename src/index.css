@@ -1143,10 +1143,12 @@ svg.lucide { stroke-width: 1.5; }
    phones each stop is the print centred with its chapter line underneath; from 1024 a two-column spread, the print on
    one side and the words on the other, the arrows and dots centred below. --print-h is a print's long side. */
 .story { display: flex; flex-direction: column; gap: var(--space-4); }
-.story-track { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; }
-.story-track::-webkit-scrollbar { display: none; }
+.story-track { display: grid; overflow: hidden; touch-action: pan-y; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; -webkit-user-select: none; user-select: none; }
+.story-track[data-dragging] { cursor: grabbing; }
+.story-track img { -webkit-user-drag: none; }
+/* Every stop in the same cell, so the track is the tallest stop's height and nothing below it moves */
 .story-track:focus-visible { outline-color: var(--input-focus); }
-.story-slide { --print-h: min(34svh, 300px); flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
+.story-slide { --print-h: min(34svh, 300px); grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
 .story-media { flex: none; display: grid; place-items: center; max-width: 100%; }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
 /* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
@@ -1166,7 +1168,10 @@ svg.lucide { stroke-width: 1.5; }
 .story-thumb > div { width: 48px; height: 48px; aspect-ratio: auto !important; border-radius: 0 !important; }
 .story-controls { display: flex; align-items: center; justify-content: space-between; }
 .story-controls .utility-btn:disabled { opacity: 0.4; }
-@media (prefers-reduced-motion: reduce) { .story-track { scroll-behavior: auto; } }
+/* Reduced motion: stops fade straight to the next (opacity only, never a move); the one exception to the site's
+   near-zero transitions under reduced motion, as a fade isn't motion */
+@media (prefers-reduced-motion: reduce) { .story-track > .story-slide { transition: opacity 200ms linear !important; } }
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) { .story-track { cursor: grab; } }
 /* Short phones (an SE at 667): a smaller print, so a stop still fits one screen */
 @media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map .journey-mini { max-height: 24svh; } }
 @media (min-width: 1024px) {

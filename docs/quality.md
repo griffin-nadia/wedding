@@ -16,6 +16,8 @@ sample household, with the clock fixed and reduced motion on:
 - **Page changes:** the card's top and visible bottom are the same on every page; the page behind is the theme's
   paper and matches theme-color; the light / dark circle starts at the button on a first visit; on phones the card
   ends 12px above the dock (`e2e/page-change.spec.ts`).
+- **Our story:** the next print comes in turned and settles straight, words cross-fade, a drag follows the finger and
+  never turns the page, and reduced motion only fades (`e2e/story.spec.ts`).
 - **RSVP:** every mix of answers gets through all three steps with the keyboard down or up, and with it up Back /
   Next are inline, never on the keyboard; Who's coming is a native radio group; the song search only searches when
   asked and puts the keyboard away; the flying-from combobox filters and picks (`e2e/rsvp.spec.ts`).
