@@ -1,6 +1,7 @@
 import { ART } from "@/lib/art"
 import { nextFrame } from "@/lib/frame"
 import { BrandSeal } from "@/components/brand-seal"
+import { NamesArt } from "@/components/names-art"
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
@@ -38,7 +39,7 @@ function DrawnEnvelope({ which }: { which: "closed" | "open" }) {
   return (
     <picture className="contents">
       <source type="image/avif" sizes={sizes} srcSet={set("avif")} />
-      <img aria-hidden alt="" sizes={sizes} srcSet={set("webp")} src={`${b}-760.webp`} className={`envelope-drawn is-${which}`}
+      <img aria-hidden alt="" sizes={sizes} srcSet={set("webp")} src={`${b}-820.webp`} className={`envelope-drawn is-${which}`}
         decoding="async" fetchPriority={which === "closed" ? "high" : "low"} draggable={false} />
     </picture>
   )
@@ -108,11 +109,11 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   return (
     <>
       <div ref={stage} className={cn("arrival", phase === "opening" && "is-opening")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
-        {/* Nadia's drawn envelope (6 Oct scan): closed, then her open envelope as the letter rises */}
+        {/* Nadia's painted envelope (17 Oct): closed, then her open envelope as the letter rises, her lettering on it */}
         <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper is-drawn"
-          style={{ ["--drawn-mask" as string]: `url(${import.meta.env.BASE_URL}${ART.drawnEnvelope.closed}-380.webp)` }}>
+          style={{ ["--drawn-mask" as string]: `url(${import.meta.env.BASE_URL}${ART.drawnEnvelope.closed}-410.webp)`, ["--drawn-ratio" as string]: String(ART.drawnEnvelope.ratio) }}>
           <span aria-hidden className="envelope-back" />
-          <span aria-hidden className="envelope-paper" />
+          <span aria-hidden className="envelope-paper"><NamesArt tone="light" className="envelope-names" /></span>
           <span aria-hidden className="envelope-front" />
           <span aria-hidden className="envelope-flap" />
           <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>

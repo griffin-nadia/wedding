@@ -12,7 +12,8 @@ import { getSpeed, ms, still, tween } from "../../motion"
  * Let go early and the ring drains away. Skip is always there; Enter or Space breaks it too. Reduced motion: the seal
  * simply lifts and the envelope opens.
  */
-const SEAL = `${import.meta.env.BASE_URL}brand/seal.svg`
+// Nadia's painted wax seal (ART.seal), broken into pieces
+const SEAL = `${import.meta.env.BASE_URL}art/seal/wax-seal-256.webp`
 // Seven wedges from the middle, their edges a little jagged, as wax breaks
 const SHARDS = [
   "50% 50%, 52% 0%, 100% 0%, 100% 18%",

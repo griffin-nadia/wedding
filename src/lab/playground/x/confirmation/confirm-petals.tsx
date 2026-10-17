@@ -10,6 +10,7 @@ import { getSpeed, still } from "../../motion"
  * from your finger. One frame loop moves them all with transforms only, and it stops when the last has landed.
  * Reduced motion: a still scatter.
  */
+const GUM = `${import.meta.env.BASE_URL}art/leaves/gum-leaves-160.webp`
 const COLOURS = ["var(--brand-sabi)", "var(--brand-hachimitsu)", "var(--brand-sage)", "var(--brand-doro)", "var(--brand-wara)"]
 const LEAF = "M12 0l2.4 5.6 5.6-2-1.6 5.8 5.6 1.6-4.8 3.6 2.4 5.4-5.8-.8L14.6 24h-5.2l-1.2-4.8-5.8.8 2.4-5.4L0 11l5.6-1.6L4 3.6l5.6 2z"
 const PETAL = "M12 0c5 4 8 9 8 14a8 8 0 0 1-16 0c0-5 3-10 8-14zm0 5l-1 2 1 3 1-3z"
@@ -33,9 +34,11 @@ export default function Petals() {
     for (let i = 0; i < n; i++) {
       const el = document.createElement("div")
       el.className = "x-pt"
-      const leaf = Math.random() < 0.35, size = 12 + Math.random() * 12, colour = COLOURS[Math.floor(Math.random() * COLOURS.length)]
+      const kind = Math.random(), leaf = kind < 0.3, gum = kind > 0.8, size = (gum ? 22 : 12) + Math.random() * 12, colour = COLOURS[Math.floor(Math.random() * COLOURS.length)]
       el.style.width = el.style.height = `${size}px`
-      el.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${leaf ? LEAF : PETAL}" fill="${colour}" fill-opacity="0.9"/><path d="${leaf ? LEAF : PETAL}" fill="#fff" fill-opacity="0.18" transform="translate(1 1) scale(0.92)"/></svg>`
+      // One in five is one of Nadia's painted gum leaves (ART.leaves); the rest are paper petals and maple leaves
+      el.innerHTML = gum ? `<img src="${GUM}" alt="" style="width:100%;height:100%;object-fit:contain" draggable="false">`
+        : `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${leaf ? LEAF : PETAL}" fill="${colour}" fill-opacity="0.9"/><path d="${leaf ? LEAF : PETAL}" fill="#fff" fill-opacity="0.18" transform="translate(1 1) scale(0.92)"/></svg>`
       box.appendChild(el)
       const p: P = { el, x: from ? from.x + (Math.random() - 0.5) * 60 : Math.random() * w, y: from ? from.y + (Math.random() - 0.5) * 30 : -30 - Math.random() * h * 0.6,
         vy: 26 + Math.random() * 34, vx: (Math.random() - 0.5) * 16, rx: Math.random() * 360, ry: Math.random() * 360, rz: Math.random() * 360,

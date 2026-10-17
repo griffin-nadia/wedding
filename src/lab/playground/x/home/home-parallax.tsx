@@ -100,7 +100,7 @@ export default function HomeParallax() {
       <div aria-hidden className="x-home-parallax-scrim" />
       <main className="x-home-parallax-stage">
         <div ref={float} className="x-home-parallax-float">
-          <img ref={seal} src={`${base}brand/seal.svg`} alt="" className="x-home-parallax-seal" style={{ transform: "rotate(-8deg)" }} />
+          <img ref={seal} src={`${base}art/seal/wax-seal-128.webp`} alt="" className="x-home-parallax-seal" style={{ transform: "rotate(-8deg)" }} />
           <Letter>
             <header className="flex flex-col gap-4">
               <h1 className="names" aria-label={`${COUPLE.first} & ${COUPLE.second}`}>

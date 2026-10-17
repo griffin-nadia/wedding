@@ -30,9 +30,9 @@ export default function Parallax() {
   return (
     <div ref={box} className="x-par" aria-label="Nadia's envelope drawings on three layers" role="img">
       <style>{css}</style>
-      <img data-depth="12" src={`${base}art/envelope/drawn-open-760.webp`} alt="" width={300} style={{ transform: "translate(-50%, -50%)", opacity: 0.55 }} />
-      <img data-depth="30" src={`${base}art/envelope/drawn-closed-760.webp`} alt="" width={220} style={{ transform: "translate(-50%, -50%)" }} />
-      <img data-depth="56" src={`${base}brand/seal.svg`} alt="" width={56} style={{ transform: "translate(-50%, -50%)" }} />
+      <img data-depth="12" src={`${base}art/envelope/envelope-open-820.webp`} alt="" width={300} style={{ transform: "translate(-50%, -50%)", opacity: 0.55 }} />
+      <img data-depth="30" src={`${base}art/envelope/envelope-closed-820.webp`} alt="" width={220} style={{ transform: "translate(-50%, -50%)" }} />
+      <img data-depth="56" src={`${base}art/seal/wax-seal-128.webp`} alt="" width={56} style={{ transform: "translate(-50%, -50%)" }} />
     </div>
   )
 }
