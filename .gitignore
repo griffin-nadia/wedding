@@ -37,7 +37,7 @@ dist-ssr
 private/
 
 
-# Couple photos: private until Nadia says yes (PUBLIC_PHOTOS=1 copies the public set at build)
+# Photo originals, scans and family-dinner (the web sizes are committed in public/photos)
 photos-private/
 dist-*
 

@@ -23,27 +23,10 @@ function preloadFonts(): Plugin {
   }
 }
 
-// Couple photos stay private until Nadia says yes. PUBLIC_PHOTOS=1 copies the public set into the
-// build (from photos-private/, or public/photos/ once committed). family-dinner never goes public.
-const PUBLIC_PHOTOS = process.env.PUBLIC_PHOTOS === "1"
-// The photo files themselves only exist on a machine with photos-private/ (or once public/photos is committed). A
-// build without them (GitHub Actions) shows the paper placeholder frames instead of broken images.
-const HAS_PHOTOS = PUBLIC_PHOTOS && (fs.existsSync(path.resolve(__dirname, "photos-private")) || fs.existsSync(path.resolve(__dirname, "public/photos")))
-function copyPhotos(): Plugin {
-  let outDir = "dist"
-  return {
-    name: "copy-photos",
-    apply: "build",
-    configResolved(c) { outDir = path.resolve(c.root, c.build.outDir) },
-    closeBundle() {
-      const from = path.resolve(__dirname, "photos-private")
-      if (!PUBLIC_PHOTOS || !fs.existsSync(from)) return
-      const to = path.join(outDir, "photos")
-      fs.mkdirSync(to, { recursive: true })
-      for (const f of fs.readdirSync(from)) if (/\.(avif|webp|jpg)$/.test(f) && !f.startsWith("family-dinner")) fs.copyFileSync(path.join(from, f), path.join(to, f))
-    },
-  }
-}
+// Couple photos live in public/photos (committed, the web sizes only; family-dinner and the originals stay in
+// photos-private/). PUBLIC_PHOTOS=1 (the Pages build) shows them; a plain build keeps the paper frames, so the
+// screenshot baselines don't change.
+const HAS_PHOTOS = process.env.PUBLIC_PHOTOS === "1" && fs.existsSync(path.resolve(__dirname, "public/photos"))
 
 // Local preview only: npm run dev plays private/song.mp3 when it's there. Served from memory by the dev server, so it
 // never lands in dist. The build check below fails the build if anything from private/ does.
@@ -87,7 +70,7 @@ function noPrivateInBuild(): Plugin {
 // Hosted at griffin-nadia.github.io/wedding (a project site), so base is the repo name.
 export default defineConfig(({ command }) => ({
   base: "/wedding/",
-  plugins: [react(), tailwindcss(), preloadFonts(), copyPhotos(), privateSong(), noPrivateInBuild()],
+  plugins: [react(), tailwindcss(), preloadFonts(), privateSong(), noPrivateInBuild()],
   define: {
     __PRIVATE_SONG__: JSON.stringify(command === "serve" && fs.existsSync(PRIVATE_SONG)),
     __PUBLIC_PHOTOS__: JSON.stringify(HAS_PHOTOS),
