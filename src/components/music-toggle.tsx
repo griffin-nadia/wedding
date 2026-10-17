@@ -5,11 +5,13 @@ import { useLang } from "@/lib/lang"
 import { loop } from "@/lib/frame"
 
 const KEY = "ng-music"
-/** The site's only sound is the music, at this level. */
+/** The site's only sound is the music, at this level, and never louder than MAX_VOLUME. */
 export const SITE_VOLUME = 0.3
+const MAX_VOLUME = 0.35
+/** The first tap anywhere (usually the envelope): from silence to 30% over 2.5 s, eased out */
 const FADE_IN = 2500
-/** After the first tap anywhere (usually opening the envelope) wait this long, so the song arrives with the letter. */
-const START_DELAY = 2000
+/** Switched on with the toggle: they asked for it, so it comes in quickly */
+const TOGGLE_FADE = 500
 const FADE_OUT = 600
 /** Coming back to the tab: it carries on from where it stopped, back up to 30% in half a second (not the first 2.5 s fade) */
 const RESUME_FADE = 500
@@ -57,9 +59,9 @@ function ramp(to: number, ms: number, then?: () => void) {
   fade()
   fade = loop((now) => {
     const k = Math.min(1, (now - start) / ms)
-    // Eased (slow start, gentle landing) so the fade sounds smooth rather than switched on
-    const eased = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2
-    a.volume = Math.max(0, Math.min(1, from + (to - from) * eased))
+    // Eased out (it's audible at once, then settles gently) so it sounds faded in rather than switched on
+    const eased = 1 - Math.pow(1 - k, 3)
+    a.volume = Math.max(0, Math.min(MAX_VOLUME, from + (to - from) * eased))
     if (k < 1) return true
     then?.(); return false
   })
@@ -72,9 +74,12 @@ function play(fadeMs = FADE_IN) {
   if (!a.paused) { ramp(SITE_VOLUME, fadeMs); return }
   if (starting) return // visibilitychange and pageshow can both ask at once on a phone: one start is enough
   starting = true
-  void a.play().then(() => { played = true; ramp(SITE_VOLUME, fadeMs); session("playing") }).catch(() => {}).finally(() => { starting = false })
+  void a.play().then(() => { played = true; sound(true); ramp(SITE_VOLUME, fadeMs); session("playing") }).catch(() => {}).finally(() => { starting = false })
 }
-function pause() { if (audio && !audio.paused) ramp(0, FADE_OUT, () => { audio?.pause(); session("paused") }) }
+function pause() { if (audio && !audio.paused) ramp(0, FADE_OUT, () => { audio?.pause(); sound(false); session("paused") }) }
+// Actually making sound (the browser has allowed it). Until then, with the music on, the toggle pulses gently.
+let sounding = false
+function sound(next: boolean) { if (sounding !== next) { sounding = next; emit() } }
 /**
  * Stops at once, with no fade. Hidden pages don't run frames, so a fade's last step (the pause) would never come and
  * the song would carry on in the phone's media controls. This never waits on a frame. It also clears the Now Playing
@@ -86,6 +91,7 @@ function hardStop() {
   if (!audio) return
   audio.volume = 0
   audio.pause()
+  sound(false)
   session("none")
 }
 // Hidden, locked, swiped away or frozen: stop now. Back again: fade in if it's on (and has played before)
@@ -117,39 +123,52 @@ function session(state: MediaSessionPlaybackState) {
 function setOn(next: boolean) {
   on = next
   try { localStorage.setItem(KEY, next ? "on" : "off") } catch { /* private mode */ }
-  if (next) play(); else pause()
+  if (next) play(TOGGLE_FADE); else pause()
   emit()
 }
 
-// Remembered as on: start after their first tap anywhere except the toggle (browsers never allow sound before one)
+/*
+ * Remembered as on: start on their very first touch, click or key anywhere except the toggle (browsers never allow
+ * sound before one). Each kind of event is tried, because they don't all count everywhere: on an iPhone a touch's
+ * pointerdown doesn't unlock sound but its touchend does. The listeners go once it's playing.
+ */
+const GESTURES = ["pointerdown", "touchend", "click", "keydown"] as const
+let warmed = false
 function arm() {
+  // Start downloading the song as soon as the page has loaded, on or off, so it's buffered by the first tap or the
+  // toggle (off, a guest switching it on wants it now)
+  if (!warmed) {
+    warmed = true
+    const warm = () => { el().load() }
+    if (document.readyState === "complete") warm()
+    else addEventListener("load", warm, { once: true })
+  }
   if (armed || !on) return
   armed = true
-  // Start downloading the song once the page has settled, so it's buffered by the time it plays (it used to start
-  // fetching on the first tap, and could stutter while it caught up)
-  const warm = () => { el().load() }
-  const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback
-  if (document.readyState === "complete") { if (idle) idle(warm); else setTimeout(warm, 1500) }
-  else addEventListener("load", () => (idle ? idle(warm) : setTimeout(warm, 1500)), { once: true })
-  const first = (e: PointerEvent) => {
+  const first = (e: Event) => {
     if ((e.target as Element | null)?.closest?.("[data-music-toggle]")) return
-    removeEventListener("pointerdown", first)
-    window.setTimeout(() => { if (on) play() }, START_DELAY)
+    if (!on || sounding) return done()
+    play()
   }
-  addEventListener("pointerdown", first)
+  const done = () => GESTURES.forEach((g) => removeEventListener(g, first, true))
+  subs.add(() => { if (sounding) done() })
+  GESTURES.forEach((g) => addEventListener(g, first, { capture: true, passive: true }))
 }
 
 /**
  * Background music (Options → Music toggle). On by default, but browsers never allow sound before a tap, so it starts
- * on the guest's first tap anywhere (usually opening the envelope), waits 2 s, then fades in smoothly over 2.5 s to 30%, fades out when paused, remembers the choice on this
+ * on the guest's first tap anywhere (usually opening the envelope), fading in over 2.5 s to 30% (half a second from the toggle), fades out when paused, remembers the choice on this
  * device, keeps playing across pages, and stops at once while the tab is hidden. The track is ART.music.
  */
 export default function MusicToggle() {
   const { t } = useLang()
-  const isOn = useSyncExternalStore((f) => { subs.add(f); return () => { subs.delete(f) } }, () => on, () => false)
+  const store = (f: () => void) => { subs.add(f); return () => { subs.delete(f) } }
+  const isOn = useSyncExternalStore(store, () => on, () => false)
+  // On, but the browser hasn't allowed sound yet: a slow pulse says "tap anywhere and it starts"
+  const waiting = useSyncExternalStore(store, () => on && !sounding, () => false)
   useEffect(() => { arm() }, [])
   return (
-    <button type="button" data-music-toggle onClick={() => { setOn(!on); arm() }} aria-pressed={isOn} className="utility-btn press" title={isOn ? t.music.off : t.music.on} aria-label={isOn ? t.music.off : t.music.on}>
+    <button type="button" data-music-toggle data-waiting={waiting || undefined} onClick={() => { setOn(!on); arm() }} aria-pressed={isOn} className="utility-btn press" title={isOn ? t.music.off : t.music.on} aria-label={isOn ? t.music.off : t.music.on}>
       {isOn ? <Volume2 className="size-5" aria-hidden /> : <VolumeX className="size-5" aria-hidden />}
     </button>
   )

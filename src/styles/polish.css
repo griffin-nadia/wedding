@@ -99,17 +99,39 @@ html { scrollbar-gutter: stable; }
     filter: drop-shadow(0 30px 32px rgb(var(--tint-shadow) / 0.34));
   }
 }
-/* The note (6 Oct): written at a slight tilt, the line draws with a little ease, its head lands after it,
-   then the whole note sways a degree or so, like paper in a draught. */
-.arrival-note-words { font-size: var(--type-accent-size); rotate: -5deg; transform-origin: 0 100%; padding-inline: var(--space-1); }
-.arrival-note[data-side="right"] .arrival-note-words { rotate: 4deg; transform-origin: 100% 100%; }
-.arrival-note-arrow { stroke-width: 1.75; overflow: visible; }
-.arrival-note-arrow path { animation-duration: 950ms; animation-timing-function: cubic-bezier(0.45, 0.05, 0.25, 1); }
-.arrival-note-arrow path.head { animation-duration: 240ms; animation-delay: 1850ms; animation-timing-function: var(--ease-paper); }
-@keyframes polish-note-sway { 0%, 100% { rotate: 0deg; translate: 0 0; } 50% { rotate: -1.2deg; translate: 0 -3px; } }
-@media (prefers-reduced-motion: no-preference) {
-  .arrival-note { transform-origin: 50% 100%; animation: polish-note-sway 4.2s var(--ease-paper) 2.4s infinite; }
+/* Arrival (18e): the envelope floats, lower-middle, with one calm "Open your invite" under it. A 6px bob and a
+   1 degree tilt over 4 s, a shadow underneath that softens as it rises, and a little lift on hover or touch. Opening
+   pauses the float where it is, so the open animation starts from there without a jump. Still under reduced motion. */
+.arrival-stack { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); }
+.arrival, .arrival * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.envelope-float { position: relative; }
+.envelope-float::after {
+  content: ""; position: absolute; left: 14%; right: 14%; bottom: -26px; height: 20px; border-radius: 50%; z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, rgb(var(--tint-shadow) / 0.32), transparent);
 }
+@keyframes envelope-float { 0%, 100% { translate: 0 6px; rotate: -1deg; } 50% { translate: 0 -6px; rotate: 1deg; } }
+@keyframes envelope-float-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 0.86; opacity: 0.6; } }
+@keyframes arrival-open-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.68; } }
+@media (prefers-reduced-motion: no-preference) {
+  .envelope-float { animation: envelope-float 4s ease-in-out infinite; }
+  .envelope-float::after { animation: envelope-float-shadow 4s ease-in-out infinite; }
+  .arrival-open { animation: arrival-open-breathe 4s ease-in-out infinite; }
+  .is-opening .envelope-float, .is-opening .envelope-float::after, .arrival.is-pulling .envelope-float, .arrival.is-pulling .envelope-float::after { animation-play-state: paused; }
+  .arrival .envelope:active { transform: translateY(-4px) scale(var(--press-scale)); }
+}
+.arrival-open {
+  min-height: 44px; padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); outline: 2px solid transparent; outline-offset: 2px;
+  font-family: var(--font-display); font-size: var(--type-body-size); line-height: 1.2; color: #fff; text-shadow: 0 1px 6px rgb(0 0 0 / 0.45);
+  transition: opacity var(--duration-fast) var(--ease-paper);
+}
+.arrival-open:focus-visible { outline-color: var(--input-focus); }
+.is-opening .arrival-open, .arrival.is-pulling .arrival-open { opacity: 0; animation: none; }
+/* 1024 to 1279: the envelope sits on warm paper, not the photo, so the label is ink there */
+@media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-open { color: var(--ink-soft); text-shadow: none; } }
+/* The music toggle, on but waiting for the first tap to be allowed to play: a slow ring, none under reduced motion */
+@keyframes music-waiting { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--action) 40%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--action) 0%, transparent); } }
+@media (prefers-reduced-motion: no-preference) { [data-music-toggle][data-waiting] { animation: music-waiting 2.4s ease-in-out infinite; } }
+@media (prefers-reduced-motion: reduce) { [data-music-toggle][data-waiting] { box-shadow: inset 0 0 0 1.5px var(--action); } }
 
 /* Nadia's drawn envelope (Options → Arrival, 6 Oct). Her closed envelope replaces the paper one at the same
    width; as it opens it cross-fades to her open envelope (flap up, sitting on the same bottom edge) while the
@@ -158,7 +180,6 @@ html { scrollbar-gutter: stable; }
    sun is, two layers drifting at different speeds over a minute or two */
 /* Night: the lantern pool breathes (6 s) and flickers a little (irregular, 2.7 s); the grain catches its light */
 /* A few lanterns far back, out of focus, near the edges */
-.arrival-note-words[data-long] { white-space: normal; max-width: 7.4em; text-align: center; line-height: 1.15; }
 
 /* After sending, one at a time (Options → RSVP): the fortune card arrives once the stamp has landed */
 .sent-next { animation: sent-next var(--duration-base) var(--ease-paper) calc(var(--duration-base) + 450ms) both; }
@@ -167,11 +188,6 @@ html { scrollbar-gutter: stable; }
 
 /* The note under the envelope (Options → Arrival): the arrow points up at it. A full note stacks arrow over words;
    the one-line version is the words then a small upward arrow */
-.arrival-note[data-side="below"] { flex-direction: column-reverse; justify-content: flex-end; }
-.arrival-note[data-side="below"] .arrival-note-arrow { scale: 1 -1; }
-.arrival-note[data-side="below"][data-row] { flex-direction: row; align-items: center; justify-content: center; }
-.arrival-note[data-side="below"][data-row] .arrival-note-arrow { width: 40px; height: 28px; margin-top: 0; scale: 1 -1; }
-.arrival-note[data-side="below"] .arrival-note-words { rotate: -2deg; }
 
 /* Phones (Options → The day → Garden on phones → Short band, default): the garden as a band about 140px tall, the
    drawing scaled so the pagoda and the start of the aisle both sit in it, so the timeline starts higher */

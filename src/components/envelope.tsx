@@ -2,14 +2,12 @@ import { ART } from "@/lib/art"
 import { nextFrame } from "@/lib/frame"
 import { BrandSeal } from "@/components/brand-seal"
 import { NamesArt } from "@/components/names-art"
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
 
 const KEY = "ng-opened"
-// The handwritten "open your invite" (only on a first visit, so it loads beside the envelope, not with the site)
-const ArrivalNote = lazy(() => import("@/components/arrival-note"))
 type Phase = "sealed" | "opening" | "open"
 
 export function firstPhase(enabled: boolean): Phase {
@@ -24,7 +22,7 @@ export function firstPhase(enabled: boolean): Phase {
 }
 
 /**
- * Arrival, first visit only (per device): a sealed envelope on the scene, "Tap to open".
+ * Arrival, first visit only (per device): a sealed envelope floating on the scene, "Open your invite" under it.
  * Tap, Enter or Space: the flap opens (300 ms), the letter rises (600 ms), the envelope sinks and fades.
  * Any key skips. Reduced motion: the letter is just there.
  */
@@ -108,7 +106,11 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
   const first = household?.guests.filter((g) => !g.plusOne).map((g) => g.firstName).join(" & ") ?? ""
   return (
     <>
-      <div ref={stage} className={cn("arrival", phase === "opening" && "is-opening")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
+      {/* No long-press menu (save image, share) anywhere on it: a hold is the start of a pull, not a request for the picture */}
+      <div ref={stage} className={cn("arrival", phase === "opening" && "is-opening")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onContextMenu={(e) => e.preventDefault()}>
+        <div className="arrival-stack">
+        {/* Floats: a slow bob and tilt with a breathing shadow, paused where it is the moment it opens */}
+        <div className="envelope-float">
         {/* Nadia's painted envelope (17 Oct): closed, then her open envelope as the letter rises, her lettering on it */}
         <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper is-drawn"
           style={{ ["--drawn-mask" as string]: `url(${import.meta.env.BASE_URL}${ART.drawnEnvelope.closed}-410.webp)`, ["--drawn-ratio" as string]: String(ART.drawnEnvelope.ratio) }}>
@@ -119,7 +121,10 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
           <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
           <DrawnEnvelope which="open" /><DrawnEnvelope which="closed" />
         </button>
-        {phase === "sealed" && <Suspense><ArrivalNote envelope={button} /></Suspense>}
+        </div>
+        {/* The one calm label: a real button for anyone who'd rather not tap a picture (the envelope is the tab stop) */}
+        <button type="button" tabIndex={-1} onClick={open} className="arrival-open">{t.letter.note}</button>
+        </div>
       </div>
       {/* The letter is underneath, ready to rise; out of reach until opened */}
       <div className={cn("letter-sealed", phase === "opening" && "letter-rise")} inert>{children}</div>
