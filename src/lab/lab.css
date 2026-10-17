@@ -56,7 +56,7 @@
 .lab-device-screen { display: block; width: 390px; height: 844px; border: 0; border-radius: 44px; background: #fff; }
 .lab-play { min-height: 100svh; }
 /* The stage an experiment plays in (playground/stage.tsx) */
-.x-stage { position: relative; min-height: 100svh; display: flex; flex-direction: column; background: var(--paper) 0 0 / var(--paper-size), var(--surface-paper); color: var(--ink-soft); overflow: hidden; }
+.x-stage { position: relative; min-height: 100svh; display: flex; flex-direction: column; background: var(--paper-live, none) center / cover, var(--surface-paper); background-blend-mode: var(--paper-blend); color: var(--ink-soft); overflow: hidden; }
 .x-stage.is-photo { background: transparent; }
 .x-stage-hint { position: relative; z-index: 2; align-self: center; margin: var(--space-4) var(--space-4) 0; padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); background: color-mix(in oklab, var(--letter-bg) 88%, transparent); color: var(--ink-soft); font: 500 var(--type-small-size) / var(--type-small-leading) var(--font-label); text-align: center; box-shadow: 0 1px 2px rgb(var(--tint-shadow) / 0.12); }
 .x-stage-main { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5); padding: var(--space-5) var(--space-4); }

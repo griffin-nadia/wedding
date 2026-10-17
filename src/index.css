@@ -308,8 +308,7 @@
 /* Lantern letter (the default; "Letter in Lantern" = cream turns the letter into paper under a lamp instead) */
 :root[data-theme="lantern"] .letter::before { background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 8%, transparent), transparent 60%),
-    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%),
-    var(--paper) 0 0 / var(--paper-size); }
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%); }
 :root[data-theme="lantern"] .letter .photo-img { filter: saturate(0.95) brightness(0.92); }
 :root[data-theme="lantern"] .field[data-filled="true"]:not([type="date"]):not(textarea) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a37e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
 [data-theme="lantern"] .scene img {
@@ -441,7 +440,7 @@
 }
 /* Driver card full screen: bigger in landscape */
 /* Show the driver (v3 Q4): the shared sheet on the brightest paper, big Japanese, Done in the footer */
-.sheet.sheet-bright { background: var(--paper-bright) 0 0 / var(--paper-size), var(--brand-paper-bright); color: var(--brand-ink-deep); border-radius: var(--radius-letter); }
+.sheet.sheet-bright { background: var(--brand-paper-bright); color: var(--brand-ink-deep); border-radius: var(--radius-letter); }
 .sheet.sheet-driver { justify-content: space-between; overflow: auto; }
 .driver-body { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5); padding: var(--space-8) var(--space-5); text-align: center; }
 .driver-please { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); color: var(--brand-doro); }
@@ -529,13 +528,24 @@
 @media (pointer: coarse) { .letter-scroll { scrollbar-width: none; } .letter-scroll::-webkit-scrollbar { display: none; } }
 /* Travel's jump links once stuck sit flush at the card's top edge, so the top fade steps aside for them */
 .letter-scroll:has(.jump-links[data-stuck]) { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); }
-/* The paper, a warm glow top left and a cool shade bottom right, on a layer under the words (so the tile isn't the
-   page's largest paint) */
+/* A warm glow top left and a cool shade bottom right, under the words */
 .letter { isolation: isolate; }
 .letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
-    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
-    var(--paper) 0 0 / var(--paper-size); }
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%); }
+/* The paper itself (18f), over everything on it, like Paper's printed example: one sheet made in the browser at the
+   screen's size (--paper-live, src/lib/paper-live.ts), so the words, fields and buttons take the paper too. On the
+   letter, every sheet, the driver card and paper you could hold (not twice when one sits on another). Never in the
+   way of a tap. Until it's made (or without WebGL) the paper is plain. */
+.letter::after, .sheet-bright::after, .paper-feel::after, .envelope-paper::after {
+  content: ""; position: absolute; inset: 0; z-index: 30; border-radius: inherit; pointer-events: none;
+  background: var(--paper-live, none) center / cover no-repeat;
+  mix-blend-mode: var(--paper-blend); opacity: var(--paper-strength);
+}
+/* The driver card stays bright paper in Lantern, where the sheet made is the night one: plain there */
+[data-theme="lantern"] .sheet-bright::after { display: none; }
+.letter .paper-feel::after, .sheet .paper-feel::after { display: none; }
+@media print { .letter::after, .paper-feel::after { display: none; } }
 
 /* The top bar, on every screen and never hidden: the mark on the left, the switches on the right (the nav and RSVP
    join it from 768; on phones the nav is the dock). Its paper is a layer of its own (::before), so the blur doesn't
@@ -618,7 +628,13 @@
 @media (min-width: 1024px) { .sheet { left: var(--letter-left); translate: 0 -50%; } }
 .sheet-head { flex: none; padding: var(--sheet-pad) calc(var(--sheet-pad) + 44px) var(--space-4) var(--sheet-pad); }
 .sheet-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: var(--space-2) var(--sheet-pad) var(--space-7); scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
-.rsvp-done { padding-top: var(--sheet-pad); }
+/* The sent letter (18f): the hanko and heading in the head, then one column, every block the same distance apart */
+.sheet-head.done-head { align-items: center; gap: var(--space-3); padding-inline: calc(var(--sheet-pad) + 44px); text-align: center; } /* centred, clear of the X on both sides */
+/* The calendar's "Opened in a new tab" line sits under its buttons without adding to the column's even gaps */
+.done-column [aria-labelledby="add-cal"] { position: relative; }
+.done-column .cal-note { position: absolute; top: calc(100% + var(--space-1)); left: 0; min-height: 0; }
+.done-column { display: flex; flex-direction: column; gap: var(--space-6); padding-top: var(--space-2); }
+.done-column > .sent-next > * { margin: 0; }
 .sheet-head { display: flex; flex-direction: column; gap: var(--space-3); transition: box-shadow var(--duration-fast) var(--ease-paper); }
 /* The one page header: sticky at the top of the letter (under the bar on laptops). Once content is under it, a
    hairline and a light paper fill appear (data-under, from an IntersectionObserver sentinel). Sheets use the same. */
@@ -1274,14 +1290,12 @@ svg.lucide { stroke-width: 1.5; }
 @media (hover: hover) { .remove-btn:hover { color: var(--foreground); } }
 .song-card { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--card); }
 
-/* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): the baked
-   paper (--paper) and an edge that sits on what's under it: a hairline contact shadow, a short soft shadow and a
+/* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): the paper
+   over it (above) and an edge that sits on what's under it: a hairline contact shadow, a short soft shadow and a
    long faint one, a lit top edge and a faintly shaded bottom edge. All images, nothing drawn live. */
 .paper-feel { /* a plain class, last in the file: it wins over each card's own background and shadow */
   position: relative;
   isolation: isolate;
-  background-image: var(--paper);
-  background-size: var(--paper-size);
   box-shadow:
     0 0 0 0.5px rgb(var(--tint-shadow) / 0.14),
     0 1px 2px rgb(var(--tint-shadow) / 0.12),
@@ -1296,11 +1310,8 @@ svg.lucide { stroke-width: 1.5; }
   --tint-shadow: 66 26 5;
   background-image:
     linear-gradient(to bottom, transparent calc(33.33% - 3px), rgb(var(--tint-shadow) / 0.05) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 3px)),
-    linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px)),
-    var(--paper-bright);
-  background-size: 100% 100%, 100% 100%, var(--paper-size);
+    linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px));
+  background-size: 100% 100%, 100% 100%;
 }
-/* The sent letter: the same paper, scrolling with the words */
-.rsvp-done { background-image: var(--paper); background-size: var(--paper-size); background-attachment: local; }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }

@@ -47,3 +47,6 @@ createRoot(document.getElementById("root")!).render(
     </SceneDimProvider></HouseholdProvider></LangProvider></ThemeProvider>
   </StrictMode>,
 )
+
+// The site's paper, made the same way (18f)
+addEventListener("load", () => { void import("@/lib/paper-live").then((m) => m.startPaper()) }, { once: true })
