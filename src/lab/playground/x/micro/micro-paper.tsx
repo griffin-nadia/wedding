@@ -1,8 +1,10 @@
-import { useState } from "react"
+import { Component, useState, type ReactNode } from "react"
 import { PaperTexture } from "@paper-design/shaders-react"
 import { useLang } from "@/lib/lang"
 import { COLOURS, PRESETS, TILE, forTone, type PaperParams } from "@/lib/paper"
 import { Stage } from "../../stage"
+import paperLight from "@/assets/paper-light.webp"
+import paperLantern from "@/assets/paper-lantern.webp"
 import hatchLight from "./hatch-light.webp"
 import hatchLantern from "./hatch-lantern.webp"
 
@@ -30,10 +32,19 @@ const css = `
 `
 const SLIDERS = [["folds", "Folds"], ["wrinkles", "Wrinkles"], ["drops", "Drops"], ["fiber", "Fibre"]] as const
 
+/** No WebGL (an old phone, a headless test browser): the baked tile the site uses instead of the live one */
+class NoGl extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  render() { return this.state.failed ? this.props.fallback : this.props.children }
+}
+
 function Swatch({ params, tone, words }: { params: PaperParams; tone: "light" | "lantern"; words: string }) {
   return (
     <div className="x-pp-swatch">
-      <PaperTexture speed={0} fit="cover" {...forTone(params, tone)} {...COLOURS[tone]} style={{ width: TILE, height: TILE }} />
+      <NoGl fallback={<div style={{ width: TILE, height: TILE, background: `url(${tone === "light" ? paperLight : paperLantern}) 0 0 / ${TILE}px` }} />}>
+        <PaperTexture speed={0} fit="cover" {...forTone(params, tone)} {...COLOURS[tone]} style={{ width: TILE, height: TILE }} />
+      </NoGl>
       <span style={{ color: tone === "light" ? "#421a05" : "#f3e7d3" }}>{words}</span>
     </div>
   )
