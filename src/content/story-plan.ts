@@ -1,5 +1,6 @@
 import type { Chapter } from "@/lib/content"
 import { KYOTO, PLACES } from "@/lib/journey"
+import { onMap } from "@/lib/map-land"
 
 /**
  * Our story as the planner's Photos + story tab lays it out (16 Oct), shown to everyone until the Content tab has
@@ -8,8 +9,8 @@ import { KYOTO, PLACES } from "@/lib/journey"
  * from pending.ts (story.chapterBody) until they write them.
  */
 export const STORY_PLAN: Chapter[] = [
-  { key: "plan-1", year: "2017", title: "Became friends", place: "Kansai Gaidai, Hirakata", photo: "story-1", at: [124, 122], body: [] },
-  { key: "plan-2", year: "2018", title: "Griffin's internship in Australia", place: "Australia", photo: "story-3", at: [150, 262], body: [] },
+  { key: "plan-1", year: "2017", title: "Became friends", place: "Kansai Gaidai, Hirakata", photo: "story-1", at: onMap("JP", 34.81, 135.65), body: [] },
+  { key: "plan-2", year: "2018", title: "Griffin's internship in Australia", place: "Australia", photo: "story-3", at: onMap("AU", -25.5, 134), body: [] },
   { key: "plan-3", year: "2018", title: "Nadia visits Canada", place: "Canada", photo: "story-2", at: PLACES.canada, body: [] },
   { key: "plan-4", year: "2018–2019", title: "Back to Japan", place: "Japan", photo: "story-4", at: PLACES.japan, body: [] },
   { key: "plan-5", year: "2020", title: "Nadia moves to Canada", place: "Canada", photo: "story-5", at: PLACES.canada, body: [] },
