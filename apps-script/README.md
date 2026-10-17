@@ -30,6 +30,8 @@ still point at the old one.
 | Send the "Final numbers soon" note… | Before changes lock, asks households who are coming to check their reply (Emails tab keys `final_*`; test households skipped) |
 | Make crew links | Makes the Crew tab (Jehan, Griffin, Nadia, wedding Gmail) and writes each person's /kit and /lab link. No guest data |
 | Name order: find and fix "Nadia & Griffin"… | Finds "Nadia & Griffin" or "Nadia and Griffin" in any tab (the Summary heading, the Emails tab's wording), lists each cell and only changes them if you say yes. Formulas are listed, not changed |
+| Prepare for launch (report only)… | What run for real would do: backups, test rows to clear, visits and queue to reset, planner guests to copy, links to make, households with no email. Changes nothing (docs/launch.md) |
+| Prepare for launch: run for real… | Type LAUNCH; backs up both sheets to Wedding backups first, then does it. Never sends |
 
 ## Script properties (all optional)
 

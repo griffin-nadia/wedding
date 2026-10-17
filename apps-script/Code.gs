@@ -134,6 +134,9 @@ function onOpen() {
     .addItem("Clear queued items for test households…", "clearTestQueue")
     .addItem("Reset test households…", "resetTestHouseholds")
     .addItem("Make crew links", "makeCrewLinks")
+    .addSeparator()
+    .addItem("Prepare for launch (report only)…", "prepareForLaunch")
+    .addItem("Prepare for launch: run for real…", "prepareForLaunchForReal")
     .addItem("Name order: find and fix \"Nadia & Griffin\"…", "fixNameOrder")
     .addSeparator()
     .addItem("Schedule the February reminder…", "scheduleReminder")
@@ -163,6 +166,161 @@ function fixNameOrder() {
   let n = 0
   hits.filter((h) => !h.formula).forEach((h) => { h.sh.getRange(h.r, h.c).setValue(h.v.replace(wrong, (m, j) => "Griffin " + j + " Nadia")); n++ })
   ui.alert("Name order", "Changed " + n + " cell(s).", ui.ButtonSet.OK)
+}
+
+// ---------- prepare for launch (a report by default; "run for real" backs up both sheets first) ----------
+
+const BACKUP_FOLDER = "Wedding backups"
+
+/** Reads the planner's Guest list tab: the header row (the first with a name-like heading) and how its columns map. */
+function plannerGuestColumns_(values) {
+  const at = values.findIndex((r) => r.some((c) => /^(first ?name|name|full name|guest(s| name)?|household|party)$/i.test(String(c).trim())))
+  if (at < 0) return { at: -1, map: {}, headers: [] }
+  const headers = values[at].map((c) => String(c).trim())
+  const map = {}
+  headers.forEach((h, i) => {
+    const low = h.toLowerCase()
+    if (map.household == null && /household|party|group|invite name|family/.test(low)) map.household = i
+    else if (map.first == null && /^(first( ?name)?|given( name)?)$/.test(low)) map.first = i
+    else if (map.last == null && /^(last( ?name)?|surname|family name)$/.test(low)) map.last = i
+    else if (map.name == null && /^(name|full name|guest( name)?|guests)$/.test(low)) map.name = i
+    else if (map.email == null && /e-?mail/.test(low)) map.email = i
+    else if (map.phone == null && /phone|mobile/.test(low)) map.phone = i
+  })
+  return { at: at, map: map, headers: headers }
+}
+
+/**
+ * What "Prepare for launch" would do, from plain rows (so it can be checked without a sheet). siteGuests: the Guests
+ * tab as objects; tabs: { RSVPs, Songs, Log } as objects; planner: the Guest list tab's raw values; queueKeys: the
+ * script properties' keys. Returns counts and lists only; nothing is changed.
+ */
+function planLaunch_(siteGuests, tabs, planner, queueKeys) {
+  const isTest = (h) => TEST_HOUSEHOLD.test(String(h || ""))
+  const testTokens = {}
+  siteGuests.forEach((g) => { if (isTest(g.Household) && g.Token) testTokens[g.Token] = true })
+  const clear = { Guests: siteGuests.filter((g) => isTest(g.Household)).length }
+  Object.keys(tabs).forEach((t) => (clear[t] = tabs[t].filter((r) => testTokens[r.Token]).length))
+  const kept = siteGuests.filter((g) => !isTest(g.Household) && (g.Household || g["First name"]))
+  const visits = kept.reduce((n, g) => n + VISITS.filter((k) => g[k] !== "" && g[k] != null).length, 0)
+  const cols = plannerGuestColumns_(planner)
+  const problems = []
+  if (cols.at < 0) problems.push("The planner's Guest list tab has no header row with a name column (Name, First name, Guest or Household).")
+  else if (cols.map.first == null && cols.map.name == null) problems.push("The Guest list has no first-name or name column.")
+  const add = []
+  if (!problems.length) {
+    const have = {}
+    kept.forEach((g) => (have[(String(g.Household) + "|" + String(g["First name"])).toLowerCase()] = true))
+    planner.slice(cols.at + 1).forEach((r) => {
+      const cell = (k) => (cols.map[k] == null ? "" : String(r[cols.map[k]] == null ? "" : r[cols.map[k]]).trim())
+      let first = cell("first"), last = cell("last")
+      if (!first && cell("name")) { const parts = cell("name").split(/\s+/); first = parts[0]; last = last || parts.slice(1).join(" ") }
+      if (!first) return
+      const household = cell("household") || [first, last].filter(Boolean).join(" ")
+      if (isTest(household)) return
+      if (have[(household + "|" + first).toLowerCase()]) return
+      have[(household + "|" + first).toLowerCase()] = true
+      add.push({ household: household, first: first, last: last, email: cell("email"), phone: cell("phone") })
+    })
+  }
+  // Households (kept plus added) with no email for anyone in them
+  const emails = {}
+  kept.forEach((g) => { emails[g.Household] = emails[g.Household] || Boolean(String(g.Email || "").trim()) })
+  add.forEach((g) => { emails[g.household] = emails[g.household] || Boolean(g.email) })
+  const noEmail = Object.keys(emails).filter((h) => !emails[h]).sort()
+  const households = Object.keys(emails).length
+  const needLinks = kept.filter((g) => !g.Token).length + add.length
+  return { clear: clear, kept: kept.length, visits: visits, queue: queueKeys.filter((k) => k.indexOf("q:") === 0).length, columns: cols.headers.length ? Object.keys(cols.map).map((k) => k + " ← " + cols.headers[cols.map[k]]) : [], add: add, households: households, needLinks: needLinks, noEmail: noEmail, problems: problems }
+}
+
+function launchPlanNow_() {
+  const tabs = {}
+  ;[TABS.rsvps, TABS.songs, TABS.log].forEach((t) => (tabs[t] = rows_(t)))
+  const id = prop_("PLANNER_ID")
+  const tab = id ? SpreadsheetApp.openById(id).getSheetByName("Guest list") : null
+  const planner = tab ? tab.getDataRange().getValues() : []
+  const plan = planLaunch_(rows_(TABS.guests), tabs, planner, Object.keys(PropertiesService.getScriptProperties().getProperties()))
+  if (!id) plan.problems.push("PLANNER_ID isn't set (Project Settings → Script properties).")
+  else if (!tab) plan.problems.push("The planner has no tab called \"Guest list\".")
+  return plan
+}
+
+function launchReport_(plan, real) {
+  const folder = DriveApp.getFoldersByName(BACKUP_FOLDER).hasNext() ? "the " + BACKUP_FOLDER + " folder" : "a new " + BACKUP_FOLDER + " folder"
+  return (real ? "This will:\n" : "Report only. Nothing has been changed. Run for real would:\n") +
+    "\n1. Back up the Site-Data sheet and the planner into " + folder + ", dated." +
+    "\n2. Clear test rows: Guests " + plan.clear.Guests + ", RSVPs " + (plan.clear[TABS.rsvps] || 0) + ", Songs " + (plan.clear[TABS.songs] || 0) + ", Log " + (plan.clear[TABS.log] || 0) + "." +
+    "\n3. Reset " + plan.visits + " visit count cell(s) and " + plan.queue + " queued item(s)." +
+    "\n4. Copy " + plan.add.length + " guest(s) from the planner's Guest list into Guests (" + plan.kept + " real row(s) already there are kept; matches by household and first name are skipped)." +
+    (plan.columns.length ? "\n   Columns: " + plan.columns.join(", ") + "." : "") +
+    "\n5. Make " + plan.needLinks + " household link(s) (" + plan.households + " households in all)." +
+    "\n6. Households with no email: " + (plan.noEmail.length ? plan.noEmail.length + "\n   " + plan.noEmail.join("\n   ") : "none") +
+    (plan.problems.length ? "\n\nCan't run yet:\n  " + plan.problems.join("\n  ") : "")
+}
+
+/** Wedding site → Prepare for launch (report only): what run for real would do. Changes nothing. */
+function prepareForLaunch() {
+  const ui = SpreadsheetApp.getUi()
+  ui.alert("Prepare for launch", launchReport_(launchPlanNow_(), false), ui.ButtonSet.OK)
+}
+
+/** Dated copies of a spreadsheet in the backups folder (made if missing). Returns the copy's name. */
+function backupSpreadsheet_(id, label) {
+  const folders = DriveApp.getFoldersByName(BACKUP_FOLDER)
+  const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(BACKUP_FOLDER)
+  const name = label + " backup " + Utilities.formatDate(new Date(), "Asia/Tokyo", "yyyy-MM-dd HHmm")
+  DriveApp.getFileById(id).makeCopy(name, folder)
+  return name
+}
+
+/**
+ * Wedding site → Prepare for launch: run for real. Shows the same report, then asks you to type LAUNCH. Backs up both
+ * sheets first; stops if either backup fails. Never sends anything.
+ */
+function prepareForLaunchForReal() {
+  const ui = SpreadsheetApp.getUi()
+  const plan = launchPlanNow_()
+  if (plan.problems.length) return ui.alert("Prepare for launch", launchReport_(plan, true), ui.ButtonSet.OK)
+  const ok = ui.prompt("Prepare for launch: run for real", launchReport_(plan, true) + "\n\nType LAUNCH to go ahead.", ui.ButtonSet.OK_CANCEL)
+  if (ok.getSelectedButton() !== ui.Button.OK || ok.getResponseText().trim() !== "LAUNCH") return ui.alert("Nothing changed.")
+  let backups
+  try { backups = [backupSpreadsheet_(SpreadsheetApp.getActive().getId(), "Site-Data"), backupSpreadsheet_(prop_("PLANNER_ID"), "Planner")] }
+  catch (err) { return ui.alert("Stopped before changing anything: a backup failed (" + err + ").") }
+  const lock = LockService.getScriptLock()
+  if (!lock.tryLock(30000)) return ui.alert("Busy (a reply is saving). Try again in a minute. Backups made: " + backups.join(", "))
+  try {
+    // 2. Test households and everything of theirs
+    const tokens = rows_(TABS.guests).filter((g) => TEST_HOUSEHOLD.test(String(g.Household || "")) && g.Token).map((g) => String(g.Token))
+    if (tokens.length) resetHouseholds_(tokens)
+    const g = sheet_(TABS.guests)
+    let head = headers_(g)
+    const data = g.getDataRange().getValues()
+    for (let i = data.length - 1; i >= 1; i--) if (TEST_HOUSEHOLD.test(String(data[i][head.Household] || ""))) g.deleteRow(i + 1)
+    // 3. Visit counts and the queue
+    head = ensureVisitColumns_(g)
+    if (g.getLastRow() > 1) VISITS.forEach((k) => g.getRange(2, head[k] + 1, g.getLastRow() - 1, 1).clearContent())
+    const props = PropertiesService.getScriptProperties()
+    Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0).forEach((k) => props.deleteProperty(k))
+    // 4. The planner's guests, appended with fresh Guest IDs
+    const ids = rows_(TABS.guests).map((r) => Number(String(r["Guest ID"] || "").replace(/\D/g, "")) || 0)
+    let next = Math.max(0, ...ids) + 1
+    const width = g.getLastColumn()
+    const rows = plan.add.map((p) => {
+      const r = new Array(width).fill("")
+      const set = (k, v) => { if (k in head) r[head[k]] = v }
+      set("Household", p.household); set("Guest ID", "g" + String(next++).padStart(3, "0")); set("First name", p.first)
+      set("Last name", p.last); set("Email", p.email); set("Phone", p.phone)
+      return r
+    })
+    if (rows.length) g.getRange(g.getLastRow() + 1, 1, rows.length, width).setValues(rows)
+    SpreadsheetApp.flush()
+    // 5. Links
+    makeTokensAndLinks()
+    forgetAllHouseholds_()
+  } finally {
+    lock.releaseLock()
+  }
+  ui.alert("Prepare for launch", "Done. Backups: " + backups.join(", ") + ".\n\nHouseholds with no email (text them their link): " + (plan.noEmail.join(", ") || "none") + ".\n\nNothing was sent. Next: Send invites (test, to me only)…, then to everyone.", ui.ButtonSet.OK)
 }
 
 // ---------- web app ----------
