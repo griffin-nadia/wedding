@@ -18,3 +18,12 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>,
 )
+
+// The paper (18f): made in the browser, in its own small chunk, on the first tap, key, scroll or wheel. Not before:
+// a large paint then would count as the page's largest paint and push it late (the first input ends that count).
+// A new guest's first tap is the envelope, so the letter rises on it.
+{
+  const kinds = ["pointerdown", "keydown", "wheel", "touchstart", "scroll"] as const
+  const go = () => { kinds.forEach((k) => removeEventListener(k, go, true)); void import("./lib/paper-live").then((m) => m.startPaper()) }
+  kinds.forEach((k) => addEventListener(k, go, { capture: true, passive: true }))
+}

@@ -24,7 +24,7 @@ import { spring, still } from "../../motion"
  */
 const css = `
 .x-oq { position: relative; isolation: isolate; min-height: 100svh; height: 100svh; display: grid; grid-template-rows: auto 1fr auto; background: var(--letter-bg); color: var(--ink); overflow: hidden; }
-.x-oq::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
+.x-oq::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--paper-live, none) center / cover; mix-blend-mode: var(--paper-blend); opacity: 0.6; pointer-events: none; }
 .x-oq-top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px 14px; }
 .x-oq-line { position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--line-hairline); }
 .x-oq-line span { position: absolute; inset: 0; background: var(--action); transform-origin: 0 50%; transform: scaleX(0); border-radius: 0 2px 2px 0; }
