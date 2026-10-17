@@ -56,7 +56,7 @@ The guest site plays `public/audio/song.mp3`, and `ART.music` in `src/lib/art.ts
 credit (said once, in the last FAQ, "Who made this site?"). To swap the song, replace the file and that entry; the
 FAQ follows.
 
-Now playing: "A Town With an Ocean View" by Joe Hisaishi, piano by Piano ZeroL. The file is `private/song.mp3` with
+Now playing: "A Town With an Ocean View" (Joe Hisaishi), the piano cover by Piano ZeroL (credited as the song only, since 18 Oct). The file is `private/song.mp3` with
 its silence trimmed (1.5 s at the start, 10 s at the end, cut on whole MP3 frames so nothing is re-encoded), so it
 loops with under a second's breath.
 
