@@ -267,6 +267,7 @@
   --type-body-leading: 24px;
   --type-small-size: 14px;                                             /* help, notes, errors, labels (500) */
   --type-small-leading: 20px;
+  --type-count-size: calc(var(--type-heading-size) * 0.7);              /* Home's countdown digits (system font, so 70% sits by the serif heading) */
   --type-label-size: 12px;                                             /* tiny labels: countdown units, the status pill */
   --type-label-leading: 16px;
   --type-label-tracking: 0.04em;                                       /* status pill only (caps) */

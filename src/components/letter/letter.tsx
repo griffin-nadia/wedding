@@ -21,8 +21,10 @@ export function SignOff({ action, foot }: { action?: ReactNode; foot?: ReactNode
         ? <img src={`${import.meta.env.BASE_URL}brand/signoff.svg`} alt={t.letter.signOff} className="h-12 w-auto" />
         : <p className="voice text-foreground">{t.letter.signOff}</p>}
       {action}
-      <p className="w-full pt-2 text-small text-muted-foreground">{t.music.credit(ART.music.title, ART.music.artist, ART.music.year)}</p>
-      {foot && <div className="letter-foot">{foot}</div>}
+      <div className="flex w-full items-center justify-between gap-4 pt-2 lg:min-h-12">
+        <p className="text-small text-muted-foreground">{t.music.credit(ART.music.title, ART.music.artist, ART.music.year)}</p>
+        {foot}
+      </div>
     </footer>
   )
 }
