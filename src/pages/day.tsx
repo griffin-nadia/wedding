@@ -23,8 +23,8 @@ function nowOnTheDay(real: Date, times: string[]) {
   return Math.min(1, Math.max(0, (now.getTime() - start) / (end - start)))
 }
 
-/** Times stay on one line ("3:30 pm", "until 3:30 pm", 「15:30まで」): the time and the word that leads to it never part */
-const TIME = /((?:until |from )?\d{1,2}:\d{2}(?:\s?[ap]m)?(?:まで|から)?)/i
+/** A time stays on one line ("3:30 pm", 「15:30まで」), so "pm" never sits alone; the word before it may wrap (at 320, "until 3:30 pm" kept together was wider than its column) */
+const TIME = /(\d{1,2}:\d{2}(?:\s?[ap]m)?(?:まで|から)?)/i
 const keepTimes = (s: string) => s.split(TIME).map((part, k) => (k % 2 ? <span key={k} className="whitespace-nowrap">{part}</span> : part))
 
 function Row({ i, time, label, where, local }: { i: number; time: string; label: string; where: string; local: string | null }) {
