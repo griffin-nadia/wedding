@@ -19,8 +19,9 @@ import { Toaster } from "@/components/ui/toast"
 import { byId } from "./playground/registry"
 import { installSpeed } from "./playground/motion"
 import { SiteShell } from "./playground/site-shell"
+import { PRESETS } from "@/lib/paper"
 
-// ?x=<experiment>&theme=light|lantern (the lab's viewer sets these; a link can too)
+// ?x=<experiment>&theme=light|lantern&paper=off|<preset> (the lab's viewer sets these; a link can too)
 const q = new URLSearchParams(location.search)
 const id = q.get("x") ?? ""
 const entry = byId(id)
@@ -48,5 +49,10 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>,
 )
 
-// The site's paper, made the same way (18f)
-addEventListener("load", () => { void import("@/lib/paper-live").then((m) => m.startPaper()) }, { once: true })
+// The paper (18f, lab only for now): made the way the site would, with the chosen preset unless ?paper= names
+// another or off
+{
+  const want = q.get("paper") ?? "chosen"
+  const preset = PRESETS.find((p) => p.id === want)
+  if (preset) addEventListener("load", () => { void import("@/lib/paper-live").then((m) => m.startPaper(preset.params)) }, { once: true })
+}
