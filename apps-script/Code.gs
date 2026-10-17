@@ -163,7 +163,7 @@ function doGet(e) {
       let trigger = null
       try { trigger = hasFlushTrigger_() } catch (err) { trigger = null }
       const lastAt = Number(props.getProperty("last_flush_at") || 0)
-      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", trigger: trigger, pending: pending, kinds: queueKinds_(), queueAccount: props.getProperty("queue_account") || "unknown", lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: lastAt ? new Date(lastAt).toISOString() : CacheService.getScriptCache().get("last_flush") || null })
+      return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", trigger: trigger, pending: pending, kinds: queueKinds_(), queueAccount: props.getProperty("queue_account") || "unknown", webAppAccount: isWeddingAccount_() ? "wedding" : "other", queueError: CacheService.getScriptCache().get("queue_err") || null, lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: lastAt ? new Date(lastAt).toISOString() : CacheService.getScriptCache().get("last_flush") || null })
     }
     if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
@@ -230,8 +230,13 @@ function doPost(e) {
   // No trigger to send queued mail (not authorised yet): send now, after the lock is released.
   const updated = Boolean(before.respondedAt)
   if (!queued) {
-    safely_(() => sendConfirmation_(after, updated ? changes : null))
-    safely_(() => notifyDropped_(after.displayName, droppedNames_(before, after)))
+    if (isWeddingAccount_()) {
+      safely_(() => sendConfirmation_(after, updated ? changes : null))
+      safely_(() => notifyDropped_(after.displayName, droppedNames_(before, after)))
+    } else {
+      wrongAccount_("The web app")
+      holdMail_(after.token, updated, updated ? changes : ["No changes"], droppedNames_(before, after))
+    }
   }
   return remember(json_({ ok: true, updated: updated, changes: changes, household: after }))
 }
@@ -589,6 +594,9 @@ function flushTriggerReady_() {
   if (props.getProperty("flush_trigger") === "1" && Date.now() - last < 5 * 60 * 1000) return true
   try {
     if (!hasFlushTrigger_()) {
+      // Only the wedding account may own the trigger (it sends as its owner); from anywhere else, send nothing inline
+      // either: the reply is still saved, and its email waits for the wedding account's trigger
+      if (!isWeddingAccount_()) { wrongAccount_("The web app"); return false }
       ScriptApp.newTrigger("flushQueue").timeBased().everyMinutes(1).create()
       props.setProperty("flush_trigger", "1")
       props.setProperty("last_flush_at", String(Date.now())) // give the new trigger its first minute
@@ -600,6 +608,36 @@ function flushTriggerReady_() {
     CacheService.getScriptCache().put("trigger_err", String(err).slice(0, 300), 21600)
     return false
   }
+}
+
+/**
+ * Mail only ever goes from the wedding account. Apps Script sends as whoever runs the code: the minute trigger runs
+ * as whoever created it, and the web app as whoever deployed it. If either isn't the wedding account (REPLY_TO), the
+ * mail waits in the queue for the wedding account's trigger instead, and the reason is kept for ?action=ping and
+ * "Check the email queue…". Needs the userinfo.email scope (setupQueue asks for it); without it the address is
+ * empty and counts as not the wedding account, so nothing ever sends from the wrong place.
+ */
+function runningAs_() {
+  try { return String(Session.getEffectiveUser().getEmail() || "").toLowerCase() } catch (err) { return "" }
+}
+function isWeddingAccount_() {
+  const me = runningAs_()
+  return Boolean(me) && me === String(prop_("REPLY_TO")).toLowerCase()
+}
+function wrongAccount_(where) {
+  const me = runningAs_() || "an unknown account"
+  const msg = where + " is running as " + me + ", not " + prop_("REPLY_TO") + ": emails are held in the queue until the queue runs from the wedding account (docs/email-queue.md)."
+  console.error(msg)
+  CacheService.getScriptCache().put("queue_err", msg.slice(0, 300), 21600)
+  PropertiesService.getScriptProperties().setProperty(where === "The email queue" ? "queue_account" : "webapp_account", me === prop_("REPLY_TO") ? "wedding" : "other")
+}
+/** Holds a confirmation for the wedding account's queue (the same shape queueMail_ writes). */
+function holdMail_(token, updated, changes, dropped) {
+  const props = PropertiesService.getScriptProperties()
+  const key = "q:mail:" + token
+  const prev = JSON.parse(props.getProperty(key) || "null")
+  const all = (prev ? prev.changes : []).concat(changes || ["No changes"]).filter((c) => c !== "No changes")
+  props.setProperty(key, JSON.stringify({ updated: prev ? prev.updated : updated, changes: all.length ? all : ["No changes"], dropped: (prev ? prev.dropped : []).concat(dropped || []) }))
 }
 
 function hasFlushTrigger_() {
@@ -621,6 +659,11 @@ function flushQueue() {
   CacheService.getScriptCache().put("last_flush", new Date().toISOString(), 21600)
   const props = PropertiesService.getScriptProperties()
   props.setProperty("last_flush_at", String(Date.now()))
+  // Replies and visits are written whoever runs this (so no reply ever sits unsaved); emails only go from the
+  // wedding account. From any other account they stay queued and the reason is logged.
+  const mailOk = isWeddingAccount_()
+  if (mailOk) props.setProperty("queue_account", "wedding")
+  else wrongAccount_("The email queue")
   let mails = []
   try {
     const all = props.getProperties()
@@ -651,14 +694,17 @@ function flushQueue() {
     const events = { open: {}, started: {} }
     keys.forEach((k) => {
       const parts = k.split(":")
+      if (parts[1] === "mail" && !mailOk) return // left queued for the wedding account
       if (parts[1] === "mail") mails.push({ token: parts[2], data: JSON.parse(all[k]) })
       else if (events[parts[1]]) (events[parts[1]][parts[2]] = events[parts[1]][parts[2]] || []).push(Number(all[k]) > 1 ? Number(all[k]) : Number(parts[3].slice(0, 13)))
     })
     if (Object.keys(events.open).length || Object.keys(events.started).length) writeVisits_(events)
-    keys.forEach((k) => props.deleteProperty(k))
+    keys.filter((k) => mailOk || k.indexOf("q:mail:") !== 0).forEach((k) => props.deleteProperty(k))
   } finally {
     lock.releaseLock()
   }
+  // Confirmations for replies just written: sent now from the wedding account, otherwise held for it
+  if (!mailOk) { mails.forEach((m) => holdMail_(m.token, m.data.updated, m.data.changes, m.data.dropped)); mails = [] }
   mails.forEach((m) => {
     const h = getHousehold_(m.token)
     if (!h) return
@@ -1151,6 +1197,8 @@ function flyingCounts_() {
  */
 function resendLink_(email) {
   const same = { ok: true }
+  // "Email me my link" sends as the web app's account: only ever the wedding account
+  if (!isWeddingAccount_()) { wrongAccount_("The web app"); return { ok: false, code: "busy", error: ERRORS.busy } }
   email = String(email || "").trim().toLowerCase().slice(0, 120)
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, code: "bad_email", error: ERRORS.bad_email }
   const cache = CacheService.getScriptCache()
@@ -1271,6 +1319,7 @@ function notifyDropped_(household, names) {
 
 function sendInvitesTest() {
   const ui = SpreadsheetApp.getUi()
+  if (!menuFromWedding_(ui)) return
   const props = PropertiesService.getScriptProperties()
   const current = prop_("TEST_EMAIL") || prop_("REPLY_TO")
   const answer = ui.prompt("Send test invites", "Test invites go only to this address (leave blank to use " + current + "):", ui.ButtonSet.OK_CANCEL)
@@ -1293,6 +1342,7 @@ function sendInvitesTest() {
 
 function sendInvitesAll() {
   const ui = SpreadsheetApp.getUi()
+  if (!menuFromWedding_(ui)) return
   const all = households_()
   const todo = all.filter((h) => !h.invited)
   const withEmail = todo.filter((h) => h.emails.length)
@@ -1320,6 +1370,7 @@ function sendInvitesAll() {
 
 function resendInviteSelected() {
   const ui = SpreadsheetApp.getUi()
+  if (!menuFromWedding_(ui)) return
   const s = SpreadsheetApp.getActiveSheet()
   const rowNum = s.getActiveRange() ? s.getActiveRange().getRow() : 0
   if (s.getName() !== TABS.guests || rowNum < 2) return ui.alert("Click any cell in the household's row on the Guests tab, then try again.")
@@ -1337,6 +1388,7 @@ function resendInviteSelected() {
 
 function sendReminders() {
   const ui = SpreadsheetApp.getUi()
+  if (!menuFromWedding_(ui)) return
   const list = households_().filter((h) => h.invited && !h.responded && h.emails.length)
   if (!list.length) return ui.alert("Nobody to remind. Every invited household with an email has replied.")
   const emailCount = list.reduce((n, h) => n + h.emails.length, 0)
@@ -1352,6 +1404,13 @@ function sendReminders() {
 }
 
 /** Sends one email per household. Stops cleanly when Gmail's daily limit would be passed. */
+/** Sending from the menu: only when signed in as the wedding account (emails go from whoever runs them). */
+function menuFromWedding_(ui) {
+  if (isWeddingAccount_()) return true
+  ui.alert("Sign in as the wedding account", "You're signed in as " + (runningAs_() || "an unknown account") + ". Emails go from whoever sends them, so open this sheet signed in as " + prop_("REPLY_TO") + " and try again.", ui.ButtonSet.OK)
+  return false
+}
+
 function sendBatch_(kind, list, markInvited) {
   const gSheet = sheet_(TABS.guests)
   const head = headers_(gSheet)
@@ -1448,6 +1507,7 @@ function cancelReminder(quiet) {
 
 /** Runs from the trigger: same list and limits as "Send a reminder…", no dialog. */
 function sendScheduledReminder() {
+  if (!isWeddingAccount_()) return wrongAccount_("The scheduled reminder") // made from another account: send nothing
   const list = households_().filter((h) => h.invited && !h.responded && h.emails.length)
   const result = sendBatch_("reminder", list, false)
   log_("Everyone", "", "Scheduled reminder: sent " + result.sent + (result.left ? ", " + result.left + " left (daily limit)" : ""), "")
@@ -1459,6 +1519,7 @@ function sendScheduledReminder() {
 /** Menu only: before final numbers go to the venue, asks households who are coming to check their reply. */
 function sendFinalNumbers() {
   const ui = SpreadsheetApp.getUi()
+  if (!menuFromWedding_(ui)) return
   if (isLocked_()) return ui.alert("Changes are already closed, so there's nothing for guests to update.")
   const coming = {}
   rows_(TABS.guests).forEach((g) => { if (g.Attending === "yes") coming[g.Token] = true })
@@ -1527,6 +1588,8 @@ function checkQueue() {
     "\nConfirmation emails waiting: " + lines.mail.length + (lines.mail.length ? "\n  " + lines.mail.join("\n  ") : "") +
     "\nVisit counts waiting: " + lines.open + " opens, " + lines.started + " started" +
     "\n\nMinute trigger: " + trigger + ". Last run: " + (last ? new Date(last).toString() : "not recorded") +
+    "\nThe queue last ran as: " + ({ wedding: "the wedding account", other: "another account (emails held)" }[PropertiesService.getScriptProperties().getProperty("queue_account")] || "not recorded yet") +
+    (CacheService.getScriptCache().get("queue_err") ? "\n" + CacheService.getScriptCache().get("queue_err") : "") +
     (real ? "\n\n" + real + " item(s) are for households that aren't test households. Sending will email them." : "") +
     "\n\nWrite the replies and visits and send the emails now?"
   if (ui.alert("Email queue", text, ui.ButtonSet.YES_NO) !== ui.Button.YES) return
