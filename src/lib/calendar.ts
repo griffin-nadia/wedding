@@ -1,5 +1,6 @@
 // Add to calendar and the map link, shared by Home and The day.
 import { DATES } from "@/lib/wedding-dates"
+import { fold } from "@/lib/ics-fold"
 
 // 20271015T020000Z style stamps from the one dates file
 const stamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")
@@ -35,6 +36,6 @@ export function icsHref() {
     `DESCRIPTION:${esc(details)}`,
     `URL:${mapUrl}`,
     "END:VEVENT", "END:VCALENDAR",
-  ].join("\r\n")
+  ].map(fold).join("\r\n")
   return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`
 }

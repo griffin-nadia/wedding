@@ -82,6 +82,11 @@ export function Layout() {
   const page = pageOf(pathname)
   const { dim } = useSceneDim()
   const replied = Boolean(household?.respondedAt)
+  // Each page its own title (WCAG 2.4.2), so a screen reader hears where a page change landed: "The day · Griffin & Nadia"
+  useEffect(() => {
+    const key = page === "qa" ? "faqs" : page
+    document.title = key === "home" ? t.meta.title : `${t.nav[key]} · ${t.meta.title}`
+  }, [page, t])
   // Sealed envelope on a first visit: their photo behind it, the dock and top bar hidden until it opens
   const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
   usePageTurn(!sealed)
