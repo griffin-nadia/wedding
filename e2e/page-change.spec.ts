@@ -86,3 +86,10 @@ test("phones: at the end of a page the card stops 12px above the dock, with noth
   expect(Math.round(gap)).toBe(12)
   await expect(page.locator(".scene")).toHaveCount(1)
 })
+
+test("each page has its own title", async ({ page }) => {
+  await go(page, "")
+  const titles = [await page.title()]
+  for (const i of [1, 2, 3, 4]) { await page.locator(".site-nav a").nth(i).click(); await page.waitForTimeout(400); titles.push(await page.title()) }
+  expect(titles).toEqual(["Griffin & Nadia", "The day · Griffin & Nadia", "Travel · Griffin & Nadia", "Our story · Griffin & Nadia", "FAQs · Griffin & Nadia"])
+})
