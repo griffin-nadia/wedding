@@ -21,3 +21,6 @@ export function loop(fn: Job): () => void {
 
 /** Runs fn once, on the next frame. */
 export const nextFrame = (fn: (now: number) => void) => loop((n) => { fn(n); return false })
+
+/** The card's own scrolling box (18e: the card is a fixed frame and its content scrolls inside it), or null off the letter. */
+export const letterScroll = () => document.querySelector<HTMLElement>(".letter-scroll")

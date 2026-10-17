@@ -1,21 +1,43 @@
 import { test, expect } from "@playwright/test"
 
-// The top bar (docs/quality.md): あ / A, music and the sun or moon live in it on every screen, never in the letter;
-// it never hides on scroll, and the only change once the page scrolls is a hairline under it.
+// The top bar (docs/quality.md): あ / A, music and the sun or moon live in it on every screen, never in the letter.
+// 18e: the card is a fixed frame whose content scrolls inside it; the bar never hides and never changes as it does,
+// and the page itself never scrolls.
 test("the switches sit in the top bar, which stays put on every scroll", async ({ page }) => {
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
   await page.goto("travel?h=sample")
   const bar = page.locator(".site-bar")
   await expect(bar.locator(".mode-switches")).toBeVisible()
   await expect(page.locator("#letter .mode-switches, #letter .utility-btn[aria-pressed]")).toHaveCount(0)
-  const hairline = () => bar.evaluate((e) => getComputedStyle(e, "::before").boxShadow)
-  const still = await hairline()
+  const look = () => bar.evaluate((e) => { const s = getComputedStyle(e, "::before"); return `${s.backgroundColor} ${s.boxShadow} ${s.backdropFilter}` })
+  const still = await look()
   for (const y of [600, 1400, 900, 200]) {
-    await page.evaluate((to) => scrollTo({ top: to, behavior: "instant" }), y)
+    await page.evaluate((to) => document.querySelector(".letter-scroll")!.scrollTo({ top: to, behavior: "instant" }), y)
+    await page.evaluate(() => scrollTo({ top: 500, behavior: "instant" })) // the page itself has nowhere to go
     await page.waitForTimeout(250)
     const r = await bar.boundingBox()
     expect(r?.y).toBe(0)
     await expect(bar).toBeVisible()
+    expect(await page.evaluate(() => scrollY)).toBe(0)
+    expect(await look()).toBe(still)
   }
-  expect(await hairline()).not.toBe(still)
+  // The bar, the dock and the card are one paper
+  const paper = await page.evaluate(() => [getComputedStyle(document.querySelector(".site-bar")!, "::before").backgroundColor, getComputedStyle(document.querySelector(".site-nav")!).backgroundColor, getComputedStyle(document.documentElement).getPropertyValue("--letter-bg")])
+  if (await page.evaluate(() => innerWidth < 768)) expect(paper[1]).toBe(paper[0])
+})
+
+// 18e: one sticky layer. The page header scrolls away with the page; only Travel's jump links stay, as one slim row
+// flush with the card's top edge. The card's words fade softly (16px) into its top and bottom edges.
+test("Travel: the header scrolls away, the jump links stay flush with the card's top edge", async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto("travel?h=sample")
+  await expect(page.locator("#on-the-day")).toBeAttached() // the whole page is there to scroll
+  await page.evaluate(() => document.querySelector(".letter-scroll")!.scrollTo({ top: 900, behavior: "instant" }))
+  await expect(page.locator(".jump-links")).toHaveAttribute("data-stuck")
+  const m = await page.evaluate(() => {
+    const card = document.getElementById("letter")!.getBoundingClientRect(), links = document.querySelector(".jump-links")!.getBoundingClientRect()
+    const head = document.querySelector(".page-header")!.getBoundingClientRect(), s = getComputedStyle(document.querySelector(".letter-scroll")!)
+    return { flush: Math.round(links.top - card.top), slim: links.height <= 52, headGone: head.bottom < card.top, mask: (s.maskImage || s.webkitMaskImage).includes("16px"), sticky: [...document.querySelectorAll("#letter *")].filter((e) => getComputedStyle(e).position === "sticky").length }
+  })
+  expect(m).toEqual({ flush: 1, slim: true, headGone: true, mask: true, sticky: 1 })
 })

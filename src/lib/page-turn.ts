@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { nextFrame } from "@/lib/frame"
+import { letterScroll, nextFrame } from "@/lib/frame"
 
 /** The five letters in order (Home, The day, Travel, FAQs, Our story). */
 export const LETTERS: string[] = ["/", "/the-day", "/travel", "/our-story", "/faqs"]
@@ -63,6 +63,8 @@ function leave(dir: number, fromX = 0) {
   g.classList.add("letter-ghost")
   Object.assign(g.style, { position: "fixed", top: `${r.top}px`, left: `${r.left - fromX}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", transition: "none", transform: `translateX(${fromX}px)` })
   document.body.appendChild(g)
+  // The copy shows what was on screen: its inner scroll where the letter's was (a clone starts at the top)
+  const at = letterScroll()?.scrollTop ?? 0, gs = g.querySelector<HTMLElement>(".letter-scroll"); if (gs) gs.scrollTop = at
   asSheet(g); moving++
   // Gone the moment it's off screen, with a fallback in case the transition never reports back (or never starts)
   let gone = false
@@ -141,7 +143,7 @@ export function usePageTurn(enabled: boolean) {
       if (!still()) leave(dir, dx)
       // Keep the old page off screen until the new one is placed (no flash of it back in the middle)
       el.style.transition = "none"; el.style.transform = `translateX(${dx + dir * STEP()}px)`
-      nav(LETTERS[to]); window.scrollTo(0, 0)
+      nav(LETTERS[to])
     }
     // Dock and top bar taps: the same track, in the direction of the letter being opened
     const tap = (e: MouseEvent) => {
