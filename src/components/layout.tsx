@@ -11,7 +11,7 @@ import { ModeSwitches } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
-// Desktop only, so they load after the first screen: the credit mark and the phone QR
+// Loaded after the first screen: the credit and the phone QR
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
 
@@ -132,8 +132,9 @@ export function Layout() {
             {page === "home" && <SignOff action={page === "home" && !sealed
               // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
               ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
-              : null} foot={!sealed && <Suspense><CreditMark foot /></Suspense>} />}
+              : null} />}
           </Letter>
+          {page === "home" && !sealed && <Suspense><CreditMark foot /></Suspense>}
         </Arrival>
       </main>
       <Suspense><CreditMark /></Suspense>
