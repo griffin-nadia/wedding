@@ -78,9 +78,10 @@ Three families, nothing else: **Oranienbaum** (serif display), **Inter** (sans b
 
 - **Scene:** fills the viewport behind everything; static under reduced motion.
 - **Letter:** 740 wide from 1024, 48 to 180 from the left (scales so the photo keeps room); texture on the card, a 1px line, no top bar, no blur ring.
-- **Nav:** four items rendered once. Dock on phones, thin top bar from 768 with RSVP as a button. No footer, no tabs.
-- **Home:** the letterhead, greeting, RSVP or the Replied pill, then the countdown row under the card (outside the letter).
-- **Fits:** Home fits 390×844 and 1440×900. Every page ends the same distance above the dock: the dock, the safe area and 8px (`--dock-band`); 64px clear on laptops. Crew Options is the last nav item, never over the page.
+- **Nav:** five items rendered once: Home, The day, Travel, Our story, FAQs (Home first as the way back, FAQs last as reference; the swipe follows the same order). Dock on phones, thin top bar from 768 with RSVP as a button. No footer, no tabs.
+- **Home:** the letterhead, greeting, RSVP or the Replied pill, the countdown and the sign-off, in display, body and small only. The same width as every page; bottom left on laptops, with "Open on your phone" as its own small paper card bottom right (just the code under 1280).
+- **Travel order:** `src/lib/travel-order.ts`. Until 14 days before the ceremony it's the planning order (Getting to Kyoto, Where to stay, Before you fly, On the day). From 14 days out, or whenever the Content tab's `mode` is `week-of`, On the day moves to the top, and the jump links and the three summary lines follow. Worked out once per visit from the device clock. The last section always has room to scroll up under the header, and a tapped jump link is marked at once and stays marked until the guest scrolls.
+- **Fits:** Home fits 390×844 and 1440×900. Every page ends the same distance above the dock: the dock, the safe area and 8px (`--dock-band`); 64px clear on laptops. 
 
 ## States: one system
 

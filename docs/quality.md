@@ -9,11 +9,10 @@ sample household, with the clock fixed and reduced motion on:
 - **Accessibility:** axe on each of those, tagged WCAG 2.0 to 2.2 A and AA. Any violation fails.
 - **Performance budget:** initial JS under 150 kB gzipped; on every page, LCP under 2.5 s on an emulated mid-range
   phone over 4G (4× CPU, 1.6 Mbps, 150 ms) and CLS under 0.01.
-
-Also on every PR: `npm run lint`, `npm test`, `npm run check:pending` (lists, doesn't fail, while placeholders remain).
-
 - **No jumping (phones):** opening a Travel row while one above it is open keeps the tapped row in place, and
   closing a sheet puts the page back at the same scroll position (`e2e/no-jump.spec.ts`).
+
+Also on every PR: `npm run lint`, `npm test`, `npm run check:pending` (lists, doesn't fail, while placeholders remain).
 
 ## In GitHub Actions
 
