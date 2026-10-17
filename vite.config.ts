@@ -42,15 +42,52 @@ function copyPhotos(): Plugin {
   }
 }
 
+// Local preview only: npm run dev plays private/song.mp3 when it's there. Served from memory by the dev server, so it
+// never lands in dist. The build check below fails the build if anything from private/ does.
+const PRIVATE = path.resolve(__dirname, "private")
+const PRIVATE_SONG = path.join(PRIVATE, "song.mp3")
+function privateSong(): Plugin {
+  return {
+    name: "private-song",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use("/wedding/__private/song.mp3", (_req, res) => {
+        if (!fs.existsSync(PRIVATE_SONG)) { res.statusCode = 404; res.end(); return }
+        res.setHeader("Content-Type", "audio/mpeg")
+        fs.createReadStream(PRIVATE_SONG).pipe(res)
+      })
+    },
+  }
+}
+function noPrivateInBuild(): Plugin {
+  let outDir = "dist"
+  return {
+    name: "no-private-in-build",
+    apply: "build",
+    enforce: "post",
+    configResolved(c) { outDir = path.resolve(c.root, c.build.outDir) },
+    closeBundle() {
+      if (!fs.existsSync(PRIVATE)) return
+      const sizes = new Set(fs.readdirSync(PRIVATE).map((f) => fs.statSync(path.join(PRIVATE, f))).filter((s) => s.isFile()).map((s) => s.size))
+      const walk = (d: string): string[] => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]))
+      for (const f of walk(outDir)) {
+        const same = sizes.has(fs.statSync(f).size) && fs.readdirSync(PRIVATE).some((p) => fs.statSync(path.join(PRIVATE, p)).isFile() && fs.readFileSync(path.join(PRIVATE, p)).equals(fs.readFileSync(f)))
+        if (same || (/\.(js|html)$/.test(f) && fs.readFileSync(f, "utf8").includes("__private/"))) throw new Error(`private/ file in the build: ${path.relative(outDir, f)}`)
+      }
+    },
+  }
+}
+
 // Hosted at griffin-nadia.github.io/wedding (a project site), so base is the repo name.
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   base: "/wedding/",
-  plugins: [react(), tailwindcss(), preloadFonts(), copyPhotos()],
+  plugins: [react(), tailwindcss(), preloadFonts(), copyPhotos(), privateSong(), noPrivateInBuild()],
   define: {
+    __PRIVATE_SONG__: JSON.stringify(command === "serve" && fs.existsSync(PRIVATE_SONG)),
     __PUBLIC_PHOTOS__: JSON.stringify(PUBLIC_PHOTOS),
     // Art drops in with no other change: Nadia's paper wash and her handwritten sign-off
     __PAPER_ART__: JSON.stringify(["avif", "webp", "png"].find((x) => fs.existsSync(path.resolve(__dirname, `public/art/paper/base.${x}`))) ?? null),
     __SIGNOFF_ART__: JSON.stringify(fs.existsSync(path.resolve(__dirname, "public/brand/signoff.svg"))),
   },
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
-})
+}))

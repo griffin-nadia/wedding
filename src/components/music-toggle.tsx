@@ -39,9 +39,12 @@ try { channel = new BroadcastChannel("ng-music") } catch { /* older browsers: on
 channel?.addEventListener("message", (e: MessageEvent) => { if (e.data?.playing && e.data.tab !== tab) pause() })
 const emit = () => subs.forEach((f) => f())
 
+// npm run dev and the lab play private/song.mp3 when it's there (served by the dev server only, never built)
+const SRC = import.meta.env.DEV && __PRIVATE_SONG__ ? "__private/song.mp3" : ART.music.src
+
 function el() {
   if (!audio) {
-    audio = new Audio(ART.music.src ? `${import.meta.env.BASE_URL}${ART.music.src}` : silentWav())
+    audio = new Audio(SRC ? `${import.meta.env.BASE_URL}${SRC}` : silentWav())
     audio.loop = true; audio.volume = 0; audio.preload = "auto"
   }
   return audio
@@ -62,9 +65,41 @@ function play() {
   channel?.postMessage({ playing: true, tab })
   const a = el()
   if (!a.paused) { ramp(SITE_VOLUME, FADE_IN); return }
-  void a.play().then(() => ramp(SITE_VOLUME, FADE_IN)).catch(() => {})
+  void a.play().then(() => { ramp(SITE_VOLUME, FADE_IN); session("playing") }).catch(() => {})
 }
-function pause() { if (audio && !audio.paused) ramp(0, FADE_OUT, () => audio?.pause()) }
+function pause() { if (audio && !audio.paused) ramp(0, FADE_OUT, () => { audio?.pause(); session("paused") }) }
+/**
+ * Stops at once, with no fade. Hidden pages don't run frames, so a fade's last step (the pause) would never come and
+ * the song would carry on in the phone's media controls. This never waits on a frame.
+ */
+function hardStop() {
+  cancelAnimationFrame(fade)
+  if (!audio) return
+  audio.volume = 0
+  audio.pause()
+  session("paused")
+}
+// Hidden, locked, swiped away or frozen: stop now. Back again: fade in if it's on (and has played before)
+const resume = () => { if (on && audio && !document.hidden) play() }
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => { if (document.hidden) hardStop(); else resume() })
+  addEventListener("pagehide", hardStop)
+  addEventListener("pageshow", resume)
+  document.addEventListener("freeze", hardStop)
+}
+
+// The phone's lock screen and media controls: our name and mark, and play / pause that follow the toggle
+function session(state: MediaSessionPlaybackState) {
+  if (!("mediaSession" in navigator)) return
+  const ms = navigator.mediaSession
+  ms.playbackState = state
+  if (ms.metadata) return
+  try {
+    ms.metadata = new MediaMetadata({ title: "Griffin & Nadia", artist: ART.music.artist, artwork: [{ src: `${import.meta.env.BASE_URL}og-image.png`, sizes: "1200x630", type: "image/png" }] })
+    ms.setActionHandler("play", () => setOn(true))
+    ms.setActionHandler("pause", () => setOn(false))
+  } catch { /* older browsers */ }
+}
 function setOn(next: boolean) {
   on = next
   try { localStorage.setItem(KEY, next ? "on" : "off") } catch { /* private mode */ }
@@ -82,14 +117,12 @@ function arm() {
     window.setTimeout(() => { if (on) play() }, START_DELAY)
   }
   addEventListener("pointerdown", first)
-  // Hidden tab: fade out and pause; back again: carry on if it's on
-  document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); else if (on && audio) play() })
 }
 
 /**
  * Background music (Options → Music toggle). On by default, but browsers never allow sound before a tap, so it starts
  * on the guest's first tap anywhere (usually opening the envelope), waits 2 s, then fades in smoothly over 2.5 s to 30%, fades out when paused, remembers the choice on this
- * device, keeps playing across pages, and pauses while the tab is hidden. The track is ART.music.
+ * device, keeps playing across pages, and stops at once while the tab is hidden. The track is ART.music.
  */
 export default function MusicToggle() {
   const { t } = useLang()

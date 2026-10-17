@@ -15,9 +15,10 @@ export const ART = {
    */
   drawnEnvelope: { closed: "art/envelope/drawn-closed", open: "art/envelope/drawn-open", widths: [380, 760] },
   /**
-   * Background music (the speaker beside the sun). Cleared by the artist (6 Oct 2026). Off until a guest taps it, 50%.
+   * Background music (the speaker beside the sun). Cleared by the artist (6 Oct 2026). To swap the song: replace
+   * public/audio/song.mp3 and change title / artist here (the credit under the sign-off follows). See README.
    */
-  music: { src: "audio/orange-hues.mp3", title: "orange hues", artist: "Aqualina", year: undefined as number | undefined },
+  music: { src: "audio/song.mp3", title: "orange hues", artist: "Aqualina", year: undefined as number | undefined },
   /**
    * Nadia's painted land for the journey map: one image painted on the map template (photos-private/art/templates),
    * covering exactly the template's dashed box, which is the map's 400 × 320 viewBox. Empty until it lands; the
