@@ -1,0 +1,72 @@
+# Cloudflare Pages previews (docs/previews.md). Move to .github/workflows/previews.yml from an account whose token
+# has the workflow scope. Without the two secrets every step after the first is skipped and the job passes.
+#   gn-lab:     the lab, on every merge to main (https://gn-lab.pages.dev/wedding/lab-<path>/)
+#   gn-preview: the guest site for each pull request, its address posted on the PR
+# Both are built with no back end (sample household only, nothing can write to the real sheet), carry
+# X-Robots-Tag: noindex, nofollow on every response, and fail if anything private ends up in the output.
+name: Previews (Cloudflare Pages)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: previews-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  previews:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HAS_CF: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+    steps:
+      - name: Skip until the Cloudflare secrets exist
+        if: env.HAS_CF != 'true'
+        run: echo "No CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID yet, so nothing to deploy. See docs/previews.md."
+      - if: env.HAS_CF == 'true'
+        uses: actions/checkout@v7
+      - if: env.HAS_CF == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.HAS_CF == 'true'
+        run: npm ci
+      # No VITE_API_URL: the sample household only, and no request can reach the Apps Script back end
+      - if: env.HAS_CF == 'true'
+        run: npm run build
+        env:
+          VITE_API_URL: ""
+          PUBLIC_PHOTOS: "1"
+      # Lays out cf-out/ (the site under /wedding, a root redirect, _headers with noindex), and fails on anything
+      # from private/, a back-end address, or a guest-data file in the output
+      - if: env.HAS_CF == 'true'
+        run: node scripts/preview-check.mjs ${{ github.event_name == 'pull_request' && 'preview' || 'lab' }}
+      - name: Deploy the lab (main)
+        if: env.HAS_CF == 'true' && github.event_name == 'push'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy cf-out --project-name=gn-lab --branch=main
+      - name: Deploy the PR preview
+        id: preview
+        if: env.HAS_CF == 'true' && github.event_name == 'pull_request'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy cf-out --project-name=gn-preview --branch=pr-${{ github.event.number }}
+      - name: Post the preview address on the PR
+        if: env.HAS_CF == 'true' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.preview.outputs.deployment-url }}
+        run: gh pr comment ${{ github.event.number }} --edit-last --body "Preview (sample household, nothing saves): $URL/wedding/?h=sample" || gh pr comment ${{ github.event.number }} --body "Preview (sample household, nothing saves): $URL/wedding/?h=sample"
