@@ -517,6 +517,8 @@
 /* Except Home: its card is only as tall as what's on it (up to the frame) */
 :root .letter[data-page="home"] { flex-grow: 0; }
 .letter-wrap:has(.letter[data-page="home"]) .letter-sealed { flex-grow: 0; }
+/* And Our story on laptops (18f): only as tall as the spread, not a tall frame round a small print */
+@media (min-width: 1024px) { :root .letter[data-page="story"] { flex-grow: 0; } }
 .letter-scroll {
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--letter-gap);
   padding: var(--letter-pad); overflow-y: auto; overscroll-behavior: contain;
@@ -1187,12 +1189,12 @@ svg.lucide { stroke-width: 1.5; }
 .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); place-items: end center; }
 /* …and the stop starts at the top, so a two-line title under it never moves the photo up */
 .story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: flex-start; }
-@media (min-width: 1024px) { .story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: center; align-items: flex-start; } }
+
 .story-print figcaption { min-height: 1.25rem; }
 /* Laptops: a small map of where the chapter happened, under its words */
 .story-stop-map { display: none; }
 @media (min-width: 1024px) {
-  .story-stop-map { display: block; width: 200px; height: auto; margin-top: var(--space-3); }
+  .story-stop-map { display: block; width: 150px; height: auto; margin-top: var(--space-3); }
   .story-stop-map .journey-land { fill: color-mix(in oklab, var(--ink-soft) 16%, transparent); } /* no box round it, so the land carries it */
   .story-stop-ring { fill: color-mix(in oklab, var(--brand-sabi) 18%, transparent); }
   .story-stop-dot { fill: var(--brand-sabi); stroke: var(--brand-paper-bright); stroke-width: 2; }
@@ -1221,10 +1223,12 @@ svg.lucide { stroke-width: 1.5; }
 /* Short phones (an SE at 667): a smaller print, so a stop still fits one screen */
 @media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map .journey-mini { max-height: 24svh; } }
 @media (min-width: 1024px) {
-  /* Smaller prints on laptops (18f, Jehan: "the story on desktop is looking a bit large"), so the page isn't so tall */
-  .story-slide { --print-h: min(34svh, 290px); flex-direction: row; gap: var(--space-6); text-align: left; padding-inline: var(--space-2); }
-  .story-media { flex: 0 1 auto; }
-  .story-words { flex: 0 1 300px; }
+  /* Laptops as phones (18f, Jehan: "too big… like we did with mobile"): the print centred like a photo, its chapter
+     under it, smaller, so the page isn't so tall; the chapter's words with a small map beside them */
+  .story-slide { --print-h: min(32svh, 260px); gap: var(--space-4); }
+  .story-words { width: min(100%, 560px); max-width: none; display: grid; grid-template-columns: 1fr auto; column-gap: var(--space-5); align-items: start; text-align: left; }
+  .story-words > :not(.story-stop-map) { grid-column: 1; }
+  .story-words > .story-stop-map { grid-column: 2; grid-row: 1 / span 6; margin-top: 0; }
   .story-slide-map .story-media { flex: 0 1 360px; }
   .story-slide-map .journey-mini { max-height: 46svh; }
   .story-controls { justify-content: center; gap: var(--space-5); }
