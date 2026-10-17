@@ -224,6 +224,7 @@ export const en = {
     intro: "From the airport to the garden, in the order you'll need it.",
     rowsLabel: "Getting there, step by step",
     beforeTitle: "Before you fly",
+    onThisPage: "On this page",
     rows: { passport: "Passport and visas", flights: "Flights and flying in", insurance: "Travel insurance", booking: "Booking somewhere to stay", phones: "Phones, money and plugs", weather: "Weather and what to pack", medicines: "Medicines", onTheDay: "Getting around on the day" },
     insuranceBody: "Get travel insurance when you book your flights, so you're covered if plans change before the trip.",
     stayOpens: "Opens in Maps",
@@ -270,6 +271,8 @@ export const en = {
       sleeps: (n: string) => `Sleeps ${n}`,
       opensHotel: "opens the hotel's site",
       opensAirbnb: "opens Airbnb",
+      filterLabel: "Filter by area",
+      count: (n: number) => (n === 1 ? "1 place" : `${n} places`),
       hotels: [
         { name: "Kyoto Century Hotel", area: "Kyoto Station", price: "~$150 AUD", note: "", href: "https://www.kyotocenturyhotel.jp/" },
         { name: "Mercure Kyoto Station", area: "Kyoto Station", price: "~$150–180 AUD", note: "", href: "https://all.accor.com/hotel/B4F4/index.en.shtml" },
