@@ -201,7 +201,7 @@ export const ja: DeepPartial<Content> = {
     insuranceBody: "航空券を予約するときに、海外旅行保険にも入っておきましょう。出発前に予定が変わっても安心です。",
     stayOpens: "マップでひらく",
     flyingTitle: "飛行機で",
-    flyingBody: "大阪（関西国際空港、KIX）がいちばん便利です。ジェットスターはブリスベンから直行で約9時間、メルボルンからは1回乗り継ぎです。空港から京都駅までは特急はるかで約75分（訪日客向け切符は約2,200円）。リムジンバスは約2,800円で、大きな荷物があるときは楽です。",
+    flyingBody: "大阪（関西国際空港、KIX）がいちばん便利です。ジェットスターはブリスベンから直行で約9時間、メルボルンからは1回乗り継ぎです。空港から京都駅までは特急はるかで約75分。外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。リムジンバスは約2,800円で、大きな荷物があるときは楽です。",
     tokyoBody: "東京から来られますか？新幹線で約2時間15分です。混み合う週は1か月前にのぞみを予約し、富士山を見るならE席側に。",
     walkingTitle: "歩いて",
     walkingBody: "祇園四条から10分、古い石畳の小路を通り、階段が少しあります。素敵な道ですが、きれいな靴ならタクシーで。",
@@ -210,7 +210,7 @@ export const ja: DeepPartial<Content> = {
     earlyTitle: "早めに到着される方へ",
     earlyBody: "京都駅で荷物を預ければ（Hands Free Kyoto）、夕方にはホテルに届きます。",
     links: {
-      haruka: { label: "はるかの切符", href: "https://www.westjr.co.jp/global/en/ticket/icoca-haruka/" },
+      haruka: { label: "HARUKA One-way Ticket", href: "https://www.westjr.co.jp/travel-information/en/tickets-passes/oneway/haruka/" },
       flights: { label: "航空券を比較", href: "https://www.google.com/travel/flights?q=Flights%20to%20KIX" },
       trains: { label: "電車の時刻", href: "https://www.jrpass.com/timetable" },
       walk: { label: "徒歩ルート", href: "https://www.google.com/maps/dir/?api=1&origin=Gion-Shijo+Station&destination=The+Sodoh+Higashiyama+Kyoto&travelmode=walking" },

@@ -233,7 +233,7 @@ export const en = {
     seeOnMap: "See it on a map",
     seeStay: "See where to stay",
     flyingTitle: "Flying in",
-    flyingBody: "Osaka (Kansai, KIX) is the easiest way in. Jetstar flies direct from Brisbane in about 9 hours; from Melbourne it's one stop. The Haruka train gets you from the airport to Kyoto Station in about 75 minutes (visitor ticket around ¥2,200). The limousine bus is about ¥2,800 and easier with big bags.",
+    flyingBody: "Osaka (Kansai, KIX) is the easiest way in. Jetstar flies direct from Brisbane in about 9 hours; from Melbourne it's one stop. The Haruka train gets you from the airport to Kyoto Station in about 75 minutes. Visitors on a foreign passport can buy JR West's HARUKA One-way Ticket (¥2,200 to Kyoto) online before you fly; it isn't sold in Japan, and you collect it at a JR station with your passport. The limousine bus is about ¥2,800 and easier with big bags.",
     tokyoBody: "Coming from Tokyo? The bullet train takes about 2¼ hours. Book a Nozomi a month ahead in busy weeks, and sit on the E side for Mt Fuji.",
     walkingTitle: "Walking in",
     walkingBody: "10 minutes from Gion-Shijo, along old stone lanes with a few steps. Lovely, but take a taxi in nice shoes.",
@@ -242,7 +242,7 @@ export const en = {
     earlyTitle: "Arriving early?",
     earlyBody: "Drop your bags at Kyoto Station (Hands Free Kyoto) and they'll be at your hotel by evening.",
     links: {
-      haruka: { label: "Haruka tickets", href: "https://www.westjr.co.jp/global/en/ticket/icoca-haruka/" },
+      haruka: { label: "HARUKA One-way Ticket", href: "https://www.westjr.co.jp/travel-information/en/tickets-passes/oneway/haruka/" },
       flights: { label: "Compare flights", href: "https://www.google.com/travel/flights?q=Flights%20to%20KIX" },
       trains: { label: "Train times", href: "https://www.jrpass.com/timetable" },
       walk: { label: "Walking route", href: "https://www.google.com/maps/dir/?api=1&origin=Gion-Shijo+Station&destination=The+Sodoh+Higashiyama+Kyoto&travelmode=walking" },
