@@ -105,7 +105,7 @@ export function Layout() {
       <header className="site-bar">
         <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
         <Nav />
-        {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-5 font-label text-body font-medium md:inline-flex">{t.nav.rsvp}</Link>}
+        {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-(--button-pad) font-label text-body font-medium md:inline-flex">{t.nav.rsvp}</Link>}
         <ModeSwitches className="chrome-lantern" />
       </header>
 
