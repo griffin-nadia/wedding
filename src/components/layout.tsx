@@ -130,9 +130,10 @@ export function Layout() {
               // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
               ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
               : null} />}
+            {/* Phones: the credit is the last line of Home's card (laptops have it fixed bottom left) */}
+            {page === "home" && !sealed && <Suspense><CreditMark foot /></Suspense>}
             </div>
           </Letter>
-          {page === "home" && !sealed && <Suspense><CreditMark foot /></Suspense>}
         </Arrival>
       </main>
       <Suspense><CreditMark /></Suspense>

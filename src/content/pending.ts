@@ -17,6 +17,15 @@ export const PENDING = {
     en: "A photo to come",
     ja: "写真は準備中です",
   },
+  // Home's next step once they've replied (18e): the one thing worth doing next, as a button
+  "home.nextDates": {
+    en: "Add your travel dates",
+    ja: "旅の日程を追加する",
+  },
+  "home.nextTrip": {
+    en: "Plan your trip",
+    ja: "旅の計画を立てる",
+  },
   "faqs.contactDay": {
     en: "On the day, call Jehan or Noya. We'll add their numbers closer to the time.",
     ja: "当日は、ジェハンかノヤにご連絡ください。電話番号は日が近づいたらここに載せます。",

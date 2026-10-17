@@ -750,7 +750,7 @@ svg.lucide { stroke-width: 1.5; }
 .credit-mark:hover, .credit-mark:focus-visible { color: var(--ink); text-decoration-color: currentColor; }
 .credit-mark:focus-visible { outline-color: var(--input-focus); }
 .credit-mark:not(.credit-foot) { display: none; }
-.credit-foot { display: flex; width: fit-content; align-self: center; justify-self: center; margin: var(--space-4) auto var(--space-2); }
+.credit-foot { display: flex; width: fit-content; align-self: center; margin: var(--space-2) auto 0; }
 @media (min-width: 1024px) {
   .credit-foot { display: none; }
   .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-1); } /* below the card's bottom edge, in the gap */
@@ -1293,3 +1293,5 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* The sent letter: the same crosshatch through the paper, scrolling with the words */
 .rsvp-done { background-image: var(--texture-hatch); background-size: 512px; background-blend-mode: var(--paper-blend); background-attachment: local; }
+/* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
+.next-step { display: flex; }

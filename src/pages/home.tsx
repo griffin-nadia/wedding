@@ -15,6 +15,7 @@ import { isLocked } from "@/lib/time"
 import { Pill } from "@/components/pill"
 import { Skeleton } from "@/components/skeleton"
 import type { Household } from "@/lib/api"
+import { pending } from "@/content/pending"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
@@ -68,6 +69,23 @@ function YourReply({ h, open }: { h: Household; open: (step: number) => void }) 
         ))}
       </ul>
     </section>
+  )
+}
+
+/**
+ * The next step once they've replied (18e), as one quiet card with one button: no travel dates yet, add them (the
+ * reply's dates step); dates in (or past the change-by date), plan the trip on Travel. Before a reply the RSVP
+ * button is the step; in the week of the wedding, The day is.
+ */
+function NextStep({ h, open, locked }: { h: Household; open: (step: number) => void; locked: boolean }) {
+  const { lang } = useLang()
+  const dates = Boolean(h.arrival && h.departure)
+  return (
+    <div className="next-step">
+      {!dates && !locked
+        ? <Button size="md" variant="secondary" className="w-full sm:w-auto" onClick={() => open(2)}>{pending("home.nextDates", lang)}</Button>
+        : <Button asChild size="md" variant="secondary" className="w-full sm:w-auto"><Link to="/travel">{pending("home.nextTrip", lang)}</Link></Button>}
+    </div>
   )
 }
 
@@ -138,8 +156,10 @@ export function HomePage() {
             {done && <p className="text-small text-muted-foreground">{t.home.changeBy}</p>}
           </div>
           {done && <YourReply h={household} open={openAt} />}
+          {done && <NextStep h={household} open={openAt} locked={false} />}
         </div>
       )}
+      {mode === "invite" && household && locked && done && <NextStep h={household} open={openAt} locked />}
       <HomeCountdown />
     </>
   )
