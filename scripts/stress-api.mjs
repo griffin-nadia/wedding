@@ -48,8 +48,9 @@ const household = (h = SIX) => (req, body) => (body?.action === "rsvp" ? { ok: t
 const fill = async (page) => {
   const d = page.getByRole("dialog")
   for (const g of await d.getByRole("radiogroup").all()) await g.getByText(/^Coming$/).first().click()
-  for (const n of [/^Next$/, /^Next$/]) await d.getByRole("button", { name: n }).filter({ visible: true }).click()
-  return d.getByRole("button", { name: /^Send our reply$/ }).filter({ visible: true })
+  const send = d.getByRole("button", { name: /^Send our reply$/ }).filter({ visible: true })
+  while (!(await send.count())) await d.getByRole("button", { name: /^Next$/ }).filter({ visible: true }).click()
+  return send
 }
 const spill = (page) => page.evaluate(() => document.scrollingElement.scrollWidth > innerWidth + 1 || [...document.querySelectorAll("[role=dialog] *, #letter *")].some((e) => { const r = e.getBoundingClientRect(), box = (e.closest("[role=dialog]") ?? document.getElementById("letter")).getBoundingClientRect(); return r.width && (r.right > box.right + 1 || r.left < box.left - 1) && !e.closest(".jump-links ul, .story-track") }))
 

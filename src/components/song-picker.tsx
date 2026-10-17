@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Check, Music2, PenLine, Search, X } from "lucide-react"
 import { searchSongs, type SongHit } from "@/lib/api"
 import { rankSongs, splitVersion } from "@/lib/song-rank"
@@ -8,81 +8,95 @@ import { describedBy } from "@/components/ui/field"
 import { cn } from "@/lib/utils"
 
 type Status = "idle" | "loading" | "results" | "empty" | "error"
-const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
-/** A saved "Title, Artist" back into its parts, for a song from an earlier visit (artists have commas too, so the
- * ones picked this visit keep theirs): the first comma splits it */
+/** A saved "Title, Artist" back into its parts (artists have commas too): the first comma splits it */
 const parts = (s: string) => { const i = s.indexOf(", "); return i > 0 ? [s.slice(0, i), s.slice(i + 2)] : [s, ""] }
 
+// Artwork for chosen songs, kept on this device (the reply only stores "Title, Artist"), so it's still there after
+// a reload. A song from another device is looked up once, quietly.
+const ART_KEY = "ng-song-art"
+const readArt = (): Record<string, string> => { try { return JSON.parse(localStorage.getItem(ART_KEY) ?? "{}") } catch { return {} } }
+const keepArt = (song: string, url: string) => { try { localStorage.setItem(ART_KEY, JSON.stringify({ ...readArt(), [song]: url })) } catch { /* private mode: this visit only */ } }
+
 /**
- * Song search, mobile first. Focusing the field scrolls it to the top of the sheet, so there's room under it. It
- * searches only on the keyboard's Search key or the search button (never on every keystroke), straight from the
- * browser to iTunes (the script only if that fails), then puts the keyboard away so the results show in full: clear
- * rows of artwork, title and artist, the chosen ones ticked. "Use what I typed" is always the last row. Chosen songs
- * (up to three) sit under the field as small cards with Change (back into the search) and remove.
+ * Song search, mobile first (18f). It searches as you type (300 ms after the last key, from two letters) and on the
+ * keyboard's Search key or the search button, which also puts the keyboard away so the list shows in full: rows of
+ * artwork, title and artist, with "Use what I typed" always last. Picking one closes the list, empties the field and
+ * adds the song as a row (artwork, title, artist, remove) under it, ready for the next. Up to two. While a new search
+ * loads the old rows stay, so nothing jumps.
  */
-export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200 }: { songs: string[]; onChange: (s: string[]) => void; token: string; max?: number; maxLength?: number }) {
+export function SongPicker({ songs, onChange, token, max = 2, maxLength = 200 }: { songs: string[]; onChange: (s: string[]) => void; token: string; max?: number; maxLength?: number }) {
   const { t } = useLang()
   const [q, setQ] = useState("")
   const [hits, setHits] = useState<SongHit[]>([])
   const [status, setStatus] = useState<Status>("idle")
-  const [picked, setPicked] = useState<Record<string, SongHit>>({}) // songs chosen from results this visit, by saved text
+  const [art, setArt] = useState(readArt)
   const cache = useRef(new Map<string, SongHit[]>())
   const seq = useRef(0)
-  const wrap = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLInputElement>(null)
   const results = useRef<HTMLDivElement>(null)
   const list = songs.filter(Boolean)
   const full = list.length >= max
   const id = "song-search"
 
-  // The field to the top of the sheet's scrolling body, now and again once the keyboard has finished rising
-  const toTop = () => {
-    const el = wrap.current, body = el?.closest<HTMLElement>(".sheet-body")
-    if (!el || !body) return
-    body.scrollBy({ top: el.getBoundingClientRect().top - body.getBoundingClientRect().top - 8, behavior: still() ? "instant" : "smooth" })
-  }
-
-  async function search() {
-    const term = q.trim()
-    if (term.length < 2) return input.current?.focus()
-    input.current?.blur() // the keyboard goes, so the whole list is on screen
+  async function search(term: string, fromKey: boolean) {
+    term = term.trim()
+    if (term.length < 2) { if (fromKey) input.current?.focus(); else setStatus("idle"); return }
+    if (fromKey) input.current?.blur() // the keyboard goes, so the whole list is on screen
     const n = ++seq.current
     let r = cache.current.get(term.toLowerCase()) ?? null
     if (!r) {
-      setStatus("loading")
+      setStatus((s) => (s === "results" ? s : "loading"))
       r = await searchSongs(term, token)
       if (n !== seq.current) return // a newer search has started
       if (r === null) { setStatus("error"); setHits([]); return }
       cache.current.set(term.toLowerCase(), r)
     }
     setHits(r); setStatus(r.length ? "results" : "empty")
-    nextFrame(() => results.current?.focus({ preventScroll: true }))
+    if (fromKey) nextFrame(() => results.current?.focus({ preventScroll: true }))
   }
+  // As you type
+  useEffect(() => {
+    if (q.trim().length < 2) { seq.current++; setStatus("idle"); return }
+    const timer = setTimeout(() => void search(q, false), 300)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q])
+  // Saved songs from another device: their artwork, looked up once
+  useEffect(() => {
+    for (const s of list) if (!(s in art)) {
+      const [title, artist] = parts(s)
+      void searchSongs(`${title} ${artist}`, token).then((r) => {
+        const hit = r?.find((h) => h.title.toLowerCase() === title.toLowerCase()) ?? r?.[0]
+        const url = hit?.artwork ?? ""
+        keepArt(s, url); setArt((a) => ({ ...a, [s]: url }))
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [songs.join("|")])
 
   function add(label: string, hit?: SongHit) {
     const v = label.trim().slice(0, maxLength)
     if (!v || full || list.includes(v)) return
-    if (hit) setPicked((m) => ({ ...m, [v]: hit }))
+    const url = hit?.artwork ?? ""
+    keepArt(v, url); setArt((a) => ({ ...a, [v]: url }))
     onChange([...list, v])
+    // The list closes and the field empties, ready for the next one
+    seq.current++; setQ(""); setHits([]); setStatus("idle")
   }
   const remove = (s: string) => onChange(list.filter((x) => x !== s))
-  // Change: the song goes back into the search field, ready to look again
-  const titleOf = (s: string) => (picked[s] ? [picked[s].title, picked[s].artist] : parts(s))
-  const change = (s: string) => { remove(s); setQ(titleOf(s)[0]); setStatus("idle"); setHits([]); nextFrame(() => input.current?.focus()) }
 
   const groups = status === "results" ? rankSongs(q.trim(), hits).slice(0, 6) : []
   const typed = q.trim()
   return (
-    <div ref={wrap} className="song-picker flex flex-col gap-3">
+    <div className="song-picker flex flex-col gap-3">
       {full ? <p className="text-success">{t.rsvp.songsFull(list.length)}</p> : (
         <div className="form-field">
-          <label htmlFor={id} className="form-label label-caps text-foreground">{t.rsvp.song}</label>
+          <label htmlFor={id} className="form-label label-caps text-foreground">{t.rsvp.songPlaceholder}</label>
           {/* A search form of its own: Enter is the keyboard's Search key */}
-          <form role="search" className="relative" onSubmit={(e) => { e.preventDefault(); void search() }}>
-            <input ref={input} id={id} type="search" value={q} maxLength={maxLength} placeholder={t.rsvp.songPlaceholder} enterKeyHint="search" autoComplete="off" autoCorrect="off" spellCheck={false}
+          <form role="search" className="relative" onSubmit={(e) => { e.preventDefault(); void search(q, true) }}>
+            <input ref={input} id={id} type="search" value={q} maxLength={maxLength} enterKeyHint="search" autoComplete="off" autoCorrect="off" spellCheck={false}
               aria-describedby={describedBy(id, t.rsvp.songHint)} aria-controls={status !== "idle" ? `${id}-results` : undefined} /* only once the results are there to point at */
-              onFocus={() => { toTop(); window.setTimeout(toTop, 350) }} onChange={(e) => setQ(e.target.value)}
-              className="state field song-search-input pr-14" />
+              onChange={(e) => setQ(e.target.value)} className="state field song-search-input pr-14" />
             <button type="submit" aria-label={t.rsvp.searchSong} className="btn-primary absolute top-1/2 right-1.5 grid size-10 -translate-y-1/2 place-items-center rounded-sm">
               <Search className="size-5" aria-hidden />
             </button>
@@ -131,17 +145,16 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200 }:
       {list.length > 0 && (
         <ul aria-label={t.rsvp.songsAdded} className="flex flex-col gap-2">
           {list.map((s) => {
-            const [title, artist] = titleOf(s), artwork = picked[s]?.artwork
+            const [title, artist] = parts(s), artwork = art[s]
             return (
               <li key={s} className="song-card">
-                {artwork ? <img src={artwork} alt="" className="song-art" /> : <span aria-hidden className="song-art grid place-items-center"><Music2 className="size-5" /></span>}
+                {/* While the artwork is still being looked up, the square waits empty (no note icon unless there's none) */}
+                {artwork ? <img src={artwork} alt="" className="song-art" /> : <span aria-hidden className="song-art grid place-items-center">{artwork === "" && <Music2 className="size-5" />}</span>}
                 <span className="min-w-0 flex-1">
                   <span className="block break-words font-medium text-foreground">{title}</span>
                   {artist && <span className="block break-words text-small text-muted-foreground">{artist}</span>}
                 </span>
-                <button type="button" onClick={() => change(s)} className="btn-text min-h-11 px-1 text-small">{t.rsvp.changeSong}<span className="sr-only"> {s}</span></button>
-                <button type="button" onClick={() => remove(s)} aria-label={t.rsvp.removeSong(s)}
-                  className="press grid size-11 shrink-0 place-items-center rounded-sm text-muted-foreground outline-2 outline-offset-2 outline-transparent hover:text-foreground focus-visible:outline-ring">
+                <button type="button" onClick={() => remove(s)} aria-label={t.rsvp.removeSong(s)} className="remove-btn press">
                   <X className="size-5" aria-hidden />
                 </button>
               </li>

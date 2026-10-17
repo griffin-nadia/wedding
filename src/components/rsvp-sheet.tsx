@@ -24,11 +24,19 @@ import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { isLocked } from "@/lib/time"
 import { cn } from "@/lib/utils"
+import { pending } from "@/content/pending"
 
 // Same limits as the back end, so nothing gets cut off silently.
 const MAX = { name: 40, song: 200, message: 2000 }
 // Trip dates around the wedding, same rule as the back end
 const TRIP = { from: DATES.travelFrom, to: DATES.travelTo }
+// Up to two songs (18f)
+const SONGS = 2
+/** The steps (18f): one question each. Nobody coming skips food, song and dates, and gets the note on its own. */
+export type StepId = "who" | "food" | "song" | "travel" | "note" | "check"
+const stepsFor = (coming: number): StepId[] => (coming ? ["who", "food", "song", "travel", "check"] : ["who", "note", "check"])
+// Fields that bring up a keyboard, for Enter's next field
+const TYPED = "input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=search]), textarea"
 
 /**
  * "Any dietary needs?" for one person: tap chips, as many as apply, no typing. Other opens a short optional "Tell us
@@ -54,6 +62,12 @@ function DietField({ g, name, onChange }: { g: Guest; name: string; onChange: (d
   )
 }
 
+/** The next field that brings up a keyboard on this step, after `el` */
+function nextField(el: HTMLElement) {
+  const all = [...(el.closest(".sheet")?.querySelectorAll<HTMLElement>(TYPED) ?? [])].filter((f) => f.offsetParent && !(f as HTMLInputElement).disabled)
+  return all[all.indexOf(el) + 1] ?? null
+}
+
 /** A plus one still called "Guest" in the sheet shows as a blank name box. */
 const blankPlusOne = (g: Guest) => (g.plusOne && /^(guest|plus one|\+1)$/i.test(g.firstName.trim()) ? { ...g, firstName: "" } : g)
 
@@ -76,11 +90,12 @@ const formFrom = (h: Household | null): RsvpPayload => ({
 
 /**
  * The RSVP is the letter itself: it opens over a dimmed scene in the same place as the page letter.
- * One household, three short steps (direction-aware slide), then the success letter.
- * Next never greys out: pressing it with something missing says what, under the field, and moves there.
+ * One household, short steps of one question each (direction-aware slide), then the success letter.
+ * Next never greys out: pressing it with something missing says what, under the field, and moves there. Enter in a
+ * field only moves to the next field (or puts the keyboard away after the last); only Next moves on.
  */
-export function RsvpSheet({ children, openOnLoad = false, request }: { children: ReactNode; openOnLoad?: boolean; request?: { at: number; step: number } }) {
-  const { t } = useLang()
+export function RsvpSheet({ children, openOnLoad = false, request }: { children: ReactNode; openOnLoad?: boolean; request?: { at: number; step: StepId } }) {
+  const { t, lang } = useLang()
   const { household, setHousehold } = useHousehold()
   const { setDim } = useSceneDim()
   const [open, setOpen] = useState(openOnLoad)
@@ -112,7 +127,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   useEffect(() => { if (openOnLoad && !open && household) onOpenChange(true) }, [openOnLoad])
   // "Your reply" lines on Home open the sheet straight at their step
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (request && household) { onOpenChange(true); setStep(request.step) } }, [request?.at])
+  useEffect(() => { if (request && household) { onOpenChange(true); setStep(Math.max(1, stepsFor(household.guests.filter((g) => g.attending === "yes").length).indexOf(request.step) + 1)) } }, [request?.at])
   const sending = useRef(false)
   const [form, setForm] = useState<RsvpPayload>(() => startingForm(household))
   // Opened by an early tap (before this form loaded): count it as a started RSVP too.
@@ -141,7 +156,10 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     setMissing((m) => { const n = { ...m }; delete n[`answer-${id}`]; delete n[`diet-other-${id}`]; return n })
   }
   const coming = form.guests.filter((g) => g.attending === "yes")
-  const total = 3
+  const steps = stepsFor(coming.length)
+  const total = steps.length
+  const at = steps[Math.min(step, total) - 1]
+  const stepOf = (id: StepId) => steps.indexOf(id) + 1
   const songsFilled = form.songs.map((x) => x.trim()).filter(Boolean)
   const outside = (d: string) => Boolean(d) && (d < TRIP.from || d > TRIP.to)
   const dateError = outside(form.arrival) || outside(form.departure)
@@ -151,10 +169,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   /** What's missing on this step, keyed by the id of the field to move to. */
   function check(): Record<string, string> {
     const m: Record<string, string> = {}
-    if (step === 1) for (const g of form.guests) if (!g.plusOne && !g.attending) m[`answer-${g.id}`] = t.rsvp.answerMissing(nameOf(g))
-    if (step === 2) {
-      if (dateError) m.arr = dateError
-    }
+    if (at === "who") for (const g of form.guests) if (!g.plusOne && !g.attending) m[`answer-${g.id}`] = t.rsvp.answerMissing(nameOf(g))
+    if (at === "travel" && dateError) m.arr = dateError
     return m
   }
   function next() {
@@ -244,16 +260,26 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     </div>
   )
 
+  // "Anything else": Enter is a new line; it grows to four lines, then scrolls inside
+  const messageField = (
+    <FormField id="msg" label={t.rsvp.message}><Textarea id="msg" rows={2} autoComplete="off" autoCapitalize="sentences" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></FormField>
+  )
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild disabled={locked}>{children}</SheetTrigger>
         <SheetContent aria-describedby={undefined}
-          // Enter in a text or date field moves on (Next, or Send on the last step); the song search, the radios and the message keep theirs
+          // Enter (the keyboard's tick) in a text or date field goes to the next field, or puts the keyboard away after
+          // the last; it never moves the step on. The song search, the radios and the message keep theirs.
           onKeyDown={(e) => {
             const el = e.target as HTMLElement
-            if (done || e.key !== "Enter" || e.shiftKey || e.defaultPrevented || !(el instanceof HTMLInputElement) || el.type === "checkbox" || el.type === "radio" || el.type === "search" || el.getAttribute("role") === "combobox") return
-            e.preventDefault(); if (step < total) next(); else send()
+            if (done || e.key !== "Enter" || e.shiftKey || e.defaultPrevented || !(el instanceof HTMLInputElement) || !el.matches(TYPED) || el.getAttribute("role") === "combobox") return
+            e.preventDefault()
+            const after = nextField(el)
+            if (after) after.focus(); else el.blur()
           }}
+          // The tick says what Enter will do: Next while there's another field, Done on the last
+          onFocus={(e) => { const el = e.target as HTMLElement; if (el instanceof HTMLInputElement && el.matches(TYPED) && el.getAttribute("role") !== "combobox") el.enterKeyHint = nextField(el) ? "next" : "done" }}
           onOpenAutoFocus={(e) => { e.preventDefault(); heading.current?.focus({ preventScroll: true }) }}
           // Only X, Esc or "Back to your invite" close the sheet; a tap outside never does (v3 A)
           onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}
@@ -263,14 +289,14 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
           <SheetHead>
             <p className="label-caps text-muted-foreground">{t.rsvp.step(step, total)}</p>
             <SheetTitle ref={heading} tabIndex={-1} className="heading outline-none">
-              {step === 1 ? t.rsvp.whoTitle : step === 2 ? (coming.length ? t.rsvp.foodTitle : t.rsvp.noteTitle) : t.rsvp.checkTitle}
+              {{ who: t.rsvp.whoTitle, food: t.rsvp.dietary, song: t.rsvp.song, travel: pending("rsvp.travelTitle", lang), note: t.rsvp.noteTitle, check: t.rsvp.checkTitle }[at]}
             </SheetTitle>
             <StepProgress step={step} of={total} label={t.rsvp.step(step, total)} />
           </SheetHead>
 
           <SheetBody ref={body}>
-          <div key={step} className={cn("rsvp-step flex flex-col gap-(--form-group-gap)", dir === "fwd" ? "step-fwd" : "step-back")}>
-            {step === 1 && (
+          <div key={at} data-step={at} className={cn("rsvp-step flex flex-col gap-(--form-group-gap)", dir === "fwd" ? "step-fwd" : "step-back")}>
+            {at === "who" && (
               <div className="flex flex-col">
                 {form.guests.filter((g) => !g.plusOne).map((g) => (
                   <div key={g.id} className="flex flex-col">
@@ -300,39 +326,30 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
               </div>
             )}
 
-            {step === 2 && (
-              <>
-                {coming.length > 0 && (
-                  <section aria-labelledby="diet-q" className="flex flex-col gap-4">
-                    <h3 id="diet-q" className="font-medium text-foreground">{t.rsvp.dietary}</h3>
-                    {coming.map((g) => (
-                      <DietField key={g.id} g={g} name={nameOf(g)} onChange={(dietary) => setGuest(g.id, { dietary })} />
-                    ))}
-                  </section>
-                )}
-                {coming.length > 0 && <>
-                <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} maxLength={MAX.song} />
-                {datesBlock}
-                </>}
-                <FormField id="msg" label={t.rsvp.message}><Textarea id="msg" autoComplete="off" autoCapitalize="sentences" maxLength={MAX.message} value={form.message} data-filled={Boolean(form.message.trim())} onChange={(e) => setForm({ ...form, message: e.target.value })} /></FormField>
-              </>
-            )}
+            {at === "food" && coming.map((g) => (
+              <DietField key={g.id} g={g} name={nameOf(g)} onChange={(dietary) => setGuest(g.id, { dietary })} />
+            ))}
 
-            {step === total && (
+            {at === "song" && <SongPicker songs={form.songs} onChange={(songs) => setForm((f) => ({ ...f, songs }))} token={household.token} max={SONGS} maxLength={MAX.song} />}
+
+            {at === "travel" && <>{datesBlock}{messageField}</>}
+            {at === "note" && messageField}
+
+            {at === "check" && (
               <>
                 <dl className="divide-y divide-border rounded-md border bg-card">
                   {form.guests.map((g) => (
-                    <ReviewRow key={g.id} label={nameOf(g)} edit={() => goTo(1)} editLabel={t.rsvp.edit(nameOf(g))}>
+                    <ReviewRow key={g.id} label={nameOf(g)} edit={() => goTo(g.attending === "yes" ? stepOf("food") : 1)} editLabel={t.rsvp.edit(nameOf(g))}>
                       {g.attending === "yes" ? `${t.rsvp.coming}${g.dietary && g.dietary !== "None" ? `, ${g.dietary}` : ""}` : t.rsvp.notComing}
                     </ReviewRow>
                   ))}
                   {coming.length > 0 && (
-                    <ReviewRow label={t.rsvp.songs} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.songs)}>{songsFilled.join(", ") || t.rsvp.noSongs}</ReviewRow>
+                    <ReviewRow label={t.rsvp.songs} edit={() => goTo(stepOf("song"))} editLabel={t.rsvp.edit(t.rsvp.songs)}>{songsFilled.join(", ") || t.rsvp.noSongs}</ReviewRow>
                   )}
                   {coming.length > 0 && (
-                    <ReviewRow label={t.rsvp.dates} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.stayLine) : t.rsvp.notSet}</ReviewRow>
+                    <ReviewRow label={t.rsvp.dates} edit={() => goTo(stepOf("travel"))} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.stayLine) : t.rsvp.notSet}</ReviewRow>
                   )}
-                  <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(2)} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
+                  <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(stepOf(coming.length ? "travel" : "note"))} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
                 </dl>
                 <label htmlFor="photos" className="check-row">
                   <Checkbox id="photos" className="mt-0.5" checked={form.photos === true}
@@ -346,9 +363,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
               ? <p role="status" className="rounded-md bg-section-alt px-4 py-3 text-foreground">{error}</p>
               : <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>)}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
-            {step === total && <p className="text-small text-muted-foreground">{t.rsvp.privacy}</p>}
-            {/* Keyboard up on a phone: the footer steps aside, and the same Back / Next wait here at the end of the form */}
-            <div className="rsvp-actions-inline">{actions}</div>
+            {at === "check" && <p className="text-small text-muted-foreground">{t.rsvp.privacy}</p>}
           </div>
           </SheetBody>
 

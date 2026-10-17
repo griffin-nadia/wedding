@@ -185,8 +185,8 @@
   --input-radius: var(--radius-chip);
   --input-pad: var(--space-4);
   --input-font-size: var(--type-ui-size);          /* Inter 16: iOS never zooms */
-  --input-textarea-min: 96px;                      /* 3 lines */
-  --input-textarea-max: 168px;                     /* grows to 6, then scrolls */
+  --input-textarea-min: 72px;                      /* 2 lines */
+  --input-textarea-max: 120px;                     /* grows to 4, then scrolls inside (18f) */
   /* One spacing scale for every input family: label, 4, field, 8, helper; blocks 24, groups 32 */
   --field-label-gap: var(--space-1);
   --field-helper-gap: var(--space-2);
