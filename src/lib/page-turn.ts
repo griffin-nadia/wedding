@@ -107,7 +107,7 @@ export function usePageTurn(enabled: boolean) {
     const here = () => indexOf(location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/")
     const down = (e: PointerEvent) => {
       const t = e.target as Element
-      if (wide() || e.pointerType === "mouse" || t.closest("input, textarea, [role=slider], .combo-field, .sheet") || inSideScroller(t)) return
+      if (wide() || e.pointerType === "mouse" || t.closest("input, textarea, [role=slider], .combo-field, .sheet, [data-own-swipe]") || inSideScroller(t)) return
       start = { x: e.clientX, y: e.clientY, t: performance.now() }; dx = 0; active = false
     }
     const move = (e: PointerEvent) => {

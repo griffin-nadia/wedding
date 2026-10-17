@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
@@ -8,6 +8,12 @@ import { readFlying } from "@/lib/journey"
 import { getFlying, type Flying } from "@/lib/api"
 import { GuestMap } from "@/components/journey-mini"
 import { Photo } from "@/components/photo"
+import { loop } from "@/lib/frame"
+
+const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+// The settle: stiffness and damping per unit mass, a touch under critical, so a print lands a hair past straight and
+// comes back (about 450 ms)
+const SPRING = { k: 170, c: 20 }
 
 /**
  * The journey to Kyoto, once, as the last stop: Nadia's and Griffin's lines, and the guests' lines (counts per city,
@@ -24,11 +30,16 @@ function JourneyMap() {
 }
 
 /**
- * Our story, one stop at a time (APG carousel): a sideways track that snaps one stop at a time (the kid-photo opener
- * when there is one, a stop per chapter, then the journey map). Each stop is a spread that fits the screen, so nothing
- * scrolls inside it: on phones the print is centred with its chapter line underneath; from 1024 the print sits on one
- * side and the words on the other, with the arrows and dots centred below. Swipe, the arrows or the arrow keys move
- * it. Reduced motion: the arrows jump straight to the stop. "See as a list" shows the same words plainly.
+ * Our story, one stop at a time (APG carousel): the kid-photo opener when there is one, a stop per chapter, then the
+ * journey map, stacked in one place. Each stop is a spread that fits the screen, so nothing scrolls inside it: on
+ * phones the print is centred with its chapter line underneath; from 1024 the print sits on one side and the words
+ * on the other, with the arrows and dots centred below.
+ * Moving on: the next print slides in turned a few degrees and settles straight on a spring, the previous one eases
+ * back (a little smaller, a little left) and fades, and the chapter text cross-fades (out by halfway, in from
+ * halfway). Dragging moves it with the finger the whole way; letting go (or a flick) springs to the nearest stop,
+ * with a little give at either end. Arrows, dots, the arrow keys and swipes all use the same spring. Reduced motion:
+ * nothing moves or follows the finger; a swipe or a tap fades straight to the stop. "See as a list" shows the same
+ * words plainly.
  */
 export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener?: ReactNode }) {
   const { t } = useLang()
@@ -41,22 +52,108 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
   const stops = ends ? chapters.slice(0, -1) : chapters
   const lead = opener ? 1 : 0
   const total = lead + stops.length + 1
-  // Which stop is showing: the one more than half in view on the track (no scroll listener)
+  // Where the stack is, in stops (0 = the first; fractional while moving), how fast, and where it's heading
+  const pos = useRef(0), vel = useRef(0), target = useRef(0), running = useRef<(() => void) | null>(null)
+
+  // One write per stop per frame, straight to the elements (no re-render while moving)
+  const paint = useCallback(() => {
+    const el = track.current
+    if (!el) return
+    const p = pos.current, w = el.clientWidth, calm = still()
+    ;[...el.children].forEach((node, i) => {
+      const slide = node as HTMLElement, d = i - p, a = Math.abs(d)
+      const media = slide.querySelector<HTMLElement>(".story-media"), words = slide.querySelector<HTMLElement>(".story-words")
+      slide.style.visibility = a < 0.999 ? "" : "hidden" // only the stops on screen draw
+      slide.style.zIndex = d >= 0 ? "2" : "1" // the arriving print comes in over the one easing back
+      if (calm) { slide.style.opacity = a < 0.5 ? "1" : "0"; return }
+      slide.style.opacity = ""
+      if (media) {
+        // Far enough that a whole stop along, the print (and its tilt) is clear of the track's edge
+        const off = (w + media.offsetWidth) / 2 + 32
+        media.style.transform = d >= 0
+          ? `translate3d(${d * off}px, 0, 0) rotate(${d * 8}deg)` // arriving: from the right, turned, settling straight
+          : `translate3d(${d * w * 0.16}px, 0, 0) scale(${1 + d * 0.08})` // leaving: eases back and away
+        media.style.opacity = String(d >= 0 ? 1 : Math.max(0, 1 + d * 1.3))
+      }
+      if (words) words.style.opacity = String(Math.max(0, 1 - a * 2))
+    })
+  }, [])
+
+  const spring = useCallback(() => {
+    running.current?.()
+    let then = performance.now()
+    running.current = loop((now) => {
+      const dt = Math.min(0.032, (now - then) / 1000); then = now
+      vel.current += (-SPRING.k * (pos.current - target.current) - SPRING.c * vel.current) * dt
+      pos.current += vel.current * dt
+      const done = Math.abs(vel.current) < 0.003 && Math.abs(pos.current - target.current) < 0.001
+      if (done) { pos.current = target.current; vel.current = 0; running.current = null }
+      paint()
+      return !done
+    })
+  }, [paint])
+
+  const go = (i: number, v = 0) => {
+    const n = Math.max(0, Math.min(total - 1, i))
+    target.current = n
+    setAt(n)
+    if (still()) { running.current?.(); pos.current = n; vel.current = 0; paint(); return }
+    vel.current = v
+    spring()
+  }
+
+  // Placed before the first paint, and again whenever the size changes (stops are placed in px of the track's width)
+  useLayoutEffect(() => {
+    paint()
+    const el = track.current
+    if (!el || typeof ResizeObserver === "undefined") return
+    const ro = new ResizeObserver(paint); ro.observe(el)
+    return () => { ro.disconnect(); running.current?.() }
+  }, [paint, list])
+
+  // Dragging: sideways moves follow the finger; up and down stay the page's
   useEffect(() => {
     const el = track.current
     if (!el) return
-    const io = new IntersectionObserver((es) => {
-      for (const e of es) if (e.isIntersecting) setAt([...el.children].indexOf(e.target))
-    }, { root: el, threshold: 0.6 })
-    for (const c of el.children) io.observe(c)
-    return () => io.disconnect()
-  }, [list])
-  const go = (i: number) => {
-    const el = track.current
-    if (!el) return
-    const n = Math.max(0, Math.min(total - 1, i))
-    el.scrollTo({ left: n * el.clientWidth, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })
-  }
+    let start: { x: number; y: number; p: number; id: number } | null = null, dragging = false, samples: [number, number][] = []
+    const down = (e: PointerEvent) => {
+      if (e.button !== 0 || (e.target as Element).closest("button, a, input")) return
+      start = { x: e.clientX, y: e.clientY, p: pos.current, id: e.pointerId }; dragging = false; samples = [[e.timeStamp, e.clientX]]
+    }
+    const move = (e: PointerEvent) => {
+      if (!start || e.pointerId !== start.id) return
+      const dx = e.clientX - start.x, dy = e.clientY - start.y
+      if (!dragging) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { start = null; return } // a scroll
+        if (Math.abs(dx) < 8) return
+        dragging = true; running.current?.(); running.current = null
+        el.setPointerCapture(e.pointerId); el.dataset.dragging = ""
+      }
+      samples.push([e.timeStamp, e.clientX]); if (samples.length > 5) samples.shift()
+      if (still()) return // reduced motion: no following, just the swipe at the end
+      let p = start.p - dx / (el.clientWidth * 0.9)
+      if (p < 0) p *= 0.3; if (p > total - 1) p = total - 1 + (p - (total - 1)) * 0.3 // a little give at the ends
+      pos.current = p; paint()
+    }
+    const up = (e: PointerEvent) => {
+      if (!start || e.pointerId !== start.id) return
+      const was = dragging, s = start
+      start = null; dragging = false; delete el.dataset.dragging
+      if (!was) return
+      const [t0, x0] = samples[0], [t1, x1] = samples[samples.length - 1]
+      const v = (x1 - x0) / Math.max(1, t1 - t0) // px per ms, + is rightwards
+      const dx = e.clientX - s.x
+      const from = Math.round(s.p)
+      const flick = Math.abs(v) > 0.35 ? (v < 0 ? 1 : -1) : 0
+      const next = flick ? from + flick : Math.abs(dx) > el.clientWidth * 0.25 ? from + (dx < 0 ? 1 : -1) : Math.round(pos.current)
+      go(next, (-v * 1000) / (el.clientWidth * 0.9))
+    }
+    el.addEventListener("pointerdown", down)
+    el.addEventListener("pointermove", move)
+    el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up)
+    return () => { el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list, total, paint])
   if (list) return (
     <div className="flex flex-col gap-4">
       <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(false)}>{t.story.seeMap}</button>
@@ -83,7 +180,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
   </>
   return (
     <div className="story">
-      <div ref={track} className="story-track" role="region" aria-roledescription="carousel" aria-label={t.story.title} tabIndex={0}
+      <div ref={track} className="story-track" data-own-swipe role="region" aria-roledescription="carousel" aria-label={t.story.title} tabIndex={0}
         onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(at + 1) } if (e.key === "ArrowLeft") { e.preventDefault(); go(at - 1) } }}>
         {opener && slide(0, opener, null, "opener", "story-slide-opener")}
         {stops.map((c, i) => slide(i + lead, c.photo
