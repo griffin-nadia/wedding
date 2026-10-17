@@ -14,6 +14,7 @@ export const entries: Entry[] = [
   },
   {
     id: "journey-ink-pins",
+    deciding: "Jehan: should the guest map's lines draw in as ink pins instead of dotted routes?",
     title: "Ink-reveal pins",
     summary: "The same drawn land, inked in: Brisbane, Canada and Kyoto each arrive as a blot that bleeds open into the paper, then Nadia's and Griffin's lines draw to Kyoto like a pen. Tap a place to blot it again.",
     refs: [{ label: "Codrops", href: "https://tympanus.net/codrops/" }, { label: "Lynn Fisher", href: "https://lynnandtonic.com" }],
@@ -22,6 +23,7 @@ export const entries: Entry[] = [
   },
   {
     id: "journey-globe",
+    deciding: "Jehan: a globe flying to Kyoto, or keep the flat map (now with the real outlines)?",
     title: "Globe flying to Kyoto",
     summary: "The lab's line-drawn globe with Nadia's line lifting off from Brisbane and Griffin's from Canada, drawing in as arcs above the paper; then the camera flies to Kyoto and the seal lands. Drag to spin it.",
     refs: [{ label: "Susie & Jay's globe", href: "https://wedding.jongjeonglee.com" }, { label: "Three.js examples", href: "https://threejs.org/examples" }],

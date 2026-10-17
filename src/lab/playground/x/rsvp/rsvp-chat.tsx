@@ -16,7 +16,7 @@ import { ms, still } from "../../motion"
  * Reduced motion: no typing pause and no flight, bubbles fade in.
  */
 const css = `
-.x-chat { position: relative; isolation: isolate; height: 100svh; min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto; background: var(--letter-bg); color: var(--ink); }
+.x-chat { position: relative; isolation: isolate; height: var(--stage-h, 100svh); min-height: var(--stage-h, 100svh); display: grid; grid-template-rows: auto 1fr auto; background: var(--letter-bg); color: var(--ink); }
 .x-chat::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
 .x-chat-col { width: 100%; max-width: 40rem; margin-inline: auto; padding-inline: 16px; }
 .x-chat-head { border-bottom: 1px solid var(--line-hairline); }

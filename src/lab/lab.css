@@ -63,3 +63,27 @@
 /* Inside the phone and laptop frames, no scrollbar or its reserved gutter (a desktop browser would draw one) */
 html:has(.lab-play) { scrollbar-width: none; scrollbar-gutter: auto; }
 html:has(.lab-play)::-webkit-scrollbar { display: none; }
+/* In the site's shell (18f): an experiment's room is the card's inside, not the whole screen, and the card already
+   gives the paper and the padding */
+.lab-play[data-shell] { --stage-h: calc(100dvh - var(--bar-h) - 24px - var(--dock-band, 0px) - 2 * var(--letter-pad)); min-height: 0; }
+@media (min-width: 768px) { .lab-play[data-shell] { --stage-h: calc(100dvh - 2 * var(--letter-top) - 2 * var(--letter-pad)); } }
+[data-shell] .x-stage { min-height: var(--stage-h); background: none; overflow: visible; }
+[data-shell] .x-stage-main { padding: 0; }
+[data-shell] .x-stage-hint { margin: 0 0 var(--space-3); }
+/* ── Playground viewer (18f): no sideways scroll anywhere; full screen under 600, a fitted frame from 600 ── */
+html:has(.lab-shell) { overflow-x: clip; }
+.lab-shell, .lab-body { max-width: 100vw; overflow-x: clip; }
+.lab-deciding { font-size: var(--type-small-size); line-height: var(--type-small-leading); color: var(--ink); padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); background: color-mix(in oklab, var(--action) 12%, transparent); }
+.lab-done > summary { cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; gap: var(--space-2); }
+.lab-done > summary::before { content: "▸"; font-size: 0.8em; color: var(--ink-muted); }
+.lab-done[open] > summary::before { content: "▾"; }
+.lab-options { display: flex; flex-direction: column; gap: var(--space-3); }
+.lab-field { display: flex; flex-direction: column; gap: var(--space-1); }
+.lab-field select { width: 100%; }
+.lab-stagebox { position: relative; width: 100%; overflow: hidden; }
+.lab-stagebox .lab-frame { width: 1440px; height: 900px; transform: none; }
+.lab-full { position: fixed; inset: 0; width: 100vw; height: 100dvh; border: 0; z-index: 1; background: var(--surface-paper); }
+.lab-fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom) + 72px); z-index: 3; display: inline-flex; align-items: center; gap: var(--space-2); height: 48px; padding-inline: var(--space-4); border-radius: var(--radius-pill); box-shadow: var(--elevation-sheet); font: 500 var(--type-body-size) / 1 var(--font-label); }
+.lab-sheet-scrim { position: fixed; inset: 0; z-index: 4; display: flex; align-items: flex-end; background: color-mix(in oklab, var(--brand-ink-deep) 50%, transparent); }
+.lab-sheet { width: 100%; max-height: 85dvh; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5) var(--space-4) calc(var(--space-5) + env(safe-area-inset-bottom)); border-radius: var(--radius-letter) var(--radius-letter) 0 0; background: var(--letter-bg); color: var(--ink-soft); box-shadow: var(--elevation-sheet); }
+@media (max-width: 599px) { .lab-shell:has(.lab-full) .lab-bar { display: none; } }

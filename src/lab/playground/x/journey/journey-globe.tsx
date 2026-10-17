@@ -14,7 +14,7 @@ const BRISBANE: [number, number] = [-27.47, 153.03], EDMONTON: [number, number] 
 const START: [number, number] = [14, -172] // over the Pacific, with both cities and Kyoto in view
 
 const css = `
-.x-globe2 { position: relative; isolation: isolate; height: 100svh; min-height: 100svh; overflow: hidden; touch-action: none; background: radial-gradient(ellipse at 50% 42%, var(--letter-bg) 0%, color-mix(in oklab, var(--letter-bg) 50%, var(--surface-alt)) 55%, var(--surface-alt) 100%); color: var(--ink); cursor: grab; }
+.x-globe2 { position: relative; isolation: isolate; height: var(--stage-h, 100svh); min-height: var(--stage-h, 100svh); overflow: hidden; touch-action: none; background: radial-gradient(ellipse at 50% 42%, var(--letter-bg) 0%, color-mix(in oklab, var(--letter-bg) 50%, var(--surface-alt)) 55%, var(--surface-alt) 100%); color: var(--ink); cursor: grab; }
 .x-globe2:active { cursor: grabbing; }
 .x-globe2::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
 .x-globe2-stage { position: absolute; inset: 0; }

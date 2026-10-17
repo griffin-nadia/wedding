@@ -65,8 +65,11 @@ function OneLetter() {
       <div aria-hidden className="lab-progress" />
       <main className="letter-wrap lab-one">
         <Letter id="letter">
-          <section className="letter-body"><HomePage /></section>
-          {PAGES.map(([name, page]) => <section key={name} className="letter-body lab-chapter">{page()}</section>)}
+          {/* The card's padding lives on its scrolling inside since the frame (18e), as on the site (18f: B had none) */}
+          <div className="letter-scroll">
+            <section className="letter-body"><HomePage /></section>
+            {PAGES.map(([name, page]) => <section key={name} className="letter-body lab-chapter">{page()}</section>)}
+          </div>
         </Letter>
       </main>
     </>

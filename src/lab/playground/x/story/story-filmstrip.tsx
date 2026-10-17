@@ -14,7 +14,7 @@ import { still } from "../../motion"
  * frame with its words under it.
  */
 const css = `
-.x-film { --fw: min(64vw, 52svh, 560px); --gap: 14px; --step: calc(var(--fw) + var(--gap)); --band: 30px; position: relative; isolation: isolate; background: color-mix(in oklab, var(--letter-bg) 60%, var(--surface-alt)); color: var(--ink); min-height: 100svh; }
+.x-film { --fw: min(64vw, 52svh, 560px); --gap: 14px; --step: calc(var(--fw) + var(--gap)); --band: 30px; position: relative; isolation: isolate; background: color-mix(in oklab, var(--letter-bg) 60%, var(--surface-alt)); color: var(--ink); min-height: var(--stage-h, 100svh); }
 .x-film::before { content: ""; position: fixed; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
 .x-film-intro { min-height: 72svh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px 16px; text-align: center; }
 .x-film-intro h1 { margin: 0; font-family: var(--font-display); font-size: clamp(2.5rem, 10vw, 4.5rem); line-height: 1; color: var(--ink); }
@@ -22,7 +22,7 @@ const css = `
 .x-film-cue { color: var(--ink-muted); animation: x-film-bob 1.8s ease-in-out infinite; }
 @keyframes x-film-bob { 50% { transform: translateY(6px); } }
 .x-film-track { position: relative; view-timeline: --x-film block; }
-.x-film-sticky { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+.x-film-sticky { position: sticky; top: 0; height: var(--stage-h, 100svh); overflow: hidden; }
 .x-film-strip { position: absolute; left: 50%; top: 50%; display: flex; gap: var(--gap); padding: var(--band) var(--gap); margin-left: calc(var(--fw) / -2 - var(--gap)); translate: 0 -62%; background: var(--brand-ink-deep, #2a1a10); box-shadow: 0 30px 60px -30px rgb(var(--tint-shadow) / 0.6); will-change: transform; }
 .x-film-strip::before, .x-film-strip::after { content: ""; position: absolute; left: 0; right: 0; height: 12px; background: repeating-linear-gradient(90deg, transparent 0 9px, var(--film-hole) 9px 21px, transparent 21px 30px); border-radius: 2px; }
 .x-film-strip::before { top: 9px; } .x-film-strip::after { bottom: 9px; }
