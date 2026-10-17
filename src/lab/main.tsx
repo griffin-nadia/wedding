@@ -26,7 +26,9 @@ import { Playground } from "./playground/shell"
 
 const KitPage = lazy(() => import("@/pages/kit").then((m) => ({ default: m.KitPage })))
 const TunePanel = lazy(() => import("@/tune/panel").then((m) => ({ default: m.TunePanel })))
-const base = import.meta.env.BASE_URL
+// The lab's own pages: under the lab's path when it's built into the site (vite.config.ts, LAB_PATH), else beside it
+const labBase = import.meta.env.VITE_LAB_BASE || import.meta.env.BASE_URL
+
 /** Marks the lab in a bundle: the guest build fails if this string ever reaches dist (vite.config.ts). */
 const LAB_MARK = "__NG_LAB__"
 
@@ -46,7 +48,7 @@ function Layouts() {
     ro.observe(box.current)
     return () => ro.disconnect()
   }, [])
-  const src = `${base}lab-frame.html?layout=${layout}&style=${style}&h=sample`
+  const src = `${labBase}lab-frame.html?layout=${layout}&style=${style}&h=sample`
   return (
     <div className="lab-body" data-docked={docked || undefined}>
       {docked && <Suspense><TunePanel docked /></Suspense>}

@@ -9,7 +9,9 @@ const base = import.meta.env.BASE_URL
 // Baked by scripts/lab-thumbs.mjs (local only, like everything here)
 const THUMBS = import.meta.glob<string>("../thumbs/*.webp", { eager: true, import: "default", query: "?url" })
 const thumb = (id: string) => THUMBS[`../thumbs/${id}.webp`]
-export const playUrl = (id: string) => `${base}lab-play.html?x=${id}&h=sample`
+// The lab's own pages: under the lab's path when it's built into the site (vite.config.ts, LAB_PATH), else beside it
+const labBase = import.meta.env.VITE_LAB_BASE || base
+export const playUrl = (id: string) => `${labBase}lab-play.html?x=${id}&h=sample`
 
 /** The index: every experiment by area, a thumbnail each. */
 function Index({ open }: { open: (id: string) => void }) {
