@@ -134,10 +134,35 @@ function onOpen() {
     .addItem("Clear queued items for test households…", "clearTestQueue")
     .addItem("Reset test households…", "resetTestHouseholds")
     .addItem("Make crew links", "makeCrewLinks")
+    .addItem("Name order: find and fix \"Nadia & Griffin\"…", "fixNameOrder")
     .addSeparator()
     .addItem("Schedule the February reminder…", "scheduleReminder")
     .addItem("Cancel the February reminder", "cancelReminder")
     .addToUi()
+}
+
+/**
+ * The names go Griffin & Nadia everywhere. Text typed into the sheet (the Summary tab's heading, the Emails tab's
+ * wording, anything else) doesn't follow COUPLE, so this finds "Nadia & Griffin" / "Nadia and Griffin" in every tab,
+ * lists each cell, and only changes them if you say yes. Formulas are left alone (listed, not changed).
+ */
+function fixNameOrder() {
+  const ui = SpreadsheetApp.getUi()
+  const wrong = /Nadia\s*(&|and|＆)\s*Griffin/g
+  const hits = []
+  SpreadsheetApp.getActive().getSheets().forEach((sh) => {
+    const range = sh.getDataRange(), values = range.getValues(), formulas = range.getFormulas()
+    values.forEach((row, r) => row.forEach((v, c) => {
+      if (typeof v === "string" && v.match(wrong)) hits.push({ sh: sh, r: r + 1, c: c + 1, v: v, formula: Boolean(formulas[r][c]) })
+    }))
+  })
+  if (!hits.length) return ui.alert("Name order", "Nothing says \"Nadia & Griffin\" any more. All Griffin & Nadia.", ui.ButtonSet.OK)
+  const list = hits.slice(0, 30).map((h) => h.sh.getName() + "!" + h.sh.getRange(h.r, h.c).getA1Notation() + (h.formula ? " (formula, left alone)" : "") + ": " + h.v.slice(0, 60)).join("\n")
+  const text = hits.length + " cell(s) say Nadia before Griffin:\n\n" + list + (hits.length > 30 ? "\n…" : "") + "\n\nChange them to Griffin & Nadia (the same joining word: & or and)?"
+  if (ui.alert("Name order", text, ui.ButtonSet.YES_NO) !== ui.Button.YES) return
+  let n = 0
+  hits.filter((h) => !h.formula).forEach((h) => { h.sh.getRange(h.r, h.c).setValue(h.v.replace(wrong, (m, j) => "Griffin " + j + " Nadia")); n++ })
+  ui.alert("Name order", "Changed " + n + " cell(s).", ui.ButtonSet.OK)
 }
 
 // ---------- web app ----------
