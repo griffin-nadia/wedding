@@ -108,6 +108,7 @@ export function HomePage() {
   const dear = t.home.dearNames(names) || household?.displayName || ""
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
   const { mode, contactDay } = useContent()
+  const { lang } = useLang()
 
   const rsvpButton = done
     ? <button type="button" className="btn-text min-h-11" aria-busy={tapped} onClick={() => setTapped(true)}>{t.home.changeReply}</button>
@@ -143,7 +144,7 @@ export function HomePage() {
             <Pill tone="good" className="self-start">{t.home.pills.replied}</Pill>
             <p className="text-small text-muted-foreground">{t.home.changeAfter}</p>
           </div>
-        ) : <p>{t.home.rsvpClosed}</p>
+        ) : <div className="flex flex-col gap-2"><p>{t.home.rsvpClosed}</p><a href="mailto:griffinandnadia@gmail.com" className="btn-text inline-flex min-h-11 items-center self-start">{pending("contact.emailUs", lang)}</a></div>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">

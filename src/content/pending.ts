@@ -26,6 +26,12 @@ export const PENDING = {
     en: "Plan your trip",
     ja: "旅の計画を立てる",
   },
+  // A way to actually message them where the copy says to (18e journey map): the wedding address already used on the
+  // no-invite page
+  "contact.emailUs": {
+    en: "Email Griffin & Nadia",
+    ja: "グリフィンとナディアにメールする",
+  },
   "faqs.contactDay": {
     en: "On the day, call Jehan or Noya. We'll add their numbers closer to the time.",
     ja: "当日は、ジェハンかノヤにご連絡ください。電話番号は日が近づいたらここに載せます。",

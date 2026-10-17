@@ -14,3 +14,10 @@ test("the questions come in the order guests ask them", async ({ page }) => {
     expect(shown).toEqual(qs)
   }
 })
+
+// 18e journey map: where the words say "message us", there's a way to
+test("the end of FAQs has a way to email Griffin and Nadia", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("ng-opened", "1"))
+  await page.goto("faqs?h=sample")
+  await expect(page.locator("#letter a[href='mailto:griffinandnadia@gmail.com']")).toBeVisible()
+})
