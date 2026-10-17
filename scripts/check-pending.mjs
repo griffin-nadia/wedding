@@ -1,6 +1,7 @@
 // npm run check:pending — lists every placeholder (src/content/pending.ts) still in use on the site, and checks each
 // has English and Japanese. Exits 1 if a key is missing a language or the site uses a key that doesn't exist.
-// Run it before launch: anything it lists is still standing in for Griffin and Nadia's own words or photos.
+// Run it before launch: anything it lists is still standing in for Griffin and Nadia's own words or photos. It also
+// lists the Japanese lines we wrote that still need a native read (JA_TO_READ).
 import fs from "node:fs"
 import path from "node:path"
 
@@ -18,6 +19,8 @@ for (const k of uses.keys()) if (!declared.includes(k)) { console.error(`✖ ${k
 const live = keys.filter((k) => uses.has(k.key))
 console.log(live.length ? `${live.length} placeholder${live.length === 1 ? "" : "s"} still in use:` : "No placeholders in use. Ready for launch.")
 for (const k of live) console.log(`- ${k.key} (${[...new Set(uses.get(k.key))].join(", ")})\n    en: ${k.en}\n    ja: ${k.ja}`)
+const ja = [...file.matchAll(/\{ key: "([^"]+)", ja: "([^"]*)" \}/g)].map((m) => ({ key: m[1], ja: m[2] }))
+if (ja.length) { console.log(`${ja.length} Japanese line${ja.length === 1 ? "" : "s"} waiting for a native read:`); for (const k of ja) console.log(`- ${k.key}: ${k.ja}`) }
 const unused = declared.filter((k) => !uses.has(k))
 if (unused.length) console.log(`Not used any more (delete from pending.ts): ${unused.join(", ")}`)
 process.exit(bad ? 1 : 0)

@@ -1125,7 +1125,11 @@ svg.lucide { stroke-width: 1.5; }
 .hanko-lg { font-size: 40px; }
 /* Typing on a phone: the sheet runs down to the keyboard, so Back / Next sit right on it; the dock steps aside */
 [data-typing] .sheet { max-height: calc(var(--vvh, 100svh) - 24px); height: calc(var(--vvh, 100svh) - 24px); } /* 12 above the keyboard, like every other edge */
-@media (max-width: 767px) { [data-typing] .site-nav { visibility: hidden; } [data-typing] .rsvp-actions { display: none; } } /* typing on a phone: the field gets the room, Back / Next come back when the keyboard goes */
+/* Keyboard up on a phone: the field gets the room and nothing sits on the keyboard. The sticky Back / Next step aside
+   and the same pair shows at the end of the form, so you can always scroll down to them; the footer comes back
+   when the keyboard goes. */
+.rsvp-actions-inline { display: none; gap: var(--space-3); padding-top: var(--space-2); }
+@media (max-width: 767px) { [data-typing] .site-nav { visibility: hidden; } [data-typing] .rsvp-actions { display: none; } [data-typing] .rsvp-actions-inline { display: flex; } }
 /* A focused field scrolls to just above the keyboard (and Back / Next), with a little room */
 :is(input, textarea, select) { scroll-margin-block: var(--space-5); }
 
@@ -1189,3 +1193,37 @@ svg.lucide { stroke-width: 1.5; }
 .travel-summary-line { color: var(--ink-soft); text-decoration: none; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
 .travel-summary-line:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .travel-summary-line:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; } }
+
+/* Radio group as a segmented pair (RSVP, Who's coming): the name, then two equal halves of the row, 48 tall (one
+   above the other under 360 wide). Unchosen halves have a strong 1px line (3:1 on the paper); the chosen one fills, takes the 2px
+   accent line and a tick at its left edge, so each label stays centred on one line. */
+.radio-group { display: flex; flex-direction: column; gap: var(--space-2); padding-block: var(--space-2); outline: none; }
+.radio-group-label { font-family: var(--font-label); font-weight: 500; color: var(--ink); }
+.radio-group-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+@media (max-width: 359px) { .radio-group-options { grid-template-columns: 1fr; } }
+.radio-option {
+  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding-inline: var(--space-6); white-space: nowrap;
+  border: 1px solid var(--line-strong); border-radius: var(--input-radius); background: var(--input-bg); color: var(--ink-soft); /* line-strong: 3:1 or more on the paper in both modes */
+  font-family: var(--font-label); font-size: var(--type-ui-size); font-weight: 500; text-align: center; cursor: pointer;
+  outline: 2px solid transparent; outline-offset: 2px; -webkit-tap-highlight-color: transparent; user-select: none;
+  transition: border-color var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper), color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-spring);
+}
+.radio-option:has(:focus-visible) { outline-color: var(--input-focus); }
+@media (hover: hover) { .radio-option:not([data-selected]):hover { background: color-mix(in oklab, var(--ink) 5%, var(--input-bg)); color: var(--ink); } }
+.radio-option:active { transform: scale(var(--press-scale)); }
+.radio-option[data-selected] { background: var(--input-selected-bg); border-color: var(--input-selected-line); box-shadow: inset 0 0 0 1px var(--input-selected-line); color: var(--ink); }
+.radio-option[data-invalid]:not([data-selected]) { border-color: var(--input-error); }
+.radio-option-tick { position: absolute; left: var(--space-2); top: 50%; translate: 0 -50%; color: var(--action); }
+
+/* Song search (RSVP step 2): results as clear rows under the field (artwork, title, artist, a tick once chosen), then
+   "Use what I typed". Chosen songs are small cards with Change and remove. */
+.song-search-input::-webkit-search-cancel-button, .song-search-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+.song-results { display: flex; flex-direction: column; gap: var(--space-2); }
+.song-row { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: 56px; padding: var(--space-2); border: 1px solid transparent; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; -webkit-tap-highlight-color: transparent; transition: background-color var(--duration-fast) var(--ease-paper), border-color var(--duration-fast) var(--ease-paper); }
+.song-row:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .song-row:hover { background: color-mix(in oklab, var(--ink) 5%, transparent); } }
+.song-row:active { background: color-mix(in oklab, var(--ink) 8%, transparent); }
+.song-row[aria-pressed="true"] { background: var(--input-selected-bg); border-color: var(--input-selected-line); }
+.song-row-tick { color: var(--action); }
+.song-art { flex: none; width: 40px; height: 40px; border-radius: var(--radius-chip); object-fit: cover; background: var(--muted); color: var(--ink-muted); }
+.song-card { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--card); }

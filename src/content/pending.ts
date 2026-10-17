@@ -23,5 +23,20 @@ export const PENDING = {
   },
 } as const
 
+/**
+ * New Japanese lines written by us, not by a native speaker: each needs a native read before launch
+ * (`npm run check:pending` lists them). The text is as it stands in ja.ts; a unit test keeps the two the same.
+ * When one has been read (and corrected in ja.ts), delete it here.
+ */
+export const JA_TO_READ: { key: string; ja: string }[] = [
+  { key: "rsvp.dietaryOther", ja: "詳しく教えてください（任意）" },
+  { key: "rsvp.searchSong", ja: "検索" },
+  { key: "rsvp.useTyped", ja: "入力したとおりに使う" },
+  { key: "rsvp.songResults", ja: "件見つかりました" },
+  { key: "rsvp.listResults", ja: "件の候補" },
+  { key: "flying.placeholder", ja: "都市名を入力して探す" },
+  { key: "flying.noMatch", ja: "見つかりません。「その他」を選んでください。" },
+]
+
 export type PendingKey = keyof typeof PENDING
 export const pending = (key: PendingKey, lang: "en" | "ja") => PENDING[key][lang]

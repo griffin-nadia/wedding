@@ -16,6 +16,9 @@ sample household, with the clock fixed and reduced motion on:
 - **Page changes:** the card's top and visible bottom are the same on every page; the page behind is the theme's
   paper and matches theme-color; the light / dark circle starts at the button on a first visit; on phones the card
   ends 12px above the dock (`e2e/page-change.spec.ts`).
+- **RSVP:** every mix of answers gets through all three steps with the keyboard down or up, and with it up Back /
+  Next are inline, never on the keyboard; Who's coming is a native radio group; the song search only searches when
+  asked and puts the keyboard away; the flying-from combobox filters and picks (`e2e/rsvp.spec.ts`).
 - **The day:** every timeline row has its time left of its icon, the icon on the line and the words right of it,
   in English and Japanese (`e2e/day.spec.ts`).
 - **QR card:** laptops only, outside the letter, clear of the letter and their faces, bottom right, at 1024 to
