@@ -14,7 +14,7 @@ import { spring, still } from "../../motion"
  */
 const css = `
 .x-stack { position: relative; isolation: isolate; min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto auto; justify-items: center; gap: 12px; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); overflow: hidden; background: color-mix(in oklab, var(--letter-bg) 55%, var(--surface-alt)); color: var(--ink); }
-.x-stack::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--texture-hatch), var(--texture-grain); background-size: 512px, 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
+.x-stack::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
 .x-stack-title { margin: 0; font-family: var(--font-display); font-size: var(--type-heading-size); color: var(--ink); }
 .x-stack-pile { position: relative; width: 100%; display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; outline: none; }
 .x-stack-pile:focus-visible .x-stack-card[data-top] { outline: 2px solid var(--input-focus); outline-offset: 6px; border-radius: var(--radius-control); }

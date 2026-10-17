@@ -18,17 +18,10 @@ export const entries: Entry[] = [
     Component: lazy(() => import("./micro-magnetic-toggle")),
   },
   {
-    id: "micro-paper-shader", title: "Paper shader, live vs image",
-    summary: "One letter split down the middle: Paper's live shader on the left, the baked images the site uses on the right, with this page's frame rate.",
-    refs: [{ label: "Paper Shaders", href: "https://shaders.paper.design" }, { label: "Lynn Fisher", href: "https://lynnandtonic.com" }],
-    promote: "Don't ship the live shader to guests: a full-screen WebGL canvas behind every page costs battery and frames on phones, and the baked WebPs already read as paper. If a moving paper is wanted, render one frame per theme offline and bake it like the grain.",
-    Component: lazy(() => import("./micro-paper-shader")),
-  },
-  {
-    id: "micro-grain", title: "Grain and fibre",
-    summary: "Home's letter with its grain, washi fibres and edge shadow on sliders, live, with the site's values marked.",
-    refs: [{ label: "Lynn Fisher", href: "https://lynnandtonic.com" }, { label: "Paper Shaders", href: "https://shaders.paper.design" }],
-    promote: "Picking new values is a token change (--theme-texture, and adding the fibre layer to .letter) plus a look at page-turn cost on a phone: the fibre tile is one more layer to draw while a letter moves. The edge shadow is already .paper-feel.",
-    Component: lazy(() => import("./micro-grain")),
+    id: "micro-paper", title: "Paper",
+    summary: "The paper four ways (very subtle, chosen, more fibre, no folds at all), each in Light and Lantern at the size the site draws it, with sliders for folds, wrinkles, drops and fibre, and Copy settings.",
+    refs: [{ label: "Paper Shaders, Paper texture", href: "https://shaders.paper.design/paper-texture" }],
+    promote: "Send the copied settings: they go into src/lib/paper.ts as PAPER, then node scripts/paper-bake.mjs bakes them to the three tiles the site uses. Guests never run the shader.",
+    Component: lazy(() => import("./micro-paper")),
   },
 ]

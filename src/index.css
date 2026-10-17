@@ -306,10 +306,10 @@
 
 /* Lantern mode: photos sit a touch dimmer so they don't glare. */
 /* Lantern letter (the default; "Letter in Lantern" = cream turns the letter into paper under a lamp instead) */
-:root[data-theme="lantern"] .letter { background:
+:root[data-theme="lantern"] .letter::before { background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 8%, transparent), transparent 60%),
     radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%),
-    var(--letter-bg); }
+    var(--paper) 0 0 / var(--paper-size); }
 :root[data-theme="lantern"] .letter .photo-img { filter: saturate(0.95) brightness(0.92); }
 :root[data-theme="lantern"] .field[data-filled="true"]:not([type="date"]):not(textarea) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a37e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); }
 [data-theme="lantern"] .scene img {
@@ -441,8 +441,7 @@
 }
 /* Driver card full screen: bigger in landscape */
 /* Show the driver (v3 Q4): the shared sheet on the brightest paper, big Japanese, Done in the footer */
-.sheet.sheet-bright { background: var(--brand-paper-bright); color: var(--brand-ink-deep); border-radius: var(--radius-letter); }
-.sheet-bright::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background-image: var(--texture-paper); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: multiply; pointer-events: none; }
+.sheet.sheet-bright { background: var(--paper-bright) 0 0 / var(--paper-size), var(--brand-paper-bright); color: var(--brand-ink-deep); border-radius: var(--radius-letter); }
 .sheet.sheet-driver { justify-content: space-between; overflow: auto; }
 .driver-body { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-5); padding: var(--space-8) var(--space-5); text-align: center; }
 .driver-please { font-size: var(--type-heading-size); line-height: var(--type-heading-leading); color: var(--brand-doro); }
@@ -501,10 +500,7 @@
   padding: var(--letter-pad);
   border: 1px solid color-mix(in oklab, var(--line-hairline) 60%, transparent);
   border-radius: var(--letter-radius);
-  background:
-    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
-    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
-    var(--letter-bg);
+  background: var(--letter-bg);
   color: var(--letter-ink);
   box-shadow: var(--elevation-paper);
   outline: none;
@@ -533,9 +529,13 @@
 @media (pointer: coarse) { .letter-scroll { scrollbar-width: none; } .letter-scroll::-webkit-scrollbar { display: none; } }
 /* Travel's jump links once stuck sit flush at the card's top edge, so the top fade steps aside for them */
 .letter-scroll:has(.jump-links[data-stuck]) { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); }
-/* Paper grain on the letter only, under the words, moving with the letter */
+/* The paper, a warm glow top left and a cool shade bottom right, on a layer under the words (so the tile isn't the
+   page's largest paint) */
 .letter { isolation: isolate; }
-.letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background-image: var(--texture-grain); background-size: 256px; opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
+.letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background:
+    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
+    var(--paper) 0 0 / var(--paper-size); }
 
 /* The top bar, on every screen and never hidden: the mark on the left, the switches on the right (the nav and RSVP
    join it from 768; on phones the nav is the dock). Its paper is a layer of its own (::before), so the blur doesn't
@@ -1263,16 +1263,14 @@ svg.lucide { stroke-width: 1.5; }
 .song-art { flex: none; width: 40px; height: 40px; border-radius: var(--radius-chip); object-fit: cover; background: var(--muted); color: var(--ink-muted); }
 .song-card { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--card); }
 
-/* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): washi
-   Nadia's crosshatch in the paper itself (a baked tile blended with the paper colour), the letter's grain over
-   it, and an edge that sits on what's under it: a hairline contact shadow, a short soft shadow and a long faint
-   one, a lit top edge and a faintly shaded bottom edge. All images, nothing drawn live, so phones stay light. */
+/* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): the baked
+   paper (--paper) and an edge that sits on what's under it: a hairline contact shadow, a short soft shadow and a
+   long faint one, a lit top edge and a faintly shaded bottom edge. All images, nothing drawn live. */
 .paper-feel { /* a plain class, last in the file: it wins over each card's own background and shadow */
   position: relative;
   isolation: isolate;
-  background-image: var(--texture-hatch);
-  background-size: 512px;
-  background-blend-mode: var(--paper-blend);
+  background-image: var(--paper);
+  background-size: var(--paper-size);
   box-shadow:
     0 0 0 0.5px rgb(var(--tint-shadow) / 0.14),
     0 1px 2px rgb(var(--tint-shadow) / 0.12),
@@ -1280,20 +1278,18 @@ svg.lucide { stroke-width: 1.5; }
     0 24px 40px -26px rgb(var(--tint-shadow) / 0.3),
     inset 0 1px 0 rgb(255 255 255 / 0.5),
     inset 0 -1px 0 rgb(var(--tint-shadow) / 0.07);
-  &::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background-image: var(--texture-grain); background-size: 256px; opacity: 0.16; mix-blend-mode: var(--texture-blend); }
 }
-/* The slip: bright paper in both modes (so the light crosshatch and grain), folded in three before it was drawn, so two
-   faint creases cross it (a shadowed side, a lit side) */
+/* The slip: bright paper in both modes, folded in three before it was drawn, so two faint creases cross it (a
+   shadowed side, a lit side) */
 .omikuji-slip.paper-feel {
-  --texture-hatch: url("./assets/texture-hatch-light.webp"); --texture-grain: url("./assets/texture-grain-light.webp"); --texture-blend: multiply; --tint-shadow: 66 26 5;
+  --tint-shadow: 66 26 5;
   background-image:
     linear-gradient(to bottom, transparent calc(33.33% - 3px), rgb(var(--tint-shadow) / 0.05) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 3px)),
     linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px)),
-    var(--texture-hatch);
-  background-size: 100% 100%, 100% 100%, 512px;
-  background-blend-mode: normal, normal, multiply;
+    var(--paper-bright);
+  background-size: 100% 100%, 100% 100%, var(--paper-size);
 }
-/* The sent letter: the same crosshatch through the paper, scrolling with the words */
-.rsvp-done { background-image: var(--texture-hatch); background-size: 512px; background-blend-mode: var(--paper-blend); background-attachment: local; }
+/* The sent letter: the same paper, scrolling with the words */
+.rsvp-done { background-image: var(--paper); background-size: var(--paper-size); background-attachment: local; }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
