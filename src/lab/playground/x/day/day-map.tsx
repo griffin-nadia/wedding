@@ -14,7 +14,7 @@ import { tween } from "../../motion"
  */
 const css = `
 .x-day-map { position: relative; min-height: 100svh; padding: var(--space-6) 16px var(--space-7); background: var(--letter-bg); color: var(--ink-soft); }
-.x-day-map::before { content: ""; position: absolute; inset: 0; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
+.x-day-map::before { content: ""; position: absolute; inset: 0; background: var(--paper-live, none) center / cover; mix-blend-mode: var(--paper-blend); opacity: 0.6; pointer-events: none; }
 .x-day-map-in { position: relative; display: grid; gap: var(--space-5); max-width: 1180px; margin: 0 auto; }
 @media (min-width: 1024px) { .x-day-map { padding-top: var(--space-8); } .x-day-map-in { grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); align-items: start; column-gap: var(--space-7); } .x-day-map-head { grid-column: 1 / -1; } }
 .x-day-map-plate { --land: var(--brand-sage-paper); position: relative; width: 100%; aspect-ratio: 400 / 300; border-radius: var(--radius-section); box-shadow: var(--elevation-paper); }

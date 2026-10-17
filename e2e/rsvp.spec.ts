@@ -223,7 +223,7 @@ test("where are you flying from: type to filter, pick, and the map line follows"
   await expect(dialog.getByRole("option", { name: /Elsewhere/ })).toHaveCount(0)
 })
 
-test("the sent letter is paper you could hold, from images only (no canvas or shader on the guest site)", async ({ page }) => {
+test("the sent letter: plain paper on the guest site for now (the made paper is lab only), no canvas, the hanko's ink", async ({ page }) => {
   await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
   await openForm(page)
   const dialog = page.getByRole("dialog")
@@ -232,12 +232,13 @@ test("the sent letter is paper you could hold, from images only (no canvas or sh
   await toCheck(page); await press(page, /^Send our reply$/)
   await dialog.getByRole("button", { name: "Draw one" }).click()
   await expect(dialog.locator(".omikuji-slip")).toBeVisible()
+  await page.waitForTimeout(1500)
   const paper = await page.evaluate(() => ({
     canvases: document.querySelectorAll("canvas").length,
-    paper: [".omikuji-slip", ".journey-end", ".rsvp-done"].map((s) => getComputedStyle(document.querySelector(s)!).backgroundImage.includes("paper-")),
+    live: document.documentElement.style.getPropertyValue("--paper-live"),
     ink: (() => { const h = getComputedStyle(document.querySelector(".hanko")!); return [h.filter.includes("ink-bleed"), (h.maskImage || h.webkitMaskImage).includes("texture-ink")] })(),
   }))
-  expect(paper).toEqual({ canvases: 0, paper: [true, true, true], ink: [true, true] })
+  expect(paper).toEqual({ canvases: 0, live: "", ink: [true, true] })
 })
 
 // 18e: once replied, Home shows one next step: travel dates if there are none yet (opening the dates step), else
