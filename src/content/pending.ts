@@ -18,8 +18,8 @@ export const PENDING = {
     ja: "写真は準備中です",
   },
   "faqs.contactDay": {
-    en: "We'll add who to call on the day closer to the time.",
-    ja: "当日の連絡先は、日が近づいたらここに載せます。",
+    en: "On the day, call Jehan or Noya. We'll add their numbers closer to the time.",
+    ja: "当日は、ジェハンかノヤにご連絡ください。電話番号は日が近づいたらここに載せます。",
   },
 } as const
 
@@ -45,6 +45,17 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.whoMade.a", ja: "ナディアの兄のジェハンがデザインと制作をしました。絵はナディア、写真はわたしたちのものです。" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
+]
+
+/**
+ * Still waiting on Griffin and Nadia but not standing in anywhere on the site yet (so not in PENDING): what's
+ * needed, and where it goes once it arrives. `npm run check:pending` lists these too. Delete a line when it lands.
+ */
+export const WAITING: { key: string; what: string }[] = [
+  { key: "fortunes.confirm", what: "The 12 fortunes (src/content/en.ts FORTUNES, or the Content tab): confirmed by Griffin and Nadia, especially the six travel tips" },
+  { key: "art.mapleLeaf", what: "Nadia's maple leaf on its own (it's only on the closed envelope so far), for wherever a leaf shows alone" },
+  { key: "day.arrivalTime", what: "What time guests should arrive on the day (The day and the invite email; nothing says it yet)" },
+  { key: "contact.dayDetails", what: "Jehan's and Noya's numbers for the day (the Content tab's contact_day replaces the FAQs line)" },
 ]
 
 export type PendingKey = keyof typeof PENDING

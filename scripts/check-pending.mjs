@@ -21,6 +21,8 @@ console.log(live.length ? `${live.length} placeholder${live.length === 1 ? "" : 
 for (const k of live) console.log(`- ${k.key} (${[...new Set(uses.get(k.key))].join(", ")})\n    en: ${k.en}\n    ja: ${k.ja}`)
 const ja = [...file.matchAll(/\{ key: "([^"]+)", ja: "([^"]*)" \}/g)].map((m) => ({ key: m[1], ja: m[2] }))
 if (ja.length) { console.log(`${ja.length} Japanese line${ja.length === 1 ? "" : "s"} waiting for a native read:`); for (const k of ja) console.log(`- ${k.key}: ${k.ja}`) }
+const waiting = [...file.matchAll(/\{ key: "([^"]+)", what: "([^"]*)" \}/g)].map((m) => ({ key: m[1], what: m[2] }))
+if (waiting.length) { console.log(`${waiting.length} thing${waiting.length === 1 ? "" : "s"} still waiting on Griffin and Nadia:`); for (const w of waiting) console.log(`- ${w.key}: ${w.what}`) }
 const unused = declared.filter((k) => !uses.has(k))
 if (unused.length) console.log(`Not used any more (delete from pending.ts): ${unused.join(", ")}`)
 process.exit(bad ? 1 : 0)
