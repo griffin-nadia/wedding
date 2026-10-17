@@ -52,8 +52,16 @@ the back end exists. Copy `.env.example` to `.env` and paste the Apps Script URL
 
 ## Music
 
-The guest site always plays `public/audio/song.mp3`. To swap the song, replace that file and change the title and
-artist in `ART.music` (`src/lib/art.ts`); the credit under the sign-off follows. That's the whole change.
+The guest site plays `public/audio/song.mp3`, and `ART.music` in `src/lib/art.ts` holds that file's path with its
+credit (said once, in the last FAQ, "Who made this site?"). To swap the song, replace the file and that entry; the
+FAQ follows.
+
+Now playing: "A Town With an Ocean View" by Joe Hisaishi, piano by Piano ZeroL. The file is `private/song.mp3` with
+its silence trimmed (1.5 s at the start, 10 s at the end, cut on whole MP3 frames so nothing is re-encoded), so it
+loops with under a second's breath.
+
+To switch back to "orange hues" by Aqualina: `git show 2daa138:public/audio/song.mp3 > public/audio/song.mp3` (the
+file as it was before the switch), then in `src/lib/art.ts` swap `music` for the commented-out entry under it.
 
 For a local preview of a song that isn't cleared yet, put it at `private/song.mp3` (gitignored). `npm run dev` and
 `npm run lab` play it instead; it is never copied into `dist`, and the build fails if anything from `private/` is.

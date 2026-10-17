@@ -25,7 +25,8 @@ export const PENDING = {
 
 /**
  * New Japanese lines written by us, not by a native speaker: each needs a native read before launch
- * (`npm run check:pending` lists them). The text is as it stands in ja.ts; a unit test keeps the two the same.
+ * (`npm run check:pending` lists them). The text is as it stands in ja.ts (the music credit in art.ts); a unit test
+ * keeps them the same.
  * When one has been read (and corrected in ja.ts), delete it here.
  */
 export const JA_TO_READ: { key: string; ja: string }[] = [
@@ -36,6 +37,9 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "rsvp.listResults", ja: "件の候補" },
   { key: "flying.placeholder", ja: "都市名を入力して探す" },
   { key: "flying.noMatch", ja: "見つかりません。「その他」を選んでください。" },
+  { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
+  { key: "faqs.whoMade.a", ja: "ナディアの兄のジェハンがデザインと制作をしました。絵はナディア、写真はわたしたちのものです。" },
+  { key: "music.credit.ja", ja: "久石譲「A Town With an Ocean View」（ピアノ：Piano ZeroL）" },
 ]
 
 export type PendingKey = keyof typeof PENDING

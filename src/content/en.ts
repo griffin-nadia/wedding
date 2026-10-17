@@ -4,6 +4,7 @@
 
 import { DATES } from "@/lib/wedding-dates"
 import { fmtDay } from "@/lib/dates"
+import { ART } from "@/lib/art"
 
 const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
 const LOCK = fmtDay(DATES.changesLock)
@@ -92,7 +93,7 @@ export const en = {
     seeList: "See as a list", seeMap: "See the map", next: "Next", done: "Done",
   },
   flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", endTitle: "Where are you flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (key: string, city: string) => (key === "Already in Japan" ? "You're already in Japan" : `From ${/^(Somewhere|Elsewhere)/.test(key) ? city.toLowerCase() : city}`), change: "Change", placeholder: "Type to find your city", noMatch: "Nothing matches. Try Somewhere else." },
-  music: { on: "Play music", off: "Pause music", credit: (title: string, artist: string, year?: number) => `Music: “${title}” by ${artist}${year ? ` (${year})` : ""}` },
+  music: { on: "Play music", off: "Pause music" },
   journey: {
     title: "Your journey",
     map: (city: string | null, key?: string) => (key === "Already in Japan" ? "A small map of the way to Kyoto, and you're already in Japan" : city ? `A small map with your line from ${/^(Somewhere|Elsewhere)/.test(key ?? "") ? city.toLowerCase() : city} to Kyoto` : "A small map of the way to Kyoto"),
@@ -299,6 +300,7 @@ export const en = {
       { q: "What about food?", a: "Lunch is catered, and we'll set the menu a few months before. Tell us about any dietary needs in your reply." },
       { q: "What happens to my details?", a: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding." },
       { q: "Is it a traditional Japanese wedding?", a: "No, it's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are." },
+      { q: "Who made this site?", a: `Nadia's brother Jehan designed and built it, with Nadia's drawings and our photos. Music: ${ART.music.credit.en}.` },
     ],
     onTheDay: "On the day, contact",
     contact: "Any questions at all, message either of us. We're always happy to help.",
