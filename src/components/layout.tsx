@@ -70,8 +70,9 @@ function Nav() {
 
 
 /**
- * Scene behind, letter in front. No site footer: the letter ends with the sign-off, the sound and
- * Lantern switches, then the credit line. RSVP is a button (on the letter, and in the top bar from 768).
+ * Scene behind, letter in front, and one top bar over both on every screen: the mark, the nav from 768, RSVP from
+ * 768, then あ / A, music and the sun or moon. The bar never hides; once the page scrolls a hairline shows under it.
+ * No site footer: the letter ends with the sign-off.
  */
 export function Layout() {
   const { t } = useLang()
@@ -91,6 +92,15 @@ export function Layout() {
     window.addEventListener("ng-reseal", on)
     return () => window.removeEventListener("ng-reseal", on)
   }, [])
+  // The top bar's hairline shows once the page has scrolled at all (one attribute write per change)
+  useEffect(() => {
+    const root = document.documentElement
+    let on = false
+    const check = () => { const now = window.scrollY > 0; if (now !== on) { on = now; root.toggleAttribute("data-scrolled", now) } }
+    check()
+    window.addEventListener("scroll", check, { passive: true })
+    return () => { window.removeEventListener("scroll", check); root.removeAttribute("data-scrolled") }
+  }, [])
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sealed", sealed)
     return () => document.documentElement.removeAttribute("data-sealed")
@@ -103,7 +113,7 @@ export function Layout() {
           moves, so the copy matches it exactly and the letter seems to end 8px above the dock, even on a bounce. */}
       {!sealed && <Scene source={sceneFor(theme)} dim={dim} className="scene-band" />}
       <header className="site-bar">
-        <Link to="/" className="site-mark hidden md:inline">{t.meta.shortTitle}</Link>
+        <Link to="/" className="site-mark">{t.meta.shortTitle}</Link>
         <Nav />
         {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-(--button-pad) font-label text-body font-medium md:inline-flex">{t.nav.rsvp}</Link>}
         <ModeSwitches className="chrome-lantern" />
@@ -112,7 +122,6 @@ export function Layout() {
       <main className="letter-wrap">
         <Arrival key={resealed} sealedAgain={resealed > 0} enabled={page === "home"} onOpened={() => setSealed(false)}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
-            <ModeSwitches className="letter-lantern" />
             <Suspense>
               <div key={pathname} className="letter-body">
                 <Outlet />
