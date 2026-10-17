@@ -542,8 +542,10 @@
 
 /* From 1024: "Open on your phone", bottom right of the scene, outside the letter */
 /* Home's card footer on laptops: the QR and the made-by mark, inside the paper (nothing floats over the photo) */
-.letter-foot { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-hairline); }
-.letter-foot:not(:has(.phone-qr)) { display: none; }
+.letter-foot { width: 100%; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-hairline); }
+/* Laptops only, and its room is held from the first paint (the QR loads a moment later), so the card never jumps */
+.letter-foot { display: none; }
+@media (min-width: 1024px) { .letter-foot { display: flex; min-height: calc(64px + var(--space-3) + 1px); } }
 .phone-qr { display: flex; align-items: center; gap: var(--space-4); color: var(--letter-ink); }
 .credit-mark.credit-foot { position: relative; left: auto; bottom: auto; }
 @media (min-width: 1024px) { :root:has(.letter[data-page="home"]) .credit-mark:not(.credit-foot) { display: none; } }

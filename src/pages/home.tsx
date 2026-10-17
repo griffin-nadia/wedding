@@ -114,7 +114,7 @@ export function HomePage() {
       {household && mode === "keepsake" && <Link to="/our-story" className="btn-text inline-flex min-h-11 items-center self-start">{t.home.keepsake.story}</Link>}
 
       {mode !== "invite" ? null : !household ? (
-        <div role="status"><span className="sr-only">{t.loading}</span><Skeleton className="h-13 w-full rounded-lg! sm:w-64" /></div>
+        <div role="status"><span className="sr-only">{t.loading}</span><Skeleton className="h-(--button-height) w-full rounded-lg! sm:w-64" /></div>
       ) : locked ? (
         // After the changes lock: a reply stays marked, with their "life happens" line where the change-by line was
         done ? (
