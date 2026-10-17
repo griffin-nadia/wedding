@@ -58,7 +58,9 @@ export default function Paper() {
   const now = sets[pick]
   const copy = async () => {
     const text = JSON.stringify({ preset: pick, params: now, lanternParams: forTone(now, "lantern"), colours: COLOURS }, null, 2)
-    try { await navigator.clipboard.writeText(text) } catch { window.prompt("Copy these settings", text) }
+    // A clipboard that never answers (some browsers wait on a permission) counts as failed after a second
+    const wrote = await Promise.race([navigator.clipboard?.writeText(text).then(() => true, () => false) ?? false, new Promise<boolean>((r) => setTimeout(() => r(false), 1000))])
+    if (!wrote) window.prompt("Copy these settings", text)
     setCopied(true); setTimeout(() => setCopied(false), 2000)
   }
   return (
