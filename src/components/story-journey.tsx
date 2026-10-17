@@ -63,7 +63,12 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     <div className="flex flex-col gap-4">
       <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(false)}>{t.story.seeMap}</button>
       <ol className="flex flex-col gap-4">
-        {chapters.map((ch) => <li key={ch.key} className="flex flex-col gap-1"><p className="text-small text-muted-foreground">{ch.year}</p><p className="font-medium text-foreground">{ch.title}</p>{ch.body.map((p, k) => <p key={k}>{p}</p>)}</li>)}
+        {chapters.map((ch) => (
+          <li key={ch.key} className="flex items-start gap-3">
+            {ch.photo ? <Photo name={ch.photo} treatment="split" sizes="96px" alt="" className="story-thumb" /> : <span aria-hidden className="story-thumb" />}
+            <div className="flex min-w-0 flex-col gap-1"><p className="text-small text-muted-foreground">{ch.year}</p><p className="font-medium text-foreground">{ch.title}</p>{ch.body.map((p, k) => <p key={k}>{p}</p>)}</div>
+          </li>
+        ))}
       </ol>
     </div>
   )
@@ -102,7 +107,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         {opener && <section className="story-slide" role="group" aria-roledescription="slide" aria-label={t.story.slide(1, total)}>{opener}</section>}
         {chapters.length ? chapters.map((c, i) => (
           <section key={c.key} className="story-slide" role="group" aria-roledescription="slide" aria-label={t.story.slide(i + 1 + lead, total)} inert={i !== on || undefined}>
-            {c.photo && <Photo name={c.photo} treatment="print" sizes="(min-width: 1024px) 320px, 60vw" alt={`${c.title}, ${c.year}`} className="story-slide-photo" />}
+            {c.photo && <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 420px, 80vw" alt={`${c.title}, ${c.year}`} className="story-slide-photo" />}
             <p className="text-small text-muted-foreground">{t.story.page(i + 1, chapters.length)}, {c.year}{c.place ? ` · ${c.place}` : ""}</p>
             <h2 className="font-display text-heading text-foreground">{c.title}</h2>
             {c.body.map((p, k) => <p key={k}>{p}</p>)}

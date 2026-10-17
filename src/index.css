@@ -401,7 +401,7 @@
   background: var(--brand-paper-bright);
   border-radius: calc(var(--radius-control) / 2);
   box-shadow: var(--elevation-paper);
-  transform: rotate(-2.5deg);
+  transform: rotate(var(--tilt, -2.5deg));
 }
 .photo-placeholder { background-color: var(--muted); }
 
@@ -1136,7 +1136,7 @@ svg.lucide { stroke-width: 1.5; }
 
 
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
-.story-kids { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: var(--space-4); align-items: start; }
+.story-kids { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: var(--space-4); align-items: start; padding: var(--space-2); } /* room for the tilted corners */
 .story-kid-slot { position: relative; aspect-ratio: 2 / 3; border: 1px dashed var(--line-strong); border-radius: var(--radius-control); background: var(--surface-alt); }
 
 /* Their picks: compact rows, the whole row is the link */
@@ -1162,8 +1162,16 @@ svg.lucide { stroke-width: 1.5; }
 .story-track::-webkit-scrollbar { display: none; }
 .story-track:focus-visible { outline-color: var(--input-focus); }
 .story-slide { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; gap: var(--space-2); overflow: hidden; }
-.story-slide-photo { align-self: flex-start; margin-bottom: var(--space-2); }
-.story-slide-photo > div { height: min(30svh, 320px); width: auto; }
+.story-slide-photo { align-self: flex-start; margin: var(--space-2); } /* room for the tilted corners */
+.story-slide-photo > div { height: min(30svh, 320px); width: auto; max-width: 100%; }
+/* Landscape prints fill the width instead, inside a margin that leaves room for the tilt's corners */
+.story-slide-photo[data-frame="landscape"] { width: calc(100% - 16px); max-width: 420px; margin-inline: 8px; }
+.story-slide-photo[data-frame="landscape"] > div { width: 100%; height: auto; max-height: min(30svh, 320px); }
+@media (max-height: 760px) { .story-slide-photo[data-frame="landscape"] { max-width: calc(22svh * 4 / 3 + 12px); } }
+/* The list: a 48px thumbnail beside each chapter */
+.story-thumb { flex: none; width: 48px; height: 48px; border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); }
+.story-thumb figcaption { display: none; }
+.story-thumb > div { width: 48px; height: 48px; aspect-ratio: auto !important; border-radius: 0 !important; }
 .story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: min(34svh, 300px); width: auto; aspect-ratio: 2 / 3; }
 .story-controls { display: flex; align-items: center; justify-content: space-between; }
 .story-controls .utility-btn:disabled { opacity: 0.4; }
