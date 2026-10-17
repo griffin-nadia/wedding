@@ -148,11 +148,17 @@
   font-weight: 500;
   color: var(--eyebrow);
 }
-/* Hanko: the red seal stamped on "all set". Lands once; no motion when reduced motion is on. */
+/* Hanko: the vermilion seal stamped on "all set" (--ink-stamp, docs/system.md). Real ink: the edge bleeds a little
+   into the paper (#ink-bleed, one small SVG filter in index.html, drawn once as it lands), the ink lies unevenly with
+   small dry specks (a baked mask), and on light paper it sinks in (multiply). Lands once; still under reduced motion. */
 @utility hanko {
-  @apply inline-grid shrink-0 place-items-center rounded-full border-[3px] border-primary font-display text-primary;
-  box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 3.5px var(--primary);
+  @apply inline-grid shrink-0 place-items-center rounded-full border-[3px] font-display;
+  color: var(--ink-stamp); border-color: currentColor;
+  box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 3.5px currentColor;
   transform: rotate(-8deg);
+  filter: url(#ink-bleed);
+  -webkit-mask: var(--texture-ink) 0 0 / 96px; mask: var(--texture-ink) 0 0 / 96px;
+  mix-blend-mode: var(--stamp-blend, multiply);
 }
 @keyframes hanko-stamp {
   0% { opacity: 0; transform: scale(1.6) rotate(-14deg); }
@@ -1227,3 +1233,42 @@ svg.lucide { stroke-width: 1.5; }
 .song-row-tick { color: var(--action); }
 .song-art { flex: none; width: 40px; height: 40px; border-radius: var(--radius-chip); object-fit: cover; background: var(--muted); color: var(--ink-muted); }
 .song-card { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--card); }
+
+/* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): washi
+   fibres in the paper itself (a baked, transparent tile over the paper colour, so no blend), the letter's grain over
+   it, and an edge that sits on what's under it: a hairline contact shadow, a short soft shadow and a long faint
+   one, a lit top edge and a faintly shaded bottom edge. All images, nothing drawn live, so phones stay light. */
+.paper-feel { /* a plain class, last in the file: it wins over each card's own background and shadow */
+  position: relative;
+  isolation: isolate;
+  background-image: var(--texture-fibre);
+  background-size: 384px;
+  box-shadow:
+    0 0 0 0.5px rgb(var(--tint-shadow) / 0.14),
+    0 1px 2px rgb(var(--tint-shadow) / 0.12),
+    0 8px 18px -10px rgb(var(--tint-shadow) / 0.34),
+    0 24px 40px -26px rgb(var(--tint-shadow) / 0.3),
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    inset 0 -1px 0 rgb(var(--tint-shadow) / 0.07);
+  &::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background-image: var(--texture-grain); background-size: 256px; opacity: 0.16; mix-blend-mode: var(--texture-blend); }
+}
+/* The slip: bright paper in both modes (so the light fibres and grain), folded in three before it was drawn, so two
+   faint creases cross it (a shadowed side, a lit side) */
+.omikuji-slip.paper-feel {
+  --texture-fibre: url("./assets/texture-fibre-light.webp"); --texture-grain: url("./assets/texture-grain-light.webp"); --texture-blend: multiply; --tint-shadow: 66 26 5;
+  background-image:
+    linear-gradient(to bottom, transparent calc(33.33% - 3px), rgb(var(--tint-shadow) / 0.05) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 3px)),
+    linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px)),
+    var(--texture-fibre);
+  background-size: 100% 100%, 100% 100%, 384px;
+}
+/* The sent letter: the same fibres through the paper, scrolling with the words */
+.rsvp-done { background-image: var(--texture-fibre); background-size: 384px; background-attachment: local; }
+/* Nadia's drawn envelope: the fibres over her paper only (masked to the closed drawing), gone as it opens */
+:root .envelope.is-drawn::after {
+  display: block; inset: 0 0 auto; aspect-ratio: 760 / 544; height: auto; z-index: 4; border-radius: 0;
+  background-image: var(--texture-fibre); background-size: 384px; opacity: 0.8; mix-blend-mode: multiply;
+  -webkit-mask: var(--drawn-mask) top / 100% auto no-repeat; mask: var(--drawn-mask) top / 100% auto no-repeat;
+  transition: opacity var(--duration-fast) var(--ease-paper);
+}
+.is-opening .envelope.is-drawn::after { opacity: 0; }

@@ -142,3 +142,20 @@ test("where are you flying from: type to filter, pick, and the map line follows"
   await city.fill("zzz")
   await expect(dialog.locator(".combo-note")).toHaveText("Nothing matches. Try Somewhere else.")
 })
+
+test("the sent letter is paper you could hold, from images only (no canvas or shader on the guest site)", async ({ page }) => {
+  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
+  await openForm(page)
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
+  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
+  await press(page, /^Next$/); await press(page, /^Next$/); await press(page, /^Send our reply$/)
+  await dialog.getByRole("button", { name: "Draw one" }).click()
+  await expect(dialog.locator(".omikuji-slip")).toBeVisible()
+  const paper = await page.evaluate(() => ({
+    canvases: document.querySelectorAll("canvas").length,
+    fibre: [".omikuji-slip", ".journey-end", ".rsvp-done"].map((s) => getComputedStyle(document.querySelector(s)!).backgroundImage.includes("texture-fibre")),
+    ink: (() => { const h = getComputedStyle(document.querySelector(".hanko")!); return [h.filter.includes("ink-bleed"), (h.maskImage || h.webkitMaskImage).includes("texture-ink")] })(),
+  }))
+  expect(paper).toEqual({ canvases: 0, fibre: [true, true, true], ink: [true, true] })
+})

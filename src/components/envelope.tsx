@@ -109,7 +109,8 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
     <>
       <div ref={stage} className={cn("arrival", phase === "opening" && "is-opening")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
         {/* Nadia's drawn envelope (6 Oct scan): closed, then her open envelope as the letter rises */}
-        <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper is-drawn">
+        <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper is-drawn"
+          style={{ ["--drawn-mask" as string]: `url(${import.meta.env.BASE_URL}${ART.drawnEnvelope.closed}-380.webp)` }}>
           <span aria-hidden className="envelope-back" />
           <span aria-hidden className="envelope-paper" />
           <span aria-hidden className="envelope-front" />

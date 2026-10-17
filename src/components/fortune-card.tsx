@@ -75,7 +75,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
 
   if (state !== "open") {
     return (
-      <section aria-labelledby="fortune" className={cn("omikuji flex items-center gap-6 rounded-md border bg-card p-4", className)}>
+      <section aria-labelledby="fortune" className={cn("omikuji paper-feel flex items-center gap-6 rounded-md border bg-card p-4", className)}>
         <button type="button" onClick={draw} disabled={state === "drawing"} aria-label={t.fortune.boxLabel} className="omikuji-hit">
           <Box drawing={state === "drawing"} />
         </button>
@@ -88,7 +88,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     )
   }
   return (
-    <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip", className)}>
+    <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip paper-feel", className)}>
       <SlipWords i={i} of={tips.length} text={text} />
       <Button variant="link" onClick={save} className="omikuji-save">{t.fortune.save}</Button>
     </div>
