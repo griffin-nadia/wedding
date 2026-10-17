@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { nextFrame } from "@/lib/frame"
 
@@ -21,6 +21,22 @@ const inSideScroller = (t: Element | null) => {
 }
 
 const TRACK = "transform var(--duration-base) var(--ease-paper)"
+/** One letter along the track: its own width plus a 12px gap, so the two sheets slide with paper between them. */
+const STEP = () => (letter()?.getBoundingClientRect().width ?? innerWidth - 24) + 12
+/**
+ * While a letter is on the move it's a sheet of paper on its own: clipped to the part on screen (12px from the top,
+ * ending where the dock's strip begins) with its own rounded corners, and the strip that normally trims it under
+ * the dock steps aside (html[data-turning]). So nothing ever shows a straight cut edge or a bare photo.
+ */
+function asSheet(el: HTMLElement) {
+  const r = el.getBoundingClientRect()
+  const nav = document.querySelector(".site-nav")?.getBoundingClientRect().top ?? innerHeight
+  const top = Math.max(0, 12 - r.top), bottom = Math.max(0, r.bottom - (nav - 12))
+  el.style.clipPath = `inset(${top}px 0 ${bottom}px 0 round var(--letter-radius))`
+  document.documentElement.toggleAttribute("data-turning", true)
+}
+let moving = 0
+const still_ = (el: HTMLElement) => { el.style.clipPath = ""; if (--moving <= 0) { moving = 0; document.documentElement.removeAttribute("data-turning") } }
 const turnMs = () => {
   const d = getComputedStyle(document.documentElement).getPropertyValue("--duration-base").trim()
   return (d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000) || 280
@@ -28,12 +44,14 @@ const turnMs = () => {
 let dragging = false
 /** Leaves the letter with no inline motion once it has settled, so nothing lingers on its own layer */
 const settle = (el: HTMLElement) => {
-  const clear = () => { el.removeEventListener("transitionend", own); if (dragging) return; el.style.transition = ""; el.style.willChange = "" }
+  moving++
+  let done = false
+  const clear = () => { if (done) return; done = true; el.removeEventListener("transitionend", own); if (dragging) return; el.style.transition = ""; el.style.willChange = ""; still_(el) }
   const own = (e: TransitionEvent) => { if (e.target === el && e.propertyName === "transform") clear() }
   el.addEventListener("transitionend", own)
   window.setTimeout(clear, turnMs() + 120)
 }
-let pending: { dir: number; at: number } | null = null
+let pending: { dir: number; at: number; go: () => void } | null = null
 
 /**
  * The leaving letter as a still copy on the same track: it slides off as the new letter slides in, both
@@ -47,12 +65,14 @@ function leave(dir: number, fromX = 0) {
   g.classList.add("letter-ghost")
   Object.assign(g.style, { position: "fixed", top: `${r.top}px`, left: `${r.left - fromX}px`, width: `${r.width}px`, height: `${r.height}px`, margin: "0", transition: "none", transform: `translateX(${fromX}px)` })
   document.body.appendChild(g)
-  nextFrame(() => { g.style.transition = TRACK; g.style.transform = `translateX(${-dir * innerWidth}px)` })
-  // Gone the moment it's off screen, with a fallback in case the transition never reports back
-  const done = () => g.remove()
+  asSheet(g); moving++
+  // Gone the moment it's off screen, with a fallback in case the transition never reports back (or never starts)
+  let gone = false
+  const done = () => { if (gone) return; gone = true; g.remove(); still_(g) }
   g.addEventListener("transitionend", (e) => { if (e.target === g) done() })
-  window.setTimeout(done, turnMs() + 120)
-  pending = { dir, at: fromX }
+  window.setTimeout(done, turnMs() + 600)
+  // It starts moving with the arriving letter, in the same frame, so the 12px between them never changes
+  pending = { dir, at: fromX, go: () => { g.style.transition = TRACK; g.style.transform = `translateX(${-dir * STEP()}px)` } }
 }
 
 /**
@@ -68,14 +88,16 @@ export function usePageTurn(enabled: boolean) {
   const { pathname } = useLocation()
   const from = useRef(indexOf(pathname))
 
-  // The arriving letter starts one screen along the track and slides in with the leaving copy
-  useEffect(() => {
+  // The arriving letter starts one sheet along the track and slides in with the leaving copy. Before paint, so the new
+  // page never shows for a frame in the middle of the screen.
+  useLayoutEffect(() => {
     const to = indexOf(pathname), p = pending
     from.current = to; pending = null
     const el = letter(); if (!el || !p || still()) return
     el.style.transition = "none"; el.style.willChange = "transform"
-    el.style.transform = `translateX(${p.at + p.dir * innerWidth}px)`
-    nextFrame(() => nextFrame(() => { el.style.transition = TRACK; el.style.transform = ""; settle(el) }))
+    el.style.transform = `translateX(${p.at + p.dir * STEP()}px)`
+    asSheet(el)
+    nextFrame(() => nextFrame(() => { el.style.transition = TRACK; el.style.transform = ""; settle(el); p.go() }))
   }, [pathname])
 
   useEffect(() => {
@@ -97,7 +119,7 @@ export function usePageTurn(enabled: boolean) {
         if (Math.abs(y) >= 12) { start = null; return } // a scroll, not a turn
         if (Math.abs(x) < 24) return
         active = true; dragging = true
-        const el = letter(); if (el) { el.style.transition = "none"; el.style.willChange = "transform" }
+        const el = letter(); if (el) { el.style.transition = "none"; el.style.willChange = "transform"; asSheet(el); moving++ }
       }
       const i = here()
       const edge = (x > 0 && i === 0) || (x < 0 && i === LETTERS.length - 1)
@@ -112,12 +134,15 @@ export function usePageTurn(enabled: boolean) {
       if (!active || !el) return
       const i = here(), dir = dx < 0 ? 1 : -1, to = i + dir
       const go = (Math.abs(dx) > innerWidth * 0.25 || v > 0.5) && to >= 0 && to < LETTERS.length
+      // The drag lets go of its hold; settle() or the arrival takes over (keeping the clip if the page is turning)
+      if (go && !still()) moving--; else still_(el)
       if (!go) {
-        el.style.transition = "transform var(--duration-fast) var(--ease-spring)"; el.style.transform = ""; settle(el)
+        el.style.transition = "transform var(--duration-fast) var(--ease-spring)"; el.style.transform = ""; asSheet(el); settle(el)
         return
       }
       if (!still()) leave(dir, dx)
-      el.style.transition = "none"; el.style.transform = ""; el.style.willChange = ""
+      // Keep the old page off screen until the new one is placed (no flash of it back in the middle)
+      el.style.transition = "none"; el.style.transform = `translateX(${dx + dir * STEP()}px)`
       nav(LETTERS[to]); window.scrollTo(0, 0)
     }
     // Dock and top bar taps: the same track, in the direction of the letter being opened

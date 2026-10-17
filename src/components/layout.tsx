@@ -125,9 +125,11 @@ export function Layout() {
         <Arrival key={resealed} sealedAgain={resealed > 0} enabled={page === "home"} onOpened={() => setSealed(false)}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
             <ModeSwitches className="letter-lantern" />
-            <div key={pathname} className="letter-body">
-              <Outlet />
-            </div>
+            <Suspense>
+              <div key={pathname} className="letter-body">
+                <Outlet />
+              </div>
+            </Suspense>
             {page === "home" && <SignOff action={page === "home" && !sealed
               // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
               ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
