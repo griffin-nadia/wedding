@@ -618,7 +618,13 @@
 @media (min-width: 1024px) { .sheet { left: var(--letter-left); translate: 0 -50%; } }
 .sheet-head { flex: none; padding: var(--sheet-pad) calc(var(--sheet-pad) + 44px) var(--space-4) var(--sheet-pad); }
 .sheet-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: var(--space-2) var(--sheet-pad) var(--space-7); scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
-.rsvp-done { padding-top: var(--sheet-pad); }
+/* The sent letter (18f): the hanko and heading in the head, then one column, every block the same distance apart */
+.sheet-head.done-head { align-items: center; gap: var(--space-3); padding-inline: calc(var(--sheet-pad) + 44px); text-align: center; } /* centred, clear of the X on both sides */
+/* The calendar's "Opened in a new tab" line sits under its buttons without adding to the column's even gaps */
+.done-column [aria-labelledby="add-cal"] { position: relative; }
+.done-column .cal-note { position: absolute; top: calc(100% + var(--space-1)); left: 0; min-height: 0; }
+.done-column { display: flex; flex-direction: column; gap: var(--space-6); padding-top: var(--space-2); }
+.done-column > .sent-next > * { margin: 0; }
 .sheet-head { display: flex; flex-direction: column; gap: var(--space-3); transition: box-shadow var(--duration-fast) var(--ease-paper); }
 /* The one page header: sticky at the top of the letter (under the bar on laptops). Once content is under it, a
    hairline and a light paper fill appear (data-under, from an IntersectionObserver sentinel). Sheets use the same. */
