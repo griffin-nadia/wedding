@@ -17,7 +17,7 @@ const css = `
   --sky-top: color-mix(in oklab, var(--brand-hachimitsu) calc(var(--p) * 34%), color-mix(in oklab, var(--brand-sage) 22%, var(--letter-bg)));
   --sky-low: color-mix(in oklab, var(--brand-kabocha) calc(var(--p) * 18%), var(--letter-bg));
   background: linear-gradient(to bottom, var(--sky-top), var(--sky-low) 58%, var(--letter-bg)); }
-.x-day-scrub::before { content: ""; position: absolute; inset: 0; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
+.x-day-scrub::before { content: ""; position: absolute; inset: 0; background: var(--paper-live, none) center / cover; mix-blend-mode: var(--paper-blend); opacity: 0.6; pointer-events: none; }
 .x-day-scrub-sun { position: absolute; width: 220px; height: 220px; margin: -110px 0 0 -110px; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, color-mix(in oklab, var(--brand-hachimitsu) 70%, var(--brand-paper-bright)) 0 17%, color-mix(in oklab, var(--brand-hachimitsu) 34%, transparent) 21%, transparent 66%); opacity: 0.7; }
 .x-day-scrub-head { position: relative; padding: var(--space-6) 16px 0; display: flex; flex-direction: column; gap: var(--space-2); }
