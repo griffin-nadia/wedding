@@ -12,8 +12,8 @@ export function useUnder(root?: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const s = sentinel.current
     if (!s) return
-    // The page's header sticks under the laptop bar (64) or at the top on phones
-    const top = root ? 0 : matchMedia("(min-width: 768px)").matches ? 64 : 0
+    // The page's header sticks under the top bar
+    const top = root ? 0 : Math.round(document.querySelector(".site-bar")?.getBoundingClientRect().height ?? 0)
     const io = new IntersectionObserver(([e]) => setUnder(!e.isIntersecting && e.boundingClientRect.top < top + 1), { root: root?.current ?? null, rootMargin: `-${top}px 0px 0px 0px` })
     io.observe(s)
     return () => io.disconnect()
