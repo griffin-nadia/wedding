@@ -7,7 +7,7 @@ export function CreditMark({ foot = false }: { foot?: boolean }) {
   const { t } = useLang()
   return (
     <a href="https://github.com/JehanBaguley" target="_blank" rel="noreferrer" className={foot ? "credit-mark credit-foot" : "credit-mark"} aria-label={t.letter.credit}>
-      <BrandSeal className="size-6" />
+      <BrandSeal className="size-6" sizes="24px" />
       <span role="tooltip" className="credit-tip">{t.letter.credit}</span>
     </a>
   )

@@ -4,6 +4,7 @@ import { ART } from "@/lib/art"
 import { useLang } from "@/lib/lang"
 import { useHousehold } from "@/lib/household"
 import { Stage } from "../../stage"
+import { NamesArt } from "@/components/names-art"
 import { spring, still } from "../../motion"
 
 /**
@@ -13,9 +14,9 @@ import { spring, still } from "../../motion"
  * Reduced motion: Skip and a tap open it at once.
  */
 const base = import.meta.env.BASE_URL
-const img = (which: "closed" | "open") => `${base}${ART.drawnEnvelope[which]}-760.webp`
+const img = (which: "closed" | "open") => `${base}${ART.drawnEnvelope[which]}-820.webp`
 const css = `
-.x-ed { position: relative; width: min(82vw, 410px); aspect-ratio: 760 / 544; touch-action: none; user-select: none; cursor: grab; outline: 2px solid transparent; outline-offset: 8px; border-radius: var(--radius-card); -webkit-tap-highlight-color: transparent; }
+.x-ed { position: relative; width: min(82vw, 410px); aspect-ratio: ${ART.drawnEnvelope.ratio}; touch-action: none; user-select: none; cursor: grab; outline: 2px solid transparent; outline-offset: 8px; border-radius: var(--radius-card); -webkit-tap-highlight-color: transparent; }
 .x-ed:focus-visible { outline-color: var(--input-focus); }
 .x-ed[data-dragging] { cursor: grabbing; }
 .x-ed-art { position: absolute; left: 0; width: 100%; height: auto; pointer-events: none; filter: drop-shadow(0 18px 22px rgb(var(--tint-shadow) / 0.3)); }
@@ -56,7 +57,7 @@ export default function EnvelopeDrag() {
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open() } }}>
         <img src={img("open")} alt="" className="x-ed-art x-ed-open" style={{ opacity: flap, transform: `translateY(${out * 30}px)` }} draggable={false} />
         <div className="x-ed-letter paper-feel" aria-hidden={!done} style={{ transform: `translateY(${-out * 78}%) scale(${1 + out * 0.08})`, zIndex: out > 0.5 ? 4 : 2 }}>
-          <h2>Griffin &amp; Nadia</h2>
+          <h2><span className="sr-only">Griffin &amp; Nadia</span><NamesArt tone="light" className="w-4/5" /></h2>
           <p className="font-medium text-foreground">{t.home.dateLine}</p>
           <p>{t.home.dear(t.home.dearNames(names))} {t.home.greetingLine}</p>
         </div>

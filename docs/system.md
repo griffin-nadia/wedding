@@ -12,6 +12,24 @@ See every component, Light and Lantern side by side, in the local lab (`npm run 
 - **Photos:** behind every page. The Photo option picks one per mode (kyoto-view by day, night-lane in Lantern) or the same one in both modes. Fixed and cover; nothing moves, rescales or reflows it. Each has a face-safe rect in `scenes.json` that nothing on the arrival may cover.
 - **Texture:** one fine paper grain of our own, on the letter itself.
 
+## Assets
+
+Nadia's art arrives full size and transparent in `private/` (never committed) and goes through
+`node scripts/art-export.mjs`, which trims each to its drawing and writes AVIF and WebP at 1x and 2x into
+`public/art`. `src/lib/art.ts` (ART) says which files are live and their aspect ratios.
+
+| Art (17 Oct) | Files | Where | Sizes (AVIF, 1x / 2x) |
+|---|---|---|---|
+| Envelope, closed (maple, gum leaf, G·N seal) | `art/envelope/envelope-closed-{410,820}` | the arrival envelope | 7 / 15 kB |
+| Envelope, open | `art/envelope/envelope-open-{410,820}` | the envelope as the letter rises | 4 / 9 kB |
+| Wax seal | `art/seal/wax-seal-{64,128,256}` | the seal on its own: the paper envelope, the laptop credit mark, the lab openings | 2 / 3 / 5 kB |
+| Gum leaves | `art/leaves/gum-leaves-{160,320}` | the lab (paper petals) | 4 / 8 kB |
+| Lettering, brown and cream | `art/names/lettering-{brown,cream}-{520,1040}` | the names on Home (brown by day, cream in Lantern) and on the letter in the envelope (brown) | 20 / 52 kB |
+
+The names stay as text in the heading (visually hidden) and in the page title. The favicon and share image keep the
+flat mark in `public/brand`. The open envelope has a stray beige block above its flap; the export cuts it away along
+the envelope's top edge and redraws the outline there until Nadia re-exports the file.
+
 ## Colour: one action, one story accent, one ink
 
 | Role | Token | Light | Used for |

@@ -1,19 +1,23 @@
 /**
  * Nadia's real artwork, switched on here once her files are in public/art (nothing else changes).
  *
- * names:    put her lettering in public/art/names/names.svg (black on transparent, any size; the site
- *           recolours it), set the width:height below, then set names: true.
+ * Her files arrive full size in private/ and go through scripts/art-export.mjs, which writes the web versions into
+ * public/art (trimmed, AVIF and WebP, 1x and 2x). The originals are never committed.
  */
 export const ART = {
-  names: false,
-  /** Width ÷ height of names.svg, so the space is held before it loads (no jump) */
-  namesRatio: 3,
   /**
-   * Nadia's drawn envelope: closed and open, cut from her scan with
-   * the hand-drawn edge kept, transparent, as <name>-380 and <name>-760 in .avif and .webp. Her 600 dpi rescan
-   * replaces the files under the same names; nothing else changes.
+   * Her lettering for the names (17 Oct): brown on the light letter, cream on the dark one, swapped with the theme. The
+   * page keeps the names as text for screen readers and the title. ratio holds the space before it loads (no jump).
    */
-  drawnEnvelope: { closed: "art/envelope/drawn-closed", open: "art/envelope/drawn-open", widths: [380, 760] },
+  names: { light: "art/names/lettering-brown", dark: "art/names/lettering-cream", widths: [520, 1040], ratio: 3.25 },
+  /** Her wax seal and gum leaves on their own (17 Oct): the seal wherever the G&N seal shows alone, the leaves in the lab */
+  seal: { src: "art/seal/wax-seal", widths: [64, 128, 256] },
+  leaves: { src: "art/leaves/gum-leaves", widths: [160, 320], ratio: 0.743 },
+  /**
+   * Nadia's drawn envelope (17 Oct, painted): closed (maple, gum leaf and the G·N seal) and open, transparent, as
+   * <name>-410 and <name>-820 in .avif and .webp. ratio: width ÷ height of the closed one, which sets the envelope's box.
+   */
+  drawnEnvelope: { closed: "art/envelope/envelope-closed", open: "art/envelope/envelope-open", widths: [410, 820], ratio: 1.3948 },
   /**
    * Background music (the speaker beside the sun): the file and its credit together. The credit is said once, in the
    * last FAQ ("Who made this site?"); artist is what a phone's Now Playing shows under "Griffin & Nadia". To swap the
