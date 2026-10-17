@@ -68,7 +68,17 @@ For a local preview of a song that isn't cleared yet, put it at `private/song.mp
 
 ## The lab (local only)
 
-`npm run lab` opens `lab.html` on the dev server: a component gallery (every component, variant and state, light
+`npm run lab` opens `lab.html` on the dev server, at the **Playground**: every part of the site (opening, navigation,
+page transitions, Home, The day, Travel, RSVP, Our story, the journey map, the confirmation and the small things) in
+two to four takes each, today's version among them. The index shows each with a thumbnail; open one to flip
+between a phone and a laptop frame, slow it to 0.25× or speed it to 2× (every animation follows the slider), replay
+it, and read where the idea comes from and what it would take to ship. Each take is one file in
+`src/lab/playground/x/<area>/` (the contract is in `src/lab/playground/README.md`) and opens on its own at
+`lab-play.html?x=<id>`. On your phone: `npm run lab -- --host`, then the Network address it prints plus
+`/wedding/lab.html#playground`, with the phone on the same wifi. Thumbnails: `node scripts/lab-thumbs.mjs` with the
+dev server running.
+
+The other tabs: a component gallery (every component, variant and state, light
 and dark), the Options panel, a layout switcher (A five tabs, B one scrolling letter, C invite as home with sheets,
 D three tabs), a style switcher (Paper, Quiet, Ink) at phone and laptop size, and the experiments in
 `src/lab/experiments` (one file each, so a winner moves into the site in one PR). It is never built, deployed or

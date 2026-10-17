@@ -1,8 +1,9 @@
 /**
  * Jehan's lab (npm run lab, local only). Never built into, deployed with or linked from the guest site: the build
  * only reads index.html, and the build check fails if any lab code ends up in dist.
- * Tabs: Gallery (every component, variant and state, light and dark), Layouts (A to D, in three styles, at phone and
- * laptop size, with the Options panel beside them) and Experiments.
+ * Tabs: Playground (every area of the site in two to four takes each, at phone or laptop size, any speed; the index
+ * is the default), Gallery (every component, variant and state, light and dark), Layouts (A to D, in three styles,
+ * at phone and laptop size, with the Options panel beside them) and Experiments (the earlier cards).
  */
 /* eslint-disable react-refresh/only-export-components -- an entry file: it renders itself, nothing imports it */
 import "../styles/fonts.css"
@@ -21,6 +22,7 @@ import { Segmented } from "@/components/segmented"
 import { Button } from "@/components/ui/button"
 import { LanternToggle } from "@/components/lantern-toggle"
 import { EXPERIMENTS } from "./experiments"
+import { Playground } from "./playground/shell"
 
 const KitPage = lazy(() => import("@/pages/kit").then((m) => ({ default: m.KitPage })))
 const TunePanel = lazy(() => import("@/tune/panel").then((m) => ({ default: m.TunePanel })))
@@ -88,15 +90,16 @@ function Experiments() {
 
 function Lab() {
   // The gallery keeps its own page in the hash (#type, #button…), so any other hash means the gallery
-  const [tab, setTab] = useState(() => { const h = location.hash.slice(1); return ["layouts", "experiments"].includes(h) ? h : h ? "gallery" : "layouts" })
-  useEffect(() => { if (tab !== "gallery") history.replaceState(null, "", `#${tab}`) }, [tab])
+  const [tab, setTab] = useState(() => { const h = location.hash.slice(1); return h.startsWith("playground") ? "playground" : ["layouts", "experiments"].includes(h) ? h : h ? "gallery" : "playground" })
+  useEffect(() => { if (tab !== "gallery" && !(tab === "playground" && location.hash.startsWith("#playground"))) history.replaceState(null, "", `#${tab}`) }, [tab])
   return (
     <div className="lab-shell" data-mark={LAB_MARK}>
       <header className="lab-bar">
         <p className="font-display text-heading">G&amp;N <span className="label-caps text-muted-foreground">lab · local only</span></p>
-        <Segmented label="Lab" value={tab} onChange={setTab} items={[{ value: "gallery", label: "Gallery" }, { value: "layouts", label: "Layouts" }, { value: "experiments", label: "Experiments" }]} />
+        <Segmented label="Lab" value={tab} onChange={setTab} items={[{ value: "playground", label: "Playground" }, { value: "gallery", label: "Gallery" }, { value: "layouts", label: "Layouts" }, { value: "experiments", label: "Experiments" }]} />
         <span className="ml-auto"><LanternToggle /></span>
       </header>
+      {tab === "playground" && <Playground />}
       {tab === "gallery" && <Suspense><KitPage /></Suspense>}
       {tab === "layouts" && <Layouts />}
       {tab === "experiments" && <Experiments />}
