@@ -53,7 +53,7 @@ const DEFAULTS = {
 }
 
 const WEDDING = {
-  date: "Fri 15 Oct 2027, 11:00 am",
+  date: "Fri 15 Oct 2027, 11:00 am Japan time",
   venue: "The Sodoh Higashiyama, Kyoto",
 }
 
