@@ -80,7 +80,7 @@ export function SongPicker({ songs, onChange, token, max = 3, maxLength = 200 }:
           {/* A search form of its own: Enter is the keyboard's Search key */}
           <form role="search" className="relative" onSubmit={(e) => { e.preventDefault(); void search() }}>
             <input ref={input} id={id} type="search" value={q} maxLength={maxLength} placeholder={t.rsvp.songPlaceholder} enterKeyHint="search" autoComplete="off" autoCorrect="off" spellCheck={false}
-              aria-describedby={describedBy(id, t.rsvp.songHint)} aria-controls={`${id}-results`}
+              aria-describedby={describedBy(id, t.rsvp.songHint)} aria-controls={status !== "idle" ? `${id}-results` : undefined} /* only once the results are there to point at */
               onFocus={() => { toTop(); window.setTimeout(toTop, 350) }} onChange={(e) => setQ(e.target.value)}
               className="state field song-search-input pr-14" />
             <button type="submit" aria-label={t.rsvp.searchSong} className="btn-primary absolute top-1/2 right-1.5 grid size-10 -translate-y-1/2 place-items-center rounded-sm">

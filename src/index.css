@@ -875,7 +875,9 @@ svg.lucide { stroke-width: 1.5; }
 /* Countdown boxes inside the letter (v3 S): days, hrs, mins in paper boxes; a box flips only when its number changes */
 .count-boxes { display: flex; flex-direction: column; gap: var(--space-2); }
 .count-boxes-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
-.count-boxes-list { display: flex; gap: var(--space-2); }
+.count-boxes-list { display: flex; gap: var(--space-2); max-width: 100%; }
+/* The narrowest phones (320): four boxes share the card's width instead of spilling past it (18e stress test) */
+@media (max-width: 359px) { .count-boxes-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; gap: var(--space-1); } .count-boxes-list .count-box { min-width: 0; padding-inline: var(--space-1); } }
 /* Quiet boxes (hairline, a low-contrast fill); the numbers in the system UI font, not the display serif */
 .count-box { display: grid; justify-items: center; align-content: center; gap: var(--space-1); min-width: 64px; padding: var(--space-3) var(--space-3); border-radius: var(--radius-control); background: color-mix(in oklab, var(--surface-raised) 45%, transparent); perspective: 400px; }
 .count-box-num { display: block; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: var(--type-accent-size); line-height: 1; font-weight: 400; letter-spacing: -0.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
