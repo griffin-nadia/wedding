@@ -6,7 +6,8 @@ import { useHousehold } from "@/lib/household"
 import { cn } from "@/lib/utils"
 import { readFlying } from "@/lib/journey"
 import { getFlying } from "@/lib/api"
-import { GuestMap, usePlaceName } from "@/components/journey-mini"
+import { GuestMap, JourneyLand, usePlaceName } from "@/components/journey-mini"
+import { KYOTO } from "@/lib/journey"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
 
@@ -28,6 +29,18 @@ function JourneyMap() {
   const nameOf = usePlaceName()
   const name = you ? nameOf(you) : null
   return <GuestMap you={you} flying={flying} label={t.journey.map(name, you ?? undefined)} listable={false} />
+}
+
+/** Laptops (18f): where this chapter happened, a dot on the same small map, with Kyoto's seal for the way there */
+function StopMap({ at }: { at: [number, number] }) {
+  return (
+    <svg viewBox="0 0 400 320" aria-hidden className="journey journey-hifi story-stop-map">
+      <JourneyLand />
+      <circle cx={KYOTO[0]} cy={KYOTO[1]} r="5" className="journey-place-dot" />
+      <circle cx={at[0]} cy={at[1]} r="14" className="story-stop-ring" />
+      <circle cx={at[0]} cy={at[1]} r="6" className="story-stop-dot" />
+    </svg>
+  )
 }
 
 /**
@@ -194,6 +207,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     <p className="text-small text-muted-foreground">{n === null ? c.year : `${t.story.page(n, chapters.length)}, ${c.year}`}{c.place ? ` · ${c.place}` : ""}</p>
     <h2 className="font-display text-heading text-foreground">{c.title}</h2>
     {c.body.map((p, k) => <p key={k}>{p}</p>)}
+    {c.at && <StopMap at={c.at} />}
   </>
   return (
     <div className="story">

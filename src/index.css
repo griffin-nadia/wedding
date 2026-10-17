@@ -1177,9 +1177,23 @@ svg.lucide { stroke-width: 1.5; }
 .story-track img { -webkit-user-drag: none; }
 /* Every stop in the same cell, so the track is the tallest stop's height and nothing below it moves */
 .story-track:focus-visible { outline-color: var(--input-focus); }
-.story-slide { --print-h: min(34svh, 300px); grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
+.story-slide { --print-h: min(34svh, 300px); --caption-h: 2.75rem; grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
 .story-media { flex: none; display: grid; place-items: center; max-width: 100%; }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
+/* Every photo stop's print sits on the same line in the same-sized box, so its caption lands in the same spot on
+   every stop, right under the photo (18f): a landscape print is shorter, so it sits low in the box, not centred */
+.story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); place-items: end center; }
+/* …and the stop starts at the top, so a two-line title under it never moves the photo up */
+.story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: flex-start; }
+@media (min-width: 1024px) { .story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: center; align-items: flex-start; } }
+.story-print figcaption { min-height: 1.25rem; }
+/* Laptops: a small map of where the chapter happened, under its words */
+.story-stop-map { display: none; }
+@media (min-width: 1024px) {
+  .story-stop-map { display: block; width: 180px; height: auto; margin-top: var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); }
+  .story-stop-ring { fill: color-mix(in oklab, var(--brand-sabi) 18%, transparent); }
+  .story-stop-dot { fill: var(--brand-sabi); stroke: var(--brand-paper-bright); stroke-width: 2; }
+}
 /* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
 .story-print { margin: var(--space-2); }
 .story-print > div { height: var(--print-h); width: auto; }
@@ -1204,7 +1218,8 @@ svg.lucide { stroke-width: 1.5; }
 /* Short phones (an SE at 667): a smaller print, so a stop still fits one screen */
 @media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map .journey-mini { max-height: 24svh; } }
 @media (min-width: 1024px) {
-  .story-slide { --print-h: min(42svh, 360px); flex-direction: row; gap: var(--space-6); text-align: left; padding-inline: var(--space-2); }
+  /* Smaller prints on laptops (18f, Jehan: "the story on desktop is looking a bit large"), so the page isn't so tall */
+  .story-slide { --print-h: min(34svh, 290px); flex-direction: row; gap: var(--space-6); text-align: left; padding-inline: var(--space-2); }
   .story-media { flex: 0 1 auto; }
   .story-words { flex: 0 1 300px; }
   .story-slide-map .story-media { flex: 0 1 360px; }
