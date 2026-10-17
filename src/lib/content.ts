@@ -31,7 +31,5 @@ export function useContent(): SiteContent & { ready: boolean } {
   useEffect(() => { let live = true; void getContent().then((x) => { if (live) setC(x) }); return () => { live = false } }, [])
   const base = c ?? { story: [], mode: "invite" as SiteMode }
   // Crew preview (v3 S): the Options panel can show the week-of or keepsake site before the Content tab says so
-  const preview = typeof document !== "undefined" ? document.documentElement.getAttribute("data-opt-mode") : null
-  if (preview === "invite" || preview === "week-of" || preview === "keepsake") base.mode = preview
   return { ...base, ready: Boolean(c) }
 }

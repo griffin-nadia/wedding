@@ -3,7 +3,7 @@
 Private invite + RSVP site for Griffin and Nadia's wedding, Fri 15 Oct 2027, The Sodoh Higashiyama, Kyoto.
 Each household gets its own link (`/?h=token`). No logins, no app, no trackers.
 
-- **v1 (live Thu 15 Oct 2026):** Home, The day, Travel, Q&A, RSVP in a simple autumn look. Invites send from the sheet menu.
+- **v1 (live Thu 15 Oct 2026):** Home, The day, Travel, FAQs, RSVP in a simple autumn look. Invites send from the sheet menu.
 - **v2 (mid Dec 2026):** the look they pick, the envelope opening, delight moments, song search, Japanese.
 
 Design file: Figma "Nadia-Griffin-Wedding-site" (page 00 Overview). Plan: the planner sheet's Plan tab.
@@ -85,4 +85,4 @@ See `apps-script/README.md` and `docs/data-model.md`.
 ## Delight moments
 
 Hanko "済" seal when you're all set, countdown, add to calendar (Google or .ics), "It's 6:17 pm in Kyoto right now"
-and your own local time on The day, tick-off travel checklist (saved on your device only), one maple leaf on Q&A.
+and your own local time on The day, tick-off travel checklist (saved on your device only), one maple leaf on FAQs.
