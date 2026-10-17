@@ -27,7 +27,8 @@ sample household, with the clock fixed and reduced motion on:
   1920 in both themes; none on phones or tablets (`e2e/phone-qr.spec.ts`).
 - **Top bar:** the switches are in the bar, none in the letter, and the bar stays at the top and visible through
   scrolls down and back up, with its hairline once scrolled (`e2e/top-bar.spec.ts`).
-- **Music:** hiding the page (pagehide) stops the song at once and clears the phone's Now Playing entry
+- **Music:** hiding the page (pagehide) stops the song at once and clears the phone's Now Playing entry; the song is
+  under 160 kbps and 3.5 MB and loops with under a second of silence; its credit is only in the last FAQ
   (`e2e/music.spec.ts`).
 
 Also on every PR: `npm run lint`, `npm test`, `npm run check:pending` (lists, doesn't fail, while placeholders remain).

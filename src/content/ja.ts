@@ -3,6 +3,7 @@
 // can switch to it (the switch is in the crew Options panel only until then). Polite form throughout (です・ます).
 // Nothing here says more than the English does: no facts added.
 import type { Content } from "./en"
+import { ART } from "@/lib/art"
 
 type DeepPartial<T> = { [K in keyof T]?: T[K] extends (...a: never[]) => unknown ? T[K] : T[K] extends object ? DeepPartial<T[K]> : T[K] }
 
@@ -76,7 +77,7 @@ export const ja: DeepPartial<Content> = {
     kyoto: "京都", brisbane: "ブリスベン", canada: "カナダ",
     seeList: "リストで見る", seeMap: "地図で見る", next: "次へ", done: "閉じる",
   },
-  music: { on: "音楽を流す", off: "音楽を止める", credit: (title: string, artist: string, year?: number) => `音楽：${artist}「${title}」${year ? `（${year}年）` : ""}` },
+  music: { on: "音楽を流す", off: "音楽を止める" },
   journey: {
     title: "旅の道のり",
     map: (city: string | null, key?: string) => (key === "Already in Japan" ? "京都までの道のりを描いた小さな地図（すでに日本にいらっしゃいます）" : city ? `${city}から京都までのあなたの線を描いた小さな地図` : "京都までの道のりを描いた小さな地図"),
@@ -264,6 +265,7 @@ export const ja: DeepPartial<Content> = {
       { q: "お食事は？", a: "昼食をご用意します。メニューは数か月前に決めます。食事の制限やアレルギーは、お返事でお知らせください。" },
       { q: "個人情報はどうなりますか？", a: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。" },
       { q: "日本の伝統的な結婚式ですか？", a: "いいえ、日本らしさを少し添えた、くつろいだガーデンウェディングです。覚えることは何もありません。そのままの姿でお越しください。" },
+      { q: "このサイトはどなたが作ったのですか？", a: `ナディアの兄のジェハンがデザインと制作をしました。絵はナディア、写真はわたしたちのものです。音楽：${ART.music.credit.ja}` },
     ],
     onTheDay: "当日の連絡先：",
     contact: "ご不明な点があれば、どちらにでもお気軽にご連絡ください。",

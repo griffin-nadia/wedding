@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react"
 import { useLang } from "@/lib/lang"
-import { ART } from "@/lib/art"
 import { cn } from "@/lib/utils"
 
 /**
@@ -12,7 +11,7 @@ export function Letter({ children, className, as: Tag = "article", ...rest }: { 
   return <Tag className={cn("letter paper", className)} {...rest}>{children}</Tag>
 }
 
-/** End of every letter: their sign-off and the music credit (Nadia's handwriting replaces Klee One when it arrives). */
+/** End of Home's letter: their sign-off (Nadia's handwriting replaces it when it arrives). The music credit is in FAQs. */
 export function SignOff({ action, foot }: { action?: ReactNode; foot?: ReactNode }) {
   const { t } = useLang()
   return (
@@ -21,8 +20,7 @@ export function SignOff({ action, foot }: { action?: ReactNode; foot?: ReactNode
         ? <img src={`${import.meta.env.BASE_URL}brand/signoff.svg`} alt={t.letter.signOff} className="h-12 w-auto" />
         : <p className="voice text-foreground">{t.letter.signOff}</p>}
       {action}
-      <div className="flex w-full items-center justify-between gap-4 pt-2 lg:min-h-12">
-        <p className="text-small text-muted-foreground">{t.music.credit(ART.music.title, ART.music.artist, ART.music.year)}</p>
+      <div className="flex w-full items-center justify-end gap-4 lg:min-h-12">
         {foot}
       </div>
     </footer>

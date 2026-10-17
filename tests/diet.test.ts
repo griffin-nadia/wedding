@@ -35,6 +35,6 @@ test("Other words stop short of the back end's 200-character limit", () => {
   assert.equal(parseDiet(`Other: ${long}`, en).other.length, OTHER_MAX)
 })
 test("every Japanese line waiting for a native read is the one on the site", () => {
-  const file = fs.readFileSync("src/content/ja.ts", "utf8")
-  for (const { key, ja } of JA_TO_READ) assert.ok(file.includes(ja), `${key} not found in ja.ts as written`)
+  const file = fs.readFileSync("src/content/ja.ts", "utf8") + fs.readFileSync("src/lib/art.ts", "utf8") // the music credit lives with the song
+  for (const { key, ja } of JA_TO_READ) assert.ok(file.includes(ja), `${key} not found in ja.ts (or art.ts) as written`)
 })
