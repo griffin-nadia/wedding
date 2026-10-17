@@ -36,4 +36,11 @@ export const entries: Entry[] = [
     promote: "A scroll page instead of a carousel: CSS scroll-driven animations do the work off the main thread where they're supported (Chrome, Edge, Safari 26), a small scroll listener elsewhere (add ?js to compare). Light on phones. Risks: the tall track makes the page long, scroll-linked sideways motion can bother some people (reduced motion gets a plain strip to swipe), and the lab's speed slider skews the CSS timeline. It would replace the spread carousel.",
     Component: lazy(() => import("./story-filmstrip")),
   },
+  {
+    id: "story-prints", title: "Print shadows and backdrops",
+    summary: "One print at a time with four shadows (the site's, soft, lifted, taped to the table) and a backdrop that changes with the chapter: none, the chapter's photo blurred into a wash, or that wash slowly drifting.",
+    refs: [{ label: "Josh W. Comeau, designing shadows", href: "https://www.joshwcomeau.com/css/designing-shadows/" }],
+    promote: "A shadow is one box-shadow token on .photo-print, free on phones. The wash is one more image per chapter (a small blurred one, 40vw) under the spread, cross-fading as the chapter changes: about 30 to 60 kB each and a blur filter, so bake the blur into tiny images rather than blurring live. The drift is a CSS animation, off under reduced motion; skip it on phones if the page turn stutters.",
+    Component: lazy(() => import("./story-prints")),
+  },
 ]
