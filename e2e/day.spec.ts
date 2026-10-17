@@ -17,3 +17,14 @@ for (const lang of ["en", "ja"]) test(`timeline rows: time left, icon on the lin
   expect(rows.length).toBeGreaterThan(2)
   for (const r of rows) expect(r).toEqual({ timeLeft: true, textRight: true, onLine: true })
 })
+
+// 18e: a time never breaks across lines ("3:30" / "pm"), nor does "until 3:30 pm", at the narrowest phone
+test("times stay on one line at 320", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 })
+  await page.addInitScript(() => localStorage.setItem("ng-opened", "1"))
+  await page.goto("the-day?h=sample")
+  await expect(page.locator(".timeline-text span.whitespace-nowrap").first()).toBeVisible()
+  const broken = await page.evaluate(() => [...document.querySelectorAll(".timeline-time, .timeline-text span.whitespace-nowrap")].filter((e) => e.getClientRects().length > 1 || e.getBoundingClientRect().height > parseFloat(getComputedStyle(e).lineHeight) * 1.5).map((e) => e.textContent))
+  expect(broken).toEqual([])
+  expect(await page.locator(".timeline-text span.whitespace-nowrap").count()).toBeGreaterThan(0)
+})
