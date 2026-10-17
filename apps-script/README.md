@@ -32,6 +32,8 @@ still point at the old one.
 | Name order: find and fix "Nadia & Griffin"… | Finds "Nadia & Griffin" or "Nadia and Griffin" in any tab (the Summary heading, the Emails tab's wording), lists each cell and only changes them if you say yes. Formulas are listed, not changed |
 | Prepare for launch (report only)… | What run for real would do: backups, test rows to clear, visits and queue to reset, planner guests to copy, links to make, households with no email. Changes nothing (docs/launch.md) |
 | Prepare for launch: run for real… | Type LAUNCH; backs up both sheets to Wedding backups first, then does it. Never sends |
+| Weekly backup: check (report only)… | The backups folder, the weekly copies there, what the next run makes and bins, whether the trigger is on. Changes nothing |
+| Weekly backup: turn on | Wedding account only: every Monday about 3 am Kyoto, a dated copy of Site-Data in Wedding backups, the newest 8 kept |
 
 ## Script properties (all optional)
 

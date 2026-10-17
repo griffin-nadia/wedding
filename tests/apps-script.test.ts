@@ -4,13 +4,13 @@ import assert from "node:assert/strict"
 import fs from "node:fs"
 import vm from "node:vm"
 
-const src = fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__x = { planLaunch_, plannerGuestColumns_ }"
+const src = fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__x = { planLaunch_, plannerGuestColumns_, backupsToTrash_ }"
 const ctx: { __x?: Record<string, (...a: unknown[]) => unknown> } = {}
 vm.createContext(ctx)
 vm.runInContext(src, ctx)
 // Results come back as the sandbox's own objects; compare them as plain data
 const plain = (f: (...a: unknown[]) => unknown) => (...a: unknown[]) => JSON.parse(JSON.stringify(f(...a)))
-const planLaunch_ = plain(ctx.__x!.planLaunch_), plannerGuestColumns_ = plain(ctx.__x!.plannerGuestColumns_)
+const planLaunch_ = plain(ctx.__x!.planLaunch_), plannerGuestColumns_ = plain(ctx.__x!.plannerGuestColumns_), backupsToTrash_ = plain(ctx.__x!.backupsToTrash_)
 
 const site = [
   { Household: "Test Smith", "First name": "Tess", Token: "t1", Email: "" },
@@ -47,4 +47,10 @@ test("a planner without a usable heading row is a problem, not a guess", () => {
   assert.equal(p.problems.length, 1)
   assert.equal(p.add.length, 0)
   assert.equal((plannerGuestColumns_([["Name", "E-mail"]]) as { map: Record<string, number> }).map.email, 1)
+})
+test("weekly backups: keep the newest 8, trash the rest, never anything that isn't a backup", () => {
+  const files = Array.from({ length: 11 }, (_, i) => ({ name: `Site-Data weekly 2027-01-${String(i + 1).padStart(2, "0")}`, created: Date.UTC(2027, 0, i + 1) }))
+    .concat([{ name: "Planner backup 2026-10-18 0400", created: 1 }, { name: "Notes", created: 2 }])
+  const out = backupsToTrash_(files, "Site-Data weekly ", 8) as { name: string }[]
+  assert.deepEqual(out.map((f) => f.name), ["Site-Data weekly 2027-01-03", "Site-Data weekly 2027-01-02", "Site-Data weekly 2027-01-01"])
 })
