@@ -858,6 +858,9 @@ svg.lucide { stroke-width: 1.5; }
 :root[data-vt="circle"]::view-transition-new(root) { clip-path: circle(0px at 50% 50%); }
 @keyframes mode-fade { from { opacity: 0; } to { opacity: 1; } }
 :root[data-vt] .scene-layer, :root[data-vt] * { transition: none !important; }
+/* The page's words are their own group for page changes (polish.css); in a mode switch they join the page, so the
+   circle reveals words and paper together instead of the words fading and rising on their own */
+:root[data-vt] .letter-body { view-transition-name: none; }
 /* Segmented choice: a small tick in a slot, mirrored by an equal empty slot on the right, so every label sits centred */
 .segmented[role="radiogroup"] .segmented-item { justify-content: center; padding-inline: var(--space-3); }
 .segmented[role="radiogroup"] .segmented-item::after { content: ""; flex: none; width: 16px; }
