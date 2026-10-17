@@ -99,3 +99,25 @@ test("each page has its own title", async ({ page }) => {
   for (const i of [1, 2, 3, 4]) { await page.locator(".site-nav a").nth(i).click(); await page.waitForTimeout(400); titles.push(await page.title()) }
   expect(titles).toEqual(["Griffin & Nadia", "The day · Griffin & Nadia", "Travel · Griffin & Nadia", "Our story · Griffin & Nadia", "FAQs · Griffin & Nadia"])
 })
+
+// 18e: the circle's origin is the toggle's centre, exactly, on the first switch and the second (at 390 and 1440).
+// Read from the circle the toggle writes, so a frame-timing quirk can't hide an off-centre start.
+test("the theme circle starts at the toggle's centre, first and second switch", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" })
+  await page.addInitScript(() => {
+    localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off"); localStorage.removeItem("ng-theme")
+    const w = window as unknown as { __circles: string[] }; w.__circles = []
+    new MutationObserver((ms) => { for (const m of ms) for (const n of m.addedNodes) { const t = (n as Element).textContent ?? ""; const c = t.match(/circle\(0px at (\d+)px (\d+)px\)/); if (c) w.__circles.push(`${c[1]},${c[2]}`) } }).observe(document, { childList: true, subtree: true })
+  })
+  await page.goto("?h=sample")
+  await page.waitForLoadState("networkidle")
+  const btn = page.locator(".site-bar .mode-switches > button:last-child")
+  const centre = async () => { const b = (await btn.boundingBox())!; return `${Math.round(b.x + b.width / 2)},${Math.round(b.y + b.height / 2)}` }
+  const want = [await centre()]
+  await btn.click()
+  await page.waitForTimeout(1500) // the reveal finishes
+  want.push(await centre())
+  await btn.click()
+  await page.waitForTimeout(1500)
+  expect(await page.evaluate(() => (window as unknown as { __circles: string[] }).__circles)).toEqual(want)
+})

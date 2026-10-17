@@ -23,16 +23,20 @@ function nowOnTheDay(real: Date, times: string[]) {
   return Math.min(1, Math.max(0, (now.getTime() - start) / (end - start)))
 }
 
+/** Times stay on one line ("3:30 pm", "until 3:30 pm", 「15:30まで」): the time and the word that leads to it never part */
+const TIME = /((?:until |from )?\d{1,2}:\d{2}(?:\s?[ap]m)?(?:まで|から)?)/i
+const keepTimes = (s: string) => s.split(TIME).map((part, k) => (k % 2 ? <span key={k} className="whitespace-nowrap">{part}</span> : part))
+
 function Row({ i, time, label, where, local }: { i: number; time: string; label: string; where: string; local: string | null }) {
   const Icon = ICONS[i] ?? Flower2
   return (
     <li className="timeline-row">
-      <p className="timeline-time numerals text-foreground">{time}</p>
+      <p className="timeline-time numerals whitespace-nowrap text-foreground">{time}</p>
       <span aria-hidden className="timeline-icon"><Icon className="size-5" /></span>
       <div className="timeline-text">
         <p className="font-medium text-foreground">{label}</p>
-        <p>{where}</p>
-        {local && <p className="text-muted-foreground">{local}</p>}
+        <p>{keepTimes(where)}</p>
+        {local && <p className="text-muted-foreground">{keepTimes(local)}</p>}
       </div>
     </li>
   )
@@ -86,7 +90,7 @@ export function DayPage() {
     <div className="flex flex-col gap-4">
       <Timeline now={now} />
       {/* The Kyoto minute rolls up into place when it ticks over; the key remounts it */}
-      <p className="text-small text-muted-foreground">{t.day.japanTime} <span className={rolls ? "no-print clock-roll" : "no-print"} key={kyotoNow(now)}>{t.day.kyotoNow(kyotoNow(now))}</span></p>
+      <p className="text-small text-muted-foreground">{t.day.japanTime} <span className={rolls ? "no-print clock-roll" : "no-print"} key={kyotoNow(now)}>{keepTimes(t.day.kyotoNow(kyotoNow(now)))}</span></p>
       <p>{t.day.rainPlan}</p>
     </div>
   )

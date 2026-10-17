@@ -878,9 +878,10 @@ svg.lucide { stroke-width: 1.5; }
 .count-boxes-list { display: flex; gap: var(--space-2); }
 /* Quiet boxes (hairline, a low-contrast fill); the numbers in the system UI font, not the display serif */
 .count-box { display: grid; justify-items: center; align-content: center; gap: var(--space-1); min-width: 64px; padding: var(--space-3) var(--space-3); border-radius: var(--radius-control); background: color-mix(in oklab, var(--surface-raised) 45%, transparent); perspective: 400px; }
-.count-box-num { display: block; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: var(--type-accent-size); line-height: 1; font-weight: 400; letter-spacing: -0.01em; color: var(--ink); font-variant-numeric: tabular-nums; transform-origin: 50% 50%; backface-visibility: hidden; }
+.count-box-num { display: block; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: var(--type-accent-size); line-height: 1; font-weight: 400; letter-spacing: -0.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .count-box-unit, .count-boxes-caption { font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); color: var(--ink-soft); }
-@keyframes count-flip { from { transform: rotateX(-90deg); opacity: 0.4; } to { transform: none; opacity: 1; } }
+/* The new digit rolls down into place at its full size (18e: the old 3D flip shrank it to a sliver mid-turn) */
+@keyframes count-flip { from { transform: translateY(-45%); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: no-preference) { .count-flip { animation: count-flip var(--duration-base) var(--ease-paper) both; } }
 /* Crew gate note centred on the page */
 .crew-blank { width: 100%; }
