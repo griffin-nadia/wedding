@@ -1,42 +1,46 @@
 import { useEffect, useState } from "react"
 import { Combobox } from "@/components/combobox"
-import { JourneyMini } from "@/components/journey-mini"
-import { FLYING, getFlying, setFlying, type Flying } from "@/lib/api"
+import { JourneyMini, usePlaceName } from "@/components/journey-mini"
+import { getFlying, setFlying, type Flying } from "@/lib/api"
 import { keepFlying, readFlying } from "@/lib/journey"
+import { bucketOf, findPlaces, placeOf, type Place } from "@/lib/places"
 import { useLang } from "@/lib/lang"
 
 /**
- * After the fortune, on "You're all set": one optional card. Where are you flying from? A combobox: type to filter
- * the nine places (or open it and pick), and their gold line draws on the small map over everyone else's faint ones. The sheet only ever gets a count per city, never
- * who; the city stays on this device so Home can show their line. Still under reduced motion: the line is drawn.
+ * After the fortune, on "You're all set": one optional card. Where are you flying from? Type a city, a suburb or a
+ * short name, typos and all ("Noeth Melb", "Brunswick"), and it finds the city from a small list on this device (no
+ * lookup anywhere); the field then shows the city. Their gold line draws on the small map over everyone else's
+ * faint ones. Nothing that matches keeps the last real choice. The sheet only ever gets the nearest of its fixed
+ * places, as a count, never who; the city stays on this device so Home can show their line. Still under reduced
+ * motion: the line is drawn.
  */
 export function JourneyEnd({ token }: { token: string }) {
   const { t } = useLang()
-  const [city, setCity] = useState<Flying | null>(() => readFlying(token))
+  const nameOf = usePlaceName()
+  const [city, setCity] = useState<string | null>(() => readFlying(token))
   const [counts, setCounts] = useState<Partial<Record<Flying, number>> | null>(null)
   useEffect(() => { void getFlying().then((f) => setCounts(f?.counts ?? null)) }, [])
-  const pick = (c: Flying) => {
-    if (c === city) return
-    setCity(c)
-    keepFlying(token, c)
-    void setFlying(token, c).catch(() => {})
+  const name = city ? nameOf(city) : ""
+  const [q, setQ] = useState(name)
+  const found = q === name ? findPlaces("") : findPlaces(q)
+  const options = found.map((p) => ({ key: p.name, label: nameOf(p.name), selected: p.name === city }))
+  const choose = (p: Place) => {
+    setQ(nameOf(p.name)); document.getElementById("fly-from")?.blur()
+    if (p.name === city) return
+    setCity(p.name)
+    keepFlying(token, p.name)
+    void setFlying(token, bucketOf(p)).catch(() => {})
   }
-  const label = (c: Flying) => t.flying.cities[c] ?? c
-  const name = city ? label(city) : null
-  const [q, setQ] = useState(name ?? "")
-  // Everything while the field shows the chosen place (or nothing); otherwise the places containing what's typed
-  const term = q.trim().toLowerCase()
-  const starts = (c: Flying) => (label(c).toLowerCase().startsWith(term) ? 0 : 1) // the ones starting with it first
-  const options = FLYING.filter((c) => !term || q === name || label(c).toLowerCase().includes(term))
-    .sort((a, b) => (q === name ? 0 : starts(a) - starts(b))).map((c) => ({ key: c, label: label(c), selected: c === city }))
-  const choose = (c: Flying) => { pick(c); setQ(label(c)); document.getElementById("fly-from")?.blur() }
+  // Leaving the field (or Enter) with words typed: the best match is the answer ("Noeth Melb" → Melbourne); words that
+  // match nothing go back to the last real choice (or empty)
+  const settle = () => { const best = q.trim() && q !== name ? findPlaces(q)[0] : undefined; if (best) choose(best); else setQ(name) }
   return (
     <section aria-label={t.flying.endTitle} className="journey-end paper-feel">
-      <Combobox id="fly-from" label={t.flying.endTitle} help={t.flying.hint} placeholder={t.flying.placeholder} query={q} onQuery={setQ} openOnFocus
-        options={options} onPick={(o) => choose(o.key as Flying)} onSubmit={() => options[0] && choose(options[0].key as Flying)}
+      <Combobox id="fly-from" label={t.flying.endTitle} help={t.flying.hint} placeholder={t.flying.placeholder} query={q} onQuery={setQ} openOnFocus onLeave={settle}
+        options={options} onPick={(o) => choose(placeOf(o.key)!)} onSubmit={settle}
         status={options.length ? "results" : "empty"} emptyText={t.flying.noMatch} enterKeyHint="done" />
-      <JourneyMini you={city} counts={counts} label={t.journey.map(name, city ?? undefined)} className="journey-end-map" />
-      {name && <p role="status" className="text-small text-muted-foreground">{t.flying.yours(city!, name)}</p>}
+      <JourneyMini you={city} counts={counts} label={t.journey.map(name || null, city ?? undefined)} className="journey-end-map" />
+      {city && <p role="status" className="text-small text-muted-foreground">{t.flying.yours(city, name)}</p>}
     </section>
   )
 }

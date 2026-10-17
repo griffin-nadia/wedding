@@ -203,6 +203,24 @@ test("where are you flying from: type to filter, pick, and the map line follows"
   await expect(dialog.locator(".journey-end .journey-you")).toHaveCount(1)
   await city.fill("zzz")
   await expect(dialog.locator(".combo-note")).toHaveText("Nothing matches. Try Somewhere else.")
+  // Words that match nothing keep the last real choice (never another place)
+  await city.press("Enter")
+  await expect(city).toHaveValue("Melbourne")
+  await expect(dialog.getByText("From Melbourne")).toBeVisible()
+  // Typos and suburbs find the city, and the field shows it
+  for (const [typed, shown] of [["Noeth Melb", "Melbourne"], ["Brunswick", "Melbourne"], ["Bondi", "Sydney"], ["Brisbne", "Brisbane"]]) {
+    await city.fill(typed)
+    await expect(dialog.getByRole("option").first()).toHaveText(shown)
+    await city.press("Enter")
+    await expect(city).toHaveValue(shown)
+    await expect(dialog.getByText(`From ${shown}`)).toBeVisible()
+  }
+  // Leaving the field with a typo picks the best match too
+  await city.fill("North Melbourne"); await city.blur()
+  await expect(city).toHaveValue("Melbourne")
+  // No "Elsewhere in Australia" row any more
+  await city.fill("")
+  await expect(dialog.getByRole("option", { name: /Elsewhere/ })).toHaveCount(0)
 })
 
 test("the sent letter: plain paper on the guest site for now (the made paper is lab only), no canvas, the hanko's ink", async ({ page }) => {
@@ -239,3 +257,4 @@ test("after a reply, Home's next step is the travel dates, then the trip", async
   await next.getByRole("button", { name: "Add your travel dates" }).click()
   await expect(page.getByRole("dialog")).toContainText(/arriv|dates/i)
 })
+
