@@ -43,3 +43,7 @@ dist-*
 
 # Apps Script local-only values (test address, test tokens)
 apps-script/Local.gs
+
+# Playwright
+playwright-report/
+test-results/

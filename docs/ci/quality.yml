@@ -1,0 +1,38 @@
+# Quality gates on every PR. Move this file to .github/workflows/quality.yml (the token on Jehan's work Mac can't
+# push workflow files; see docs/quality.md), then make "Quality gates" a required check on main.
+name: Quality gates
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run check:pending
+      # A plain build: the sample household, no back end, no couple photos (the screenshots are taken of this)
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      # The first run on Linux writes its own screenshot baselines (fonts render differently from macOS); after that
+      # every run compares against them
+      - run: |
+          if [ -d e2e/__screenshots__/linux ]; then npx playwright test; else npx playwright test --update-snapshots=missing; fi
+      - if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright
+          path: |
+            playwright-report
+            test-results
+            e2e/__screenshots__/linux
