@@ -723,6 +723,9 @@ svg.lucide { stroke-width: 1.5; }
 @media (max-width: 767px) { .letter-wrap { touch-action: pan-y; } }
 /* The leaving copy is a still picture of the letter: nothing inside it replays its entrance or eases */
 .letter-ghost { pointer-events: none; will-change: transform; contain: layout paint; }
+/* A page turn in progress (page-turn.ts): each letter is clipped to a sheet with its own corners, so the strip that
+   usually trims the letter above the dock steps aside. */
+[data-turning] .scene-band { visibility: hidden; }
 .letter-ghost, .letter-ghost * { animation: none !important; }
 .letter-ghost * { transition: none !important; }
 /* The paper shader draws over the CSS paper (its fallback) once it's running */

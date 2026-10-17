@@ -9,7 +9,8 @@ import { SceneDimProvider } from "@/components/letter/letter"
 import { Toaster } from "@/components/ui/toast"
 import { HomePage } from "@/pages/home"
 
-// Pages beyond Home load when first visited, so the greeting paints sooner.
+// Pages beyond Home load when first visited, so the greeting paints sooner. One Suspense around the page (in
+// Layout), so a page change waits in a transition for the next page instead of showing an empty letter.
 // Shown only when a link is missing or wrong, so it loads then
 const NoInvitePage = lazy(() => import("@/pages/no-invite").then((m) => ({ default: m.NoInvitePage })))
 const DayPage = lazy(() => import("@/pages/day").then((m) => ({ default: m.DayPage })))
@@ -34,10 +35,10 @@ function Gate() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
-        <Route path="the-day" element={<OldTabs><Suspense><DayPage /></Suspense></OldTabs>} />
-        <Route path="travel" element={<Suspense><TravelPage /></Suspense>} />
-        <Route path="faqs" element={<Suspense><FaqsPage /></Suspense>} />
-        <Route path="our-story" element={<Suspense><StoryPage /></Suspense>} />
+        <Route path="the-day" element={<OldTabs><DayPage /></OldTabs>} />
+        <Route path="travel" element={<TravelPage />} />
+        <Route path="faqs" element={<FaqsPage />} />
+        <Route path="our-story" element={<StoryPage />} />
         <Route path="rsvp" element={<Navigate to="/?rsvp=1" replace />} />
         <Route path="getting-there" element={<Navigate to="/travel" replace />} />
         <Route path="stay" element={<Navigate to="/travel#stay" replace />} />
