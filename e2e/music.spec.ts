@@ -41,3 +41,28 @@ test("the music credit is only in FAQs, in the last answer", async ({ page }) =>
   await expect(last).toContainText("Who made this site?")
   await expect(last).toContainText("Music: “A Town With an Ocean View” by Joe Hisaishi, piano by Piano ZeroL.")
 })
+
+// Coming back to the tab: it carries on from where it stopped and is back at 30% within a second, not a slow restart
+test("back on the tab, the song carries on from where it stopped, quickly back to 30%", async ({ page }, info) => {
+  test.skip(info.project.name !== "phone", "once is enough")
+  await page.addInitScript(() => {
+    localStorage.setItem("ng-opened", "1")
+    const Orig = window.Audio
+    window.Audio = function (src?: string) { const a = new Orig(src); (window as unknown as { __a: HTMLAudioElement }).__a = a; return a } as unknown as typeof Audio
+  })
+  await page.goto("?h=sample")
+  await expect(page.locator("[data-music-toggle]").filter({ visible: true }).first()).toBeVisible()
+  await page.locator("#letter").click({ position: { x: 20, y: 200 } })
+  const a = () => page.evaluate(() => { const x = (window as unknown as { __a: HTMLAudioElement }).__a; return { t: x?.currentTime ?? 0, v: x?.volume ?? 0, paused: x?.paused ?? true } })
+  await expect.poll(async () => (await a()).v, { timeout: 9000 }).toBeGreaterThan(0.29)
+  expect((await a()).v).toBeLessThanOrEqual(0.3)
+  await page.evaluate(() => dispatchEvent(new PageTransitionEvent("pagehide")))
+  const stopped = await a()
+  expect(stopped.paused).toBe(true)
+  await page.evaluate(() => dispatchEvent(new PageTransitionEvent("pageshow")))
+  await page.waitForTimeout(1000)
+  const back = await a()
+  expect(back.paused).toBe(false)
+  expect(back.t).toBeGreaterThanOrEqual(stopped.t)
+  expect(back.v).toBeGreaterThan(0.29)
+})
