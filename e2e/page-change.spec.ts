@@ -40,34 +40,41 @@ test("the light and dark circle grows from the button, the first time too", asyn
   await page.goto("?h=sample")
   await page.waitForLoadState("networkidle")
   const btn = page.locator(".site-bar .mode-switches > button:last-child")
-  await btn.hover() // laptops: the photo leans toward the pointer, so let it settle before watching
-  await page.waitForTimeout(1200)
-  await page.addStyleTag({ content: ":root { --duration-slow: 3000ms !important; }" })
+  await btn.focus() // the keyboard, so no pointer moves (on laptops the photo leans toward the pointer)
+  await page.waitForTimeout(400)
+  // Settle what's still arriving (the names write themselves in on a first visit), so only the switch changes pixels
+  await page.evaluate(() => { for (const a of document.getAnimations()) try { a.finish() } catch { /* endless ones */ } })
   const b = (await btn.boundingBox())!, cx = b.x + b.width / 2, cy = b.y + b.height / 2
   const cdp = await context.newCDPSession(page), frames: string[] = []
   cdp.on("Page.screencastFrame", (f) => { frames.push(f.data); void cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {}) })
   await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 })
   await page.waitForTimeout(400)
   const at = frames.length
-  await btn.click()
+  await page.keyboard.press("Enter")
   await page.waitForTimeout(1000)
   await cdp.send("Page.stopScreencast")
-  // The first frame that differs from the one before the tap: where its changed pixels are centred
+  // The first frame that differs from the one before the switch: is the area round the button already in the new
+  // mode? It is when the circle grows from the button; from the middle, it would be the last place to change.
   const { width, height } = page.viewportSize()!
   const probe = await context.newPage()
-  const first = await probe.evaluate(async ([before, after, w, h]) => {
+  const first = await probe.evaluate(async ([before, after, w, h, bx, by]) => {
     const px = async (d: string) => { const i = new Image(); i.src = "data:image/png;base64," + d; await i.decode(); const c = new OffscreenCanvas(w, h).getContext("2d")!; c.drawImage(i, 0, 0, w, h); return c.getImageData(0, 0, w, h).data }
     const a = await px(before)
+    const changed = (d: Uint8ClampedArray, x: number, y: number) => { const k = (y * w + x) * 4; return Math.abs(a[k] - d[k]) + Math.abs(a[k + 1] - d[k + 1]) + Math.abs(a[k + 2] - d[k + 2]) > 90 }
     for (const f of after) {
-      const d = await px(f); let n = 0, sx = 0, sy = 0
-      for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) { const k = (y * w + x) * 4; if (Math.abs(a[k] - d[k]) + Math.abs(a[k + 1] - d[k + 1]) + Math.abs(a[k + 2] - d[k + 2]) > 90) { n++; sx += x; sy += y } }
-      if (n > 30) return { x: sx / n, y: sy / n }
+      const d = await px(f); let n = 0, near = 0, all = 0
+      for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) if (changed(d, x, y)) n++
+      if (n <= 30) continue
+      // A ring round the button (16 to 40px out, inside the screen), clear of its own icon
+      for (let y = Math.max(0, by - 40); y < Math.min(h, by + 40); y++) for (let x = Math.max(0, bx - 40); x < Math.min(w, bx + 40); x++) {
+        const r = Math.hypot(x - bx, y - by); if (r < 16 || r > 40) continue; all++; if (changed(d, x, y)) near++ }
+      return { n, near: near / all }
     }
     return null
-  }, [frames[at - 1], frames.slice(at, at + 40), width, height] as const)
+  }, [frames[at - 1], frames.slice(at, at + 40), width, height, Math.round(cx), Math.round(cy)] as const)
   await probe.close()
   expect(first, `no change seen on ${info.project.name}`).not.toBeNull()
-  expect(Math.hypot(first!.x - cx, first!.y - cy)).toBeLessThan(60)
+  expect(first!.near).toBeGreaterThan(0.25)
 })
 
 test("phones: at the end of a page the card stops 12px above the dock, with nothing repainted over it", async ({ page }, info) => {
