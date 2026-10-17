@@ -50,6 +50,7 @@ bugs it found are fixed in the next PR and ticked below). The steps for each ite
       test rows themselves; then load the real guest list into the sheet.
 - [ ] **Generate the guest links**: Make tokens + links for new rows (and `npm run qr-cards` for printed cards).
       Send one invite to yourself with Send invites (test, to me only)… before Send invites to everyone.
+- [ ] **Weekly backup on from the wedding account**: Wedding site → Weekly backup: turn on ([docs/launch.md](launch.md#weekly-backup)).
 - [ ] **Make the gates required on `main`** (needs an admin): https://github.com/griffin-nadia/wedding/settings/branches
       → a rule for `main` → Require status checks to pass → `gates`.
 

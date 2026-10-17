@@ -137,6 +137,9 @@ function onOpen() {
     .addSeparator()
     .addItem("Prepare for launch (report only)…", "prepareForLaunch")
     .addItem("Prepare for launch: run for real…", "prepareForLaunchForReal")
+    .addSeparator()
+    .addItem("Weekly backup: check (report only)…", "weeklyBackupCheck")
+    .addItem("Weekly backup: turn on", "setupWeeklyBackup")
     .addItem("Name order: find and fix \"Nadia & Griffin\"…", "fixNameOrder")
     .addSeparator()
     .addItem("Schedule the February reminder…", "scheduleReminder")
@@ -321,6 +324,66 @@ function prepareForLaunchForReal() {
     lock.releaseLock()
   }
   ui.alert("Prepare for launch", "Done. Backups: " + backups.join(", ") + ".\n\nHouseholds with no email (text them their link): " + (plan.noEmail.join(", ") || "none") + ".\n\nNothing was sent. Next: Send invites (test, to me only)…, then to everyone.", ui.ButtonSet.OK)
+}
+
+// ---------- weekly backup (a dated copy of Site-Data every week, the newest 8 kept) ----------
+
+const WEEKLY_PREFIX = "Site-Data weekly "
+const WEEKLY_KEEP = 8
+
+/** Which backups to bin: only ours (the prefix), oldest first, beyond the newest `keep`. Pure, so it can be checked. */
+function backupsToTrash_(files, prefix, keep) {
+  return files.filter((f) => f.name.indexOf(prefix) === 0).sort((a, b) => b.created - a.created).slice(keep)
+}
+
+function backupFolder_(make) {
+  const it = DriveApp.getFoldersByName(BACKUP_FOLDER)
+  return it.hasNext() ? it.next() : make ? DriveApp.createFolder(BACKUP_FOLDER) : null
+}
+
+function weeklyFiles_(folder) {
+  const out = []
+  if (!folder) return out
+  const it = folder.getFiles()
+  while (it.hasNext()) { const f = it.next(); out.push({ name: f.getName(), created: f.getDateCreated().getTime(), file: f }) }
+  return out
+}
+
+/** The weekly trigger: a dated copy of this sheet in Wedding backups, then anything past the newest 8 goes to the bin. */
+function weeklyBackup() {
+  const folder = backupFolder_(true)
+  const name = WEEKLY_PREFIX + Utilities.formatDate(new Date(), "Asia/Tokyo", "yyyy-MM-dd")
+  DriveApp.getFileById(SpreadsheetApp.getActive().getId()).makeCopy(name, folder)
+  // The bin keeps them 30 days, so a backup binned by mistake can still be restored
+  backupsToTrash_(weeklyFiles_(folder), WEEKLY_PREFIX, WEEKLY_KEEP).forEach((f) => f.file.setTrashed(true))
+  PropertiesService.getScriptProperties().setProperty("last_weekly_backup", name)
+}
+
+/** Report only: what the next weekly backup would make and bin, and whether the trigger is on. Changes nothing. */
+function weeklyBackupCheck() {
+  const ui = SpreadsheetApp.getUi()
+  const folder = backupFolder_(false)
+  const files = weeklyFiles_(folder)
+  const ours = files.filter((f) => f.name.indexOf(WEEKLY_PREFIX) === 0).length
+  // The next run adds one, so the bin gets what's past the newest (keep - 1) now
+  const bin = backupsToTrash_(files, WEEKLY_PREFIX, WEEKLY_KEEP - 1)
+  const trigger = ScriptApp.getProjectTriggers().some((t) => t.getHandlerFunction() === "weeklyBackup")
+  ui.alert("Weekly backup", "Report only. Nothing has been changed.\n\nFolder: " + (folder ? BACKUP_FOLDER : BACKUP_FOLDER + " (doesn't exist yet: the first backup makes it)") +
+    "\nWeekly backups there now: " + ours + " (the newest " + WEEKLY_KEEP + " are kept)" +
+    "\nNext backup: " + WEEKLY_PREFIX + Utilities.formatDate(new Date(), "Asia/Tokyo", "yyyy-MM-dd") +
+    "\nIt would bin: " + (bin.length ? bin.map((f) => f.name).join(", ") : "nothing") +
+    "\nOther files in the folder (never touched): " + (files.length - ours) +
+    "\nWeekly trigger: " + (trigger ? "on, from this account" : "not on from this account") +
+    "\nLast backup: " + (PropertiesService.getScriptProperties().getProperty("last_weekly_backup") || "none yet"), ui.ButtonSet.OK)
+}
+
+/** Turns the weekly trigger on (Mondays about 3 am Kyoto time), from the wedding account only. Replaces any old one. */
+function setupWeeklyBackup() {
+  const ui = SpreadsheetApp.getUi()
+  if (!isWeddingAccount_()) return ui.alert("Sign in as the wedding account", "Backups go in the Drive of whoever turns this on, so open this sheet signed in as " + prop_("REPLY_TO") + " and try again.", ui.ButtonSet.OK)
+  ScriptApp.getProjectTriggers().filter((t) => t.getHandlerFunction() === "weeklyBackup").forEach((t) => ScriptApp.deleteTrigger(t))
+  ScriptApp.newTrigger("weeklyBackup").timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(3).inTimezone("Asia/Tokyo").create()
+  ui.alert("Weekly backup is on: every Monday about 3 am Kyoto time, a dated copy of this sheet in " + BACKUP_FOLDER + ", the newest " + WEEKLY_KEEP + " kept.")
 }
 
 // ---------- web app ----------

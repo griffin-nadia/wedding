@@ -41,3 +41,21 @@ To undo: the backups are full copies of both sheets in the Wedding backups folde
 `tests/apps-script.test.ts` runs the planning logic (`planLaunch_`) on made-up rows: the counts it reports, that test
 rows are skipped and real ones kept, that planner guests already in Guests aren't added twice, the households with no
 email, and that a planner without a usable heading row is reported as a problem rather than guessed at.
+
+## Weekly backup
+
+Every Monday at about 3 am Kyoto time, a dated copy of the Site-Data sheet ("Site-Data weekly YYYY-MM-DD") goes
+into the Wedding backups folder, and anything past the newest 8 weekly copies goes to the Drive bin (kept there 30
+days, so it can still be restored). Other files in the folder, like the launch backups, are never touched.
+
+Set it up once, from the wedding account:
+
+1. Sign in as **griffinandnadia@gmail.com** and open the Site-Data sheet.
+2. **Wedding site → Weekly backup: check (report only)…** shows the folder, how many weekly copies are there, what
+   the next run would make and bin, and whether the trigger is on. It changes nothing.
+3. **Wedding site → Weekly backup: turn on**. The first time, Google asks for permission (Drive and triggers):
+   choose the wedding account and **Allow**. It refuses from any other account, since backups land in the Drive of
+   whoever turns it on.
+4. Check it later with the same report (Last backup shows the newest copy's name).
+
+To turn it off: Extensions → Apps Script → Triggers (the clock) → the `weeklyBackup` row → three dots → Delete.
