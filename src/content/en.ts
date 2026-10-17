@@ -294,12 +294,13 @@ export const en = {
   qa: {
     title: "FAQs",
     items: [
+      { q: "What should I wear?", a: "There's no dress code. Wear what makes you feel your best. The streets around the venue are cobblestone, so bring shoes you can walk in." },
+      { q: "Do I need a visa?", a: "Aussies don't need a visa for a short trip to Japan. Check your passport has at least 6 months left after you fly home. Travel has the rest." },
+      { q: "Can I bring someone?", a: `Your invite is for the people named on it. If there's room for a plus one, your reply will ask "Bringing someone?". Not sure? Message us, or email griffinandnadia@gmail.com.` },
       { q: "Gifts?", a: "No gifts, truly. Getting to Kyoto is a big ask already, so you being there is the present." },
-      { q: "Can I bring someone?", a: `Your invite is for the people named on it. If there's room for a plus one, your reply will ask "Bringing someone?" so you can add their name. If not, it's just you. You can send us a message directly or send an email to griffinandnadia@gmail.com if you're unsure.` },
-      { q: "What should I wear?", a: "There's no dress code. Wear what makes you feel like your best self. Please keep in mind that the area around the venue has cobblestone streets, so please bring appropriate footwear." },
       { q: "What about food?", a: "Lunch is catered, and we'll set the menu a few months before. Tell us about any dietary needs in your reply." },
-      { q: "What happens to my details?", a: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding." },
       { q: "Is it a traditional Japanese wedding?", a: "No, it's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are." },
+      { q: "What happens to my details?", a: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding." },
       { q: "Who made this site?", a: `Nadia's brother Jehan designed and built it, with Nadia's drawings and our photos. Music: ${ART.music.credit.en}.` },
     ],
     onTheDay: "On the day, contact",
