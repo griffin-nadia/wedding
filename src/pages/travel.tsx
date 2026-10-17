@@ -19,6 +19,17 @@ function Ext({ href, children }: { href: string; children: React.ReactNode }) {
   return <a href={href} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{children}</a>
 }
 
+/**
+ * In-page links glide to their section instead of the browser's instant jump (and land at once under reduced
+ * motion). The address keeps the hash, replaced rather than added, so Back still leaves the page.
+ */
+const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches
+function glide(e: React.MouseEvent, id: string) {
+  e.preventDefault()
+  document.getElementById(id)?.scrollIntoView({ behavior: still() ? "instant" : "smooth" })
+  history.replaceState(history.state, "", `#${id}`)
+}
+
 /** A plain accordion row: the same row as FAQs and the checklist, without the tick. */
 function Plain({ value, title, children }: { value: string; title: string; children: React.ReactNode }) {
   return (
@@ -171,13 +182,13 @@ function JumpLinks({ labels }: { labels: Record<(typeof SECTIONS)[number], strin
   const strip = useRef<HTMLUListElement>(null)
   useEffect(() => {
     const ul = strip.current, a = ul?.querySelector<HTMLElement>("[aria-current]")
-    if (ul && a) ul.scrollTo({ left: a.offsetLeft - (ul.clientWidth - a.offsetWidth) / 2, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
+    if (ul && a) ul.scrollTo({ left: a.offsetLeft - (ul.clientWidth - a.offsetWidth) / 2, behavior: still() ? "instant" : "smooth" })
   }, [at])
   return (
     <nav aria-label={t.getting.onThisPage} className="jump-links">
       <ul ref={strip}>
         {SECTIONS.map((id) => (
-          <li key={id}><a href={`#${id}`} aria-current={at === id ? "true" : undefined} className="jump-link">{labels[id]}</a></li>
+          <li key={id}><a href={`#${id}`} onClick={(e) => glide(e, id)} aria-current={at === id ? "true" : undefined} className="jump-link">{labels[id]}</a></li>
         ))}
       </ul>
     </nav>
@@ -202,13 +213,13 @@ export function TravelPage() {
   useEffect(() => {
     const id = decodeURIComponent(hash.slice(1))
     if (!id) return
-    const smooth = !first.current && !matchMedia("(prefers-reduced-motion: reduce)").matches
+    const smooth = !first.current && !still()
     first.current = false
     if (id === "hotels" || id === "airbnbs") setSheet(id)
     else if (!(SECTIONS as readonly string[]).includes(id) && id !== "picks" && id !== "getting-there") setOpen(id)
     nextFrame(() => document.getElementById(id === "getting-there" ? "on-the-day" : id)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" }))
   }, [hash])
-  const goStay = () => document.getElementById("stay")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })
+  const goStay = (e: React.MouseEvent) => glide(e, "stay")
   const one = { value: open, onValueChange: setOpen }
   const rows: [string, string, React.ReactNode][] = [
     ["passport", g.rows.passport, <p>{t.travel.items[0].body}</p>],
@@ -234,7 +245,7 @@ export function TravelPage() {
       </PageHeader>
 
       <ul className="travel-summary">
-        {summary.map(([id, line]) => <li key={id}><a href={`#${id}`} className="travel-summary-line">{line}</a></li>)}
+        {summary.map(([id, line]) => <li key={id}><a href={`#${id}`} onClick={(e) => glide(e, id)} className="travel-summary-line">{line}</a></li>)}
       </ul>
 
       <section id="to-kyoto" aria-labelledby="to-kyoto-title" className="flex scroll-mt-(--travel-head) flex-col gap-4">
