@@ -718,16 +718,17 @@
 @media (min-width: 1024px) { .arrival { align-content: end; padding-bottom: 14svh; } }
 /* Icons: Lucide everywhere at 1.5 stroke (v3 A) */
 svg.lucide { stroke-width: 1.5; }
-/* The credit (18e): a small plain link outside the card. Laptops: fixed at the very bottom left, over the scene, faint
-   until hovered or focused. Phones: the last line of Home, centred under the card. */
-.credit-mark { display: inline-flex; align-items: center; min-height: 24px; padding-inline: var(--space-1); border-radius: var(--radius-chip); font-size: var(--type-small-size); line-height: var(--type-small-leading); outline: 2px solid transparent; outline-offset: 2px; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: opacity var(--duration-fast) var(--ease-paper), text-decoration-color var(--duration-fast); }
-.credit-mark:hover, .credit-mark:focus-visible { opacity: 1; text-decoration-color: currentColor; }
+/* The credit (18e): a small plain link outside the card, on a small chip of the letter's paper so it stays readable
+   (AA) over any photo; quiet through size and the muted ink rather than transparency. Laptops: fixed at the very
+   bottom left, on every page. Phones: the last line of Home, centred under the card. */
+.credit-mark { display: inline-flex; align-items: center; min-height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-chip); background: var(--letter-bg); color: var(--ink-muted); font-size: var(--type-small-size); line-height: var(--type-small-leading); outline: 2px solid transparent; outline-offset: 2px; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--duration-fast), text-decoration-color var(--duration-fast); }
+.credit-mark:hover, .credit-mark:focus-visible { color: var(--ink); text-decoration-color: currentColor; }
 .credit-mark:focus-visible { outline-color: var(--input-focus); }
 .credit-mark:not(.credit-foot) { display: none; }
-.credit-foot { display: flex; width: fit-content; align-self: center; justify-self: center; margin: var(--space-4) auto var(--space-2); color: #fff; text-shadow: 0 1px 4px rgb(0 0 0 / 0.55); opacity: 0.85; }
+.credit-foot { display: flex; width: fit-content; align-self: center; justify-self: center; margin: var(--space-4) auto var(--space-2); }
 @media (min-width: 1024px) {
   .credit-foot { display: none; }
-  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-2); color: #fff; text-shadow: 0 1px 4px rgb(0 0 0 / 0.6); opacity: 0.7; }
+  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-3); }
 }
 /* Names reveal once, letter by letter, the first time the letter opens (v3 L). Nothing else animates text. */
 .names-reveal .name-char { display: inline-block; animation: name-in var(--duration-slow) var(--ease-paper) both; }
