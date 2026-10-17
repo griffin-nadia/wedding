@@ -1,5 +1,4 @@
-# Quality gates on every PR. Move this file to .github/workflows/quality.yml (the token on Jehan's work Mac can't
-# push workflow files; see docs/quality.md), then make "Quality gates" a required check on main.
+# Quality gates on every PR. Make "Quality gates" a required check on main (see docs/quality.md).
 name: Quality gates
 
 on:
