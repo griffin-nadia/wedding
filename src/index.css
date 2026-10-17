@@ -1101,8 +1101,6 @@ svg.lucide { stroke-width: 1.5; }
 /* The hanko's 京 is part of the seal's drawing, sized to its circle (not a text role) */
 .hanko-sm { font-size: 20px; }
 .hanko-lg { font-size: 40px; }
-/* Crew Options in the nav: an icon in the top bar from 768 (its name stays for screen readers), a cell in the dock */
-@media (min-width: 768px) { .site-nav-options { padding-inline: var(--space-3); } }
 /* Typing on a phone: the sheet runs down to the keyboard, so Back / Next sit right on it; the dock steps aside */
 [data-typing] .rsvp-letter { max-height: calc(var(--vvh, 100svh) - 12px); height: calc(var(--vvh, 100svh) - 12px); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 @media (max-width: 767px) { [data-typing] .site-nav { visibility: hidden; } }

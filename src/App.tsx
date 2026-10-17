@@ -8,7 +8,6 @@ import { ThemeProvider } from "@/lib/theme"
 import { SceneDimProvider } from "@/components/letter/letter"
 import { Toaster } from "@/components/toast"
 import { HomePage } from "@/pages/home"
-import { CrewGate } from "@/components/crew-gate"
 
 // Pages beyond Home load when first visited, so the greeting paints sooner.
 // Shown only when a link is missing or wrong, so it loads then
@@ -28,9 +27,6 @@ function OldTabs({ children }: { children: React.ReactNode }) {
 function Gate() {
   useKeyboardAvoid()
   const { status } = useHousehold()
-  // Hidden: the design system (/kit) and the options lab (/lab), crew links only
-  if (/\/kit\/?$/.test(window.location.pathname)) return <CrewGate page="kit" />
-  if (/\/lab\/?$/.test(window.location.pathname)) return <CrewGate page="lab" />
   // While the invite loads, the pages render straight away (the hero paints first);
   // only Home's greeting and RSVP card wait for the household.
   if (status !== "ready" && status !== "loading") return <Suspense><NoInvitePage reason={status} /></Suspense>

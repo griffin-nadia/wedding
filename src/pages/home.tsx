@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router-dom"
 import { Check, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useHousehold } from "@/lib/household"
-import { useOption } from "@/lib/options"
 import { useContent } from "@/lib/content"
 import { HomeCountdown } from "@/components/home-countdown"
 import { Link } from "react-router-dom"
@@ -88,7 +87,6 @@ export function HomePage() {
   const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : g.firstName)).filter(Boolean) : []
   const dear = t.home.dearNames(names) || household?.displayName || ""
   const openAt = (step: number) => { setTapped(true); setRequest({ at: Date.now(), step }) }
-  useOption("mode") // re-render when the crew preview changes
   const { mode, contactDay } = useContent()
 
   const rsvpButton = done
