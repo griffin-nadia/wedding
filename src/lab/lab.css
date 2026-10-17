@@ -58,7 +58,7 @@
 /* The stage an experiment plays in (playground/stage.tsx) */
 .x-stage { position: relative; min-height: 100svh; display: flex; flex-direction: column; background: var(--surface-paper); color: var(--ink-soft); overflow: hidden; }
 .x-stage::before, .x-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
-.x-stage::before { background-image: var(--texture-fibre); background-size: 384px; opacity: 0.5; }
+.x-stage::before { background-image: var(--texture-hatch); background-size: 512px; opacity: 0.5; mix-blend-mode: var(--paper-blend); }
 .x-stage::after { background-image: var(--texture-grain); background-size: 256px; mix-blend-mode: var(--texture-blend); opacity: 0.3; } /* the grain is baked to multiply (or soft-light), never laid on flat */
 .x-stage.is-photo { background: transparent; }
 .x-stage.is-photo::before, .x-stage.is-photo::after { display: none; }

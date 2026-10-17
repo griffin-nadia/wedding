@@ -15,7 +15,7 @@ const css = `
 .x-ps { position: relative; width: min(100%, 560px); aspect-ratio: 4 / 5; border-radius: var(--letter-radius); overflow: hidden; box-shadow: var(--elevation-paper); touch-action: none; user-select: none; }
 .x-ps-layer { position: absolute; inset: 0; }
 .x-ps-live canvas { width: 100% !important; height: 100% !important; display: block; }
-.x-ps-baked { background-color: var(--letter-bg); background-image: var(--texture-fibre); background-size: 384px; }
+.x-ps-baked { background-color: var(--letter-bg); background-image: var(--texture-hatch); background-size: 512px; background-blend-mode: var(--paper-blend); }
 .x-ps-baked::after { content: ""; position: absolute; inset: 0; background-image: var(--texture-grain); background-size: 256px; mix-blend-mode: var(--texture-blend); opacity: 0.35; }
 .x-ps-words { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: var(--space-3); padding: var(--space-7); color: var(--ink); pointer-events: none; }
 .x-ps-words p { color: var(--ink-soft); }

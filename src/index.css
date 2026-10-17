@@ -1059,18 +1059,17 @@ svg.lucide { stroke-width: 1.5; }
   .omikuji-slip { animation: toast-in var(--duration-fast) linear both; }
 }
 
-/* Nadia's lettering for the names (ART.names, names-art.tsx): her brown ink by day, her cream at night, drawn on once.
-   The box holds its shape before the picture loads (aspect-ratio), so nothing below it moves. */
+/* Nadia's lettering for the names (ART.names, names-art.tsx): two masks on one frame, the names filled with the body
+   ink (brown by day, cream in Lantern) and the "&" with the brand sage, drawn on once. The box holds its shape before
+   the masks load (aspect-ratio), so nothing below it moves. */
 .names-art-wrap { position: relative; display: block; }
-.names-art, .names-art img { display: block; width: 100%; height: 100%; }
-.names-art img { object-fit: contain; object-position: left center; }
-.names-art-wrap .names-art + .names-art { position: absolute; inset: 0; }
-:root:not([data-theme="lantern"]) .names-art.is-dark, :root[data-theme="lantern"] .names-art.is-light { display: none; }
+.names-art-ink, .names-art-amp { position: absolute; inset: 0; -webkit-mask: var(--names-mask) left center / contain no-repeat; mask: var(--names-mask) left center / contain no-repeat; background: var(--ink); }
+.names-art-amp { -webkit-mask-image: var(--amp-mask); mask-image: var(--amp-mask); background: var(--action); }
 .names-lettering { width: min(100%, 520px); }
 /* On the letter inside the envelope: centred, brown always (the envelope stays cream) */
 .envelope-paper { display: grid; place-items: start center; padding-top: 12%; }
 .envelope-names { width: 72%; }
-.envelope-names img { object-position: center; }
+.envelope-names > span { -webkit-mask-position: center; mask-position: center; }
 .names-lettering.is-revealing { animation: letter-draw 1400ms var(--ease-paper) 200ms both; }
 @keyframes letter-draw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 [data-sealed] .names-lettering.is-revealing { animation-play-state: paused; }
@@ -1233,14 +1232,15 @@ svg.lucide { stroke-width: 1.5; }
 .song-card { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--card); }
 
 /* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): washi
-   fibres in the paper itself (a baked, transparent tile over the paper colour, so no blend), the letter's grain over
+   Nadia's crosshatch in the paper itself (a baked tile blended with the paper colour), the letter's grain over
    it, and an edge that sits on what's under it: a hairline contact shadow, a short soft shadow and a long faint
    one, a lit top edge and a faintly shaded bottom edge. All images, nothing drawn live, so phones stay light. */
 .paper-feel { /* a plain class, last in the file: it wins over each card's own background and shadow */
   position: relative;
   isolation: isolate;
-  background-image: var(--texture-fibre);
-  background-size: 384px;
+  background-image: var(--texture-hatch);
+  background-size: 512px;
+  background-blend-mode: var(--paper-blend);
   box-shadow:
     0 0 0 0.5px rgb(var(--tint-shadow) / 0.14),
     0 1px 2px rgb(var(--tint-shadow) / 0.12),
@@ -1250,23 +1250,16 @@ svg.lucide { stroke-width: 1.5; }
     inset 0 -1px 0 rgb(var(--tint-shadow) / 0.07);
   &::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background-image: var(--texture-grain); background-size: 256px; opacity: 0.16; mix-blend-mode: var(--texture-blend); }
 }
-/* The slip: bright paper in both modes (so the light fibres and grain), folded in three before it was drawn, so two
+/* The slip: bright paper in both modes (so the light crosshatch and grain), folded in three before it was drawn, so two
    faint creases cross it (a shadowed side, a lit side) */
 .omikuji-slip.paper-feel {
-  --texture-fibre: url("./assets/texture-fibre-light.webp"); --texture-grain: url("./assets/texture-grain-light.webp"); --texture-blend: multiply; --tint-shadow: 66 26 5;
+  --texture-hatch: url("./assets/texture-hatch-light.webp"); --texture-grain: url("./assets/texture-grain-light.webp"); --texture-blend: multiply; --tint-shadow: 66 26 5;
   background-image:
     linear-gradient(to bottom, transparent calc(33.33% - 3px), rgb(var(--tint-shadow) / 0.05) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 3px)),
     linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px)),
-    var(--texture-fibre);
-  background-size: 100% 100%, 100% 100%, 384px;
+    var(--texture-hatch);
+  background-size: 100% 100%, 100% 100%, 512px;
+  background-blend-mode: normal, normal, multiply;
 }
-/* The sent letter: the same fibres through the paper, scrolling with the words */
-.rsvp-done { background-image: var(--texture-fibre); background-size: 384px; background-attachment: local; }
-/* Nadia's drawn envelope: the fibres over her paper only (masked to the closed drawing), gone as it opens */
-:root .envelope.is-drawn::after {
-  display: block; inset: 0 0 auto; aspect-ratio: var(--drawn-ratio, 1.3948); height: auto; z-index: 4; border-radius: 0;
-  background-image: var(--texture-fibre); background-size: 384px; opacity: 0.8; mix-blend-mode: multiply;
-  -webkit-mask: var(--drawn-mask) top / 100% auto no-repeat; mask: var(--drawn-mask) top / 100% auto no-repeat;
-  transition: opacity var(--duration-fast) var(--ease-paper);
-}
-.is-opening .envelope.is-drawn::after { opacity: 0; }
+/* The sent letter: the same crosshatch through the paper, scrolling with the words */
+.rsvp-done { background-image: var(--texture-hatch); background-size: 512px; background-blend-mode: var(--paper-blend); background-attachment: local; }

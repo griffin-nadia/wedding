@@ -15,7 +15,7 @@
         try { saved = localStorage.getItem("ng-theme") } catch (e) {}
         var dark = saved ? saved === "lantern" : window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches
         document.documentElement.setAttribute("data-theme", dark ? "lantern" : "autumn")
-        document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#22160e" : "#f3e7d3")
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#2e1b12" : "#f3e7d3")
         // Their photo is the largest paint on every page: start fetching this mode's one now, not after the app script
         var n = dark ? "night-lane" : "kyoto-view"
         try { var po = (JSON.parse(localStorage.getItem("ng-tune") || "{}").options || {}).photo; if (po === "day") n = "kyoto-view"; else if (po === "night") n = "night-lane" } catch (e) {}
@@ -28,7 +28,7 @@
       })()
     </script>
     <!-- Paper behind everything from the first paint, in the mode just picked: never a white frame -->
-    <style>html{background:#f3e7d3}html[data-theme="lantern"]{background:#22160e;color-scheme:dark}</style>
+    <style>html{background:#f3e7d3}html[data-theme="lantern"]{background:#2e1b12;color-scheme:dark}</style>
     <meta property="og:title" content="Griffin & Nadia · Kyoto, 15 October 2027" />
     <meta property="og:description" content="You're invited." />
     <meta property="og:type" content="website" />

@@ -16,7 +16,7 @@ import { getSpeed, spring, still } from "../../motion"
 const css = `
 .x-table { position: relative; isolation: isolate; height: 100svh; min-height: 100svh; overflow: hidden; background-color: color-mix(in oklab, var(--letter-bg) 55%, var(--surface-alt)); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; outline: none; }
 .x-table[data-dragging] { cursor: grabbing; }
-.x-table::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--texture-fibre), var(--texture-grain); background-size: 512px, 256px; background-position: var(--bg-pos); opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
+.x-table::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--texture-hatch), var(--texture-grain); background-size: 512px, 256px; background-position: var(--bg-pos); opacity: var(--texture-opacity); mix-blend-mode: var(--texture-blend); pointer-events: none; }
 .x-table-print { position: absolute; left: 0; top: 0; width: var(--card-w); padding: 0; border-radius: var(--radius-control); background: none; will-change: transform; cursor: pointer; }
 .x-table-print:focus-visible { outline: 2px solid var(--input-focus); outline-offset: 6px; }
 .x-table-print img { -webkit-user-drag: none; pointer-events: none; }

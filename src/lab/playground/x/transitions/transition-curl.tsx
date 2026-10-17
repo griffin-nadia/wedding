@@ -21,7 +21,7 @@ const css = `
 .x-cu-under { box-shadow: var(--elevation-paper); }
 .x-cu-turn { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: 0 50%; will-change: transform; }
 .x-cu-face { position: absolute; inset: 0; border-radius: var(--letter-radius); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; background: var(--letter-bg); }
-.x-cu-back { transform: rotateY(180deg); background-image: var(--texture-fibre); background-size: 384px; }
+.x-cu-back { transform: rotateY(180deg); background-image: var(--texture-hatch); background-size: 512px; background-blend-mode: var(--paper-blend); }
 .x-cu-back .x-cu-ghost { position: absolute; inset: 0; transform: scaleX(-1); opacity: 0.06; pointer-events: none; }
 .x-cu-light { position: absolute; inset: 0; pointer-events: none; }
 .x-cu-shadow { position: absolute; top: 0; bottom: 0; left: 0; pointer-events: none; background: linear-gradient(to right, rgb(var(--tint-shadow) / 0.28), transparent); border-radius: var(--letter-radius); }

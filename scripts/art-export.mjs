@@ -3,6 +3,8 @@
 // originals are never copied or committed; only these exports are. Prints each export's size and aspect ratio.
 // The open envelope has a stray beige block above its flap (the paper above the envelope's top edge); it's cut away
 // along the top edge (where the side folds start) and the outline redrawn along the cut, until Nadia re-exports it.
+// The lettering goes out as two masks on the same frame (its ink is set by the theme in CSS): the names without the
+// "&", and the "&" alone, split at the clear columns either side of it (measured on the 2000px original).
 import { chromium } from "@playwright/test"
 import { execFileSync } from "node:child_process"
 import fs from "node:fs"
@@ -17,8 +19,8 @@ const JOBS = [
   ["envelope-open", "envelope-open.png", "envelope", [410, 820], "cut-top"],
   ["wax-seal", "wax-seal.png", "seal", [64, 128, 256]],
   ["gum-leaves", "gum-leaves.png", "leaves", [160, 320]],
-  ["lettering-brown", "lettering-brown.png", "names", [520, 1040]],
-  ["lettering-cream", "lettering-cream.png", "names", [520, 1040]],
+  ["names-mask", "lettering-black.png", "names", [1040], "no-amp"],
+  ["amp-mask", "lettering-black.png", "names", [1040], "amp"],
 ]
 const b = await chromium.launch(), p = await b.newPage()
 const ratios = {}
@@ -45,6 +47,13 @@ for (const [name, file, dir, widths, fix] of JOBS) {
     const pad = Math.round(Math.max(x1 - x0, y1 - y0) * 0.01)
     x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(W, x1 + pad); y1 = Math.min(H, y1 + pad)
     const cw = x1 - x0, ch = y1 - y0
+    if (fix === "amp" || fix === "no-amp") {
+      // The "&" sits between x 990 and 1150 of 2000, with clear paper either side
+      const a0 = 990 * W / 2000, a1 = 1150 * W / 2000
+      x.globalCompositeOperation = "destination-out"
+      if (fix === "amp") { x.fillRect(0, 0, a0, H); x.fillRect(a1, 0, W - a1, H) } else x.fillRect(a0, 0, a1 - a0, H)
+      x.globalCompositeOperation = "source-over"
+    }
     const files = []
     for (const w of widths) {
       const h = Math.round((w * ch) / cw), o = new OffscreenCanvas(w, h), ox = o.getContext("2d")
@@ -60,6 +69,8 @@ for (const [name, file, dir, widths, fix] of JOBS) {
     fs.writeFileSync(`${base}.webp`, Buffer.from(webp, "base64"))
     const pngPath = path.join(tmp, `${name}-${w}.png`)
     fs.writeFileSync(pngPath, Buffer.from(png, "base64"))
+    // Masks are WebP only (a CSS mask has no srcset to fall back through)
+    if (name.endsWith("-mask")) { console.log(`${base}  webp ${Math.round(fs.statSync(`${base}.webp`).size / 1024)} kB`); continue }
     execFileSync("sips", ["-s", "format", "avif", "-s", "formatOptions", "55", pngPath, "--out", `${base}.avif`], { stdio: "ignore" })
     console.log(`${base}  webp ${Math.round(fs.statSync(`${base}.webp`).size / 1024)} kB  avif ${Math.round(fs.statSync(`${base}.avif`).size / 1024)} kB`)
   }

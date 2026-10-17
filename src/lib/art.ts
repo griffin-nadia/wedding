@@ -6,10 +6,10 @@
  */
 export const ART = {
   /**
-   * Her lettering for the names (17 Oct): brown on the light letter, cream on the dark one, swapped with the theme. The
+   * Her lettering for the names (17 Oct), as two masks (the names, the "&"), filled with theme tokens in CSS. The
    * page keeps the names as text for screen readers and the title. ratio holds the space before it loads (no jump).
    */
-  names: { light: "art/names/lettering-brown", dark: "art/names/lettering-cream", widths: [520, 1040], ratio: 3.25 },
+  names: { mask: "art/names/names-mask", amp: "art/names/amp-mask", ratio: 3.2457 },
   /** Her wax seal and gum leaves on their own (17 Oct): the seal wherever the G&N seal shows alone, the leaves in the lab */
   seal: { src: "art/seal/wax-seal", widths: [64, 128, 256] },
   leaves: { src: "art/leaves/gum-leaves", widths: [160, 320], ratio: 0.743 },

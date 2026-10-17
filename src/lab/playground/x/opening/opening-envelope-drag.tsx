@@ -57,7 +57,7 @@ export default function EnvelopeDrag() {
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open() } }}>
         <img src={img("open")} alt="" className="x-ed-art x-ed-open" style={{ opacity: flap, transform: `translateY(${out * 30}px)` }} draggable={false} />
         <div className="x-ed-letter paper-feel" aria-hidden={!done} style={{ transform: `translateY(${-out * 78}%) scale(${1 + out * 0.08})`, zIndex: out > 0.5 ? 4 : 2 }}>
-          <h2><span className="sr-only">Griffin &amp; Nadia</span><NamesArt tone="light" className="w-4/5" /></h2>
+          <h2><span className="sr-only">Griffin &amp; Nadia</span><NamesArt className="w-4/5" /></h2>
           <p className="font-medium text-foreground">{t.home.dateLine}</p>
           <p>{t.home.dear(t.home.dearNames(names))} {t.home.greetingLine}</p>
         </div>

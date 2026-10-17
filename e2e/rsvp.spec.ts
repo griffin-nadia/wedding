@@ -154,8 +154,8 @@ test("the sent letter is paper you could hold, from images only (no canvas or sh
   await expect(dialog.locator(".omikuji-slip")).toBeVisible()
   const paper = await page.evaluate(() => ({
     canvases: document.querySelectorAll("canvas").length,
-    fibre: [".omikuji-slip", ".journey-end", ".rsvp-done"].map((s) => getComputedStyle(document.querySelector(s)!).backgroundImage.includes("texture-fibre")),
+    paper: [".omikuji-slip", ".journey-end", ".rsvp-done"].map((s) => getComputedStyle(document.querySelector(s)!).backgroundImage.includes("texture-hatch")),
     ink: (() => { const h = getComputedStyle(document.querySelector(".hanko")!); return [h.filter.includes("ink-bleed"), (h.maskImage || h.webkitMaskImage).includes("texture-ink")] })(),
   }))
-  expect(paper).toEqual({ canvases: 0, fibre: [true, true, true], ink: [true, true] })
+  expect(paper).toEqual({ canvases: 0, paper: [true, true, true], ink: [true, true] })
 })
