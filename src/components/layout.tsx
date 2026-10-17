@@ -133,14 +133,13 @@ export function Layout() {
             {page === "home" && <SignOff action={page === "home" && !sealed
               // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
               ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
-              : null} />}
+              : null} foot={!sealed && <Suspense><PhoneQr /><CreditMark foot /></Suspense>} />}
           </Letter>
         </Arrival>
         {/* Phones: the made-by mark waits in the hidden strip under the letter. A bounce past the end shows it;
             on a short page it simply sits under the letter. */}
         {!sealed && <Suspense><CreditMark inline /></Suspense>}
       </main>
-      <Suspense><PhoneQr /></Suspense>
       <Suspense><CreditMark /></Suspense>
     </>
   )

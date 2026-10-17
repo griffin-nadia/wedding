@@ -541,7 +541,12 @@
 @media (hover: hover) and (pointer: fine) { .utility-btn { transition: color var(--duration-fast), background-color var(--duration-fast) var(--ease-paper); } .utility-btn:hover { background: var(--nav-hover-bg); } }
 
 /* From 1024: "Open on your phone", bottom right of the scene, outside the letter */
-.phone-qr { position: fixed; z-index: 20; right: 24px; bottom: 24px; display: flex; align-items: center; gap: var(--space-4); width: 320px; padding: var(--space-4); border-radius: var(--radius-card); background: var(--letter-bg); color: var(--letter-ink); box-shadow: var(--elevation-paper); }
+/* Home's card footer on laptops: the QR and the made-by mark, inside the paper (nothing floats over the photo) */
+.letter-foot { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line-hairline); }
+.letter-foot:not(:has(.phone-qr)) { display: none; }
+.phone-qr { display: flex; align-items: center; gap: var(--space-4); color: var(--letter-ink); }
+.credit-mark.credit-foot { position: relative; left: auto; bottom: auto; }
+@media (min-width: 1024px) { :root:has(.letter[data-page="home"]) .credit-mark:not(.credit-foot) { display: none; } }
 
 .skip-link { position: absolute; left: 12px; top: -64px; z-index: 60; padding: var(--space-2) var(--space-4); border-radius: var(--radius-chip); background: var(--letter-bg); color: var(--ink); }
 .skip-link:focus { top: 12px; }
@@ -833,8 +838,9 @@ svg.lucide { stroke-width: 1.5; }
 .count-boxes { display: flex; flex-direction: column; gap: var(--space-2); }
 .count-boxes-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-4); }
 .count-boxes-list { display: flex; gap: var(--space-2); }
-.count-box { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 64px; height: 56px; padding: 0 var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); perspective: 400px; }
-.count-box-num { display: block; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: var(--type-heading-leading); font-weight: 400; color: var(--ink); font-variant-numeric: tabular-nums; transform-origin: 50% 50%; backface-visibility: hidden; }
+/* Quiet boxes (hairline, a low-contrast fill); the numbers in the system UI font, not the display serif */
+.count-box { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 64px; height: 56px; padding: 0 var(--space-3); border-radius: var(--radius-control); background: color-mix(in oklab, var(--surface-raised) 45%, transparent); perspective: 400px; }
+.count-box-num { display: block; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: var(--type-heading-size); line-height: var(--type-heading-leading); font-weight: 400; letter-spacing: -0.02em; color: var(--ink); font-variant-numeric: tabular-nums; transform-origin: 50% 50%; backface-visibility: hidden; }
 .count-box-unit, .count-boxes-caption { font-family: var(--font-label); font-size: var(--type-label-size); line-height: 16px; color: var(--ink-soft); }
 @keyframes count-flip { from { transform: rotateX(-90deg); opacity: 0.4; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: no-preference) { .count-flip { animation: count-flip var(--duration-base) var(--ease-paper) both; } }
@@ -1002,11 +1008,7 @@ svg.lucide { stroke-width: 1.5; }
 .journey-you { fill: none; stroke: var(--journey-you); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: journey-draw calc(var(--duration-slow) * 2) var(--ease-paper) forwards; }
 .journey-you-dot { fill: var(--journey-you); }
 @media (prefers-reduced-motion: reduce) { .journey-you { animation: none; stroke-dashoffset: 0; } }
-.journey-card-home { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding-block: var(--space-1); text-align: left; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
-.journey-card-home:focus-visible { outline-color: var(--input-focus); }
-.journey-card-thumb { flex: none; width: 72px; border-radius: var(--radius-control); }
 /* The thumbnail is a still picture of their line: the countdown is Home's one moving thing */
-.journey-card-thumb .journey-you, .journey-card-thumb .journey-reveal { animation: none; stroke-dashoffset: 0; }
 /* Journey map, hi-fi (Options → Journey map): Nadia rust, Griffin moss, guests faint gold, yours full gold; the places
    named; a legend; in Lantern the lines glow softly (no lanterns on the map) */
 .journey-hifi .journey-route { opacity: 0.85; stroke-width: 2; }
@@ -1168,3 +1170,13 @@ svg.lucide { stroke-width: 1.5; }
 @media (prefers-reduced-motion: reduce) { .story-track { scroll-behavior: auto; } }
 /* Short phones (an SE at 667): a smaller map and photo, so a stop still fits one screen */
 @media (max-height: 760px) { .story-map { height: 16svh; } .story-slide-photo > div { height: 22svh; } .story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: 26svh; } }
+
+/* Home on laptops (1024 and up): the card anchored bottom left, 20% narrower, so the photo and their faces are clear */
+@media (min-width: 1024px) {
+  .letter-wrap:has(> .arrival .letter[data-page="home"]), .letter-wrap:has(> .letter[data-page="home"]) { display: flex; flex-direction: column; justify-content: flex-end; min-height: 100dvh; padding-top: 88px; padding-bottom: var(--space-7); }
+  .letter[data-page="home"] { max-width: calc(var(--letter-width) * 0.8); }
+}
+/* Shorter laptop screens: smaller names and tighter blocks, so the whole card (QR included) still fits */
+@media (min-width: 1024px) and (max-height: 860px) {
+  .letter[data-page="home"] { --type-display-size: 64px; --letter-gap: var(--space-5); }
+}

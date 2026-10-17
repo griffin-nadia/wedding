@@ -13,7 +13,7 @@ export function Letter({ children, className, as: Tag = "article", ...rest }: { 
 }
 
 /** End of every letter: their sign-off and the music credit (Nadia's handwriting replaces Klee One when it arrives). */
-export function SignOff({ action }: { action?: ReactNode }) {
+export function SignOff({ action, foot }: { action?: ReactNode; foot?: ReactNode }) {
   const { t } = useLang()
   return (
     <footer className="letter-end mt-auto flex flex-wrap items-center justify-between gap-x-4 pt-2">
@@ -22,6 +22,7 @@ export function SignOff({ action }: { action?: ReactNode }) {
         : <p className="voice text-foreground">{t.letter.signOff}</p>}
       {action}
       <p className="w-full pt-2 text-small text-muted-foreground">{t.music.credit(ART.music.title, ART.music.artist, ART.music.year)}</p>
+      {foot && <div className="letter-foot">{foot}</div>}
     </footer>
   )
 }
