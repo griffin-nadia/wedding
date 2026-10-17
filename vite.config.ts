@@ -26,6 +26,9 @@ function preloadFonts(): Plugin {
 // Couple photos stay private until Nadia says yes. PUBLIC_PHOTOS=1 copies the public set into the
 // build (from photos-private/, or public/photos/ once committed). family-dinner never goes public.
 const PUBLIC_PHOTOS = process.env.PUBLIC_PHOTOS === "1"
+// The photo files themselves only exist on a machine with photos-private/ (or once public/photos is committed). A
+// build without them (GitHub Actions) shows the paper placeholder frames instead of broken images.
+const HAS_PHOTOS = PUBLIC_PHOTOS && (fs.existsSync(path.resolve(__dirname, "photos-private")) || fs.existsSync(path.resolve(__dirname, "public/photos")))
 function copyPhotos(): Plugin {
   let outDir = "dist"
   return {
@@ -87,7 +90,7 @@ export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss(), preloadFonts(), copyPhotos(), privateSong(), noPrivateInBuild()],
   define: {
     __PRIVATE_SONG__: JSON.stringify(command === "serve" && fs.existsSync(PRIVATE_SONG)),
-    __PUBLIC_PHOTOS__: JSON.stringify(PUBLIC_PHOTOS),
+    __PUBLIC_PHOTOS__: JSON.stringify(HAS_PHOTOS),
     // Art drops in with no other change: Nadia's paper wash and her handwritten sign-off
     __PAPER_ART__: JSON.stringify(["avif", "webp", "png"].find((x) => fs.existsSync(path.resolve(__dirname, `public/art/paper/base.${x}`))) ?? null),
     __SIGNOFF_ART__: JSON.stringify(fs.existsSync(path.resolve(__dirname, "public/brand/signoff.svg"))),
