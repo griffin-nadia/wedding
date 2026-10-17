@@ -58,7 +58,14 @@ artist in `ART.music` (`src/lib/art.ts`); the credit under the sign-off follows.
 For a local preview of a song that isn't cleared yet, put it at `private/song.mp3` (gitignored). `npm run dev` and
 `npm run lab` play it instead; it is never copied into `dist`, and the build fails if anything from `private/` is.
 
-## Content
+## The lab (local only)
+
+`npm run lab` opens `lab.html` on the dev server: a component gallery (every component, variant and state, light
+and dark), the Options panel, a layout switcher (A five tabs, B one scrolling letter, C invite as home with sheets,
+D three tabs), a style switcher (Paper, Quiet, Ink) at phone and laptop size, and the experiments in
+`src/lab/experiments` (one file each, so a winner moves into the site in one PR). It is never built, deployed or
+linked: the build only reads `index.html`, and it fails if any lab code or lab page reaches `dist`.
+
 
 All words live in `src/content/en.ts`, taken from their Inv details tab. Japanese goes in `ja.ts` with the
 same shape (anything missing falls back to English). Every Japanese line is checked by a native speaker.

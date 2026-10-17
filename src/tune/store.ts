@@ -8,7 +8,7 @@ export type Note = { id: string; selector: string; text: string; viewport: { w: 
 export type TuneState = { overrides: Record<Scope, Record<string, string>>; notes: Note[]; options: Record<string, string> }
 
 /** Each lab option's shipped value (the first choice). The labels and notes live in options.ts, loaded with the panel only. */
-export const OPTION_DEFAULTS: Record<string, string> = { mode: "sheet" }
+export const OPTION_DEFAULTS: Record<string, string> = {}
 
 const KEY = "ng-tune"
 export const empty = (): TuneState => ({ overrides: { all: {}, autumn: {}, lantern: {} }, notes: [], options: {} })

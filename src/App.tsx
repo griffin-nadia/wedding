@@ -25,7 +25,7 @@ function OldTabs({ children }: { children: React.ReactNode }) {
   return to ? <Navigate to={to} replace /> : <>{children}</>
 }
 
-function Gate() {
+export function Gate() {
   useKeyboardAvoid()
   const { status } = useHousehold()
   // While the invite loads, the pages render straight away (the hero paints first);

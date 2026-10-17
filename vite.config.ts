@@ -59,6 +59,7 @@ function privateSong(): Plugin {
     },
   }
 }
+// Also fails if anything from the lab is built (it's local only).
 function noPrivateInBuild(): Plugin {
   let outDir = "dist"
   return {
@@ -67,12 +68,14 @@ function noPrivateInBuild(): Plugin {
     enforce: "post",
     configResolved(c) { outDir = path.resolve(c.root, c.build.outDir) },
     closeBundle() {
-      if (!fs.existsSync(PRIVATE)) return
-      const sizes = new Set(fs.readdirSync(PRIVATE).map((f) => fs.statSync(path.join(PRIVATE, f))).filter((s) => s.isFile()).map((s) => s.size))
+      const priv = fs.existsSync(PRIVATE) ? fs.readdirSync(PRIVATE) : []
+      const sizes = new Set(priv.map((f) => fs.statSync(path.join(PRIVATE, f))).filter((s) => s.isFile()).map((s) => s.size))
       const walk = (d: string): string[] => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]))
       for (const f of walk(outDir)) {
-        const same = sizes.has(fs.statSync(f).size) && fs.readdirSync(PRIVATE).some((p) => fs.statSync(path.join(PRIVATE, p)).isFile() && fs.readFileSync(path.join(PRIVATE, p)).equals(fs.readFileSync(f)))
+        const same = sizes.has(fs.statSync(f).size) && priv.some((p) => fs.statSync(path.join(PRIVATE, p)).isFile() && fs.readFileSync(path.join(PRIVATE, p)).equals(fs.readFileSync(f)))
         if (same || (/\.(js|html)$/.test(f) && fs.readFileSync(f, "utf8").includes("__private/"))) throw new Error(`private/ file in the build: ${path.relative(outDir, f)}`)
+        // The lab (lab.html, src/lab) is local only: nothing of it may be built
+        if (/lab(-frame)?\.html$/.test(f) || (/\.js$/.test(f) && fs.readFileSync(f, "utf8").includes("__NG_LAB__"))) throw new Error(`lab code in the build: ${path.relative(outDir, f)}`)
       }
     },
   }
