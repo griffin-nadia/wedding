@@ -43,7 +43,7 @@ bugs it found are fixed in the next PR and ticked below). The steps for each ite
   - Our story: dragging a print follows the finger and never turns the page;
   - the music: starts after the first tap, stops at once when the phone locks, and Now Playing clears;
   - the envelope, the page swipe and Travel's jump links.
-- [ ] **Email queue on from the wedding account**: Wedding site menu → Turn on the fast email queue, signed in as the
+- [ ] **Email queue on from the wedding account** (click by click: [docs/email-queue.md](email-queue.md)): Wedding site menu → Turn on the fast email queue, signed in as the
       wedding account only (`?action=ping` should show `queueAccount: wedding`). Then send one test reply on a test
       household and check it arrives from the wedding address.
 - [ ] **Clean the test rows**: Reset test households…, and Clear queued items for test households…, then delete the
