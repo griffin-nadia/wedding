@@ -10,18 +10,19 @@ export type PaperParams = {
 export type PaperColours = { colorPaper: string; colorBack: string; colorShadow: string }
 export type PaperTone = "light" | "lantern" | "bright"
 
-/** The lab's "Paper" style (lab/frame.tsx) as the start, folds down to 0.1 and no crumples (the diagonal creases),
- *  so nothing strong crosses behind the names (18f) */
+/** The paper (18f, second pass): fine grain and fibre only. The wrinkles and folds of the first pass read as stains
+ *  and streaks once tiled across a card, so they're gone; nothing big repeats, so the tile never shows. */
 export const CHOSEN: PaperParams = {
-  roughness: 0.35, roughnessSize: 0.5, fiber: 0.35, fiberSize: 0.5, folds: 0.1, foldSizeX: 1, foldSizeY: 1,
-  wrinkles: 0.35, wrinkleSize: 0.65, crumples: 0, drops: 0.1, distortion: 0.3, blending: 1, angle: 300, seed: 4, scale: 0.9,
+  roughness: 0.4, roughnessSize: 0.5, fiber: 0.45, fiberSize: 0.5, folds: 0, foldSizeX: 1, foldSizeY: 1,
+  wrinkles: 0, wrinkleSize: 0.65, crumples: 0, drops: 0.05, distortion: 0.3, blending: 1, angle: 300, seed: 4, scale: 0.9,
 }
 
-/** The paper colours: cream, a cream a step darker and a warm beige by day; walnut, a step darker and a deep brown
- *  in Lantern; the fortune slip's bright paper in both. */
+/** The paper colours: by day a cream a touch lighter than the letter's (the grain darkens it back to the cream),
+ *  a step darker and a soft beige; in Lantern a warm walnut, a step darker, and a lighter brown for the grain, so it
+ *  shows as texture on dark paper instead of disappearing or reading as scratches; the slip's bright paper in both. */
 export const COLOURS: Record<PaperTone, PaperColours> = {
-  light: { colorPaper: "#f3e7d3", colorBack: "#eadcc3", colorShadow: "#c4ab85" },
-  lantern: { colorPaper: "#2e1b12", colorBack: "#24150d", colorShadow: "#120905" },
+  light: { colorPaper: "#f7eddc", colorBack: "#f1e5cf", colorShadow: "#d2bd9b" },
+  lantern: { colorPaper: "#32201a", colorBack: "#2a1a12", colorShadow: "#5a4232" },
   bright: { colorPaper: "#fffdf8", colorBack: "#f6efe2", colorShadow: "#cdbb9b" },
 }
 
@@ -31,10 +32,10 @@ export const forTone = (p: PaperParams, tone: PaperTone): PaperParams =>
 
 /** The four for the lab, side by side */
 export const PRESETS: { id: string; label: string; params: PaperParams }[] = [
-  { id: "subtle", label: "Very subtle", params: { ...CHOSEN, roughness: 0.22, fiber: 0.25, folds: 0.03, wrinkles: 0.18, drops: 0.05 } },
+  { id: "subtle", label: "Very subtle", params: { ...CHOSEN, roughness: 0.25, fiber: 0.28, drops: 0 } },
   { id: "chosen", label: "Chosen", params: CHOSEN },
-  { id: "fibre", label: "More fibre", params: { ...CHOSEN, fiber: 0.7, fiberSize: 0.6 } },
-  { id: "nofolds", label: "No folds at all", params: { ...CHOSEN, folds: 0 } },
+  { id: "fibre", label: "More fibre", params: { ...CHOSEN, roughness: 0.3, roughnessSize: 0.35, fiber: 0.6, fiberSize: 0.4, drops: 0 } },
+  { id: "folds", label: "A few soft folds", params: { ...CHOSEN, folds: 0.08, wrinkles: 0.12, wrinkleSize: 0.3 } },
 ]
 
 /** The one the site uses */

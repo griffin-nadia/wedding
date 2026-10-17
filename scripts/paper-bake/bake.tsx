@@ -6,5 +6,5 @@ import { COLOURS, PAPER, TILE, forTone, type PaperTone } from "../../src/lib/pap
 const extra = JSON.parse(new URLSearchParams(location.search).get("p") ?? "{}")
 const tone = (new URLSearchParams(location.search).get("tone") ?? "light") as PaperTone
 createRoot(document.getElementById("root")!).render(
-  <PaperTexture id="t" className="t" speed={0} fit="cover" {...forTone({ ...PAPER, ...extra }, tone)} {...COLOURS[tone]} style={{ width: TILE, height: TILE }} />,
+  <PaperTexture id="t" className="t" speed={0} fit="cover" {...forTone({ ...PAPER, ...extra, colours: undefined }, tone)} {...COLOURS[tone]} {...extra.colours?.[tone]} style={{ width: TILE, height: TILE }} />,
 )
