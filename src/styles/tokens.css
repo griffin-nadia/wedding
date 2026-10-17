@@ -37,11 +37,11 @@
   --brand-paper-bright: oklch(99.4% 0.007 88.6);  /* #fffdf8, the fortune slip and the driver card: always bright paper */
   --brand-ink-deep: oklch(21.5% 0.045 46.7);  /* #2a1206 */
   /* Lantern (evening) */
-  --brand-yoru: oklch(21.3% 0.025 54.7);  /* #22160e */
+  --brand-yoru: oklch(24.5% 0.034 49.0);  /* #2e1b12, warm walnut (18e; was #22160e) */
   --brand-ai: oklch(21.3% 0.038 251.4);            /* #0b1a2a, indigo: the cool shade in the letter's lower corner, Lantern */
-  --brand-yoru-raised: oklch(25.9% 0.029 54.7);  /* #2f2016 */
-  --brand-yoru-fill: oklch(30.6% 0.036 58.8);  /* #3d2b1d */
-  --brand-yoru-line: oklch(40.0% 0.044 58.0);      /* #5a4230, the night hairline: 1.9:1 on the letter, 1.55:1 on the darker tiles (was 1.24:1) */
+  --brand-yoru-raised: oklch(27.8% 0.038 50.0);  /* #382317 */
+  --brand-yoru-fill: oklch(32.5% 0.043 53.0);  /* #462e1f */
+  --brand-yoru-line: oklch(43.0% 0.048 55.0);      /* #654936, the night hairline */
   --brand-yoru-sage: oklch(28.3% 0.024 100.9);  /* #2c2a1c */
   --brand-kare: oklch(71.8% 0.054 75.5);  /* #b8a07f */
   --brand-sage: oklch(70.6% 0.051 107.6);  /* #a3a37e */
@@ -84,8 +84,11 @@
   /* The letter's grain and mottle, baked from the SVGs below by scripts/bake-textures.mjs (cheap to draw mid-turn) */
   --texture-grain: url("../assets/texture-grain-light.webp");
   --texture-soft: url("../assets/texture-mottle-light.webp");
-  /* Washi fibres (transparent: warm strands here, pale ones in Lantern) and the hanko's ink, also baked by that script */
-  --texture-fibre: url("../assets/texture-fibre-light.webp");
+  /* Nadia's paper: her envelope's crosshatch as a seamless tile (scripts/paper-tile.mjs), warm strokes on white drawn
+     with multiply here, pale ones on black drawn with screen in Lantern, so the paper colour shows through. The hanko's
+     ink is baked by bake-textures. */
+  --texture-hatch: url("../assets/texture-hatch-light.webp");
+  --paper-blend: multiply;
   --texture-ink: url("../assets/texture-ink.webp");
 }
 
@@ -97,7 +100,8 @@
   --grain-blend: soft-light;
   --texture-grain: url("../assets/texture-grain-lantern.webp");
   --texture-soft: url("../assets/texture-mottle-lantern.webp");
-  --texture-fibre: url("../assets/texture-fibre-lantern.webp");
+  --texture-hatch: url("../assets/texture-hatch-lantern.webp");
+  --paper-blend: screen;
   --surface-paper: var(--brand-yoru);
   --surface-raised: var(--brand-yoru-raised);
   --surface-alt: var(--brand-yoru-sage);

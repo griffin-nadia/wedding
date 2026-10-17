@@ -24,7 +24,7 @@ Nadia's art arrives full size and transparent in `private/` (never committed) an
 | Envelope, open | `art/envelope/envelope-open-{410,820}` | the envelope as the letter rises | 4 / 9 kB |
 | Wax seal | `art/seal/wax-seal-{64,128,256}` | the seal on its own: the paper envelope, the laptop credit mark, the lab openings | 2 / 3 / 5 kB |
 | Gum leaves | `art/leaves/gum-leaves-{160,320}` | the lab (paper petals) | 4 / 8 kB |
-| Lettering, brown and cream | `art/names/lettering-{brown,cream}-{520,1040}` | the names on Home (brown by day, cream in Lantern) and on the letter in the envelope (brown) | 20 / 52 kB |
+| Lettering, as masks | `art/names/{names,amp}-mask-1040.webp` | the names on Home and on the letter in the envelope, filled in CSS: names in `--ink` (brown by day, cream in Lantern), the "&" in `--action` (sage) | 53 + 3 kB |
 
 The names stay as text in the heading (visually hidden) and in the page title. The favicon and share image keep the
 flat mark in `public/brand`. The open envelope has a stray beige block above its flap; the export cuts it away along

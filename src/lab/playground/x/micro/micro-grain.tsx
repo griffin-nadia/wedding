@@ -7,14 +7,14 @@ import { Stage } from "../../stage"
  * Home's letter with its paper on sliders: how much grain, how much washi fibre, and the edge shadow on or off,
  * live. A tick on each slider marks what the site uses today, so you can see how far a change goes.
  */
-const SITE = { grain: 0.06, fibre: 0 }
+const SITE = { grain: 0.06, fibre: 1 }
 const css = `
 .x-gr { display: grid; gap: var(--space-6); width: min(100%, 980px); align-items: center; }
 @media (min-width: 900px) { .x-gr { grid-template-columns: minmax(0, 1fr) 300px; } }
 .x-gr-letter { position: relative; isolation: isolate; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-7) var(--space-6); border-radius: var(--letter-radius); background: var(--letter-bg); color: var(--ink-soft); transition: box-shadow var(--duration-fast) var(--ease-paper); }
 .x-gr-letter::before, .x-gr-letter::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; }
 .x-gr-letter::before { background-image: var(--texture-grain); background-size: 256px; mix-blend-mode: var(--texture-blend); opacity: var(--g); }
-.x-gr-letter::after { background-image: var(--texture-fibre); background-size: 384px; opacity: var(--f); }
+.x-gr-letter::after { background-image: var(--texture-hatch); background-size: 512px; mix-blend-mode: var(--paper-blend); opacity: var(--f); }
 .x-gr-letter[data-edge] { box-shadow: 0 0 0 0.5px rgb(var(--tint-shadow) / 0.14), 0 1px 2px rgb(var(--tint-shadow) / 0.12), 0 8px 18px -10px rgb(var(--tint-shadow) / 0.34), 0 24px 40px -26px rgb(var(--tint-shadow) / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.5); }
 .x-gr-panel { display: flex; flex-direction: column; gap: var(--space-5); padding: var(--space-5); border-radius: var(--radius-section); background: var(--letter-bg); box-shadow: var(--elevation-paper); }
 .x-gr-field { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -54,7 +54,7 @@ export default function Grain() {
         </article>
         <div className="x-gr-panel">
           <Slider id="x-gr-g" label="Grain" value={g} max={0.2} onChange={setG} site={SITE.grain} />
-          <Slider id="x-gr-f" label="Washi fibres" value={f} max={1} onChange={setF} site={SITE.fibre} />
+          <Slider id="x-gr-f" label="Nadia's paper (her crosshatch)" value={f} max={1} onChange={setF} site={SITE.fibre} />
           <label className="x-gr-check"><input type="checkbox" checked={edge} onChange={(e) => setEdge(e.target.checked)} className="size-5 accent-(--action)" />Edge shadow (paper on the table)</label>
           <button type="button" className="btn-text min-h-11 self-start text-small" onClick={() => { setG(SITE.grain); setF(SITE.fibre); setEdge(false) }}>Back to the site today</button>
         </div>

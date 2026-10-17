@@ -115,7 +115,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
         <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper is-drawn"
           style={{ ["--drawn-mask" as string]: `url(${import.meta.env.BASE_URL}${ART.drawnEnvelope.closed}-410.webp)`, ["--drawn-ratio" as string]: String(ART.drawnEnvelope.ratio) }}>
           <span aria-hidden className="envelope-back" />
-          <span aria-hidden className="envelope-paper"><NamesArt tone="light" className="envelope-names" /></span>
+          <span aria-hidden className="envelope-paper"><NamesArt className="envelope-names" /></span>
           <span aria-hidden className="envelope-front" />
           <span aria-hidden className="envelope-flap" />
           <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>

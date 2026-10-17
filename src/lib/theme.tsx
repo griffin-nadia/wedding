@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 export type Theme = "autumn" | "lantern"
 
 const KEY = "ng-theme"
-const COLOURS: Record<Theme, string> = { autumn: "#f3e7d3", lantern: "#22160e" }
+const COLOURS: Record<Theme, string> = { autumn: "#f3e7d3", lantern: "#2e1b12" }
 
 function apply(theme: Theme) {
   document.documentElement.setAttribute("data-theme", theme)

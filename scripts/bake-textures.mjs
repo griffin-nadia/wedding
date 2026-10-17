@@ -21,10 +21,9 @@ for (const [name, file, px] of [["paper", "grain", 256], ["mottle", "mottle", 48
   fs.writeFileSync(out, Buffer.from(url.split(",")[1], "base64"))
   console.log(out, Math.round(fs.statSync(out).size / 1024), "kB")
 }
-// Washi fibres (transparent, so they need no blend: warm dark strands on light paper, pale ones on Lantern's dark) and
-// the hanko's ink (an alpha mask: full ink with small dry specks and a gentle unevenness). Seeded, so a re-run gives
+// (The washi fibres that were drawn here became Nadia's crosshatch, scripts/paper-tile.mjs, 18e.) The hanko's ink (an alpha mask: full ink with small dry specks and a gentle unevenness). Seeded, so a re-run gives
 // the same files. Drawn wrapped at the edges, so each tiles without a seam.
-for (const [file, px, kind] of [["fibre-light", 384, "light"], ["fibre-lantern", 384, "lantern"], ["ink", 192, "ink"]]) {
+for (const [file, px, kind] of [["ink", 192, "ink"]]) {
   const url = await p.evaluate(([px, kind]) => {
     let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
     const c = document.createElement("canvas"); c.width = c.height = px
