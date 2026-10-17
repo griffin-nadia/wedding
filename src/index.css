@@ -1176,7 +1176,9 @@ svg.lucide { stroke-width: 1.5; }
 .story-track[data-dragging] { cursor: grabbing; }
 .story-track img { -webkit-user-drag: none; }
 /* Every stop in the same cell, so the track is the tallest stop's height and nothing below it moves */
-.story-track:focus-visible { outline-color: var(--input-focus); }
+/* No box round the whole story when it has focus (18f, Jehan: "too boxy"): the focus shows on the current stop's dot */
+.story-track:focus-visible { outline-color: transparent; }
+.story:has(.story-track:focus-visible) .journey-dots .is-on { outline: 2px solid var(--input-focus); outline-offset: 3px; }
 .story-slide { --print-h: min(34svh, 300px); --caption-h: 2.75rem; grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
 .story-media { flex: none; display: grid; place-items: center; max-width: 100%; }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
@@ -1190,7 +1192,8 @@ svg.lucide { stroke-width: 1.5; }
 /* Laptops: a small map of where the chapter happened, under its words */
 .story-stop-map { display: none; }
 @media (min-width: 1024px) {
-  .story-stop-map { display: block; width: 180px; height: auto; margin-top: var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); }
+  .story-stop-map { display: block; width: 200px; height: auto; margin-top: var(--space-3); }
+  .story-stop-map .journey-land { fill: color-mix(in oklab, var(--ink-soft) 16%, transparent); } /* no box round it, so the land carries it */
   .story-stop-ring { fill: color-mix(in oklab, var(--brand-sabi) 18%, transparent); }
   .story-stop-dot { fill: var(--brand-sabi); stroke: var(--brand-paper-bright); stroke-width: 2; }
 }
