@@ -5,6 +5,7 @@ import type { Entry } from "../../types"
 export const entries: Entry[] = [
   {
     id: "home-current",
+    decided: "Home as it is.",
     title: "Home (the site today)",
     summary: "The real Home page: the names, the date, the greeting, the RSVP button and the countdown in paper boxes.",
     refs: [],
@@ -14,6 +15,7 @@ export const entries: Entry[] = [
   },
   {
     id: "home-flipboard",
+    decided: "Shipped as the countdown's rolling digits (18e).",
     title: "Departure-board countdown",
     summary: "The countdown as a split-flap station board: each digit's top half falls on its hinge and the new number lands with a little bounce. It shuffles once on load, then the seconds keep clacking over.",
     refs: [
@@ -25,6 +27,7 @@ export const entries: Entry[] = [
   },
   {
     id: "home-parallax",
+    decided: "Shipped as the photo's gentle drift on laptops.",
     title: "Letter over the photo, in depth",
     summary: "Their photo fills the screen and the Home letter floats over it. Scrolling moves the photo slower than the letter, and the pointer (or the phone's tilt) shifts the layers a few pixels apart.",
     refs: [

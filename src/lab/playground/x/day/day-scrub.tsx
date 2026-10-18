@@ -13,7 +13,7 @@ import { spring } from "../../motion"
  * arcs over. The cards jump the head to their time. Reduced motion: the head jumps and nothing eases.
  */
 const css = `
-.x-day-scrub { --p: 0; position: relative; min-height: 100svh; display: flex; flex-direction: column; overflow: hidden; color: var(--ink);
+.x-day-scrub { --p: 0; position: relative; min-height: var(--stage-h, 100svh); display: flex; flex-direction: column; overflow: hidden; color: var(--ink);
   --sky-top: color-mix(in oklab, var(--brand-hachimitsu) calc(var(--p) * 34%), color-mix(in oklab, var(--brand-sage) 22%, var(--letter-bg)));
   --sky-low: color-mix(in oklab, var(--brand-kabocha) calc(var(--p) * 18%), var(--letter-bg));
   background: linear-gradient(to bottom, var(--sky-top), var(--sky-low) 58%, var(--letter-bg)); }

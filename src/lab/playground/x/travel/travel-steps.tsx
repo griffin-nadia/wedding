@@ -16,7 +16,7 @@ import { spring } from "../../motion"
  * card and marker jump.
  */
 const css = `
-.x-travel-steps { position: relative; min-height: 100svh; padding: 16px 12px 24px; }
+.x-travel-steps { position: relative; min-height: var(--stage-h, 100svh); padding: 16px 12px 24px; }
 @media (min-width: 768px) { .x-travel-steps { padding: var(--letter-top) 24px var(--space-8); } }
 @media (min-width: 1024px) { .x-travel-steps { padding-left: var(--letter-left); } }
 .x-travel-steps .letter { min-height: 0; }

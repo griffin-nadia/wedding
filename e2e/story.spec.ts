@@ -27,9 +27,9 @@ test.describe("with motion", () => {
     expect(mid[1].shown).toBe(true)
     expect(mid[1].deg).toBeGreaterThan(0.5) // still turned on the way in
     expect(mid[1].words).toBeLessThan(1) // its words are still fading in (the opener has none to fade out)
-    await page.waitForTimeout(900)
+    // Settled (the spring takes about 450 ms; a busy moment, like the paper being made, can stretch it a little)
+    await expect.poll(async () => (await stops(page))[1], { timeout: 3000 }).toMatchObject({ deg: 0, x: 0, words: 1, shown: true })
     const rest = await stops(page)
-    expect(rest[1]).toMatchObject({ deg: 0, x: 0, words: 1, shown: true })
     expect(rest.filter((s) => s.shown)).toHaveLength(1)
     expect(await current(page)).toBe(1)
   })
@@ -90,4 +90,16 @@ test("arrows, keys and a trackpad swipe each step exactly one stop", async ({ pa
   const next = page.getByRole("button", { name: /next/i })
   await next.click(); await next.click()
   expect(await current(page)).toBe(5)
+})
+
+// 18f: every photo stop's print ends on the same line, so its caption sits in the same spot on every stop (a
+// two-line title or a landscape print never moves it)
+test("each print ends on the same line on every stop, captions right under it", async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto("our-story?h=sample")
+  await page.waitForTimeout(800)
+  const bottoms = await page.evaluate(() => [...document.querySelectorAll(".story-slide:not(.story-slide-map):not(.story-slide-opener)")]
+    .map((s) => s.querySelector(".story-print > div, .story-print-blank")!.getBoundingClientRect().bottom))
+  expect(bottoms.length).toBeGreaterThan(3)
+  expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThanOrEqual(6) // the prints' own small tilts
 })
