@@ -25,7 +25,7 @@ still point at the old one.
 | Check song search (Spotify) | Tells you if the Spotify keys work |
 | Turn on the fast email queue | Run it signed in as the wedding account only: the minute trigger sends emails as whoever turned it on, so it refuses from any other account. Removes that account's old trigger and makes a fresh one. `?action=ping` shows `queueAccount` (wedding, other or unknown) |
 | Check the email queue… | Lists what's waiting (replies to write, confirmation emails, visit counts), says which households aren't test households, shows when the minute trigger last ran and which account it last ran as, then offers to write and send it all now. Emails only ever send from the wedding account (docs/email-queue.md) |
-| Clear queued items for test households… | Deletes queued items for test households only, without writing or sending them |
+| Clear queued items for test households… | Deletes queued items for test households only (replies, confirmations, and from 19 Oct their Ask us, "Send my link" and answer emails too), without writing or sending them |
 | Reset test households… | Clears answers, songs, Log rows, visits, stamps and duplicate flags for households named "Test …" or "… (Test)" |
 | Send the "Final numbers soon" note… | Before changes lock, asks households who are coming to check their reply (Emails tab keys `final_*`; test households skipped) |
 | Make crew links | Makes the Crew tab (Jehan, Griffin, Nadia, wedding Gmail) and writes each person's /kit and /lab link. No guest data |

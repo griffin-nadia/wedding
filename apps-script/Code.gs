@@ -1525,8 +1525,9 @@ function flyingCounts_() {
 // ---------- outbox: one-off emails, sent by flushQueue from the wedding account ----------
 
 /** Queues one email (to, subject, body, htmlBody, replyTo, name) for the wedding account's queue. */
-function queueOut_(mail) {
-  PropertiesService.getScriptProperties().setProperty("q:out:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8), JSON.stringify(mail))
+/** token: the household it's about, when there is one, so "Clear queued items for test households" can find it. */
+function queueOut_(mail, token) {
+  PropertiesService.getScriptProperties().setProperty("q:out:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8), JSON.stringify(token ? Object.assign({ token: token }, mail) : mail))
 }
 /**
  * Sends what's in the outbox, oldest first, while the day's email quota lasts. Under 100 guests fits the daily
@@ -1539,7 +1540,7 @@ function flushOut_() {
     if (MailApp.getRemainingDailyQuota() < 1) { CacheService.getScriptCache().put("quota_paused", new Date().toISOString(), 86400); break }
     const m = JSON.parse(props.getProperty(k) || "null")
     props.deleteProperty(k)
-    if (m) MailApp.sendEmail({ name: COUPLE, replyTo: prop_("REPLY_TO"), ...m })
+    if (m) { delete m.token; MailApp.sendEmail({ name: COUPLE, replyTo: prop_("REPLY_TO"), ...m }) }
   }
 }
 
@@ -1591,7 +1592,7 @@ function ask_(body) {
   cache.put(key, String(n + 1), 3700)
   questionsSheet_().appendRow([new Date(), "'" + household, "'" + token, "'" + email, "'" + question, "new", "", "", false, ""])
   const text = household + " asked:\n\n" + question + "\n\nAnswer it in the Questions tab; tick Publish to show it in the FAQs" + (email ? " and email it to them." : ".")
-  queueOut_({ to: prop_("REPLY_TO"), subject: "A question from " + household, body: text })
+  queueOut_({ to: prop_("REPLY_TO"), subject: "A question from " + household, body: text }, token)
   const hook = prop_("DISCORD_WEBHOOK_URL")
   if (hook) safely_(() => UrlFetchApp.fetch(hook, { method: "post", contentType: "application/json", payload: JSON.stringify({ content: ("**A question from " + household + "**\n" + question).slice(0, 1900) }), muteHttpExceptions: true }))
   return { ok: true }
@@ -1617,7 +1618,7 @@ function sendAnswers_() {
     const r = data[i]
     if (r[col("Publish")] !== true || !String(r[col("Answer")] || "").trim() || r[col("Sent")]) continue
     const to = String(r[col("Email")] || "").replace(/^'/, "")
-    if (to) queueOut_({ to: to, subject: "Your question, answered", body: "Hi " + String(r[col("Household")]).replace(/^'/, "") + ",\n\nYou asked: " + String(r[col("Question")]).replace(/^'/, "") + "\n\n" + String(r[col("Answer")]) + "\n\nIt's in the FAQs now too.\n\n" + COUPLE })
+    if (to) queueOut_({ to: to, subject: "Your question, answered", body: "Hi " + String(r[col("Household")]).replace(/^'/, "") + ",\n\nYou asked: " + String(r[col("Question")]).replace(/^'/, "") + "\n\n" + String(r[col("Answer")]) + "\n\nIt's in the FAQs now too.\n\n" + COUPLE }, String(r[col("Token")] || "").replace(/^'/, ""))
     s.getRange(i + 1, col("Status") + 1).setValue("published")
     s.getRange(i + 1, col("Sent") + 1).setValue(new Date())
     CacheService.getScriptCache().remove("questions")
@@ -1683,7 +1684,7 @@ function resendLink_(email) {
       notes: ["This link is just for your household, so please don't share it.", "If you didn't ask for this, you can ignore it."],
     })
     // Queued, not sent here: the wedding account's queue sends it (or holds it until it can)
-    queueOut_({ to: email, subject: "Your link for " + COUPLE + "'s wedding", body: mail.text, htmlBody: mail.html })
+    queueOut_({ to: email, subject: "Your link for " + COUPLE + "'s wedding", body: mail.text, htmlBody: mail.html }, h.token)
     log_(h.name, h.token, "Link re-sent to " + email + " (asked on the site, queued)", "")
   })
   return same
@@ -2034,10 +2035,15 @@ function checkQueue() {
   if (!keys.length) return ui.alert("The queue is empty.")
   const names = {}
   households_().forEach((h) => (names[h.token] = h.name))
-  const lines = { save: [], mail: [], open: 0, started: 0 }
+  const lines = { save: [], mail: [], out: [], open: 0, started: 0 }
   let real = 0
   keys.forEach((k) => {
-    const kind = k.split(":")[1], token = k.split(":")[2], name = names[token] || "Unknown link"
+    const kind = k.split(":")[1]
+    // Outbox items (Ask us, "Send my link", answers) keep their household's token inside; older ones have none
+    let token = k.split(":")[2]
+    if (kind === "out") { try { token = JSON.parse(all[k]).token || "" } catch (err) { token = "" } }
+    const name = names[token] || (kind === "out" ? "No household (a question to you, or from before 19 Oct)" : "Unknown link")
+    if (!(kind in lines)) return
     if (kind === "open" || kind === "started") return lines[kind]++
     const test = TEST_HOUSEHOLD.test(name)
     if (!test) real++
@@ -2048,6 +2054,7 @@ function checkQueue() {
   const last = Number(PropertiesService.getScriptProperties().getProperty("last_flush_at") || 0)
   const text = "Replies waiting to be written: " + lines.save.length + (lines.save.length ? "\n  " + lines.save.join("\n  ") : "") +
     "\nConfirmation emails waiting: " + lines.mail.length + (lines.mail.length ? "\n  " + lines.mail.join("\n  ") : "") +
+    "\nOther emails waiting (Ask us, links, answers): " + lines.out.length + (lines.out.length ? "\n  " + lines.out.join("\n  ") : "") +
     "\nVisit counts waiting: " + lines.open + " opens, " + lines.started + " started" +
     "\n\nMinute trigger: " + trigger + ". Last run: " + (last ? new Date(last).toString() : "not recorded") +
     "\nThe queue last ran as: " + ({ wedding: "the wedding account", other: "another account (emails held)" }[PropertiesService.getScriptProperties().getProperty("queue_account")] || "not recorded yet") +
@@ -2065,7 +2072,10 @@ function clearTestQueue() {
   const props = PropertiesService.getScriptProperties()
   const tests = {}
   households_().filter((h) => TEST_HOUSEHOLD.test(h.name)).forEach((h) => (tests[h.token] = h.name))
-  const keys = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0 && tests[k.split(":")[2]])
+  const all = props.getProperties()
+  // Outbox items (Ask us, "Send my link") carry their household's token inside, not in the key
+  const outToken = (k) => { try { return k.indexOf("q:out:") === 0 ? JSON.parse(all[k]).token : "" } catch (err) { return "" } }
+  const keys = Object.keys(all).filter((k) => k.indexOf("q:") === 0 && (tests[k.split(":")[2]] || tests[outToken(k)]))
   if (!keys.length) return ui.alert("Nothing queued for test households.")
   if (ui.alert("Clear test items", "Delete " + keys.length + " queued item(s) for test households without writing or sending them?", ui.ButtonSet.OK_CANCEL) !== ui.Button.OK) return
   keys.forEach((k) => props.deleteProperty(k))
