@@ -11,6 +11,7 @@ export const perfOf = (id: string) => PERF.entries?.[id]
 /** What a number means against its baseline (perf.json's baselines, measured the same way) */
 const NOTE: Record<string, (b: Record<string, Perf>) => string> = {
   "journey-globe-styles": (b) => `The test browser draws WebGL in software, so any globe is slow here: the site's own globe measures ${b["site-globe"]?.fps ?? "?"} fps the same way. See-through watercolour draws the sphere twice.`,
+  "arrival-framing": () => "The long task is the live site starting up in each of the four frames, not the experiment.",
   "paper-light": (b) => `The long task is the theme change itself: with the sweep off it's ${b["sweep-off"]?.longestMs ?? "?"} ms too. The sweep adds nothing measurable.`,
 }
 

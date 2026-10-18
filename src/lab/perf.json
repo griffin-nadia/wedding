@@ -195,34 +195,26 @@
    }
   },
   "arrival-framing": {
-   "fps": 60,
-   "longTasks": 0,
-   "longestMs": 0,
-   "kb": 3,
+   "fps": 56,
+   "longTasks": 1,
+   "longestMs": 72,
+   "kb": 2,
    "takes": {
-    "today": {
-     "fps": 60,
+    "site": {
+     "fps": 56,
      "p95": 17,
-     "longTasks": 0,
-     "longestMs": 0,
+     "longTasks": 1,
+     "longestMs": 72,
      "loadLongTasks": 1,
-     "kb": 3
+     "kb": 2
     },
     "zoom": {
-     "fps": 60,
+     "fps": 56,
      "p95": 17,
-     "longTasks": 0,
-     "longestMs": 0,
+     "longTasks": 1,
+     "longestMs": 66,
      "loadLongTasks": 1,
-     "kb": 3
-    },
-    "lift": {
-     "fps": 60,
-     "p95": 17,
-     "longTasks": 0,
-     "longestMs": 0,
-     "loadLongTasks": 1,
-     "kb": 3
+     "kb": 2
     }
    }
   },
@@ -291,29 +283,29 @@
    }
   },
   "journey-globe-styles": {
-   "fps": 34,
+   "fps": 35,
    "longTasks": 1,
    "longestMs": 72,
    "kb": 222,
    "takes": {
     "watercolour": {
-     "fps": 34,
+     "fps": 35,
      "p95": 33,
      "longTasks": 1,
      "longestMs": 72,
-     "loadLongTasks": 4,
+     "loadLongTasks": 5,
      "kb": 222
     },
     "ink": {
-     "fps": 39,
+     "fps": 43,
      "p95": 33,
      "longTasks": 0,
      "longestMs": 0,
-     "loadLongTasks": 4,
+     "loadLongTasks": 5,
      "kb": 222
     },
     "gouache": {
-     "fps": 41,
+     "fps": 44,
      "p95": 33,
      "longTasks": 0,
      "longestMs": 0,
@@ -398,7 +390,7 @@
    "fps": 59,
    "longTasks": 0,
    "longestMs": 0,
-   "kb": 9,
+   "kb": 10,
    "takes": {
     "paper": {
      "fps": 59,
@@ -406,22 +398,22 @@
      "longTasks": 0,
      "longestMs": 0,
      "loadLongTasks": 1,
-     "kb": 9
+     "kb": 10
     },
     "spring": {
      "fps": 59,
      "p95": 17,
      "longTasks": 0,
      "longestMs": 0,
-     "loadLongTasks": 1,
-     "kb": 9
+     "loadLongTasks": 2,
+     "kb": 10
     }
    }
   }
  },
  "baselines": {
   "site-globe": {
-   "fps": 44,
+   "fps": 39,
    "p95": 33,
    "longTasks": 0,
    "longestMs": 0,
@@ -431,8 +423,32 @@
    "fps": 53,
    "p95": 17,
    "longTasks": 1,
-   "longestMs": 350,
+   "longestMs": 361,
    "loadLongTasks": 1
   }
+ },
+ "loading": {
+  "profile": "Pixel 7, CPU 4x slower, 1.6 Mbps / 150 ms",
+  "globeKB": 201,
+  "rows": [
+   {
+    "label": "today",
+    "envelopeMs": 2955,
+    "globeStallMs": 2299,
+    "repeatVisitMs": 245
+   },
+   {
+    "label": "preload the arrival art",
+    "envelopeMs": 2740,
+    "globeStallMs": 2305,
+    "repeatVisitMs": 244
+   },
+   {
+    "label": "preload and idle warm",
+    "envelopeMs": 2735,
+    "globeStallMs": 15,
+    "repeatVisitMs": 248
+   }
+  ]
  }
 }

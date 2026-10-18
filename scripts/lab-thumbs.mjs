@@ -10,9 +10,9 @@ const base = `http://localhost:${port}/wedding/`
 fs.mkdirSync("src/lab/thumbs", { recursive: true })
 const b = await chromium.launch()
 const ctx = await b.newContext({ ...devices["Pixel 7"], viewport: { width: 390, height: 520 }, deviceScaleFactor: 1 })
-await ctx.addInitScript(() => { localStorage.setItem("ng-music", "off"); if (!location.search.includes("arrival=1")) localStorage.setItem("ng-opened", "1"); else localStorage.removeItem("ng-opened") })
+await ctx.addInitScript(() => { localStorage.setItem("ng-music", "off"); if (!(window.top ?? window).location.search.includes("arrival=1")) localStorage.setItem("ng-opened", "1"); else localStorage.removeItem("ng-opened") })
 // Held on screen for the picture (the loading screen is gone in a moment otherwise)
-const EXTRA = { "loading-preload": "&k.hold=10" }
+const EXTRA = { "loading-preload": "&k.hold=10", "arrival-framing": "&arrival=1" }
 const p = await ctx.newPage()
 await p.goto(`${base}lab.html`)
 const { entries, reference } = await p.evaluate(() => window.__labIndex)

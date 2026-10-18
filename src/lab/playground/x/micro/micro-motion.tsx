@@ -10,10 +10,10 @@ import { ms, still } from "../../motion"
 import { useTake } from "../../params"
 
 /**
- * The small things, current against proposed, side by side (lab run 19). The site today mixes three curves
- * (--ease-paper, --ease-out, --ease-spring) at 150, 300 and 600 ms. Proposed: one easing family at three durations,
- * short for presses and markers, medium for things that settle, long for things that unfold:
- * - paper: the site's own --ease-paper for everything, in and out, at 120 / 240 / 480 ms
+ * The small things, current against proposed, side by side (lab run 19). The Current side reads the site's own
+ * tokens, so it's always what ships: since #182 one curve family at 150 / 250 / 450 ms. Proposed, three durations
+ * (short for presses and markers, medium for things that settle, long for things that unfold) in either:
+ * - paper: the same --ease-paper, a touch quicker, at 120 / 240 / 480 ms, and the accordion's row gliding (FLIP)
  * - spring: one spring (damping 0.78, a 2% overshoot) for everything, at 200 / 360 / 640 ms to rest, as CSS linear()
  * Seven: the button's press depth, the tab pill, an accordion opening, a tag ticked off, the fortune unfolding in
  * three like a real omikuji, the countdown's digits, the music toggle. Transforms and opacity only on the proposed
@@ -29,7 +29,7 @@ function springEase(zeta: number) {
 }
 const PAPER = "cubic-bezier(0.22, 1, 0.36, 1)"
 const FAMS: Record<string, Fam> = {
-  paper: { name: "One curve (--ease-paper)", e: PAPER, d: [120, 240, 480] },
+  paper: { name: "The same curve, a touch quicker", e: PAPER, d: [120, 240, 480] },
   spring: { name: "One spring (damping 0.78)", e: springEase(0.78), d: [200, 360, 640] },
 }
 const P = "x-mm"
@@ -45,6 +45,7 @@ const css = `
 .${P}-side > small b { color: var(--ink-soft); font-weight: 600; }
 .${P}-play { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-strong); outline: 2px solid transparent; outline-offset: 2px; }
 .${P}-play:focus-visible { outline-color: var(--input-focus); }
+.${P}-side .segmented { zoom: .78; max-width: 128%; }
 /* Proposed: the site's own components with only their timing swapped */
 .${P}-prop .btn-primary { transition-duration: var(--d1) !important; transition-timing-function: var(--e) !important; }
 .${P}-prop .segmented-mark { transition-duration: var(--d2) !important; transition-timing-function: var(--e) !important; }
@@ -79,7 +80,15 @@ const anim = (el: Element | null | undefined, k: Keyframe[], d: number, e: strin
   still() || !el ? null : el.animate(k, { duration: d, easing: e, delay, fill: "both" })
 
 type SideProps = { tick: number; f: Fam | null } // f null: the site as it is today
-const CUR = { e: PAPER, fast: 150, base: 300 }
+// The site's timing, read from its own tokens (tokens.css), so the Current side is always what ships (one family since #182)
+const tok = (n: string) => (typeof document === "undefined" ? "" : getComputedStyle(document.documentElement).getPropertyValue(n).trim())
+const CUR = {
+  get e() { return tok("--ease-paper") || PAPER },
+  get fast() { return parseFloat(tok("--duration-fast")) || 150 },
+  get base() { return parseFloat(tok("--duration-base")) || 250 },
+  get slow() { return parseFloat(tok("--duration-slow")) || 450 },
+}
+const FOLD_MS = 1100 // fortune-card.tsx since #177: the slip folds open over 1.1 s
 
 function Press({ tick, f }: SideProps) {
   const b = useRef<HTMLButtonElement>(null)
@@ -107,7 +116,8 @@ function Acc({ tick, f }: SideProps) {
     const a = box.current?.querySelector<HTMLElement>(".a"), next = box.current?.querySelector<HTMLElement>(".next")
     if (!a || !next) return
     const h = a.scrollHeight
-    if (!f) { anim(a, open ? [{ height: "0px" }, { height: `${h}px` }] : [{ height: `${h}px` }, { height: "0px" }], CUR.base, CUR.e); return } // the site: height
+    // The site (#182): the height changes at once and the answer fades and drops in; the row below jumps
+    if (!f) { if (open) anim(a, [{ opacity: 0, transform: "translateY(-6px)" }, { opacity: 1, transform: "none" }], CUR.base, CUR.e); return }
     // Proposed: the layout changes at once; the row under it is moved back and eased into place (FLIP), the answer fades in
     anim(next, [{ transform: `translateY(${open ? -h : h}px)` }, { transform: "none" }], f.d[1], f.e)
     if (open) anim(a, [{ opacity: 0, transform: "translateY(-6px)" }, { opacity: 1, transform: "none" }], f.d[1], f.e)
@@ -161,14 +171,14 @@ function Fortune({ tick, f }: SideProps) {
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!tick) return
-    if (!f) { anim(box.current?.querySelector(".omikuji-slip"), [{ opacity: 0, transform: "scaleY(.2)", transformOrigin: "top" }, { opacity: 1, transform: "none", transformOrigin: "top" }], CUR.base, CUR.e); return }
-    // Proposed: folded in three, the top third opens toward you, then the bottom, each on its crease
+    // Folded in three, the top third opens toward you, then the bottom, each on its crease. The site (#177) folds
+    // over 1.1 s in all; proposed, each fold is the family's long duration
+    const d = f ? f.d[2] : FOLD_MS / 1.6, e = f ? f.e : CUR.e
     const top = box.current?.querySelector(".pn.t"), bot = box.current?.querySelector(".pn.b")
-    anim(top, [{ transform: "rotateX(-180deg)" }, { transform: "none" }], f.d[2], f.e)
-    anim(bot, [{ transform: "rotateX(180deg)" }, { transform: "none" }], f.d[2], f.e, f.d[2] * 0.6)
+    anim(top, [{ transform: "rotateX(-180deg)" }, { transform: "none" }], d, e)
+    anim(bot, [{ transform: "rotateX(180deg)" }, { transform: "none" }], d, e, d * 0.6)
   }, [tick, f])
   const slip = <div className="omikuji-slip paper-feel"><SlipWords i={i} of={FORTUNES.length} text={FORTUNES[i]} /></div>
-  if (!f) return <div ref={box} className={`${P}-slipbox`} key={tick}>{slip}</div>
   return (
     <div ref={box} className={`${P}-slipbox ${P}-fold`} key={tick}>
       <div className="slip3">
@@ -180,14 +190,14 @@ function Fortune({ tick, f }: SideProps) {
   )
 }
 
-const ROWS: { id: string; title: string; cur: string; prop: (f: Fam) => string; C: (p: SideProps) => ReactNode }[] = [
-  { id: "press", title: "Button press depth", cur: "150 ms, paper", prop: (f) => `${f.d[0]} ms (short)`, C: Press },
-  { id: "pill", title: "Tab pill", cur: "150 ms, paper", prop: (f) => `${f.d[1]} ms (medium)`, C: Pill },
-  { id: "acc", title: "Accordion open", cur: "300 ms, height", prop: (f) => `${f.d[1]} ms, FLIP`, C: Acc },
-  { id: "tag", title: "Tag ticked off", cur: "150 ms tick", prop: (f) => `${f.d[0]} + ${f.d[1]} ms`, C: Tag },
-  { id: "fortune", title: "Fortune unfolding", cur: "300 ms, scaleY", prop: (f) => `${f.d[2]} ms per fold`, C: Fortune },
-  { id: "count", title: "Countdown digits", cur: "300 ms, in only", prop: (f) => `${f.d[0]} out, ${f.d[1]} in`, C: Count },
-  { id: "music", title: "Music toggle", cur: "instant", prop: (f) => `${f.d[0]} ms + ${f.d[2]} ms ring`, C: Music },
+const ROWS: { id: string; title: string; cur: () => string; prop: (f: Fam) => string; C: (p: SideProps) => ReactNode }[] = [
+  { id: "press", title: "Button press depth", cur: () => `${CUR.fast} ms`, prop: (f) => `${f.d[0]} ms (short)`, C: Press },
+  { id: "pill", title: "Tab pill", cur: () => `${CUR.fast} ms`, prop: (f) => `${f.d[1]} ms (medium)`, C: Pill },
+  { id: "acc", title: "Accordion open", cur: () => `${CUR.base} ms, row jumps`, prop: (f) => `${f.d[1]} ms, row glides`, C: Acc },
+  { id: "tag", title: "Tag ticked off", cur: () => `${CUR.fast} ms tick`, prop: (f) => `${f.d[0]} + ${f.d[1]} ms`, C: Tag },
+  { id: "fortune", title: "Fortune unfolding", cur: () => `${FOLD_MS} ms in all`, prop: (f) => `${f.d[2]} ms per fold`, C: Fortune },
+  { id: "count", title: "Countdown digits", cur: () => `${CUR.base} ms, in only`, prop: (f) => `${f.d[0]} out, ${f.d[1]} in`, C: Count },
+  { id: "music", title: "Music toggle", cur: () => "instant", prop: (f) => `${f.d[0]} ms + ${f.d[2]} ms ring`, C: Music },
 ]
 
 export default function MicroMotion() {
@@ -201,14 +211,14 @@ export default function MicroMotion() {
     <div className={P}>
       <style>{css}</style>
       <div className={`${P}-head`}>
-        <p className={`${P}-tokens`}>Proposed: <b>{fam.name}</b>, {fam.d.join(" / ")} ms. Today: three curves at 150 / 300 / 600 ms.</p>
+        <p className={`${P}-tokens`}>Proposed: <b>{fam.name}</b>, {fam.d.join(" / ")} ms. The site (#182): one curve at {CUR.fast} / {CUR.base} / {CUR.slow} ms.</p>
         <Button variant="secondary" size="sm" onClick={() => play()}><Play aria-hidden />Play all</Button>
       </div>
       {ROWS.map((r) => (
         <section key={r.id} className={`${P}-row`} aria-labelledby={`${P}-${r.id}`}>
           <h3 id={`${P}-${r.id}`}>{r.title}<button type="button" className={`${P}-play`} onClick={() => play(r.id)} aria-label={`Play ${r.title}`}><Play className="size-4" aria-hidden /></button></h3>
           <div className={`${P}-pair`}>
-            <div className={`${P}-side`}><small><b>Current</b>{r.cur}</small><r.C tick={ticks[r.id] ?? 0} f={null} /></div>
+            <div className={`${P}-side`}><small><b>Current</b>{r.cur()}</small><r.C tick={ticks[r.id] ?? 0} f={null} /></div>
             <div className={`${P}-side ${P}-prop`} style={vars}><small><b>Proposed</b>{r.prop(fam)}</small><r.C tick={ticks[r.id] ?? 0} f={fam} /></div>
           </div>
         </section>
