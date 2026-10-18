@@ -10,11 +10,9 @@ export type Entry = {
   refs: { label: string; href: string }[]
   /** What it would take to ship it on the guest site: the work, the weight on phones, the risks */
   promote: string
-  /** "current" for the site as it is today, so it can be compared */
-  current?: boolean
-  /** Still open: one line on what Griffin and Nadia or Jehan need to choose */
+  /** Every kept item has one of these two (final run). Still open: what Griffin and Nadia or Jehan need to choose */
   deciding?: string
-  /** Done or superseded (archived under Done / decided, collapsed): what was decided */
-  decided?: string
+  /** An idea kept for later, not on the site (under Parked, collapsed) */
+  parked?: string
   Component: LazyExoticComponent<ComponentType>
 }

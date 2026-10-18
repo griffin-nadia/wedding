@@ -82,4 +82,13 @@ for (const kind of ["android", "iphone"] as const) test.describe(kind, () => {
     await page.waitForTimeout(500)
     await check(page, () => page.getByLabel("Your email").focus(), "your email")
   })
+  test("Ask us", async ({ page }) => {
+    await setup(page, kind)
+    await page.goto("faqs?h=sample")
+    await page.getByRole("button", { name: "Still wondering? Ask Griffin & Nadia" }).click()
+    const d = page.getByRole("dialog")
+    await d.getByLabel("Your question").waitFor()
+    await page.waitForTimeout(500)
+    await check(page, () => d.getByLabel("Your question").focus(), "ask us: your question")
+  })
 })

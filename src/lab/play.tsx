@@ -28,11 +28,10 @@ const entry = byId(id)
 document.title = entry ? `${entry.title} · G&N lab` : "G&N lab · play"
 // The theme for this view only (nothing saved, so the guest site on this device keeps its own)
 if (q.get("theme")) document.documentElement.setAttribute("data-theme", q.get("theme") === "lantern" ? "lantern" : "autumn")
-// Whole-page alternatives (the opening, navigation, page changes, and other takes on Home, Travel, the reply and Our
-// story, each with its own photo and backdrop) and "the site today" (the real pages already) bring their own room;
-// the component experiments (The day, the journey map, FAQs, micro, confirmation) sit in the site's own shell
-const BARE = new Set(["opening", "navigation", "transitions", "home", "travel", "rsvp", "story"])
-const bare = !entry || entry.current || BARE.has(entry.area)
+// Whole-page takes (the opening, Our story), each with its own photo and backdrop, bring their own room; the component
+// experiments (the journey map, micro, confirmation) sit in the site's own shell
+const BARE = new Set(["opening", "story"])
+const bare = !entry || BARE.has(entry.area)
 
 function Play() {
   useEffect(() => installSpeed(), [])

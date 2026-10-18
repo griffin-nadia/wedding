@@ -145,6 +145,22 @@ export function warmUp() {
   fetch(`${config.apiUrl}?action=ping`, { mode: "no-cors" }).catch(() => {})
 }
 
+/**
+ * Ask us (final run): a question to Griffin and Nadia. From an invite the token says who; without one (can't find
+ * your invite) a name and an email come with it. `website` is the hidden field only a bot fills in.
+ */
+export async function askUs(q: { question: string; token?: string; name?: string; email?: string; website?: string }): Promise<void> {
+  if (!config.apiUrl) { await new Promise((r) => setTimeout(r, 400)); return }
+  const data = await call(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "ask", ...q }) })
+  if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
+}
+/** The questions Griffin and Nadia have answered and published, for the FAQs' "You asked" (no names) */
+export type Asked = { q: string; a: string; a_ja?: string }
+export async function getQuestions(): Promise<Asked[]> {
+  if (!config.apiUrl) return []
+  try { const d = await call(`${config.apiUrl}?action=questions`); return d.ok && Array.isArray(d.questions) ? (d.questions as Asked[]) : [] } catch { return [] } // an older back end has none: none, not a crash
+}
+
 /** "Can't find your invite?": asks the back end to email the household link. Same answer either way. */
 export async function resendLink(email: string): Promise<void> {
   if (!config.apiUrl) { await new Promise((r) => setTimeout(r, 400)); return }
@@ -199,7 +215,7 @@ export async function setFlying(token: string, city: FlyingCity): Promise<void> 
 /** Households per city and how many have told us, e.g. 17 of 40. Never names. */
 export async function getFlying(): Promise<{ counts: Partial<Record<Flying, number>>; cities?: { name: string; country: string; lat: number; lon: number; n: number }[]; told: number; households: number } | null> {
   if (!config.apiUrl) return null
-  try { const d = await call(`${config.apiUrl}?action=flying`); return d.ok ? d : null } catch { return null }
+  try { const d = await call(`${config.apiUrl}?action=flying`); return d.ok && d.counts && typeof d.counts === "object" ? d : null } catch { return null } // no counts (an odd answer): none, not a crash
 }
 
 /** The globe's lines: per city, how many coming households and where (never who). No back end (the lab, previews,
@@ -222,7 +238,7 @@ export async function getFortunes(): Promise<string[] | null> {
   try { const d = await call(`${config.apiUrl}?action=fortunes`); return d.ok && Array.isArray(d.fortunes) ? d.fortunes : null } catch { return null }
 }
 
-/** Crew links (/kit and /lab): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */
+/** Crew links (the tuning panel and /kit; the lab is local only since 18 Oct): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */
 export async function checkCrew(token: string): Promise<"yes" | "no" | "error"> {
   if (!config.apiUrl) return "yes"
   if (!token) return "no"

@@ -41,7 +41,7 @@ const FIRST = "Griffin"
 const SECOND = "Nadia"
 const COUPLE = FIRST + " & " + SECOND
 
-const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", emails: "Emails" }
+const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", emails: "Emails", questions: "Questions" }
 
 const DEFAULTS = {
   SITE_URL: "https://griffin-nadia.github.io/wedding",
@@ -233,7 +233,9 @@ function planLaunch_(siteGuests, tabs, planner, queueKeys) {
   const noEmail = Object.keys(emails).filter((h) => !emails[h]).sort()
   const households = Object.keys(emails).length
   const needLinks = kept.filter((g) => !g.Token).length + add.length
-  return { clear: clear, kept: kept.length, visits: visits, queue: queueKeys.filter((k) => k.indexOf("q:") === 0).length, columns: cols.headers.length ? Object.keys(cols.map).map((k) => k + " ← " + cols.headers[cols.map[k]]) : [], add: add, households: households, needLinks: needLinks, noEmail: noEmail, problems: problems }
+  // Invite emails, one per guest with an address (Gmail's daily limit is per address)
+  const inviteEmails = kept.filter((g) => String(g.Email || "").trim()).length + add.filter((g) => g.email).length
+  return { clear: clear, kept: kept.length, visits: visits, inviteEmails: inviteEmails, queue: queueKeys.filter((k) => k.indexOf("q:") === 0).length, columns: cols.headers.length ? Object.keys(cols.map).map((k) => k + " ← " + cols.headers[cols.map[k]]) : [], add: add, households: households, needLinks: needLinks, noEmail: noEmail, problems: problems }
 }
 
 function launchPlanNow_() {
@@ -243,6 +245,7 @@ function launchPlanNow_() {
   const tab = id ? SpreadsheetApp.openById(id).getSheetByName("Guest list") : null
   const planner = tab ? tab.getDataRange().getValues() : []
   const plan = planLaunch_(rows_(TABS.guests), tabs, planner, Object.keys(PropertiesService.getScriptProperties().getProperties()))
+  try { plan.quota = MailApp.getRemainingDailyQuota() } catch (err) { plan.quota = null }
   if (!id) plan.problems.push("PLANNER_ID isn't set (Project Settings → Script properties).")
   else if (!tab) plan.problems.push("The planner has no tab called \"Guest list\".")
   return plan
@@ -258,7 +261,16 @@ function launchReport_(plan, real) {
     (plan.columns.length ? "\n   Columns: " + plan.columns.join(", ") + "." : "") +
     "\n5. Make " + plan.needLinks + " household link(s) (" + plan.households + " households in all)." +
     "\n6. Households with no email: " + (plan.noEmail.length ? plan.noEmail.length + "\n   " + plan.noEmail.join("\n   ") : "none") +
+    "\n7. " + quotaLine_(plan.inviteEmails, plan.quota) +
     (plan.problems.length ? "\n\nCan't run yet:\n  " + plan.problems.join("\n  ") : "")
+}
+
+/** The email quota guard (final run N): will the invites fit in what Gmail allows today? Never sends anything. */
+function quotaLine_(emails, quota) {
+  const line = "Invite emails: " + emails + " (one per guest with an address)."
+  if (quota == null) return line + " Couldn't read today's Gmail limit; check it from the wedding account."
+  if (emails <= quota) return line + " Gmail allows about " + quota + " more today, so they fit."
+  return line + " Gmail allows about " + quota + " more today, so they won't all fit. Send invites stops at the limit; run it again tomorrow and it picks up where it stopped (about " + Math.ceil(emails / Math.max(1, quota)) + " days). Leave room for confirmations."
 }
 
 /** Wedding site → Prepare for launch (report only): what run for real would do. Changes nothing. */
@@ -398,6 +410,7 @@ function doGet(e) {
       return json_({ ok: true, household: h })
     }
     if (action === "flying") return json_(flyingCounts_())
+    if (action === "questions") return json_(publishedQuestions_())
     if (action === "journeys") return json_(journeys_())
     if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_() })
     if (action === "stay") return json_(stayPicks_())
@@ -412,6 +425,7 @@ function doGet(e) {
       const lastAt = Number(props.getProperty("last_flush_at") || 0)
       return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", trigger: trigger, pending: pending, kinds: queueKinds_(), queueAccount: props.getProperty("queue_account") || "unknown", webAppAccount: isWeddingAccount_() ? "wedding" : "other", queueError: CacheService.getScriptCache().get("queue_err") || null, lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: lastAt ? new Date(lastAt).toISOString() : CacheService.getScriptCache().get("last_flush") || null })
     }
+    if (action === "health") return json_(health_())
     if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
       const token = String(p.token || "").trim()
@@ -433,6 +447,7 @@ function doPost(e) {
     return fail_("bad_request")
   }
   if (body && body.action === "resend") return json_(resendLink_(body.email))
+  if (body && body.action === "ask") return json_(ask_(body))
   if (body && body.action === "flying") return json_(setFlying_(body.token, body.city))
   if (body && body.action === "stamps") return json_(setStamps_(body.token, body.stamps))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
@@ -853,6 +868,7 @@ function flushTriggerReady_() {
     return false // the trigger exists but hasn't run lately: don't queue behind it
   } catch (err) {
     CacheService.getScriptCache().put("trigger_err", String(err).slice(0, 300), 21600)
+    alert_("trigger_failed", err)
     return false
   }
 }
@@ -941,17 +957,20 @@ function flushQueue() {
     const events = { open: {}, started: {} }
     keys.forEach((k) => {
       const parts = k.split(":")
-      if (parts[1] === "mail" && !mailOk) return // left queued for the wedding account
+      if ((parts[1] === "mail" || parts[1] === "out") && !mailOk) return // left queued for the wedding account
+      if (parts[1] === "out") return // the outbox, sent below
       if (parts[1] === "mail") mails.push({ token: parts[2], data: JSON.parse(all[k]) })
       else if (events[parts[1]]) (events[parts[1]][parts[2]] = events[parts[1]][parts[2]] || []).push(Number(all[k]) > 1 ? Number(all[k]) : Number(parts[3].slice(0, 13)))
     })
     if (Object.keys(events.open).length || Object.keys(events.started).length) writeVisits_(events)
-    keys.filter((k) => mailOk || k.indexOf("q:mail:") !== 0).forEach((k) => props.deleteProperty(k))
+    keys.filter((k) => k.indexOf("q:out:") !== 0 && (mailOk || k.indexOf("q:mail:") !== 0)).forEach((k) => props.deleteProperty(k))
   } finally {
     lock.releaseLock()
   }
   // Confirmations for replies just written: sent now from the wedding account, otherwise held for it
   if (!mailOk) { mails.forEach((m) => holdMail_(m.token, m.data.updated, m.data.changes, m.data.dropped)); mails = [] }
+  // The outbox (questions to the couple, answers to guests, links again), and published answers to queue for it
+  if (mailOk) { safely_(sendAnswers_); safely_(flushOut_) }
   mails.forEach((m) => {
     const h = getHousehold_(m.token)
     if (!h) return
@@ -1493,6 +1512,106 @@ function flyingCounts_() {
   return out
 }
 
+// ---------- outbox: one-off emails, sent by flushQueue from the wedding account ----------
+
+/** Queues one email (to, subject, body, htmlBody, replyTo, name) for the wedding account's queue. */
+function queueOut_(mail) {
+  PropertiesService.getScriptProperties().setProperty("q:out:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8), JSON.stringify(mail))
+}
+/**
+ * Sends what's in the outbox, oldest first, while the day's email quota lasts. Under 100 guests fits the daily
+ * quota easily; if a send ever hits the limit, the rest wait in the outbox and go out the next day, by themselves.
+ */
+function flushOut_() {
+  const props = PropertiesService.getScriptProperties()
+  const keys = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:out:") === 0).sort()
+  for (const k of keys) {
+    if (MailApp.getRemainingDailyQuota() < 1) { CacheService.getScriptCache().put("quota_paused", new Date().toISOString(), 86400); break }
+    const m = JSON.parse(props.getProperty(k) || "null")
+    props.deleteProperty(k)
+    if (m) MailApp.sendEmail({ name: COUPLE, replyTo: prop_("REPLY_TO"), ...m })
+  }
+}
+
+// ---------- Ask us: questions to Griffin and Nadia ----------
+
+const QUESTION_HEAD = ["Time", "Household", "Token", "Email", "Question", "Status", "Answer", "Answer (ja)", "Publish", "Sent"]
+/** The Questions tab, made the first time (status new / answered / published; Publish is a tickbox). */
+function questionsSheet_() {
+  const ss = SpreadsheetApp.getActive()
+  let s = ss.getSheetByName(TABS.questions)
+  if (!s) {
+    s = ss.insertSheet(TABS.questions)
+    s.getRange(1, 1, 1, QUESTION_HEAD.length).setValues([QUESTION_HEAD]).setFontWeight("bold")
+    s.setFrozenRows(1)
+    s.getRange(2, QUESTION_HEAD.indexOf("Publish") + 1, 999, 1).insertCheckboxes()
+    s.getRange(2, QUESTION_HEAD.indexOf("Status") + 1, 999, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["new", "answered", "published"], true).build())
+  }
+  return s
+}
+
+/**
+ * A guest's question (the site's Ask us sheet). From an invite, the household is known; from "can't find your
+ * invite" there's no token, so a name and an email come with it. Kept out: anything in the hidden website field (a
+ * bot), more than 3 an hour from one household or email, empty or over 500 characters. Saved to the Questions tab
+ * (as plain text), then Griffin and Nadia hear about it: an email through the wedding account's queue, and Discord
+ * too if DISCORD_WEBHOOK_URL is set in Script Properties (docs/discord.md).
+ */
+function ask_(body) {
+  if (String(body.website || "")) return { ok: true } // the honeypot: say yes, keep nothing
+  const question = String(body.question || "").trim()
+  if (!question || question.length > 500) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
+  const token = String(body.token || "").trim()
+  let household = "", email = ""
+  if (token) {
+    const h = getHousehold_(token)
+    if (!h) return { ok: false, code: "not_found", error: ERRORS.not_found }
+    household = h.displayName
+    email = rows_(TABS.guests).filter((r) => r.Token === token).map((r) => String(r.Email || "").trim()).filter(Boolean)[0] || ""
+  } else {
+    household = String(body.name || "").trim().slice(0, 60)
+    email = String(body.email || "").trim().toLowerCase().slice(0, 120)
+    if (!household || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, code: "bad_email", error: ERRORS.bad_email }
+  }
+  const cache = CacheService.getScriptCache(), key = "ask:" + (token || email) + ":" + Math.floor(Date.now() / 3600000)
+  const n = Number(cache.get(key) || 0)
+  if (n >= 3) return { ok: false, code: "busy", error: ERRORS.busy }
+  cache.put(key, String(n + 1), 3700)
+  questionsSheet_().appendRow([new Date(), "'" + household, "'" + token, "'" + email, "'" + question, "new", "", "", false, ""])
+  const text = household + " asked:\n\n" + question + "\n\nAnswer it in the Questions tab; tick Publish to show it in the FAQs" + (email ? " and email it to them." : ".")
+  queueOut_({ to: prop_("REPLY_TO"), subject: "A question from " + household, body: text })
+  const hook = prop_("DISCORD_WEBHOOK_URL")
+  if (hook) safely_(() => UrlFetchApp.fetch(hook, { method: "post", contentType: "application/json", payload: JSON.stringify({ content: ("**A question from " + household + "**\n" + question).slice(0, 1900) }), muteHttpExceptions: true }))
+  return { ok: true }
+}
+
+/** Ticked questions with an answer, for the FAQs' "You asked" (questions and answers only, no names). 10 minutes. */
+function publishedQuestions_() {
+  const cache = CacheService.getScriptCache(), hit = cache.get("questions")
+  if (hit) return JSON.parse(hit)
+  const s = SpreadsheetApp.getActive().getSheetByName(TABS.questions)
+  const out = { ok: true, questions: [] }
+  if (s) rows_(TABS.questions).forEach((r) => { if (r.Publish === true && String(r.Answer || "").trim()) out.questions.push({ q: String(r.Question).replace(/^'/, ""), a: String(r.Answer).replace(/^'/, ""), a_ja: String(r["Answer (ja)"] || "").replace(/^'/, "") }) })
+  cache.put("questions", JSON.stringify(out), 600)
+  return out
+}
+
+/** Each newly published answer goes to the household by email (once), and the row says published. */
+function sendAnswers_() {
+  const s = SpreadsheetApp.getActive().getSheetByName(TABS.questions)
+  if (!s) return
+  const data = s.getDataRange().getValues(), head = data[0].map((h) => String(h).trim()), col = (n) => head.indexOf(n)
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i]
+    if (r[col("Publish")] !== true || !String(r[col("Answer")] || "").trim() || r[col("Sent")]) continue
+    const to = String(r[col("Email")] || "").replace(/^'/, "")
+    if (to) queueOut_({ to: to, subject: "Your question, answered", body: "Hi " + String(r[col("Household")]).replace(/^'/, "") + ",\n\nYou asked: " + String(r[col("Question")]).replace(/^'/, "") + "\n\n" + String(r[col("Answer")]) + "\n\nIt's in the FAQs now too.\n\n" + COUPLE })
+    s.getRange(i + 1, col("Status") + 1).setValue("published")
+    s.getRange(i + 1, col("Sent") + 1).setValue(new Date())
+    CacheService.getScriptCache().remove("questions")
+  }
+}
+
 /**
  * The globe's lines (final run): one per city that coming households are flying from, with how many and where. Only
  * households with someone coming, never test ones, never names or tokens. Cached for 10 minutes.
@@ -1522,13 +1641,13 @@ function journeys_() {
 
 /**
  * Emails the household link to an address on the guest list. Always answers the same way, so it
- * never reveals who's invited. Rate limited per address and overall. Until RESEND_LIVE is "yes",
- * it only sends to test households (so nothing reaches real guests before invites go out).
+ * never reveals who's invited, and never says whether it could send (final run): the email goes into the wedding
+ * account's outbox, so if mail is held (the web app isn't running as the wedding account yet) it just waits there.
+ * Rate limited per address (3 an hour) and overall. Until RESEND_LIVE is "yes", it only sends to test households
+ * (so nothing reaches real guests before invites go out).
  */
 function resendLink_(email) {
   const same = { ok: true }
-  // "Email me my link" sends as the web app's account: only ever the wedding account
-  if (!isWeddingAccount_()) { wrongAccount_("The web app"); return { ok: false, code: "busy", error: ERRORS.busy } }
   email = String(email || "").trim().toLowerCase().slice(0, 120)
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, code: "bad_email", error: ERRORS.bad_email }
   const cache = CacheService.getScriptCache()
@@ -1551,8 +1670,9 @@ function resendLink_(email) {
       button: { label: "Open your invite", url: h.link },
       notes: ["This link is just for your household, so please don't share it.", "If you didn't ask for this, you can ignore it."],
     })
-    MailApp.sendEmail({ to: email, replyTo: prop_("REPLY_TO"), name: COUPLE, subject: "Your link for " + COUPLE + "'s wedding", body: mail.text, htmlBody: mail.html })
-    log_(h.name, h.token, "Link re-sent to " + email + " (asked on the site)", "")
+    // Queued, not sent here: the wedding account's queue sends it (or holds it until it can)
+    queueOut_({ to: email, subject: "Your link for " + COUPLE + "'s wedding", body: mail.text, htmlBody: mail.html })
+    log_(h.name, h.token, "Link re-sent to " + email + " (asked on the site, queued)", "")
   })
   return same
 }
@@ -2178,11 +2298,49 @@ function safely_(fn) {
   }
 }
 
+/**
+ * ?action=health (final run N), for UptimeRobot (docs/monitoring.md): ok is true only when the sheet opens and the
+ * email queue is moving. No guest data, only yes/no and counts. Watch for the keyword "ok":true.
+ */
+function health_() {
+  const out = { ok: true, service: "nadia-griffin-wedding", at: new Date().toISOString(), sheet: true, queueMoving: true, pending: 0, emailQuota: null }
+  try { sheet_(TABS.guests).getLastRow() } catch (err) { out.sheet = false }
+  try {
+    const props = PropertiesService.getScriptProperties()
+    out.pending = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0).length
+    const last = Number(props.getProperty("last_flush_at") || 0)
+    // Something waiting and nothing sent for 15 minutes: the minute trigger has stopped
+    out.queueMoving = !out.pending || (last > 0 && Date.now() - last < 15 * 60 * 1000)
+  } catch (err) { out.queueMoving = false }
+  try { out.emailQuota = MailApp.getRemainingDailyQuota() } catch (err) { /* not authorised yet: left null */ }
+  out.ok = out.sheet && out.queueMoving
+  return out
+}
+
+/**
+ * Errors by email and to Discord (final run N). Off until set: ALERT_EMAIL (an address) and DISCORD_WEBHOOK_URL in
+ * Script Properties. One alert per kind of error an hour; only the error's code and message, never guest data or
+ * tokens. Email goes only from the wedding account, like everything else.
+ */
+function alert_(code, err) {
+  try {
+    const cache = CacheService.getScriptCache(), key = "alert:" + code
+    if (cache.get(key)) return
+    cache.put(key, "1", 3600)
+    const msg = String(err && err.message ? err.message : err).replace(/[A-Za-z0-9_-]{20,}/g, "…").slice(0, 400)
+    const text = "The wedding site's back end hit an error: " + code + "\n" + msg + "\n\nDetails: Extensions → Apps Script → Executions. One alert per kind of error an hour."
+    const to = prop_("ALERT_EMAIL")
+    if (to && isWeddingAccount_()) MailApp.sendEmail({ to: to, subject: "[Wedding site] error: " + code, body: text })
+    const hook = prop_("DISCORD_WEBHOOK_URL")
+    if (hook) UrlFetchApp.fetch(hook, { method: "post", contentType: "application/json", payload: JSON.stringify({ content: ("**Wedding site error: " + code + "**\n" + msg).slice(0, 1900) }), muteHttpExceptions: true })
+  } catch (e) { console.error("alert_: " + e) }
+}
+
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON)
 }
 
 function fail_(code, err) {
-  if (err) console.error(String(err && err.stack ? err.stack : err))
+  if (err) { console.error(String(err && err.stack ? err.stack : err)); alert_(code, err) }
   return json_({ ok: false, code: code, error: ERRORS[code] })
 }

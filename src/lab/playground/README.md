@@ -1,6 +1,6 @@
 # The playground (local only)
 
-`npm run lab` → Playground. Each experiment is one take on one part of the site, full screen in
+`npm run lab` → Playground (local only, never deployed). Each experiment is one take on one part of the site, full screen in
 `lab-play.html?x=<id>`, shown in a phone (390 × 844) or laptop (1440 × 900) frame at 0.25× to 2× speed.
 
 ## The contract for an experiment
@@ -20,5 +20,7 @@
 - **Accessible:** real buttons and links, 44px targets, visible focus (`--input-focus`), labels, `aria-live` where
   something announces. Skip buttons where something takes time.
 - **Australian English, no em dashes.** No new dependencies (Three.js, ogl and Paper's shaders are already in).
+- **Deciding or Parked:** every entry has one: `deciding` (what Jehan or Griffin and Nadia need to choose) or
+  `parked` (an idea kept for later). Decided ones are deleted, with their thumbnails; the run log says what won.
 - **Entry text:** `summary` one or two plain sentences; `refs` the inspiration links; `promote` what it would take to
   ship it (the work, the weight on phones, the risks, what it replaces).

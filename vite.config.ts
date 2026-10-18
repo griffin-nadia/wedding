@@ -49,12 +49,12 @@ function privateSong(): Plugin {
 }
 // Also fails if anything from the lab is built (it's local only).
 /**
- * The lab, built on its own into the Pages deploy at a hidden path (`npm run build` runs `vite build --mode lab` after
- * the site): never linked from the guest site, noindex, and built with no back end (VITE_API_URL empty), so it only
- * ever has the sample household and can't write to the sheet. Its pages and their scripts live under LAB_PATH; the
- * public files (art, photos, scenes, the song) are the site's own, at /wedding/. Hidden, not secret: the repo is public.
+ * The lab is local only (final run, 18 Oct): `npm run lab` (the dev server), or `npm run build:lab` after `npm run
+ * build` for the lab's own tests (the Playwright web server runs it). `npm run build`, and so the Pages deploy, never
+ * builds it. Built with no back end (VITE_API_URL empty), so it only has the sample household. Its pages and scripts
+ * go in dist/LAB_PATH; the public files (art, photos, scenes) are the site's own, at /wedding/.
  */
-export const LAB_PATH = "lab-x2tyua87sy"
+export const LAB_PATH = "lab"
 
 function noPrivateInBuild(lab = false): Plugin {
   let outDir = "dist"
@@ -83,7 +83,7 @@ export default defineConfig(({ command, mode }) => ({
   plugins: [react(), tailwindcss(), preloadFonts(), privateSong(), noPrivateInBuild(mode === "lab")],
   ...(mode === "lab" ? {
     publicDir: false,
-    build: { outDir: `dist/${LAB_PATH}`, emptyOutDir: false, rollupOptions: { input: { lab: path.resolve(__dirname, "lab.html"), "lab-play": path.resolve(__dirname, "lab-play.html"), "lab-frame": path.resolve(__dirname, "lab-frame.html") } } },
+    build: { outDir: `dist/${LAB_PATH}`, emptyOutDir: false, rollupOptions: { input: { lab: path.resolve(__dirname, "lab.html"), "lab-play": path.resolve(__dirname, "lab-play.html") } } },
   } : {}),
   define: {
     ...(mode === "lab" ? {
