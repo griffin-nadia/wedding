@@ -617,6 +617,8 @@ function check_(token) {
     songRows: rows_(TABS.songs).filter((r) => r.Token === h.token).length,
     // How many of this household's rows carry the duplicate flag (a count, never the note itself)
     duplicateFlags: rows_(TABS.guests).filter((r) => r.Token === h.token && /Possible duplicate:/.test(String(r.Notes || ""))).length,
+    // Where this household said it's flying from, as saved (its own row only), so a check can see the city arrived
+    flying: rows_(TABS.guests).filter((r) => r.Token === h.token).map(flyingOf_).filter(Boolean)[0] || null,
     log: rows_(TABS.log)
       .filter((r) => r.Token === h.token)
       .map((r) => ({ time: r.Time instanceof Date ? r.Time.toISOString() : String(r.Time), kind: String(r.Kind || ""), flag: String(r.Flag || ""), changed: String(r["What changed"]) })),

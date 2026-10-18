@@ -54,7 +54,7 @@ with the error's code and message only (docs/monitoring.md).
 | `GET ?action=household&token=…[&open=1]` | The household. `open=1` counts a visit |
 | `GET ?action=started&token=…` | Records "Started RSVP" once |
 | `GET ?action=songs&q=…` | Up to 6 Spotify matches, or `not_configured` |
-| `GET ?action=check&token=…` | That household's own saved rows, for testing (plus how many of its rows carry the duplicate flag) |
+| `GET ?action=check&token=…` | That household's own saved rows, for testing (plus how many of its rows carry the duplicate flag, and the city it said it's flying from) |
 | `GET ?action=stay` | Their hotel and Airbnb picks from the planner's Accommodation Options tab (`PLANNER_ID` script property), links without tracking, cached 6 hours |
 | `GET ?action=content` | Our story chapters (Content tab: `story_1_title`, `story_1_year`, `story_1_body`… up to 6), `mode` (invite, week-of, keepsake) and `contact_day` (shown under the FAQs) |
 | `GET ?action=health` | For UptimeRobot: `{ok, sheet, queueMoving, pending, emailQuota, at}`. `ok` is true only when the sheet opens and the email queue is moving. No guest data (docs/monitoring.md) |
