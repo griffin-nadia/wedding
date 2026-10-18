@@ -430,13 +430,8 @@
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 /* Arrives with @starting-style (no keyframes, no JS) */
 .toast-in { transition: opacity var(--duration-fast) var(--ease-paper), translate var(--duration-fast) var(--ease-paper); @starting-style { opacity: 0; translate: 0 8px; } }
-/* Omikuji: the box tilts three times (900 ms), then the slip unfolds (400 ms). Reduced motion: fade only. */
+/* Omikuji: the box tilts three times (900 ms), then the slip folds open (run 19, below). Reduced motion: fade only. */
 @keyframes omikuji-shake { 0%, 100% { rotate: 0deg; } 16% { rotate: -12deg; } 33% { rotate: 12deg; } 50% { rotate: -10deg; } 66% { rotate: 10deg; } 83% { rotate: -6deg; } }
-@keyframes slip-unfold { from { opacity: 0; transform: scaleY(0.2); transform-origin: top; } to { opacity: 1; transform: none; } }
-.omikuji-slip { animation: slip-unfold var(--duration-base) var(--ease-paper) both; }
-@media (prefers-reduced-motion: reduce) {
-  .omikuji-slip { animation: toast-in var(--duration-fast) linear both; transform: none; }
-}
 /* Driver card full screen: bigger in landscape */
 /* Show the driver (v3 Q4): the shared sheet on the brightest paper, big Japanese, Done in the footer */
 .sheet.sheet-bright { background: var(--brand-paper-bright); color: var(--brand-ink-deep); border-radius: var(--radius-letter); }
@@ -493,6 +488,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--letter-gap);
+  width: 100%; /* a fixed width (run 19): with auto margins a flex item shrinks to its content, so 768 to 1023 the card grew when an FAQ opened */
   max-width: var(--letter-width);
   margin-inline: auto;
   padding: var(--letter-pad);
@@ -515,11 +511,12 @@
 /* Except Home: its card is only as tall as what's on it (up to the frame) */
 :root .letter[data-page="home"] { flex-grow: 0; }
 .letter-wrap:has(.letter[data-page="home"]) .letter-sealed { flex-grow: 0; }
-/* And Our story on laptops (18f): only as tall as the spread, not a tall frame round a small print */
-@media (min-width: 1024px) { :root .letter[data-page="story"] { flex-grow: 0; } }
+/* Our story fills the frame like the other pages (run 19: its spread fits now, so the frame is no longer tall round a
+   small print), and the spread is centred in it, so the card's bottom edge never moves between pages */
 .letter-scroll {
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--letter-gap);
   padding: var(--letter-pad); overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges; /* a mouse's scrollbar never narrows the words when a page grows past the card (run 19) */
   /* A soft 16px fade where the words meet the card's top and bottom edges */
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
   mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
@@ -904,6 +901,14 @@ svg.lucide { stroke-width: 1.5; }
 ::selection { background: color-mix(in oklab, var(--ink-moss) 35%, transparent); color: var(--ink); }
 /* What's left as one compact row of chips (v3 S): ticked or a soft dash, each opens its step */
 .reply-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+/* Run 19, on a phone: a 2x2 grid, calmer than four chips squeezed into one row (they don't fit at 390 at a legible
+   size). Each column at least the widest tag, so at 320 they stack instead of clipping. The dates' "once you've booked"
+   is said to screen readers only here: the next-step button under the tags already says it. */
+@media (max-width: 559px) {
+  .reply-chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(max(9.5rem, 40%), 1fr)); }
+  .reply-chip { width: 100%; }
+  .reply-chip-note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 .reply-chip { @apply chip-shape; gap: var(--space-2); background: var(--surface-raised); color: var(--ink-soft); font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); outline: 2px solid transparent; outline-offset: 2px; transition: border-color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper); }
 .reply-chip[data-done] { background: var(--surface-alt); color: var(--ink); }
 .reply-chip:focus-visible { outline-color: var(--input-focus); }
@@ -1121,9 +1126,46 @@ svg.lucide { stroke-width: 1.5; }
   display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: 100%; max-width: 320px; margin-inline: auto;
   padding: var(--space-6) var(--space-5); text-align: center; background: var(--brand-paper-bright); color: var(--brand-kogecha);
   border-block: 6px solid var(--brand-sabi); border-radius: var(--radius-control); box-shadow: var(--elevation-paper);
-  outline: 2px solid transparent; outline-offset: 4px; transform-origin: top;
-  animation: slip-unfold var(--duration-base) var(--ease-paper) both;
+  outline: 2px solid transparent; outline-offset: 4px;
+  animation: toast-in var(--duration-base) var(--ease-paper) both; /* a slip opened before: it simply arrives */
 }
+/* Run 19: the slip, centred, folds open like a real omikuji (fortune-card.tsx). Three copies, each its third of the
+   slip; the middle hangs from the first crease, the last from the second (nested, so it rides with the middle). The
+   real slip holds its place underneath, unseen, then takes over with the creases easing out. */
+.done-column > .sent-next > .omikuji-stage { margin-inline: auto; }
+.omikuji-stage { position: relative; width: 100%; }
+.omikuji-slip.is-folded { opacity: 0; animation: none; }
+.omikuji-slip.is-fresh { animation: none; }
+.omikuji-fold { position: absolute; inset: 0; perspective: 1100px; transform-style: preserve-3d; pointer-events: none; }
+.omikuji-fold .omikuji-copy { position: absolute; inset: 0; height: 100%; animation: none; backface-visibility: hidden; }
+.omikuji-part-1 { clip-path: inset(0 0 66.667% 0); }
+.omikuji-part-2 { clip-path: inset(33.333% 0 33.333% 0); }
+.omikuji-part-3 { clip-path: inset(66.667% 0 0 0); }
+.omikuji-leaf { position: absolute; inset: 0; transform-style: preserve-3d; }
+.omikuji-leaf-2 { transform-origin: 50% 33.333%; animation: omikuji-leaf-2 1100ms cubic-bezier(0.45, 0.05, 0.3, 1) both; }
+.omikuji-leaf-3 { transform-origin: 50% 66.667%; animation: omikuji-leaf-3 1100ms cubic-bezier(0.45, 0.05, 0.3, 1) both; }
+/* Folded behind, zigzag: the middle swings down from behind the top, then the last from behind the middle, each
+   landing with a little give */
+@keyframes omikuji-leaf-2 { 0% { transform: rotateX(-178deg); } 48% { transform: rotateX(3deg); } 60%, 100% { transform: rotateX(0deg); } }
+@keyframes omikuji-leaf-3 { 0%, 24% { transform: rotateX(178deg); } 82% { transform: rotateX(-4deg); } 92% { transform: rotateX(1deg); } 100% { transform: rotateX(0deg); } }
+/* The back of each third: plain paper, seen while it swings past edge-on */
+.omikuji-back { position: absolute; inset-inline: 0; width: 100%; max-width: 320px; margin-inline: auto; background: color-mix(in oklab, var(--brand-paper-bright) 88%, var(--brand-kinari)); transform: rotateX(180deg); backface-visibility: hidden; }
+.omikuji-back-2 { top: 33.333%; height: 33.334%; }
+.omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); border-bottom: 6px solid var(--brand-sabi); }
+/* A third's shade lifts as it flattens */
+.omikuji-shade { position: absolute; inset: 0; z-index: 31; pointer-events: none; background: rgb(var(--tint-shadow) / 0.3); }
+.omikuji-part-2 .omikuji-shade { animation: omikuji-shade 1100ms ease-out both; }
+.omikuji-part-3 .omikuji-shade { animation: omikuji-shade-3 1100ms ease-out both; }
+@keyframes omikuji-shade { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes omikuji-shade-3 { 0%, 24% { opacity: 1; } 84%, 100% { opacity: 0; } }
+/* The creases, sharp while it opens, then easing out to the two faint lines the paper keeps */
+.omikuji-creases { position: absolute; inset: 0; z-index: 31; border-radius: inherit; pointer-events: none; opacity: 0;
+  background:
+    linear-gradient(to bottom, transparent calc(33.333% - 5px), rgb(var(--tint-shadow) / 0.16) calc(33.333% - 0.5px), rgb(255 255 255 / 0.85) calc(33.333% + 0.5px), transparent calc(33.333% + 5px)),
+    linear-gradient(to bottom, transparent calc(66.667% - 5px), rgb(255 255 255 / 0.85) calc(66.667% - 0.5px), rgb(var(--tint-shadow) / 0.16) calc(66.667% + 0.5px), transparent calc(66.667% + 5px)); }
+.omikuji-copy .omikuji-creases { opacity: 1; }
+.omikuji-slip.is-fresh .omikuji-creases { animation: omikuji-creases 900ms var(--ease-paper) both; }
+@keyframes omikuji-creases { from { opacity: 1; } to { opacity: 0; } }
 .omikuji-slip:focus-visible { outline-color: var(--input-focus); }
 .omikuji-slip .label-caps { color: var(--brand-kuri); }
 .omikuji-no { font-size: var(--type-small-size); letter-spacing: 0.2em; color: var(--brand-kuri); }
@@ -1131,8 +1173,6 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 26ch; }
 .omikuji-count { opacity: 0.8; }
 .omikuji-save { min-height: 44px; color: var(--brand-doro); } /* the one link style (btn-text), in the slip's own ink: it's always bright paper */
-/* Springs (Options → Fortune): Motion moves the tin, the stick and the slip, so their CSS animations stand down */
-.omikuji-slip.is-spring { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }
   .omikuji-stick { transition: none; }
@@ -1227,7 +1267,7 @@ svg.lucide { stroke-width: 1.5; }
 /* Our story (APG carousel): one stop per screen on a sideways track that snaps; nothing scrolls inside a stop. On
    phones each stop is the print centred with its chapter line underneath; from 1024 a two-column spread, the print on
    one side and the words on the other, the arrows and dots centred below. --print-h is a print's long side. */
-.story { display: flex; flex-direction: column; gap: var(--space-4); }
+.story { display: flex; flex-direction: column; gap: var(--space-3); }
 .story-track { display: grid; overflow: hidden; touch-action: pan-y; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; -webkit-user-select: none; user-select: none; }
 .story-track[data-dragging] { cursor: grabbing; }
 .story-track img { -webkit-user-drag: none; }
@@ -1235,14 +1275,15 @@ svg.lucide { stroke-width: 1.5; }
 /* No box round the whole story when it has focus (18f, Jehan: "too boxy"): the focus shows on the current stop's dot */
 .story-track:focus-visible { outline-color: transparent; }
 .story:has(.story-track:focus-visible) .journey-dots .is-on { outline: 2px solid var(--input-focus); outline-offset: 3px; }
-.story-slide { --print-h: min(34svh, 300px); --caption-h: 2.75rem; grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
-.story-media { flex: none; display: grid; place-items: center; max-width: 100%; }
+/* One grid for every stop (run 19): the same media box (--stop-h) at the top of each, opener and map included, so the
+   words start on the same line on every stop; the spread itself is centred in the card (.story below) */
+.story-slide { --print-h: min(26svh, 260px); --caption-h: 2.75rem; --stop-h: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: var(--space-4); overflow: hidden; padding-block: var(--space-1); text-align: center; }
+.story-media { flex: none; display: grid; place-items: center; max-width: 100%; height: var(--stop-h); }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
 /* Every photo stop's print sits on the same line in the same-sized box, so its caption lands in the same spot on
    every stop, right under the photo (18f): a landscape print is shorter, so it sits low in the box, not centred */
-.story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); place-items: end center; }
-/* …and the stop starts at the top, so a two-line title under it never moves the photo up */
-.story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: flex-start; }
+.story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { place-items: end center; }
+/* (every stop starts at the top, so a two-line title under it never moves the photo up) */
 
 .story-print figcaption { min-height: 1.25rem; }
 /* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
@@ -1255,7 +1296,14 @@ svg.lucide { stroke-width: 1.5; }
 /* Its lines wait until the stop is showing (no drawing off screen, and they draw in as you arrive) */
 .story-slide[inert] .journey, .story-slide[inert] .journey * { animation-play-state: paused !important; }
 .story-slide-map .story-media { width: 100%; max-width: 360px; }
-.story-slide-map { --flat-h: 36svh; }
+/* The map fits the same box: the Globe / Flat switch (about 56px with its gap) and the map under it */
+.story-slide-map .journey-mini { max-height: calc(var(--stop-h) - 56px); }
+.story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 56px)); }
+/* The flat map in the same box (run 19 globe: its height token) */
+.story-slide-map { --flat-h: calc(var(--stop-h) - 56px); }
+/* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */
+.letter[data-page="story"] .letter-body { flex: 1 0 auto; }
+.letter[data-page="story"] .story { flex: 1 0 auto; justify-content: center; }
 /* The list: a 48px thumbnail beside each chapter */
 .story-thumb { flex: none; width: 48px; height: 48px; border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); }
 .story-thumb figcaption { display: none; }
@@ -1267,13 +1315,12 @@ svg.lucide { stroke-width: 1.5; }
 @media (prefers-reduced-motion: reduce) { .story-track > .story-slide { transition: opacity 200ms linear !important; } }
 @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) { .story-track { cursor: grab; } }
 /* Short phones (an SE at 667): a smaller print, so a stop still fits one screen */
-@media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map { --flat-h: 24svh; } }
+@media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } }
 @media (min-width: 1024px) {
   /* Laptops as phones (18f, Jehan: "too big… like we did with mobile"): the print centred like a photo, its chapter
      under it, smaller, so the page isn't so tall (a small map beside the words was tried and left out) */
   .story-slide { --print-h: min(32svh, 260px); gap: var(--space-4); }
-  .story-slide-map .story-media { flex: 0 1 360px; }
-  .story-slide-map { --flat-h: 46svh; }
+  .story-slide-map .story-media { flex: 0 0 auto; }
   .story-controls { justify-content: center; gap: var(--space-5); }
 }
 
