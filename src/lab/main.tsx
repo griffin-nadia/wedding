@@ -1,8 +1,8 @@
 /**
  * Jehan's lab (npm run lab, local only). Never built into, deployed with or linked from the guest site: the build
  * only reads index.html, and the build check fails if any lab code ends up in dist.
- * Tabs: Playground (the open choices, the winners and two parked ideas, at phone or laptop size, any speed; the index
- * is the default) and Gallery (every component, variant and state, light and dark).
+ * Tabs: Playground (the index: Deciding, Parked, Reference; each experiment at phone or laptop size), Shortlist (every
+ * open decision side by side, to choose in one sitting) and Gallery (every component, variant and state, both themes).
  */
 /* eslint-disable react-refresh/only-export-components -- an entry file: it renders itself, nothing imports it */
 import "../styles/fonts.css"
@@ -19,18 +19,23 @@ import { Toaster } from "@/components/ui/toast"
 import { Segmented } from "@/components/segmented"
 import { LanternToggle } from "@/components/lantern-toggle"
 import { Playground } from "./playground/shell"
+import { Shortlist } from "./playground/shortlist"
+import { ALL, REFERENCE } from "./playground/registry"
 
 const KitPage = lazy(() => import("@/pages/kit").then((m) => ({ default: m.KitPage })))
 
 /** Marks the lab in a bundle: the guest build fails if this string ever reaches dist (vite.config.ts). */
 const LAB_MARK = "__NG_LAB__"
 
-const TABS = [["playground", "Playground"], ["gallery", "Gallery"]] as const
+// For scripts/lab-thumbs.mjs and lab-perf.mjs: what there is to shoot and measure
+;(window as Window & { __labIndex?: unknown }).__labIndex = { entries: ALL.map((e) => ({ id: e.id, takes: e.takes?.map((t) => t.id) })), reference: REFERENCE }
+
+const TABS =[["playground", "Playground"], ["shortlist", "Shortlist"], ["gallery", "Gallery"]] as const
 
 function Lab() {
   // The gallery keeps its own page in the hash (#type, #button…), so any other hash means the gallery
-  const [tab, setTab] = useState(() => { const h = location.hash.slice(1); return h.startsWith("playground") || !h ? "playground" : "gallery" })
-  useEffect(() => { if (tab !== "gallery" && !(tab === "playground" && location.hash.startsWith("#playground"))) history.replaceState(null, "", `#${tab}`) }, [tab])
+  const [tab, setTab] = useState(() => { const h = location.hash.slice(1); return h.startsWith("playground") || !h ? "playground" : h === "shortlist" ? "shortlist" : "gallery" })
+  useEffect(() => { if (tab !== "gallery" && !(tab === "playground" && location.hash.startsWith("#playground"))) history.replaceState(null, "", `${location.pathname}${tab === "playground" ? location.search : ""}#${tab}`) }, [tab])
   return (
     <div className="lab-shell" data-mark={LAB_MARK}>
       <header className="lab-bar">
@@ -43,6 +48,7 @@ function Lab() {
         <span className="ml-auto"><LanternToggle /></span>
       </header>
       {tab === "playground" && <Playground />}
+      {tab === "shortlist" && <Shortlist />}
       {tab === "gallery" && <Suspense><KitPage /></Suspense>}
     </div>
   )
