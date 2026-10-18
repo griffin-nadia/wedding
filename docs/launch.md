@@ -59,3 +59,39 @@ Set it up once, from the wedding account:
 4. Check it later with the same report (Last backup shows the newest copy's name).
 
 To turn it off: Extensions → Apps Script → Triggers (the clock) → the `weeklyBackup` row → three dots → Delete.
+
+## The email quota
+
+The report's last line counts the invite emails (one per guest with an address) against what Gmail allows today
+(about 100 a day on this account). With under 100 guests they should fit in a day, but send the invites on a day
+nothing else has gone out, and leave room for the confirmations that follow. If they won't fit, the report says
+how many days it'll take: **Send invites to everyone not yet invited…** stops at the limit, and running it again the
+next day picks up where it stopped. `?action=health` shows `emailQuota` too ([monitoring.md](monitoring.md)).
+
+## Deleting the data after the wedding
+
+The FAQ promises: "We'll delete it a few months after the wedding." The date is Griffin and Nadia's to set; the
+suggestion is **15 January 2028** (three months after 15 Oct 2027, after thank-you cards and photos are shared).
+Put it in the wedding account's calendar once it's agreed.
+
+What holds guest data, and how each is cleared, in this order:
+
+1. **The site goes quiet first.** Content tab `mode` → `keepsake` (no replies), then a week later take the household
+   links down: GitHub → griffin-nadia/wedding → Settings → Pages → Unpublish, or leave the site up without the back
+   end (step 3).
+2. **Site-Data sheet.** File → Make a copy *only* if they want a keepsake without contact details: delete the Email,
+   Phone and Notes columns from the copy first. Then delete the Site-Data sheet itself (Drive → Remove).
+3. **The web app.** Extensions → Apps Script → Deploy → Manage deployments → Archive. Triggers → delete
+   `flushQueue` and `weeklyBackup`. Project Settings → Script properties → delete them all (the queue's `q:` items
+   included).
+4. **Backups.** The **Wedding backups** Drive folder (launch backups and weekly copies) → Remove, then **empty the
+   Drive bin** (removed files otherwise stay 30 days).
+5. **The planner's Guest list** tab: delete the email and phone columns (the rest is theirs to keep).
+6. **Email.** The wedding account's Sent folder (invites, confirmations, reminders) and any replies: search
+   `from:me subject:(Griffin & Nadia)` and delete, then empty the bin. Alerts and UptimeRobot emails can go too.
+7. **Discord.** If the webhook was set up, delete the channel's messages (Ask us questions) and the webhook.
+8. **UptimeRobot.** Delete both monitors, or the account.
+
+Not holding guest data: this GitHub repo (it never has: names, emails and photos stay out by rule), GitHub Pages,
+and the site's own files. Guests' browsers keep their own link, their city and their stamps in local storage; that's
+on their devices and leaves when they clear the site's data.

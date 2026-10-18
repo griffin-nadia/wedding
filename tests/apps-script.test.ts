@@ -4,12 +4,13 @@ import assert from "node:assert/strict"
 import fs from "node:fs"
 import vm from "node:vm"
 
-const src = fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__x = { planLaunch_, plannerGuestColumns_, backupsToTrash_ }"
+const src = fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__x = { planLaunch_, plannerGuestColumns_, backupsToTrash_, quotaLine_ }"
 const ctx: { __x?: Record<string, (...a: unknown[]) => unknown> } = {}
 vm.createContext(ctx)
 vm.runInContext(src, ctx)
 // Results come back as the sandbox's own objects; compare them as plain data
 const plain = (f: (...a: unknown[]) => unknown) => (...a: unknown[]) => JSON.parse(JSON.stringify(f(...a)))
+const quotaLine_ = ctx.__x!.quotaLine_ as (e: number, q: number | null) => string
 const planLaunch_ = plain(ctx.__x!.planLaunch_), plannerGuestColumns_ = plain(ctx.__x!.plannerGuestColumns_), backupsToTrash_ = plain(ctx.__x!.backupsToTrash_)
 
 const site = [
@@ -53,4 +54,47 @@ test("weekly backups: keep the newest 8, trash the rest, never anything that isn
     .concat([{ name: "Planner backup 2026-10-18 0400", created: 1 }, { name: "Notes", created: 2 }])
   const out = backupsToTrash_(files, "Site-Data weekly ", 8) as { name: string }[]
   assert.deepEqual(out.map((f) => f.name), ["Site-Data weekly 2027-01-03", "Site-Data weekly 2027-01-02", "Site-Data weekly 2027-01-01"])
+})
+
+test("the launch report's quota guard: invite emails counted per address, and whether today's limit fits them", () => {
+  const p = planLaunch_(site, tabs, planner, []) as { inviteEmails: number }
+  assert.equal(p.inviteEmails, 1) // Jo from the planner; Sam's planner email isn't copied, Kim has none
+  assert.match(quotaLine_(60, 100), /so they fit/)
+  assert.match(quotaLine_(150, 100), /won't all fit.*about 2 days/)
+  assert.match(quotaLine_(5, null), /Couldn't read/)
+})
+
+// Google's services stubbed: what health_ and alert_ do with them
+function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: string } = {}) {
+  const sent: unknown[] = [], posted: string[] = [], cache: Record<string, string> = {}
+  const g = {
+    __sent: sent, __posted: posted, console: { error() {} },
+    PropertiesService: { getScriptProperties: () => ({ getProperty: (k: string) => props[k] ?? null, getProperties: () => props, setProperty: (k: string, v: string) => { props[k] = v } }) },
+    CacheService: { getScriptCache: () => ({ get: (k: string) => cache[k] ?? null, put: (k: string, v: string) => { cache[k] = v } }) },
+    MailApp: { getRemainingDailyQuota: () => 97, sendEmail: (m: unknown) => sent.push(m) },
+    UrlFetchApp: { fetch: (_u: string, o: { payload: string }) => posted.push(o.payload) },
+    Session: { getEffectiveUser: () => ({ getEmail: () => opts.me ?? "griffinandnadia@gmail.com" }) },
+    SpreadsheetApp: { getActive: () => ({ getSheetByName: () => (opts.sheet === false ? null : { getLastRow: () => 40 }) }) },
+  }
+  vm.createContext(g)
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_ }", g)
+  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void } }
+}
+test("?action=health: ok only when the sheet opens and the queue is moving; counts, no guest data", () => {
+  assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "service", "sheet"])
+  assert.equal(backEnd({}).__f.health_().ok, true)
+  assert.equal(backEnd({}, { sheet: false }).__f.health_().ok, false)
+  assert.equal(backEnd({ "q:mail:x": "{}", last_flush_at: String(Date.now() - 20 * 60 * 1000) }).__f.health_().ok, false) // stuck
+  assert.equal(backEnd({ "q:mail:x": "{}", last_flush_at: String(Date.now() - 60 * 1000) }).__f.health_().ok, true)
+})
+test("errors alert by email and Discord only when set up, once an hour per kind, with tokens taken out", () => {
+  const off = backEnd({}); off.__f.alert_("save_failed", new Error("boom"))
+  assert.equal(off.__sent.length + off.__posted.length, 0) // nothing set: nothing sent
+  const on = backEnd({ ALERT_EMAIL: "alerts@example.com", DISCORD_WEBHOOK_URL: "https://discord.example/hook" })
+  on.__f.alert_("save_failed", new Error("bad token abcdefghijklmnopqrstuvwxyz123"))
+  on.__f.alert_("save_failed", new Error("again"))
+  assert.equal(on.__sent.length, 1); assert.equal(on.__posted.length, 1)
+  assert.doesNotMatch(JSON.stringify(on.__sent) + on.__posted.join(""), /abcdefghijklmnop/)
+  const wrong = backEnd({ ALERT_EMAIL: "alerts@example.com" }, { me: "someone@example.com" }); wrong.__f.alert_("x", "y")
+  assert.equal(wrong.__sent.length, 0) // email only from the wedding account
 })
