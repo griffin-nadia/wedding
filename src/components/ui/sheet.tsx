@@ -27,7 +27,12 @@ function SheetContent({ className, children, tone = "letter", closeLabel, onClos
     if (e.defaultPrevented) return
     e.preventDefault()
     const { y, card, opener } = back.current
-    if (opener instanceof HTMLElement && opener.isConnected) opener.focus({ preventScroll: true })
+    // The opener can be gone by then (RSVP becomes Change my reply once sent): the letter takes focus instead of
+    // the page, so a keyboard or screen reader carries on from the card (run 19 UX test)
+    const to = opener instanceof HTMLElement && opener.isConnected ? opener : document.getElementById("letter")
+    to?.focus({ preventScroll: true })
+    // While the RSVP sheet is open the letter is hidden (data-sheet), so focus can't land until that clears
+    if (to && document.activeElement !== to) requestAnimationFrame(() => { if (document.activeElement === document.body) to.focus({ preventScroll: true }) })
     window.scrollTo({ top: y, behavior: "instant" })
     letterScroll()?.scrollTo({ top: card, behavior: "instant" }) // the card's own scroll too (18e: the card scrolls, not the page)
   }

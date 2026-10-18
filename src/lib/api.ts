@@ -86,10 +86,12 @@ export async function saveRsvp(token: string, payload: RsvpPayload, before: Hous
   return { household: data.household, updated: Boolean(data.updated), changes: data.changes ?? [] }
 }
 
-/** "all" coming, "none" coming, or "mixed". Guests without an answer count as not coming. */
+/** "all" coming, "none" coming, or "mixed". Guests without an answer count as not coming. A plus one nobody is
+ * bringing isn't someone missing (run 19 UX test: every named guest coming read "Thanks, got it", not "all set"). */
 export function answerOf(h: Pick<Household, "guests">): "all" | "none" | "mixed" {
-  const yes = h.guests.filter((g) => g.attending === "yes").length
-  return yes === h.guests.length ? "all" : yes === 0 ? "none" : "mixed"
+  const counted = h.guests.filter((g) => !g.plusOne || g.attending === "yes")
+  const yes = counted.filter((g) => g.attending === "yes").length
+  return yes === counted.length && yes > 0 ? "all" : yes === 0 ? "none" : "mixed"
 }
 
 /**

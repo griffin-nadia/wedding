@@ -633,7 +633,9 @@
   top: calc(var(--vv-top, 0px) + 12px); left: 12px; right: 12px;
   max-height: calc(100svh - 24px - env(safe-area-inset-bottom));
   height: calc(100svh - 24px - env(safe-area-inset-bottom)); /* the keyboard-down size, always (18g) */
-  max-width: none; margin: 0; padding: 0; gap: 0;
+  /* width auto: the letter's width: 100% (run 19) would make a fixed sheet the full screen from 12px in, so it ran
+     12px off the right edge and cut the X (run 19 UX test). left and right set it here; laptops set a width below */
+  width: auto; max-width: none; margin: 0; padding: 0; gap: 0;
   display: flex; flex-direction: column; overflow: hidden;
   box-shadow: var(--elevation-sheet);
 }
