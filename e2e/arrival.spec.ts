@@ -26,3 +26,27 @@ test("the arrival: a real Open button, no long-press save, and the float pauses 
   await expect(page.locator(".envelope-float")).toHaveCSS("animation-play-state", "paused")
   await expect(page.locator("#letter")).toBeFocused({ timeout: 3000 })
 })
+
+// 18f: in Lantern the letter rising out of the envelope is the night letter from its first frame (walnut paper,
+// cream names); the "&" is the brand sage in both themes, on the envelope's letter and on Home
+for (const theme of ["autumn", "lantern"] as const) test(`the envelope's letter in ${theme}: the theme's paper from the start, a sage "&"`, async ({ page }) => {
+  await page.addInitScript((t) => { localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t) }, theme)
+  await page.goto("?h=sample")
+  await expect(page.getByRole("button", { name: "Open your invite" })).toBeVisible()
+  const look = () => page.evaluate(() => {
+    const css = (s: string) => getComputedStyle(document.querySelector(s)!)
+    return { bg: css(".envelope-paper").backgroundColor, ink: css(".envelope-paper .names-art-ink").backgroundColor, amp: css(".envelope-paper .names-art-amp").backgroundColor }
+  })
+  const before = await look()
+  const sage = theme === "lantern" ? "rgb(157, 176, 138)" : "oklch(0.502 0.074 123.8)" // Lantern's sage is #9db08a (polish.css)
+  expect(before.amp).toBe(sage)
+  if (theme === "lantern") {
+    expect(before.bg).toBe("oklch(0.245 0.034 49)") // walnut, the night letter
+    expect(before.ink).toBe("oklch(0.932 0.03 80.7)") // cream lettering
+  }
+  await page.getByRole("button", { name: "Open your invite" }).click()
+  await page.waitForTimeout(150)
+  expect((await look()).bg).toBe(before.bg) // the same paper while it opens: nothing swaps mid-way
+  await expect(page.locator("#letter .names-art-amp").first()).toBeVisible({ timeout: 5000 })
+  expect(await page.locator("#letter .names-art-amp").first().evaluate((e) => getComputedStyle(e).backgroundColor)).toBe(sage)
+})

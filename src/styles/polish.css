@@ -125,6 +125,12 @@ html { scrollbar-gutter: stable; }
   .arrival .envelope.is-drawn:hover { filter: drop-shadow(0 26px 30px rgb(var(--tint-shadow) / 0.36)); }
 }
 @media (prefers-reduced-motion: reduce) { .envelope-drawn { transition: none; } }
+/* Lantern (18f): the envelope stays Nadia's cream paper, but the letter that rises out of it is the night letter
+   from its first frame: walnut paper, cream names, the sage "&" (no white sheet, no flash on the way to the page) */
+[data-theme="lantern"] .envelope .envelope-paper {
+  --ink: var(--brand-kinari); --action: var(--brand-sage); --letter-edge-color: var(--brand-hachimitsu);
+  background: var(--brand-yoru);
+}
 
 /* Her garden drawing on The day (Options → The day). The ink is a mask, so it takes the page's ink colour:
    dark on paper by day, cream on the dark letter in Lantern. Cropped to the pagoda and the aisle (4:5) so it reads as
