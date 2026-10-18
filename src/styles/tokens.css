@@ -312,8 +312,9 @@
 @media (min-width: 768px) {
   :root {
     --density-field: 48px;
-    --density-gap: var(--space-6);
-    --density-letter-pad: var(--space-7);
+    /* Run 19: one step tighter on laptops (the same scale as phones, one step up only for the pad), so pages are shorter */
+    --density-gap: var(--space-5);
+    --density-letter-pad: var(--space-6);
   }
 }
 

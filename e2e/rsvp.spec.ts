@@ -285,3 +285,22 @@ for (const theme of ["autumn", "lantern"] as const) test(`the done screen (${the
   expect(layout.overlaps).toBe(0)
   expect(new Set(layout.gaps).size, `gaps ${layout.gaps}`).toBe(1)
 })
+
+// Run 19: the fortune is centred and folds open like an omikuji slip (three thirds over the real slip, which holds
+// its place and is the one focused), then the fold goes and the slip settles
+test("the fortune folds open, centred, then settles", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" })
+  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
+  await openForm(page)
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
+  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
+  await toCheck(page); await press(page, /^Send our reply$/)
+  await dialog.getByRole("button", { name: "Draw one" }).click()
+  await expect(dialog.locator(".omikuji-fold .omikuji-leaf")).toHaveCount(2)
+  await expect(dialog.locator(".omikuji-slip.is-folded")).toBeFocused()
+  await expect(dialog.locator(".omikuji-fold")).toHaveCount(0, { timeout: 4000 })
+  const slip = (await dialog.locator(".omikuji-slip").boundingBox())!, col = (await dialog.locator(".done-column").boundingBox())!
+  expect(Math.abs(slip.x + slip.width / 2 - (col.x + col.width / 2))).toBeLessThan(2)
+  await expect(dialog.getByRole("group", { name: /Great blessing/ })).toHaveCount(1) // the copies are hidden from screen readers
+})

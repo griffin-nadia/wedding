@@ -60,12 +60,12 @@ function Timeline({ now }: { now: Date }) {
   )
 }
 
-/** Details: the venue and its address, and How to get there, which opens Google Maps directions (v3 S; B goes to Travel). */
+/** Details: the venue and its address, and How to get there, which opens Google Maps directions (v3 S; B goes to Travel).
+ * The venue's story moved under the timeline (run 19), so the first screen is when and where. */
 function Details() {
   const { t } = useLang()
   return (
-    <div className="flex flex-col gap-4">
-      <p>{t.day.venueFacts}</p>
+    <div className="flex flex-col gap-2">
       <div className="flex flex-col">
         <p className="font-medium text-foreground">{VENUE.name}</p>
         {t.day.addressLines.map((l) => <p key={l}>{l}</p>)}
@@ -92,6 +92,7 @@ export function DayPage() {
       {/* The Kyoto minute rolls up into place when it ticks over; the key remounts it */}
       <p className="text-small text-muted-foreground">{t.day.japanTime} <span className={rolls ? "no-print clock-roll" : "no-print"} key={kyotoNow(now)}>{keepTimes(t.day.kyotoNow(kyotoNow(now)))}</span></p>
       <p>{t.day.rainPlan}</p>
+      <p>{t.day.venueFacts}</p>
     </div>
   )
   return (
