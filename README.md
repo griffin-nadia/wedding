@@ -58,7 +58,9 @@ FAQ follows.
 
 Now playing: "A Town With an Ocean View" (Joe Hisaishi), the piano cover by Piano ZeroL (credited as the song only, since 18 Oct). The file is `private/song.mp3` with
 its silence trimmed (1.5 s at the start, 10 s at the end, cut on whole MP3 frames so nothing is re-encoded), so it
-loops with under a second's breath.
+loops with under a second's breath. Normalised (18g) to about -20 LUFS with ffmpeg's loudnorm in linear mode (one constant gain, so the
+loop stays seamless): it was -17.0 LUFS with a true peak of +0.1 dB, and is now -20.4 LUFS at -3.3 dB, 96 kbps. The
+site plays it through Web Audio (a GainNode) at 0.2, never above 0.25, because iOS Safari ignores `audio.volume`.
 
 To switch back to "orange hues" by Aqualina: `git show 2daa138:public/audio/song.mp3 > public/audio/song.mp3` (the
 file as it was before the switch), then in `src/lib/art.ts` swap `music` for the commented-out entry under it.
