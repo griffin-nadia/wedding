@@ -27,7 +27,7 @@ export function HomeCountdown() {
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", vis) }
   }, [])
   const { mode } = useContent()
-  const p = partsAt(now)
+  const p = partsAt(now, new Date(config.weddingStart))
   if (mode === "keepsake") return null
   const ms = Math.max(0, new Date(config.weddingStart).getTime() - now.getTime())
   const days = Math.floor(ms / 86_400_000), hours = Math.floor((ms % 86_400_000) / 3_600_000), mins = Math.floor((ms % 3_600_000) / 60_000), secs = Math.floor((ms % 60_000) / 1000)

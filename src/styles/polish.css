@@ -91,7 +91,7 @@ html { scrollbar-gutter: stable; }
   .envelope-float { animation: envelope-float 4s ease-in-out infinite; }
   .envelope-float::after { animation: envelope-float-shadow 4s ease-in-out infinite; }
   .arrival-open { animation: arrival-open-breathe 4s ease-in-out infinite; }
-  .is-opening .envelope-float, .is-opening .envelope-float::after, .arrival.is-pulling .envelope-float, .arrival.is-pulling .envelope-float::after { animation-play-state: paused; }
+  :is(.is-opening, .is-sealing) .envelope-float, :is(.is-opening, .is-sealing) .envelope-float::after, .arrival.is-pulling .envelope-float, .arrival.is-pulling .envelope-float::after { animation-play-state: paused; }
   .arrival .envelope:active { transform: translateY(-4px) scale(var(--press-scale)); }
 }
 .arrival-open {
@@ -100,7 +100,7 @@ html { scrollbar-gutter: stable; }
   transition: opacity var(--duration-fast) var(--ease-paper);
 }
 .arrival-open:focus-visible { outline-color: var(--input-focus); }
-.is-opening .arrival-open, .arrival.is-pulling .arrival-open { opacity: 0; animation: none; }
+.is-opening .arrival-open, .is-sealing .arrival-open, .arrival.is-pulling .arrival-open { opacity: 0; animation: none; }
 /* 1024 to 1279: the envelope sits on warm paper, not the photo, so the label is ink there */
 @media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-open { color: var(--ink-soft); text-shadow: none; } }
 /* The music toggle, on but waiting for the first tap to be allowed to play: a slow ring, none under reduced motion */
@@ -115,21 +115,19 @@ html { scrollbar-gutter: stable; }
 .envelope.is-drawn > span:not(.envelope-paper) { display: none; }
 .envelope.is-drawn .envelope-paper { opacity: 0; z-index: 2; }
 .envelope.is-drawn::after { display: none; }
-.envelope-drawn { position: absolute; left: 0; width: 100%; height: auto; pointer-events: none; user-select: none; transition: opacity var(--duration-base) var(--ease-paper); }
+.envelope-drawn { position: absolute; left: 0; width: 100%; height: auto; pointer-events: none; user-select: none; }
 .envelope-drawn.is-closed { top: 0; z-index: 4; }
 /* The open envelope (18 Oct): its back under the letter, its pocket and seal over it, so the letter comes out of it */
 .envelope-drawn.is-open { bottom: 0; z-index: 1; opacity: 0; }
 .envelope-drawn.is-front { bottom: 0; z-index: 3; opacity: 0; }
-.is-opening .envelope.is-drawn .envelope-drawn.is-closed { opacity: 0; }
-.is-opening .envelope.is-drawn .envelope-drawn:is(.is-open, .is-front) { opacity: 1; }
-.is-opening .envelope.is-drawn .envelope-paper { opacity: 1; transition: opacity var(--duration-fast) var(--ease-paper) var(--duration-base), transform var(--duration-slow) var(--ease-paper) var(--duration-base); }
+/* Run 19: the layers swap by folding (envelope.tsx draws each step), never by a cross-fade, so the open envelope is
+   always her paper at full strength, never a half-see-through white */
 @media (hover: hover) and (pointer: fine) {
   .arrival .envelope.is-drawn:hover { filter: drop-shadow(0 26px 30px rgb(var(--tint-shadow) / 0.36)); }
 }
-@media (prefers-reduced-motion: reduce) { .envelope-drawn { transition: none; } }
 /* Lantern (18f): the envelope stays Nadia's cream paper, but the letter that rises out of it is the night letter
    from its first frame: walnut paper, cream names, the sage "&" (no white sheet, no flash on the way to the page) */
-[data-theme="lantern"] .envelope .envelope-paper {
+[data-theme="lantern"] :is(.envelope .envelope-paper, .arrival-sheet) {
   --ink: var(--brand-kinari); --action: var(--brand-sage); --letter-edge-color: var(--brand-hachimitsu);
   /* Final run P: the night card's own paper from the first frame, its corner tints and its paper blended the night
      way (screen), not the envelope's day tokens (multiply) */
@@ -140,7 +138,7 @@ html { scrollbar-gutter: stable; }
     var(--brand-yoru);
 }
 /* By day, the card's paper too: its colour token and the same two corner tints as .letter::before */
-.envelope .envelope-paper {
+.envelope .envelope-paper, .arrival-sheet {
   background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
     radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
@@ -199,3 +197,69 @@ html { scrollbar-gutter: stable; }
   transform: translateY(1px); box-shadow: inset 0 1px 0 transparent, 0 0 0 transparent;
 }
 .btn-primary:disabled, [data-slot="button"][data-variant="secondary"]:disabled { box-shadow: none; }
+
+/* ─── Run 19 · the arrival ─────────────────────────────────────────────────────────────────────────────────────
+   Open, the card's wrapper has no box of its own, so every page lays out as it always has. */
+.letter-stage { display: contents; }
+@media (max-width: 767px) { .letter-stage > * { width: 100%; } }
+
+/* The envelope's letter: a plain sheet of the card's paper with softly rounded corners, sitting between the back and
+   the pocket. No coloured strip along its top, just the card's own hairline. */
+.envelope.is-drawn .envelope-paper { border-radius: var(--radius-control); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ink) 12%, transparent); }
+/* The card on its way into (or out of) that letter: one sheet of the same paper, drawn by envelope.tsx */
+.arrival-sheet {
+  position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 5; opacity: 0; pointer-events: none;
+  isolation: isolate; overflow: hidden; border: 1px solid color-mix(in oklab, var(--line-hairline) 60%, transparent); box-shadow: var(--elevation-paper);
+}
+/* Her wax seal, laid exactly over the painted one (measured on envelope-closed: centre 50.2% / 61.4%, 23.5% wide); it
+   only shows while it presses on */
+.envelope-press { position: absolute; z-index: 5; left: 50.2%; top: 61.4%; width: 24.3%; height: auto; translate: -50% -50%; opacity: 0; pointer-events: none; }
+
+/* The hand-lettered note (arrival-note.tsx): white with a soft shadow over the photo, ink on the paper panel (1024 to
+   1279). The words write in left to right, then the line draws, then its head lands. */
+.arrival-note { position: absolute; inset: 0; pointer-events: none; color: #fff; filter: drop-shadow(0 1px 5px rgb(0 0 0 / 0.45)); transition: opacity var(--duration-fast) var(--ease-paper); }
+.arrival-note-words, .arrival-note-arrow { position: absolute; }
+.arrival-note-words {
+  background: currentColor; -webkit-mask: var(--note-art) center / contain no-repeat; mask: var(--note-art) center / contain no-repeat;
+  rotate: -4deg; clip-path: inset(0 100% 0 0); animation: note-write 900ms var(--ease-paper) 400ms forwards;
+}
+.arrival-note[data-side="right"] .arrival-note-words { rotate: 3deg; }
+.arrival-note-arrow { overflow: visible; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.arrival-note[data-side="right"] .arrival-note-arrow { scale: -1 1; }
+.arrival-note-arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: note-draw 950ms cubic-bezier(0.45, 0.05, 0.25, 1) 1100ms forwards; }
+.arrival-note-arrow path.head { animation-duration: 240ms; animation-delay: 2050ms; animation-timing-function: var(--ease-paper); }
+@keyframes note-write { to { clip-path: inset(0 0 0 0); } }
+@keyframes note-draw { to { stroke-dashoffset: 0; } }
+.arrival.is-pulling .arrival-note { opacity: 0; }
+@media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-note { color: var(--ink-soft); filter: none; } }
+@media (prefers-reduced-motion: reduce) { .arrival-note-words { animation: none; clip-path: none; } .arrival-note-arrow path { animation: none; stroke-dashoffset: 0; } }
+
+/* Phones and tablets, sealed: their photo in its own box so their faces sit clear of the envelope and its note (in the
+   top 45% of the screen standing up, on the right lying down), fading into its own soft blur where the envelope
+   floats. The photo fills the screen's height exactly when standing, so object-position alone had nothing to move:
+   the box gives it room. Once open it glides back to filling the screen, behind the card. Laptops keep their framing. */
+@property --photo-fade { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+@media (max-width: 1023.98px) {
+  .scene-photo { --photo-fade: 0%; transition: bottom var(--duration-slow) var(--ease-paper), left var(--duration-slow) var(--ease-paper), --photo-fade var(--duration-slow) var(--ease-paper); }
+  .scene-photo img { transition: object-position var(--duration-slow) var(--ease-paper); }
+}
+@media (max-width: 1023.98px) and (orientation: portrait) {
+  [data-sealed] .scene-photo { bottom: 40%; --photo-fade: 24%; mask-image: linear-gradient(to bottom, #000 calc(100% - var(--photo-fade)), transparent); }
+  [data-sealed] .scene-photo img { object-position: 50% 70%; }
+  :root .arrival .envelope { width: min(240px, calc(28svh * 1.3948)); height: auto; }
+}
+@media (min-width: 768px) and (max-width: 1023.98px) and (orientation: portrait) { :root .arrival .envelope { width: min(410px, calc(28svh * 1.3948)); } }
+@media (max-width: 1023.98px) and (orientation: landscape) {
+  [data-sealed] .scene-photo { left: 38%; --photo-fade: 18%; mask-image: linear-gradient(to right, transparent, #000 var(--photo-fade)); }
+  [data-sealed] .scene-photo img { object-position: 50% 55%; }
+  /* The envelope, its note and Open in the left part, clear of the photo */
+  .arrival { justify-items: center; padding-right: 62vw; padding-bottom: 12px; }
+  :root .arrival .envelope { width: min(34vw, calc((100svh - 210px) * 1.3948)); height: auto; }
+}
+/* 1024 to 1279 (the paper panel and the photo beside it): a little smaller and further left, so the envelope stays
+   clear of Griffin in the night photo, with room for the note beside it */
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+  .arrival { padding-left: calc(var(--letter-left) + 125px); }
+  :root .arrival .envelope { width: 340px; height: auto; }
+}
+@media (prefers-reduced-motion: reduce) { .scene-photo, .scene-photo img { transition: none !important; } }

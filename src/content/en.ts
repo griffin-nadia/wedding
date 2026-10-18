@@ -58,7 +58,7 @@ export const en = {
     signOff: "With love, G & N",
     credit: "Site by Jehan Baguley",
     skip: "Skip to the letter",
-    open: "Tap to open",
+    open: "Open", // the button under the envelope; the hand-lettered note says "Open your invite"
     note: "Open your invite",
     openLabel: (name: string) => `Open your invitation${name ? `, ${name}` : ""}`,
     phoneTitle: "Open on your phone",
@@ -244,7 +244,7 @@ export const en = {
     links: {
       haruka: { label: "HARUKA One-way Ticket", href: "https://www.westjr.co.jp/travel-information/en/tickets-passes/oneway/haruka/" },
       flights: { label: "Compare flights", href: "https://www.google.com/travel/flights?q=Flights%20to%20KIX" },
-      trains: { label: "Train times", href: "https://www.jrpass.com/timetable" },
+      trains: { label: "Train times and routes (NAVITIME)", href: "https://japantravel.navitime.com/en/" },
       walk: { label: "Walking route", href: "https://www.google.com/maps/dir/?api=1&origin=Gion-Shijo+Station&destination=The+Sodoh+Higashiyama+Kyoto&travelmode=walking" },
       smartraveller: { label: "Check Smartraveller", href: "https://www.smartraveller.gov.au/destinations/asia/japan" },
     },
