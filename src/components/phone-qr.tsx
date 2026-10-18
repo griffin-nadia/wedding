@@ -3,7 +3,7 @@ import { useLang } from "@/lib/lang"
 import { useHousehold } from "@/lib/household"
 import { Qr } from "@/components/qr"
 
-/** Laptops (1024 and up) only: "Open on your phone" with the QR, its own small paper card bottom right, below the faces. */
+/** Laptops (1024 and up) only: "Open on your phone" with the QR, its own small paper card bottom right, below the faces, the same on every page. */
 export function PhoneQr() {
   const { t } = useLang()
   const { household } = useHousehold()

@@ -23,7 +23,7 @@ export function LanternToggle({ className }: { className?: string }) {
   return (
     <button type="button" aria-pressed={lantern} title={t.theme.label}
       onPointerEnter={() => warmPhoto(nextPhoto)} onPointerDown={() => warmPhoto(nextPhoto)} onFocus={() => warmPhoto(nextPhoto)} onClick={(e) => {
-      const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready?: Promise<void>; finished?: Promise<void> } }
+      const doc = document as Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> } }
       if (!doc.startViewTransition || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return setTheme(next)
       // The circle grows from the centre of the button that was tapped, in exact pixels, out to the farthest corner
       const r = e.currentTarget.getBoundingClientRect(), root = document.documentElement
@@ -38,18 +38,23 @@ export function LanternToggle({ className }: { className?: string }) {
       // from CSS variables on the snapshot or animated from script after the snapshot exists, which some browsers
       // don't apply on the first transition (it used to start from the middle the first time).
       const css = getComputedStyle(root), d = css.getPropertyValue("--duration-slow").trim()
-      const duration = (d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000) || 760 // the token can compute to "0.76s"
+      const duration = (d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000) || 450 // the token can compute to "0.45s"
+      const easing = css.getPropertyValue("--ease-paper").trim() || "ease-out"
       const from = `circle(0px at ${Math.round(x)}px ${Math.round(y)}px)`, to = `circle(${Math.ceil(reach)}px at ${Math.round(x)}px ${Math.round(y)}px)`
       const style = document.createElement("style")
       style.textContent = `@keyframes vt-circle { from { clip-path: ${from}; } to { clip-path: ${to}; } }
-        :root[data-vt="circle"]::view-transition-new(root) { clip-path: ${from}; animation: vt-circle ${duration}ms ${css.getPropertyValue("--ease-paper").trim() || "ease-in-out"} both; }`
+        :root[data-vt="circle"]::view-transition-new(root) { clip-path: ${from}; animation: vt-circle ${duration}ms ${easing} both; }`
       document.head.appendChild(style)
       root.dataset.vt = "circle"
       const clear = () => { delete root.dataset.vt; style.remove() }
       void ready.then(() => {
         try {
           const vt = doc.startViewTransition!(() => flushSync(() => setTheme(next)))
-          vt.finished?.finally(clear)
+          // The same circle again, on the snapshot itself once it exists (run 19): the usual way to drive this reveal,
+          // for browsers that don't pick up the stylesheet's (desktop was seen growing it from the middle). Identical
+          // keyframes, so where both run (Chrome) nothing changes.
+          vt.ready.then(() => root.animate({ clipPath: [from, to] }, { duration, easing, fill: "both", pseudoElement: "::view-transition-new(root)" }), () => {})
+          vt.finished.finally(clear)
           window.setTimeout(clear, 1200)
         } catch {
           clear()
