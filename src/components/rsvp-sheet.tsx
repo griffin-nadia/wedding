@@ -25,6 +25,7 @@ import { useLang } from "@/lib/lang"
 import { isLocked } from "@/lib/time"
 import { cn } from "@/lib/utils"
 import { pending } from "@/content/pending"
+import { AskUs } from "@/components/ask-us"
 
 // Same limits as the back end, so nothing gets cut off silently.
 const MAX = { name: 40, song: 200, message: 2000 }
@@ -361,7 +362,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
             {/* A paused back end is a calm note on paper, not an error: nothing the guest did, nothing lost */}
             {error && (error === t.rsvp.errors.paused
               ? <p role="status" className="rounded-md bg-section-alt px-4 py-3 text-foreground">{error}</p>
-              : <p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>)}
+              : <div className="flex flex-col gap-2"><p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>
+                  <AskUs><button type="button" className="btn-text inline-flex min-h-11 items-center self-start">{pending("ask.open", lang)}</button></AskUs></div>)}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
             {at === "check" && <p className="text-small text-muted-foreground">{t.rsvp.privacy}</p>}
           </div>

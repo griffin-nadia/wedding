@@ -15,9 +15,9 @@ test("the questions come in the order guests ask them", async ({ page }) => {
   }
 })
 
-// 18e journey map: where the words say "message us", there's a way to
-test("the end of FAQs has a way to email Griffin and Nadia", async ({ page }) => {
+// 18e journey map: where the words say "message us", there's a way to (final run: Ask us, the sheet, not an email link)
+test("the end of FAQs has a way to ask Griffin and Nadia", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("ng-opened", "1"))
   await page.goto("faqs?h=sample")
-  await expect(page.locator("#letter a[href='mailto:griffinandnadia@gmail.com']")).toBeVisible()
+  await expect(page.locator("#letter").getByRole("button", { name: "Still wondering? Ask Griffin & Nadia" })).toBeVisible()
 })
