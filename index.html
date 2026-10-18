@@ -134,7 +134,15 @@
           var noren = /"arrival":"noren"/.test(localStorage.getItem("ng-tune") || "")
           // Sealed from the first paint (run 19): the bar has no paper over the photo, the photo is framed for the envelope
           if (home && !seen && !still && !rsvp) document.documentElement.setAttribute("data-sealed", "")
-          if (home && !seen && !still && !rsvp && !noren) document.getElementById("arrival-shell").hidden = false
+          if (home && !seen && !still && !rsvp && !noren) {
+            document.getElementById("arrival-shell").hidden = false
+            // Her sealed envelope is the first thing they see: fetch it now, not once the app has rendered. The same
+            // srcset and sizes as the img's AVIF source (envelope.tsx), so it picks the same file (820 on phones)
+            var e = document.createElement("link"), eb = "%BASE_URL%art/envelope/envelope-closed-"
+            e.rel = "preload"; e.as = "image"; e.type = "image/avif"; e.setAttribute("fetchpriority", "high")
+            e.setAttribute("imagesrcset", eb + "410.avif 410w, " + eb + "820.avif 820w"); e.setAttribute("imagesizes", "(min-width: 768px) 410px, 260px")
+            document.head.appendChild(e)
+          }
         } catch (e) {}
       })()
     </script>
