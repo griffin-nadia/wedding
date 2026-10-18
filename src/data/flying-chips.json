@@ -1,0 +1,90 @@
+[
+ {
+  "id": 2174003,
+  "name": "Brisbane",
+  "region": "Queensland",
+  "country": "AU",
+  "lat": -27.468,
+  "lon": 153.028
+ },
+ {
+  "id": 2158177,
+  "name": "Melbourne",
+  "region": "Victoria",
+  "country": "AU",
+  "lat": -37.814,
+  "lon": 144.963
+ },
+ {
+  "id": 2147714,
+  "name": "Sydney",
+  "region": "New South Wales",
+  "country": "AU",
+  "lat": -33.868,
+  "lon": 151.207
+ },
+ {
+  "id": 2078025,
+  "name": "Adelaide",
+  "region": "South Australia",
+  "country": "AU",
+  "lat": -34.929,
+  "lon": 138.599
+ },
+ {
+  "id": 2063523,
+  "name": "Perth",
+  "region": "Western Australia",
+  "country": "AU",
+  "lat": -31.952,
+  "lon": 115.861
+ },
+ {
+  "id": 6173331,
+  "name": "Vancouver",
+  "region": "British Columbia",
+  "country": "CA",
+  "lat": 49.25,
+  "lon": -123.119
+ },
+ {
+  "id": 6174041,
+  "name": "Victoria",
+  "region": "British Columbia",
+  "country": "CA",
+  "lat": 48.436,
+  "lon": -123.352
+ },
+ {
+  "id": 5913490,
+  "name": "Calgary",
+  "region": "Alberta",
+  "country": "CA",
+  "lat": 51.05,
+  "lon": -114.085
+ },
+ {
+  "id": 5946768,
+  "name": "Edmonton",
+  "region": "Alberta",
+  "country": "CA",
+  "lat": 53.55,
+  "lon": -113.469
+ },
+ {
+  "id": 6167865,
+  "name": "Toronto",
+  "region": "Ontario",
+  "country": "CA",
+  "lat": 43.706,
+  "lon": -79.399
+ },
+ {
+  "id": "jp",
+  "name": "Already in Japan",
+  "region": "",
+  "country": "JP",
+  "lat": 35.68,
+  "lon": 139.69
+ }
+]

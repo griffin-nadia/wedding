@@ -4,6 +4,14 @@ import type { Entry } from "../../types"
 /** Our story: the spread carousel today, and three other ways to hold the prints */
 export const entries: Entry[] = [
   {
+    id: "story-styling", title: "The prints: tape, corners or plain",
+    deciding: "Jehan: washi tape (what ships), photo corners, or plain?",
+    summary: "Our story's soft prints (a thin white border, a layered shadow, a seeded tilt, a faint grain) three ways: washi tape, photo corners, or nothing on them.",
+    refs: [{ label: "Our story", href: "../our-story" }],
+    promote: "Tape is on the site (index.css, .story-print). Corners would be four small CSS triangles per print; plain is the tape rule off.",
+    Component: lazy(() => import("./story-styling")),
+  },
+  {
     id: "story-current",
     decided: "Our story as it is.",
     title: "Spread (the site today)",
