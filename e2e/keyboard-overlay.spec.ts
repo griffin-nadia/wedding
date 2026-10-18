@@ -85,7 +85,7 @@ for (const kind of ["android", "iphone"] as const) test.describe(kind, () => {
   test("Ask us", async ({ page }) => {
     await setup(page, kind)
     await page.goto("faqs?h=sample")
-    await page.getByRole("button", { name: "Still wondering? Ask Griffin & Nadia" }).click()
+    await page.getByRole("button", { name: "Ask us", exact: true }).click()
     const d = page.getByRole("dialog")
     await d.getByLabel("Your question").waitFor()
     await page.waitForTimeout(500)
