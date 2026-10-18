@@ -567,9 +567,12 @@
 .site-nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--letter-bg); border-top: 1px solid transparent; }
 .site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px 8px; }
 .site-nav li { display: flex; position: relative; }
-.nav-mark { position: absolute !important; left: 0; top: 0; border-radius: var(--radius-control); background: var(--surface-alt); transition: transform var(--duration-fast) var(--ease-paper), width var(--duration-fast) var(--ease-paper), height var(--duration-fast) var(--ease-paper); pointer-events: none; }
+/* The nav (final M): one curve for all of it (--ease-paper). On phones the pill follows a swipe: page-turn sets --swipe
+   (-1 to 1, one dock slot per letter width) and the pill slides that far towards the next page, then settles on it. */
+.nav-mark { position: absolute !important; left: 0; top: 0; border-radius: var(--radius-control); background: var(--surface-alt); translate: calc(var(--swipe, 0) * 100%) 0; transition: transform var(--duration-fast) var(--ease-paper), translate var(--duration-fast) var(--ease-paper), width var(--duration-fast) var(--ease-paper), height var(--duration-fast) var(--ease-paper); pointer-events: none; }
+.nav-mark[data-swiping] { transition: none; }
 @media (prefers-reduced-motion: reduce) { .nav-mark { transition: none; } }
-.site-nav-link { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-1); font-family: var(--font-label); font-size: var(--type-label-size); line-height: var(--type-label-leading); font-weight: 500; color: var(--ink-muted); outline: 2px solid transparent; outline-offset: -2px; border-radius: var(--radius-control); transition: color var(--duration-fast); }
+.site-nav-link { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-1); font-family: var(--font-label); font-size: var(--type-label-size); line-height: var(--type-label-leading); font-weight: 500; color: var(--ink-muted); outline: 2px solid transparent; outline-offset: -2px; border-radius: var(--radius-control); transition: color var(--duration-fast) var(--ease-paper); }
 .site-nav-link.is-active { color: var(--ink); }
 .site-nav-link:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .site-nav-link:hover { color: var(--ink); } }
@@ -777,7 +780,12 @@ svg.lucide { stroke-width: 1.5; }
 .credit-foot { display: flex; width: fit-content; align-self: center; margin: var(--space-2) auto 0; }
 @media (min-width: 1024px) {
   .credit-foot { display: none; }
-  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-1); } /* below the card's bottom edge, in the gap */
+  /* No chip on laptops (final M): 12px, quiet (ink at 66%, the lightest that stays AA on the paper; the muted ink at 60%
+     would be 2.4:1), full ink on hover or focus. It sits in the gap under the
+     card, over the photo, so a soft halo of the letter's paper keeps it readable (AA) without a box. */
+  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-1); background: none; padding: 0 var(--space-1); font-size: 12px; line-height: 16px; color: color-mix(in oklab, var(--ink) 66%, var(--letter-bg)); text-shadow: 0 0 1px var(--letter-bg), 0 0 2px var(--letter-bg), 0 0 4px var(--letter-bg); }
+  .credit-mark:not(.credit-foot):not(:hover, :focus-visible) { text-decoration-line: none; } /* the halo would draw the hidden line */
+  .credit-mark:not(.credit-foot):hover, .credit-mark:not(.credit-foot):focus-visible { color: var(--ink); }
 }
 /* Names reveal once, letter by letter, the first time the letter opens (v3 L). Nothing else animates text. */
 .names-reveal .name-char { display: inline-block; animation: name-in var(--duration-slow) var(--ease-paper) both; }
@@ -796,8 +804,10 @@ svg.lucide { stroke-width: 1.5; }
 .arrival.is-pulling .envelope-flap { transition: none; }
 .arrival .envelope-paper { transform: translateY(calc(var(--pull, 0) * -30%)); }
 .arrival.is-pulling .envelope-paper { transition: none; }
-/* Page turn: vertical scroll stays native; horizontal moves are the turn */
-@media (max-width: 767px) { .letter-wrap { touch-action: pan-y; } }
+/* Page turn: vertical scroll stays native; horizontal moves are the turn. On the card's own scroller too (final M):
+   touch-action stops at the nearest scroll container, so without it Chrome took a sideways drag on the letter and
+   cancelled the turn. Pinch zoom stays. */
+@media (max-width: 767px) { .letter-wrap, .letter-scroll { touch-action: pan-y pinch-zoom; } }
 /* The leaving copy is a still picture of the letter: nothing inside it replays its entrance or eases */
 .letter-ghost { pointer-events: none; will-change: transform; contain: layout paint; }
 .letter-ghost, .letter-ghost * { animation: none !important; }

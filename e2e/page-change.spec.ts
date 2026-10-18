@@ -121,3 +121,50 @@ test("the theme circle starts at the toggle's centre, first and second switch", 
   await page.waitForTimeout(1500)
   expect(await page.evaluate(() => (window as unknown as { __circles: string[] }).__circles)).toEqual(want)
 })
+
+// Final M: on phones the dock's pill follows a swipe, then settles on the page it opened
+test("the dock's pill follows a swipe", async ({ page, context }, info) => {
+  test.skip(info.project.name !== "phone", "phones only")
+  await page.emulateMedia({ reducedMotion: "no-preference" })
+  await go(page, "the-day")
+  const pillX = () => page.locator(".nav-mark").evaluate((el) => el.getBoundingClientRect().left)
+  const before = await pillX(), slot = await page.locator(".nav-mark").evaluate((el) => el.getBoundingClientRect().width)
+  const h = (await page.locator("#letter h1").first().boundingBox())!, y = h.y + h.height / 2 // on the heading, clear of links
+  const finger = await context.newCDPSession(page)
+  const touch = (type: "touchStart" | "touchMove" | "touchEnd", x?: number) => finger.send("Input.dispatchTouchEvent", { type, touchPoints: x === undefined ? [] : [{ x, y }] })
+  await touch("touchStart", 300)
+  for (let i = 1; i <= 8; i++) { await touch("touchMove", 300 - i * 15); await page.waitForTimeout(16) }
+  await page.waitForTimeout(50)
+  const mid = await pillX()
+  expect(mid).toBeGreaterThan(before + slot * 0.1) // part way to Travel, under the finger
+  expect(mid).toBeLessThan(before + slot * 0.9)
+  for (let i = 9; i <= 16; i++) { await touch("touchMove", 300 - i * 15); await page.waitForTimeout(16) }
+  await touch("touchEnd")
+  await expect(page).toHaveURL(/travel/)
+  await page.waitForTimeout(500)
+  expect(Math.abs(await pillX() - (before + slot))).toBeLessThan(2) // settled on Travel
+})
+
+// Final M: the laptop credit has no chip, 12px and quiet, and still AA against the paper halo it sits in
+test("the laptop credit: no chip, 12px, quiet but AA, full ink on focus", async ({ page }, info) => {
+  test.skip(info.project.name === "phone", "laptops only")
+  await go(page, "")
+  const credit = page.locator(".credit-mark:not(.credit-foot)")
+  await expect(credit).toBeVisible()
+  const read = () => credit.evaluate((el) => {
+    const c = document.createElement("canvas").getContext("2d")!
+    const rgb = (v: string) => { c.fillStyle = "#000"; c.fillStyle = v; c.fillRect(0, 0, 1, 1); return [...c.getImageData(0, 0, 1, 1).data].slice(0, 3) }
+    const lum = (v: string) => { const [r, g, b] = rgb(v).map((n) => { const s = n / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4 }); return 0.2126 * r + 0.7152 * g + 0.0722 * b }
+    const cs = getComputedStyle(el), paper = getComputedStyle(document.documentElement).getPropertyValue("--letter-bg").trim()
+    const [a, b] = [lum(cs.color), lum(paper)].sort((x, y) => y - x)
+    return { size: cs.fontSize, bg: cs.backgroundColor, ratio: (a + 0.05) / (b + 0.05), color: cs.color }
+  })
+  const rest = await read()
+  expect(rest.size).toBe("12px")
+  expect(rest.bg).toBe("rgba(0, 0, 0, 0)")
+  expect(rest.ratio).toBeGreaterThanOrEqual(4.5)
+  await credit.focus()
+  await page.waitForTimeout(300)
+  const focused = await read()
+  expect(focused.ratio).toBeGreaterThan(rest.ratio)
+})
