@@ -3,6 +3,7 @@ import { entries as opening } from "./x/opening"
 import { entries as story } from "./x/story"
 import { entries as journey } from "./x/journey"
 import { entries as confirmation } from "./x/confirmation"
+import { entries as paper } from "./x/paper"
 import { entries as micro } from "./x/micro"
 
 /**
@@ -14,7 +15,8 @@ export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "story", title: "Our story", entries: story },
   { id: "journey", title: "Journey", entries: journey },
   { id: "confirmation", title: "Confirmation", entries: confirmation },
-  { id: "micro", title: "Micro", entries: micro },
+  { id: "paper", title: "Paper and light", entries: paper },
+  { id: "micro", title: "Micro-interactions", entries: micro },
 ]
 export const ALL = AREAS.flatMap((a) => a.entries.map((e) => ({ ...e, area: a.id, areaTitle: a.title })))
 export const byId = (id: string) => ALL.find((e) => e.id === id)
