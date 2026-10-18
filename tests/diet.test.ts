@@ -3,7 +3,7 @@ import { test } from "node:test"
 import assert from "node:assert/strict"
 import fs from "node:fs"
 import { dietString, parseDiet, OTHER_MAX } from "../src/lib/diet.ts"
-import { JA_TO_READ } from "../src/content/pending.ts"
+import { JA_TO_READ, PENDING } from "../src/content/pending.ts"
 
 const en = ["Vegetarian", "Vegan", "Gluten free", "Dairy free", "Halal", "Kosher", "Nut allergy", "Shellfish allergy", "Egg allergy", "Other"]
 const ja = ["ベジタリアン", "ヴィーガン", "グルテンフリー", "乳製品不可", "ハラール", "コーシャ", "ナッツアレルギー", "甲殻類アレルギー", "卵アレルギー", "その他"]
@@ -35,6 +35,7 @@ test("Other words stop short of the back end's 200-character limit", () => {
   assert.equal(parseDiet(`Other: ${long}`, en).other.length, OTHER_MAX)
 })
 test("every Japanese line waiting for a native read is the one on the site", () => {
-  const file = fs.readFileSync("src/content/ja.ts", "utf8") + fs.readFileSync("src/lib/art.ts", "utf8") // the music credit lives with the song
-  for (const { key, ja } of JA_TO_READ) assert.ok(file.includes(ja), `${key} not found in ja.ts (or art.ts) as written`)
+  // the music credit lives with the song; run 19's FAQ answers are placeholders, so their Japanese is in PENDING
+  const file = fs.readFileSync("src/content/ja.ts", "utf8") + fs.readFileSync("src/lib/art.ts", "utf8") + Object.values(PENDING).map((v) => v.ja).join("\n")
+  for (const { key, ja } of JA_TO_READ) assert.ok(file.includes(ja), `${key} not found in ja.ts, art.ts or PENDING as written`)
 })

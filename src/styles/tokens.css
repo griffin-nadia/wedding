@@ -290,14 +290,16 @@
   --rule-width: 40px;
   --tap-min: 44px;
 
-  /* Motion: three durations, two easings, one spring. Paper rises and settles; only the hanko and a short swipe
-     spring. Loops (the skeleton, the drifting light) are multiples of slow. All zero under reduced motion (below). */
-  --duration-fast: 150ms;    /* presses, hovers, markers sliding */
-  --duration-base: 300ms;    /* settling, page turns, the flap, the stamp */
-  --duration-slow: 600ms;    /* rising in, the Light/Lantern reveal, lines drawing (×2) */
-  --ease-paper: cubic-bezier(0.22, 1, 0.36, 1);   /* everything that arrives or settles */
-  --ease-out: cubic-bezier(0.4, 0, 1, 1);         /* things leaving */
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* the press, the flap and a short swipe springing back */
+  /* Motion (run 19): three durations and one easing family, the paper curve (a quint): out for everything that
+     arrives or settles, in for things leaving, in-out for a part that moves from one place to another. Only
+     transform and opacity animate. Long journeys (the arrival, the omikuji fold, lines drawing) are multiples of slow.
+     All zero under reduced motion (below). */
+  --duration-fast: 150ms;    /* presses, hovers, markers sliding, things leaving */
+  --duration-base: 250ms;    /* settling, page turns, accordions, the flap, the stamp */
+  --duration-slow: 450ms;    /* rising in, sheets, the Light/Lantern reveal */
+  --ease-paper: cubic-bezier(0.22, 1, 0.36, 1);   /* out: everything that arrives or settles */
+  --ease-out: cubic-bezier(0.64, 0, 0.78, 0);     /* in: things leaving */
+  --ease-paper-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* in-out: a part moving from one place to another */
   --press-scale: 0.97;
 
   --season-green: 100%;
@@ -312,8 +314,9 @@
 @media (min-width: 768px) {
   :root {
     --density-field: 48px;
-    --density-gap: var(--space-6);
-    --density-letter-pad: var(--space-7);
+    /* Run 19: one step tighter on laptops (the same scale as phones, one step up only for the pad), so pages are shorter */
+    --density-gap: var(--space-5);
+    --density-letter-pad: var(--space-6);
   }
 }
 

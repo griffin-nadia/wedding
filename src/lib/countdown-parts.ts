@@ -1,17 +1,23 @@
-import { config } from "@/lib/config"
-
 export type Parts = { months: number; days: number; hours: number; mins: number; secs: number }
 
-export function partsAt(now: Date): Parts {
-  const end = new Date(config.weddingStart)
+/**
+ * Whole months, then days and the time left, from now to the ceremony (`end`), counted on Japan's calendar. A month
+ * from the 31st lands on the last day of a shorter month (31 Jan + 1 month = 28 Feb). Kept free of imports so tests
+ * run it under plain Node.
+ */
+export function partsAt(now: Date, end: Date): Parts {
   if (now >= end) return { months: 0, days: 0, hours: 0, mins: 0, secs: 0 }
   const jst = (d: Date) => new Date(d.getTime() + 9 * 3_600_000)
   const a = jst(now), b = jst(end)
+  // Always counted from `a` itself (run 19: stepping a date that had already moved a year read "-340 days")
+  const plus = (n: number) => {
+    const y = a.getUTCFullYear(), m = a.getUTCMonth() + n
+    const last = new Date(Date.UTC(y, m + 1, 0)).getUTCDate()
+    return new Date(Date.UTC(y, m, Math.min(a.getUTCDate(), last), a.getUTCHours(), a.getUTCMinutes(), a.getUTCSeconds(), a.getUTCMilliseconds()))
+  }
   let months = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth())
-  const step = new Date(a)
-  step.setUTCMonth(a.getUTCMonth() + months)
-  if (step > b) { months--; step.setUTCMonth(a.getUTCMonth() + months) }
-  const rest = b.getTime() - step.getTime()
+  while (months > 0 && plus(months) > b) months--
+  const rest = b.getTime() - plus(months).getTime()
   return {
     months, days: Math.floor(rest / 86_400_000), hours: Math.floor((rest % 86_400_000) / 3_600_000),
     mins: Math.floor((rest % 3_600_000) / 60_000), secs: Math.floor((rest % 60_000) / 1000),
@@ -25,4 +31,3 @@ export function sentence(p: Parts) {
   if (!bits.length) return "Today's the day"
   return `${bits.length > 1 ? `${bits.slice(0, -1).join(", ")} and ${bits[bits.length - 1]}` : bits[0]} to go`
 }
-

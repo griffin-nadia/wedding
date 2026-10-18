@@ -35,10 +35,14 @@ export function Box({ drawing }: { drawing: boolean }) {
 
 /**
  * Omikuji after RSVP, all 大吉 (no branch, per Nadia). Closed: the tin, a line and "Draw one"; the tin itself is
- * also the button. Drawing shakes the tin (900 ms) and raises its stick, then the slip unfolds (300 ms) and
- * takes focus. Android phones can shake to draw. Reduced motion: no shake, the slip fades in. Return visits
- * open on the slip. The fortune is the household's for good, on any device.
+ * also the button. Drawing shakes the tin (900 ms) and raises its stick, then the slip, centred, folds open like a
+ * real omikuji (run 19): it comes out folded in three, 大吉 on top; the middle third swings down from behind, then the
+ * last, each a paper fold with its shade lifting as it flattens and a little give as it lands; then the creases ease
+ * out to the two faint lines the paper keeps (about 1.1 s, then 0.9 s). The real slip holds its place from the start,
+ * so nothing below moves, and takes focus. Android phones can shake to draw. Reduced motion: no shake, no fold, the
+ * slip fades in. Return visits open on the slip. The fortune is the household's for good, on any device.
  */
+const FOLD_MS = 1100
 export function FortuneCard({ token, className }: { token: string; className?: string }) {
   const { t } = useLang()
   const [tips, setTips] = useState(FORTUNES)
@@ -46,6 +50,9 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     try { return localStorage.getItem(drawnKey(token)) ? "open" : "closed" } catch { return "closed" }
   })
   const slip = useRef<HTMLDivElement>(null)
+  // "folding": the paper copies fold open over the real slip (hidden, holding its place); "settling": the real slip,
+  // its creases easing out; null: a slip opened before, or reduced motion
+  const [fold, setFold] = useState<"folding" | "settling" | null>(null)
   const shaky = useRef(canShake())
   useEffect(() => { getFortunes().then((f) => f && f.length === 12 && setTips(f)) }, [])
   const i = fortuneIndex(token, tips.length)
@@ -58,6 +65,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     if (!still) navigator.vibrate?.(8) // a tiny tick on Android (iPhones have no vibrate); none under reduced motion
     window.setTimeout(() => {
       setState("open")
+      if (!still) { setFold("folding"); window.setTimeout(() => setFold("settling"), FOLD_MS) }
       try { localStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ }
       nextFrame(() => slip.current?.focus())
     }, still ? 0 : 900)
@@ -89,20 +97,50 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     )
   }
   return (
-    <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip paper-feel", className)}>
-      <SlipWords i={i} of={tips.length} text={text} />
-      <Button variant="link" onClick={save} className="omikuji-save">{t.fortune.save}</Button>
+    <div className={cn("omikuji-stage", className)}>
+      <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip paper-feel", fold === "folding" && "is-folded", fold === "settling" && "is-fresh")}>
+        <span aria-hidden className="omikuji-creases" />
+        <SlipWords i={i} of={tips.length} text={text} />
+        <Button variant="link" onClick={save} className="omikuji-save">{t.fortune.save}</Button>
+      </div>
+      {fold === "folding" && <Fold i={i} of={tips.length} text={text} />}
+    </div>
+  )
+}
+
+/**
+ * The fold: three paper copies of the slip, each cut to its third. The top third stays; the middle hangs from the
+ * first crease and the last from the second, so the last rides with the middle until it opens in turn. Looks only
+ * (inert, hidden from screen readers): the real slip under it is the one that's read and focused.
+ */
+function Fold({ i, of, text }: { i: number; of: number; text: string }) {
+  const { t } = useLang()
+  const copy = (part: number) => (
+    <div className={`omikuji-slip paper-feel omikuji-copy omikuji-part-${part}`}>
+      <span className="omikuji-creases" />
+      <SlipWords i={i} of={of} text={text} copy />
+      <Button variant="link" tabIndex={-1} className="omikuji-save">{t.fortune.save}</Button>
+      {part > 1 && <span className="omikuji-shade" />}
+    </div>
+  )
+  return (
+    <div className="omikuji-fold" aria-hidden inert>
+      {copy(1)}
+      <div className="omikuji-leaf omikuji-leaf-2">
+        {copy(2)}<span className="omikuji-back omikuji-back-2" />
+        <div className="omikuji-leaf omikuji-leaf-3">{copy(3)}<span className="omikuji-back omikuji-back-3" /></div>
+      </div>
     </div>
   )
 }
 
 /** The words on the slip: 第七番, 大吉 / Great blessing, the line, No. 7 of 12. Shared by both reveals. */
-export function SlipWords({ i, of, text }: { i: number; of: number; text: string }) {
+export function SlipWords({ i, of, text, copy = false }: { i: number; of: number; text: string; copy?: boolean }) {
   const { t } = useLang()
   return (
     <>
       <p lang="ja" className="omikuji-no font-ja" aria-hidden>第{kanjiNumber(i + 1)}番</p>
-      <p id="fortune-head" className="flex flex-col items-center gap-1">
+      <p id={copy ? undefined : "fortune-head"} className="flex flex-col items-center gap-1">
         <span lang="ja" className="omikuji-kichi font-ja">{t.fortune.blessing}</span>
         <span className="label-caps">{t.fortune.blessingEn}</span>
       </p>

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
-import { letterScroll, nextFrame } from "@/lib/frame"
+import { letterScroll, nextFrame, scrollToEl, still } from "@/lib/frame"
 import { useLocation } from "react-router-dom"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowUpRight, ChevronRight } from "lucide-react"
@@ -24,12 +24,12 @@ function Ext({ href, children }: { href: string; children: React.ReactNode }) {
 
 /**
  * In-page links glide to their section instead of the browser's instant jump (and land at once under reduced
- * motion). The address keeps the hash, replaced rather than added, so Back still leaves the page.
+ * motion), just under the stuck tab row (run 19: one exact target worked out from the row, not a scroll margin).
+ * The address keeps the hash, replaced rather than added, so Back still leaves the page.
  */
-const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches
 function glide(e: React.MouseEvent, id: string) {
   e.preventDefault()
-  document.getElementById(id)?.scrollIntoView({ behavior: still() ? "instant" : "smooth" })
+  scrollToEl(document.getElementById(id))
   history.replaceState(history.state, "", `#${id}`)
 }
 
@@ -78,12 +78,14 @@ const twoSentences = (s: string) => (s.match(/[^.!?]+[.!?]+/g) ?? [s]).slice(0, 
 const slug = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "area"
 /** The first sentence of a line of copy, in either language */
 const firstSentence = (s: string) => (s.match(/^.+?[.!?。！？](?=\s|$)/u)?.[0] ?? s).trim()
+/** The rest of it */
+const afterFirst = (s: string) => s.slice(firstSentence(s).length).trim()
 
 /**
  * Hotels or Airbnbs: one row that opens the shared sheet with every pick, filtered by area with chips (none on = all).
  * Each pick is a link out. Rows come from the planner's Accommodation Options tab, or the list in en.ts.
  */
-function PickSheet({ id, title, sub, list, airbnb, open, onOpen }: { id: string; title: string; sub?: string; list: Pick[]; airbnb: boolean; open: boolean; onOpen: (o: boolean) => void }) {
+function PickSheet({ id, title, sub, note, list, airbnb, open, onOpen }: { id: string; title: string; sub?: string; note: string; list: Pick[]; airbnb: boolean; open: boolean; onOpen: (o: boolean) => void }) {
   const { t } = useLang()
   const p = t.stay.picks
   const areas = [...new Set(list.map((x) => x.area).filter(Boolean))]
@@ -103,7 +105,7 @@ function PickSheet({ id, title, sub, list, airbnb, open, onOpen }: { id: string;
       <SheetContent aria-describedby={`${id}-note`}>
         <SheetHead>
           <SheetTitle className="heading">{title}</SheetTitle>
-          <SheetDescription id={`${id}-note`} className="text-small text-muted-foreground">{p.note}</SheetDescription>
+          <SheetDescription id={`${id}-note`} className="text-small text-muted-foreground">{note}</SheetDescription>
           {areas.length > 1 && (
             <div role="group" aria-label={p.filterLabel} className="flex flex-wrap gap-2">
               {areas.map((a) => <Chip key={a} on={on.includes(a)} onClick={() => setOn(on.includes(a) ? on.filter((x) => x !== a) : [...on, a])}>{a}</Chip>)}
@@ -132,7 +134,8 @@ function PickSheet({ id, title, sub, list, airbnb, open, onOpen }: { id: string;
   )
 }
 
-/** Their picks under the areas: her note, then a Hotels row and an Airbnbs row, each opening its sheet. */
+/** Their picks under the areas: a Hotels row and an Airbnbs row, each opening its sheet, her note at the top of it
+ * (run 19: it was on the page as well, the same lines twice). */
 function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => void }) {
   const { t, lang } = useLang()
   const p = t.stay.picks
@@ -150,11 +153,10 @@ function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => vo
   return (
     <div id="picks" className="flex scroll-mt-(--travel-head) flex-col gap-3">
       <h3 className="font-medium text-foreground">{p.title}</h3>
-      <p className="text-small text-muted-foreground">{note}</p>
       <div className="flex flex-col border-y border-border">
-        <PickSheet id="hotels" title={p.hotelsTitle} list={picks.hotels} airbnb={false} open={sheet === "hotels"} onOpen={(o) => setSheet(o ? "hotels" : "")} />
+        <PickSheet id="hotels" title={p.hotelsTitle} note={note} list={picks.hotels} airbnb={false} open={sheet === "hotels"} onOpen={(o) => setSheet(o ? "hotels" : "")} />
         <div className="border-t border-border" />
-        <PickSheet id="airbnbs" title={p.airbnbsTitle} sub={p.airbnbsNote} list={picks.airbnbs} airbnb open={sheet === "airbnbs"} onOpen={(o) => setSheet(o ? "airbnbs" : "")} />
+        <PickSheet id="airbnbs" title={p.airbnbsTitle} sub={p.airbnbsNote} note={note} list={picks.airbnbs} airbnb open={sheet === "airbnbs"} onOpen={(o) => setSheet(o ? "airbnbs" : "")} />
       </div>
     </div>
   )
@@ -249,7 +251,7 @@ export function TravelPage() {
     first.current = false
     if (id === "hotels" || id === "airbnbs") setSheet(id)
     else if (!(SECTIONS as readonly string[]).includes(id) && id !== "picks" && id !== "getting-there") setOpen(id)
-    nextFrame(() => document.getElementById(id === "getting-there" ? "on-the-day" : id)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" }))
+    nextFrame(() => scrollToEl(document.getElementById(id === "getting-there" ? "on-the-day" : id), smooth))
   }, [hash])
   const goStay = (e: React.MouseEvent) => glide(e, "stay")
   const one = { value: open, onValueChange: setOpen }
@@ -284,7 +286,8 @@ export function TravelPage() {
     "stay": (
         <section key="stay" id="stay" aria-labelledby="stay-title" className="travel-section flex scroll-mt-(--travel-head) flex-col gap-4">
           <h2 id="stay-title" className="font-display text-heading text-foreground">{t.stay.title}</h2>
-          <p>{t.stay.intro}</p>
+          {/* Its first sentence is already the summary line at the top of the page (run 19: no intro said twice) */}
+          {afterFirst(t.stay.intro) && <p>{afterFirst(t.stay.intro)}</p>}
           <Disclosure label={t.stay.title} {...one}>
             {t.day.stay.map((a, i) => (
               <Plain key={a.label} value={slug(a.label) === "area" ? `area-${i + 1}` : slug(a.label)} title={a.label}>

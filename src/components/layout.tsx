@@ -92,7 +92,7 @@ export function Layout() {
   // Sealed envelope on a first visit: their photo behind it, the dock and top bar hidden until it opens
   const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
   usePageTurn(!sealed)
-  // "Put it back in the envelope" (Home): seal it again; tapping opens it as on the first visit
+  // "Seal it again" (Home): the card goes back into the envelope (the whole journey, envelope.tsx); tapping opens it as on the first visit
   const [resealed, setResealed] = useState(0)
   useEffect(() => {
     const on = () => { resetArrival(); letterScroll()?.scrollTo(0, 0); setSealed(true); setResealed((n) => n + 1) }
@@ -117,7 +117,7 @@ export function Layout() {
       </header>
 
       <main className="letter-wrap">
-        <Arrival key={resealed} sealedAgain={resealed > 0} enabled={page === "home"} onOpened={() => setSealed(false)}>
+        <Arrival reseal={resealed} enabled={page === "home"} onOpened={() => setSealed(false)}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
             {/* The card is a fixed frame between the bar and the dock; what's on it scrolls in here (18e) */}
             <div className="letter-scroll">
@@ -130,14 +130,13 @@ export function Layout() {
               // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
               ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
               : null} />}
-            {/* Phones: the credit is the last line of Home's card (laptops have it fixed bottom left) */}
-            {page === "home" && !sealed && <Suspense><CreditMark foot /></Suspense>}
             </div>
           </Letter>
         </Arrival>
       </main>
       <Suspense><CreditMark /></Suspense>
-      {page === "home" && !sealed && <Suspense><PhoneQr /></Suspense>}
+      {/* The same small card in the same corner on every page (run 19), not just Home: the link is theirs on any page */}
+      {!sealed && <Suspense><PhoneQr /></Suspense>}
     </>
   )
 }
