@@ -187,12 +187,22 @@ function JumpLinks({ order, labels }: { order: readonly Section[]; labels: Recor
     addEventListener("touchstart", free, opts); addEventListener("wheel", free, opts); addEventListener("keydown", free)
     return () => { io.disconnect(); removeEventListener("touchstart", free); removeEventListener("wheel", free); removeEventListener("keydown", free) }
   }, [order])
-  // On a narrow screen the strip scrolls sideways: keep the current link in view
+  // On a narrow screen the strip scrolls sideways: keep the current link in view (the first and last all the way to
+  // their end), and fade whichever edge has more past it
   const strip = useRef<HTMLUListElement>(null)
   useEffect(() => {
     const ul = strip.current, a = ul?.querySelector<HTMLElement>("[aria-current]")
-    if (ul && a) ul.scrollTo({ left: a.offsetLeft - (ul.clientWidth - a.offsetWidth) / 2, behavior: still() ? "instant" : "smooth" })
+    if (ul && a) ul.scrollTo({ left: Math.max(0, Math.min(ul.scrollWidth - ul.clientWidth, a.offsetLeft - (ul.clientWidth - a.offsetWidth) / 2)), behavior: still() ? "instant" : "smooth" })
   }, [at])
+  useEffect(() => {
+    const ul = strip.current
+    if (!ul) return
+    const edges = () => { ul.toggleAttribute("data-more-left", ul.scrollLeft > 2); ul.toggleAttribute("data-more-right", ul.scrollLeft < ul.scrollWidth - ul.clientWidth - 2) }
+    edges()
+    ul.addEventListener("scroll", edges, { passive: true })
+    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(edges); ro?.observe(ul)
+    return () => { ul.removeEventListener("scroll", edges); ro?.disconnect() }
+  }, [])
   // The tap's own touchstart comes before the click, so the hold is set after it
   const go = (e: React.MouseEvent, id: Section) => { glide(e, id); held.current = id; setAt(id) }
   // Once scrolled past, the links stay as one slim row at the top of the card (18e)

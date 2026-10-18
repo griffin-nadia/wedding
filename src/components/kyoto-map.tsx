@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 const AT: Record<string, [number, number]> = { station: [96, 214], gion: [204, 96], pagoda: [304, 110], venue: [262, 160] }
 
 /** A few maple and ginkgo leaves in the autumn colours from their moodboard (mustard, orange, rust) */
-const LEAVES: [number, number, number, string][] = [[40, 40, -20, "var(--brand-hachimitsu)"], [318, 44, 25, "var(--brand-kabocha)"], [150, 232, 10, "var(--brand-sabi)"], [330, 214, -35, "var(--brand-hachimitsu)"], [52, 150, 40, "var(--brand-kabocha)"]]
+const LEAVES: [number, number, number, string][] = [[40, 40, -20, "var(--brand-hachimitsu)"], [318, 44, 25, "var(--brand-kabocha)"], [228, 242, 10, "var(--brand-sabi)"], [338, 168, -35, "var(--brand-hachimitsu)"], [52, 150, 40, "var(--brand-kabocha)"]]
 
 /**
  * Around the venue (Nadia: "I like this if we have time"). A hand-drawn-feeling plate: the Kamo river, the taxi
@@ -29,7 +29,7 @@ export function KyotoMap() {
           {LEAVES.map(([x, y, r, c], i) => <path key={i} transform={`translate(${x} ${y}) rotate(${r})`} fill={c} className="kmap-leaf"
             d="M0 -9 L2.4 -3.2 L8.6 -4.4 L5 0.6 L8 6 L2 4.6 L0 10 L-2 4.6 L-8 6 L-5 0.6 L-8.6 -4.4 L-2.4 -3.2 Z" />)}
           <path className="kmap-river" d="M150 -10 C 142 40, 166 80, 152 130 S 140 210, 156 270" />
-          <text className="kmap-river-label" x="128" y="52" transform="rotate(-82 128 52)">{m.river}</text>
+          <text className="kmap-river-label" x="132" y="96" transform="rotate(-82 132 96)">{m.river}</text>
           <path className="kmap-route kmap-taxi" pathLength={1} d={`M${AT.station[0]} ${AT.station[1]} C 150 220, 220 210, ${AT.venue[0]} ${AT.venue[1]}`} />
           <path className="kmap-route kmap-walk" pathLength={1} d={`M${AT.gion[0]} ${AT.gion[1]} C 230 110, 240 140, ${AT.venue[0]} ${AT.venue[1]}`} />
           <text className="kmap-note" x="18" y="246">{m.notToScale}</text>

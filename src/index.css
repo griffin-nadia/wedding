@@ -516,6 +516,8 @@
 /* Except Home: its card is only as tall as what's on it (up to the frame) */
 :root .letter[data-page="home"] { flex-grow: 0; }
 .letter-wrap:has(.letter[data-page="home"]) .letter-sealed { flex-grow: 0; }
+/* And Our story on laptops (18f): only as tall as the spread, not a tall frame round a small print */
+@media (min-width: 1024px) { :root .letter[data-page="story"] { flex-grow: 0; } }
 .letter-scroll {
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--letter-gap);
   padding: var(--letter-pad); overflow-y: auto; overscroll-behavior: contain;
@@ -1147,10 +1149,17 @@ svg.lucide { stroke-width: 1.5; }
 .kmap-pin-venue .kmap-dot { border-color: var(--brand-sabi); }
 .kmap-tag { position: absolute; top: 50%; left: 34px; translate: 0 -50%; pointer-events: none; display: flex; flex-direction: column; padding: var(--space-1) var(--space-2); border-radius: var(--radius-control); background: color-mix(in oklab, var(--letter-bg) 92%, transparent); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); font-family: var(--font-label); font-size: 11px; line-height: 1.25; text-align: left; color: var(--ink); white-space: nowrap; }
 .kmap-pin.is-east .kmap-tag { left: auto; right: 34px; text-align: right; align-items: flex-end; }
+/* The venue's tag sits under its dot, a little right (18f): to the left it lay over the river on a phone */
+/* Kyoto Station's and Gion-Shijo's tags sit above their dots (18f): beside them they lay on the taxi line and the river */
+.kmap-pin-station .kmap-tag, .kmap-pin-gion .kmap-tag { top: auto; bottom: 34px; left: 50%; translate: -50% 0; }
+.kmap-pin-gion.is-east .kmap-tag { right: auto; left: 6px; translate: 0 0; align-items: flex-start; text-align: left; }
+.kmap-pin-venue.is-east .kmap-tag { top: 34px; right: auto; left: 16px; translate: 0 0; align-items: flex-start; text-align: left; } /* clear of the taxi line coming in from the left */
 .kmap-tag .font-ja { font-size: var(--type-label-size); color: var(--ink-muted); }
 .kmap-pin.is-on .kmap-tag { box-shadow: inset 0 0 0 1.5px var(--brand-sabi), 0 1px 2px rgb(0 0 0 / 0.12); }
 /* Phones: the plate is narrow, so the tags hide except the chosen one (the card names it anyway) */
-@media (max-width: 479px) { .kmap-pin:not(.is-on) .kmap-tag { display: none; } }
+/* Phones: no tags on the plate (at that size any tag covers the river, a route or a leaf); the chosen place is named
+   in its card right under the map (18f) */
+@media (max-width: 479px) { .kmap-tag { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; box-shadow: none !important; } } /* still each pin's name */
 @media (hover: hover) { .kmap-pin:hover .kmap-dot { transform: scale(1.15); } }
 .kmap-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-control); background: var(--section-alt); animation: toast-in var(--duration-fast) var(--ease-paper) both; }
 .kmap-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
@@ -1192,10 +1201,19 @@ svg.lucide { stroke-width: 1.5; }
 .story-track[data-dragging] { cursor: grabbing; }
 .story-track img { -webkit-user-drag: none; }
 /* Every stop in the same cell, so the track is the tallest stop's height and nothing below it moves */
-.story-track:focus-visible { outline-color: var(--input-focus); }
-.story-slide { --print-h: min(34svh, 300px); grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
+/* No box round the whole story when it has focus (18f, Jehan: "too boxy"): the focus shows on the current stop's dot */
+.story-track:focus-visible { outline-color: transparent; }
+.story:has(.story-track:focus-visible) .journey-dots .is-on { outline: 2px solid var(--input-focus); outline-offset: 3px; }
+.story-slide { --print-h: min(34svh, 300px); --caption-h: 2.75rem; grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
 .story-media { flex: none; display: grid; place-items: center; max-width: 100%; }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
+/* Every photo stop's print sits on the same line in the same-sized box, so its caption lands in the same spot on
+   every stop, right under the photo (18f): a landscape print is shorter, so it sits low in the box, not centred */
+.story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); place-items: end center; }
+/* …and the stop starts at the top, so a two-line title under it never moves the photo up */
+.story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: flex-start; }
+
+.story-print figcaption { min-height: 1.25rem; }
 /* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
 .story-print { margin: var(--space-2); }
 .story-print > div { height: var(--print-h); width: auto; }
@@ -1220,9 +1238,9 @@ svg.lucide { stroke-width: 1.5; }
 /* Short phones (an SE at 667): a smaller print, so a stop still fits one screen */
 @media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map .journey-mini { max-height: 24svh; } }
 @media (min-width: 1024px) {
-  .story-slide { --print-h: min(42svh, 360px); flex-direction: row; gap: var(--space-6); text-align: left; padding-inline: var(--space-2); }
-  .story-media { flex: 0 1 auto; }
-  .story-words { flex: 0 1 300px; }
+  /* Laptops as phones (18f, Jehan: "too big… like we did with mobile"): the print centred like a photo, its chapter
+     under it, smaller, so the page isn't so tall (a small map beside the words was tried and left out) */
+  .story-slide { --print-h: min(32svh, 260px); gap: var(--space-4); }
   .story-slide-map .story-media { flex: 0 1 360px; }
   .story-slide-map .journey-mini { max-height: 46svh; }
   .story-controls { justify-content: center; gap: var(--space-5); }
@@ -1235,7 +1253,13 @@ svg.lucide { stroke-width: 1.5; }
 
 /* Travel: three summary lines, and jump links that stay with the page header (the current section marked) */
 :root { --travel-head: 64px; } /* the slim jump-link row at the card's top, and a little air (18e) */
-.jump-links ul { position: relative; display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--space-1)); padding: var(--space-1); }
+.jump-links ul { position: relative; display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--space-1)); padding: var(--space-1); scroll-padding-inline: var(--space-6);
+  /* A soft fade at whichever edge has more links past it (18f), never a hard cut through a word */
+  --fade-l: 0px; --fade-r: 0px;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--fade-l), #000 calc(100% - var(--fade-r)), transparent); }
+.jump-links ul[data-more-left] { --fade-l: var(--space-6); }
+.jump-links ul[data-more-right] { --fade-r: var(--space-6); }
 .jump-links ul::-webkit-scrollbar { display: none; }
 .jump-link { display: inline-flex; align-items: center; height: var(--chip-height); padding-inline: var(--chip-pad); border-radius: var(--chip-radius); white-space: nowrap; font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); font-weight: 500; color: var(--ink-muted); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper); position: relative; }
 .jump-link::after { content: ""; position: absolute; inset: calc((var(--chip-height) - 44px) / 2) 0; }
