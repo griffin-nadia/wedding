@@ -517,8 +517,8 @@
 /* Except Home: its card is only as tall as what's on it (up to the frame) */
 :root .letter[data-page="home"] { flex-grow: 0; }
 .letter-wrap:has(.letter[data-page="home"]) .letter-sealed { flex-grow: 0; }
-/* And Our story on laptops (18f): only as tall as the spread, not a tall frame round a small print */
-@media (min-width: 1024px) { :root .letter[data-page="story"] { flex-grow: 0; } }
+/* Our story fills the frame like the other pages (run 19: its spread fits now, so the frame is no longer tall round a
+   small print), and the spread is centred in it, so the card's bottom edge never moves between pages */
 .letter-scroll {
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--letter-gap);
   padding: var(--letter-pad); overflow-y: auto; overscroll-behavior: contain;
