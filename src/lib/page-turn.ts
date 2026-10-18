@@ -104,7 +104,15 @@ export function usePageTurn(enabled: boolean) {
     if (!enabled) return
     let start: { x: number; y: number; t: number } | null = null, dx = 0, active = false, frame: (() => void) | null = null
     // One write per frame while dragging, however often the finger reports
-    const paint = () => { frame = null; const el = letter(); if (el && start) el.style.transform = `translateX(${dx}px)` }
+    const pill = () => document.querySelector<HTMLElement>(".site-nav .nav-mark")
+    const paint = () => {
+      frame = null; const el = letter(); if (!el || !start) return
+      el.style.transform = `translateX(${dx}px)`
+      // The dock's pill follows the finger towards the page it would open (a swipe left opens the next one)
+      const p = pill(); if (p) { p.toggleAttribute("data-swiping", true); p.style.setProperty("--swipe", String(Math.max(-1, Math.min(1, -dx / STEP())))) }
+    }
+    // Let go: the pill eases back, or on to the new page with it (Nav moves it there)
+    const release = () => { const p = pill(); if (p) { p.removeAttribute("data-swiping"); p.style.removeProperty("--swipe") } }
     const wide = () => window.matchMedia("(min-width: 768px)").matches
     const here = () => indexOf(location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/")
     const down = (e: PointerEvent) => {
@@ -131,6 +139,7 @@ export function usePageTurn(enabled: boolean) {
       const el = letter(), v = Math.abs(dx) / Math.max(1, performance.now() - start.t)
       start = null; dragging = false
       if (frame) { frame(); frame = null }
+      release()
       if (!active || !el) return
       const i = here(), dir = dx < 0 ? 1 : -1, to = i + dir
       const go = (Math.abs(dx) > innerWidth * 0.25 || v > 0.5) && to >= 0 && to < LETTERS.length
@@ -160,7 +169,7 @@ export function usePageTurn(enabled: boolean) {
       window.removeEventListener("pointerdown", down); window.removeEventListener("pointermove", move)
       window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up)
       document.removeEventListener("click", tap, true)
-      frame?.()
+      frame?.(); release()
     }
   }, [enabled, nav])
 }

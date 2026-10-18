@@ -233,7 +233,9 @@ function planLaunch_(siteGuests, tabs, planner, queueKeys) {
   const noEmail = Object.keys(emails).filter((h) => !emails[h]).sort()
   const households = Object.keys(emails).length
   const needLinks = kept.filter((g) => !g.Token).length + add.length
-  return { clear: clear, kept: kept.length, visits: visits, queue: queueKeys.filter((k) => k.indexOf("q:") === 0).length, columns: cols.headers.length ? Object.keys(cols.map).map((k) => k + " ← " + cols.headers[cols.map[k]]) : [], add: add, households: households, needLinks: needLinks, noEmail: noEmail, problems: problems }
+  // Invite emails, one per guest with an address (Gmail's daily limit is per address)
+  const inviteEmails = kept.filter((g) => String(g.Email || "").trim()).length + add.filter((g) => g.email).length
+  return { clear: clear, kept: kept.length, visits: visits, inviteEmails: inviteEmails, queue: queueKeys.filter((k) => k.indexOf("q:") === 0).length, columns: cols.headers.length ? Object.keys(cols.map).map((k) => k + " ← " + cols.headers[cols.map[k]]) : [], add: add, households: households, needLinks: needLinks, noEmail: noEmail, problems: problems }
 }
 
 function launchPlanNow_() {
@@ -243,6 +245,7 @@ function launchPlanNow_() {
   const tab = id ? SpreadsheetApp.openById(id).getSheetByName("Guest list") : null
   const planner = tab ? tab.getDataRange().getValues() : []
   const plan = planLaunch_(rows_(TABS.guests), tabs, planner, Object.keys(PropertiesService.getScriptProperties().getProperties()))
+  try { plan.quota = MailApp.getRemainingDailyQuota() } catch (err) { plan.quota = null }
   if (!id) plan.problems.push("PLANNER_ID isn't set (Project Settings → Script properties).")
   else if (!tab) plan.problems.push("The planner has no tab called \"Guest list\".")
   return plan
@@ -258,7 +261,16 @@ function launchReport_(plan, real) {
     (plan.columns.length ? "\n   Columns: " + plan.columns.join(", ") + "." : "") +
     "\n5. Make " + plan.needLinks + " household link(s) (" + plan.households + " households in all)." +
     "\n6. Households with no email: " + (plan.noEmail.length ? plan.noEmail.length + "\n   " + plan.noEmail.join("\n   ") : "none") +
+    "\n7. " + quotaLine_(plan.inviteEmails, plan.quota) +
     (plan.problems.length ? "\n\nCan't run yet:\n  " + plan.problems.join("\n  ") : "")
+}
+
+/** The email quota guard (final run N): will the invites fit in what Gmail allows today? Never sends anything. */
+function quotaLine_(emails, quota) {
+  const line = "Invite emails: " + emails + " (one per guest with an address)."
+  if (quota == null) return line + " Couldn't read today's Gmail limit; check it from the wedding account."
+  if (emails <= quota) return line + " Gmail allows about " + quota + " more today, so they fit."
+  return line + " Gmail allows about " + quota + " more today, so they won't all fit. Send invites stops at the limit; run it again tomorrow and it picks up where it stopped (about " + Math.ceil(emails / Math.max(1, quota)) + " days). Leave room for confirmations."
 }
 
 /** Wedding site → Prepare for launch (report only): what run for real would do. Changes nothing. */
@@ -413,6 +425,7 @@ function doGet(e) {
       const lastAt = Number(props.getProperty("last_flush_at") || 0)
       return json_({ ok: true, queue: props.getProperty("flush_trigger") === "1", trigger: trigger, pending: pending, kinds: queueKinds_(), queueAccount: props.getProperty("queue_account") || "unknown", webAppAccount: isWeddingAccount_() ? "wedding" : "other", queueError: CacheService.getScriptCache().get("queue_err") || null, lastTestSend: props.getProperty("last_test_send"), triggerError: CacheService.getScriptCache().get("trigger_err") || null, lastFlush: lastAt ? new Date(lastAt).toISOString() : CacheService.getScriptCache().get("last_flush") || null })
     }
+    if (action === "health") return json_(health_())
     if (action === "songs") return json_(searchSongs_(p.q, String(p.token || "").trim()))
     if (action === "started") {
       const token = String(p.token || "").trim()
@@ -855,6 +868,7 @@ function flushTriggerReady_() {
     return false // the trigger exists but hasn't run lately: don't queue behind it
   } catch (err) {
     CacheService.getScriptCache().put("trigger_err", String(err).slice(0, 300), 21600)
+    alert_("trigger_failed", err)
     return false
   }
 }
@@ -2284,11 +2298,49 @@ function safely_(fn) {
   }
 }
 
+/**
+ * ?action=health (final run N), for UptimeRobot (docs/monitoring.md): ok is true only when the sheet opens and the
+ * email queue is moving. No guest data, only yes/no and counts. Watch for the keyword "ok":true.
+ */
+function health_() {
+  const out = { ok: true, service: "nadia-griffin-wedding", at: new Date().toISOString(), sheet: true, queueMoving: true, pending: 0, emailQuota: null }
+  try { sheet_(TABS.guests).getLastRow() } catch (err) { out.sheet = false }
+  try {
+    const props = PropertiesService.getScriptProperties()
+    out.pending = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0).length
+    const last = Number(props.getProperty("last_flush_at") || 0)
+    // Something waiting and nothing sent for 15 minutes: the minute trigger has stopped
+    out.queueMoving = !out.pending || (last > 0 && Date.now() - last < 15 * 60 * 1000)
+  } catch (err) { out.queueMoving = false }
+  try { out.emailQuota = MailApp.getRemainingDailyQuota() } catch (err) { /* not authorised yet: left null */ }
+  out.ok = out.sheet && out.queueMoving
+  return out
+}
+
+/**
+ * Errors by email and to Discord (final run N). Off until set: ALERT_EMAIL (an address) and DISCORD_WEBHOOK_URL in
+ * Script Properties. One alert per kind of error an hour; only the error's code and message, never guest data or
+ * tokens. Email goes only from the wedding account, like everything else.
+ */
+function alert_(code, err) {
+  try {
+    const cache = CacheService.getScriptCache(), key = "alert:" + code
+    if (cache.get(key)) return
+    cache.put(key, "1", 3600)
+    const msg = String(err && err.message ? err.message : err).replace(/[A-Za-z0-9_-]{20,}/g, "…").slice(0, 400)
+    const text = "The wedding site's back end hit an error: " + code + "\n" + msg + "\n\nDetails: Extensions → Apps Script → Executions. One alert per kind of error an hour."
+    const to = prop_("ALERT_EMAIL")
+    if (to && isWeddingAccount_()) MailApp.sendEmail({ to: to, subject: "[Wedding site] error: " + code, body: text })
+    const hook = prop_("DISCORD_WEBHOOK_URL")
+    if (hook) UrlFetchApp.fetch(hook, { method: "post", contentType: "application/json", payload: JSON.stringify({ content: ("**Wedding site error: " + code + "**\n" + msg).slice(0, 1900) }), muteHttpExceptions: true })
+  } catch (e) { console.error("alert_: " + e) }
+}
+
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON)
 }
 
 function fail_(code, err) {
-  if (err) console.error(String(err && err.stack ? err.stack : err))
+  if (err) { console.error(String(err && err.stack ? err.stack : err)); alert_(code, err) }
   return json_({ ok: false, code: code, error: ERRORS[code] })
 }
