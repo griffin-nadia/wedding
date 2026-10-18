@@ -4,6 +4,14 @@ import type { Entry } from "../../types"
 /** Confirmation: the moment after "Send our reply". */
 export const entries: Entry[] = [
   {
+    id: "confirm-stamp", title: "The seal: 寿, 京 or G·N",
+    deciding: "Jehan and N&G: 寿 (celebration, what ships), 京 (Kyoto) or their initials G·N?",
+    summary: "The confirmation's hand-cut seal (uneven rim, patchy ink, a maple and a gum leaf in the rim) with each of three marks, and what each says.",
+    refs: [{ label: "Kotobuki (寿)", href: "https://en.wikipedia.org/wiki/Kotobuki" }],
+    promote: "寿 is on the site (components/hanko.tsx), in the confirmation head and on the fortune slip. Another mark is one prop.",
+    Component: lazy(() => import("./confirm-stamp")),
+  },
+  {
     id: "confirm-hanko-press", title: "Hanko you press",
     decided: "Shipped: the hanko stamps when a reply lands.",
     summary: "Press and hold the paper: the stamp lowers out of the air, ink gathers while you hold, and letting go lands it with a squash and, on Android, a tiny tick.",
