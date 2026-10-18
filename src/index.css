@@ -494,6 +494,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--letter-gap);
+  width: 100%; /* a fixed width (run 19): with auto margins a flex item shrinks to its content, so 768 to 1023 the card grew when an FAQ opened */
   max-width: var(--letter-width);
   margin-inline: auto;
   padding: var(--letter-pad);
@@ -521,6 +522,7 @@
 .letter-scroll {
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--letter-gap);
   padding: var(--letter-pad); overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-gutter: stable both-edges; /* a mouse's scrollbar never narrows the words when a page grows past the card (run 19) */
   /* A soft 16px fade where the words meet the card's top and bottom edges */
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
   mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
@@ -1226,7 +1228,7 @@ svg.lucide { stroke-width: 1.5; }
 /* Our story (APG carousel): one stop per screen on a sideways track that snaps; nothing scrolls inside a stop. On
    phones each stop is the print centred with its chapter line underneath; from 1024 a two-column spread, the print on
    one side and the words on the other, the arrows and dots centred below. --print-h is a print's long side. */
-.story { display: flex; flex-direction: column; gap: var(--space-4); }
+.story { display: flex; flex-direction: column; gap: var(--space-3); }
 .story-track { display: grid; overflow: hidden; touch-action: pan-y; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; -webkit-user-select: none; user-select: none; }
 .story-track[data-dragging] { cursor: grabbing; }
 .story-track img { -webkit-user-drag: none; }
@@ -1234,14 +1236,15 @@ svg.lucide { stroke-width: 1.5; }
 /* No box round the whole story when it has focus (18f, Jehan: "too boxy"): the focus shows on the current stop's dot */
 .story-track:focus-visible { outline-color: transparent; }
 .story:has(.story-track:focus-visible) .journey-dots .is-on { outline: 2px solid var(--input-focus); outline-offset: 3px; }
-.story-slide { --print-h: min(34svh, 300px); --caption-h: 2.75rem; grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
-.story-media { flex: none; display: grid; place-items: center; max-width: 100%; }
+/* One grid for every stop (run 19): the same media box (--stop-h) at the top of each, opener and map included, so the
+   words start on the same line on every stop; the spread itself is centred in the card (.story below) */
+.story-slide { --print-h: min(26svh, 260px); --caption-h: 2.75rem; --stop-h: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: var(--space-4); overflow: hidden; padding-block: var(--space-1); text-align: center; }
+.story-media { flex: none; display: grid; place-items: center; max-width: 100%; height: var(--stop-h); }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
 /* Every photo stop's print sits on the same line in the same-sized box, so its caption lands in the same spot on
    every stop, right under the photo (18f): a landscape print is shorter, so it sits low in the box, not centred */
-.story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); place-items: end center; }
-/* …and the stop starts at the top, so a two-line title under it never moves the photo up */
-.story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: flex-start; }
+.story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { place-items: end center; }
+/* (every stop starts at the top, so a two-line title under it never moves the photo up) */
 
 .story-print figcaption { min-height: 1.25rem; }
 /* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
@@ -1254,7 +1257,12 @@ svg.lucide { stroke-width: 1.5; }
 /* Its lines wait until the stop is showing (no drawing off screen, and they draw in as you arrive) */
 .story-slide[inert] .journey, .story-slide[inert] .journey * { animation-play-state: paused !important; }
 .story-slide-map .story-media { width: 100%; max-width: 360px; }
-.story-slide-map .journey-mini { max-height: 36svh; }
+/* The map fits the same box: the Globe / Flat switch (about 56px with its gap) and the map under it */
+.story-slide-map .journey-mini { max-height: calc(var(--stop-h) - 56px); }
+.story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 56px)); }
+/* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */
+.letter[data-page="story"] .letter-body { flex: 1 0 auto; }
+.letter[data-page="story"] .story { flex: 1 0 auto; justify-content: center; }
 /* The list: a 48px thumbnail beside each chapter */
 .story-thumb { flex: none; width: 48px; height: 48px; border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); }
 .story-thumb figcaption { display: none; }
@@ -1266,13 +1274,12 @@ svg.lucide { stroke-width: 1.5; }
 @media (prefers-reduced-motion: reduce) { .story-track > .story-slide { transition: opacity 200ms linear !important; } }
 @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) { .story-track { cursor: grab; } }
 /* Short phones (an SE at 667): a smaller print, so a stop still fits one screen */
-@media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map .journey-mini { max-height: 24svh; } }
+@media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } }
 @media (min-width: 1024px) {
   /* Laptops as phones (18f, Jehan: "too big… like we did with mobile"): the print centred like a photo, its chapter
      under it, smaller, so the page isn't so tall (a small map beside the words was tried and left out) */
   .story-slide { --print-h: min(32svh, 260px); gap: var(--space-4); }
-  .story-slide-map .story-media { flex: 0 1 360px; }
-  .story-slide-map .journey-mini { max-height: 46svh; }
+  .story-slide-map .story-media { flex: 0 0 auto; }
   .story-controls { justify-content: center; gap: var(--space-5); }
 }
 

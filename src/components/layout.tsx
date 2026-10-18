@@ -137,7 +137,8 @@ export function Layout() {
         </Arrival>
       </main>
       <Suspense><CreditMark /></Suspense>
-      {page === "home" && !sealed && <Suspense><PhoneQr /></Suspense>}
+      {/* The same small card in the same corner on every page (run 19), not just Home: the link is theirs on any page */}
+      {!sealed && <Suspense><PhoneQr /></Suspense>}
     </>
   )
 }
