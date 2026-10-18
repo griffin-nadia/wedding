@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { ArrowLeft, ExternalLink, RotateCcw, Smartphone, Laptop, SlidersHorizontal, X } from "lucide-react"
 import { Segmented } from "@/components/segmented"
 import { Button } from "@/components/ui/button"
-import { ALL, AREAS } from "./registry"
+import { ALL, AREAS, REFERENCE, liveUrl, openLive } from "./registry"
 import { setSpeed, useSpeed } from "./motion"
 
 const base = import.meta.env.BASE_URL
@@ -33,26 +33,45 @@ function Card({ e, open }: { e: (typeof ALL)[number]; open: (id: string) => void
   )
 }
 
-/** The index: the open questions by area; the parked ideas under Parked, collapsed. */
+/** The index, in three groups: Deciding (by area), Parked, and Reference (the site today, one per area). */
 function Index({ open }: { open: (id: string) => void }) {
   const openAreas = AREAS.map((a) => ({ ...a, entries: ALL.filter((e) => e.area === a.id && !e.parked) })).filter((a) => a.entries.length)
   const parked = ALL.filter((e) => e.parked)
   return (
     <div className="lab-body flex flex-col gap-8">
       <p className="max-w-[70ch] text-small text-muted-foreground">
-        The open questions, each with what needs choosing, and two parked ideas. Local only (npm run lab). Open one to see it in the site's own
-        shell, switch the theme and the paper, and replay it. A link keeps the exact view (?v=, theme=, paper=).
+        The open questions, each with what needs choosing, the parked ideas, and the site as it is today. Local only (npm run lab). A link keeps
+        the exact view.
       </p>
-      {openAreas.map((a) => (
-        <section key={a.id} aria-labelledby={`area-${a.id}`} className="flex flex-col gap-3">
-          <h2 id={`area-${a.id}`} className="font-display text-heading text-foreground">{a.title} <span className="label-caps text-muted-foreground">{a.entries.length}</span></h2>
-          <ul className="lab-index">{a.entries.map((e) => <Card key={e.id} e={e} open={open} />)}</ul>
-        </section>
-      ))}
-      <details className="lab-done">
-        <summary className="font-display text-heading text-foreground">Parked <span className="label-caps text-muted-foreground">{parked.length}</span></summary>
-        <ul className="lab-index mt-4">{parked.map((e) => <Card key={e.id} e={e} open={open} />)}</ul>
-      </details>
+      <section aria-labelledby="g-deciding" className="flex flex-col gap-6">
+        <h2 id="g-deciding" className="font-display text-display text-foreground">Deciding</h2>
+        {openAreas.map((a) => (
+          <section key={a.id} aria-labelledby={`area-${a.id}`} className="flex flex-col gap-3">
+            <h3 id={`area-${a.id}`} className="font-display text-heading text-foreground">{a.title} <span className="label-caps text-muted-foreground">{a.entries.length}</span></h3>
+            <ul className="lab-index">{a.entries.map((e) => <Card key={e.id} e={e} open={open} />)}</ul>
+          </section>
+        ))}
+      </section>
+      <section aria-labelledby="g-parked" className="flex flex-col gap-3">
+        <h2 id="g-parked" className="font-display text-display text-foreground">Parked <span className="label-caps text-muted-foreground">{parked.length}</span></h2>
+        <ul className="lab-index">{parked.map((e) => <Card key={e.id} e={e} open={open} />)}</ul>
+      </section>
+      <section aria-labelledby="g-reference" className="flex flex-col gap-3">
+        <h2 id="g-reference" className="font-display text-display text-foreground">Reference <span className="label-caps text-muted-foreground">{REFERENCE.length}</span></h2>
+        <ul className="lab-index">
+          {REFERENCE.map((r) => (
+            <li key={r.id}>
+              <a className="lab-index-card" href={liveUrl(r.path)} target="_blank" rel="noreferrer" onClick={() => openLive(r)}>
+                {thumb(r.id) ? <img src={thumb(r.id)} alt="" loading="lazy" className="lab-thumb" /> : <span aria-hidden className="lab-thumb" />}
+                <span className="flex flex-col gap-1 text-left">
+                  <span className="font-medium text-foreground">{r.title}</span>
+                  <span className="text-small text-muted-foreground">{r.note}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   )
 }

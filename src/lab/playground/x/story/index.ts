@@ -1,25 +1,8 @@
 import { lazy } from "react"
 import type { Entry } from "../../types"
 
-/** Our story: the spread carousel today, and three other ways to hold the prints */
+/** Our story: two parked ways to hold the prints (the spread is on the site: Compare with live) */
 export const entries: Entry[] = [
-  {
-    id: "story-styling", title: "The prints: tape, corners or plain",
-    deciding: "Jehan: washi tape (what ships), photo corners, or plain?",
-    summary: "Our story's soft prints (a thin white border, a layered shadow, a seeded tilt, a faint grain) three ways: washi tape, photo corners, or nothing on them.",
-    refs: [{ label: "Our story", href: "../our-story" }],
-    promote: "Tape is on the site (index.css, .story-print). Corners would be four small CSS triangles per print; plain is the tape rule off.",
-    Component: lazy(() => import("./story-styling")),
-  },
-  {
-    id: "story-current",
-    deciding: "Griffin and Nadia: the words and photos for each chapter (the spread is the winner; this is it with placeholders).",
-    title: "Spread (the site today)",
-    summary: "The story as it ships: one spread per chapter, the next print sliding in turned and settling straight on a spring.",
-    refs: [{ label: "WAI-ARIA APG carousel", href: "https://www.w3.org/WAI/ARIA/apg/patterns/carousel/" }],
-    promote: "This is what ships today, kept here to compare against.",
-    Component: lazy(() => import("./story-current")),
-  },
   {
     id: "story-stack",
     parked: "A stack you flick: kept for later. The spread won (one stop at a time).",
