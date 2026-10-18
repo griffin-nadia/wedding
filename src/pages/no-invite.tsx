@@ -2,6 +2,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { InlineSubmit } from "@/components/inline-submit"
 import { ApiError, resendLink } from "@/lib/api"
+import { AskUs } from "@/components/ask-us"
+import { pending } from "@/content/pending"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
@@ -38,7 +40,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
 
 /** Email in, link out. The answer is the same whether or not the email is on the list. */
 function ResendForm() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [email, setEmail] = useState("")
   const [state, setState] = useState<"idle" | "sending" | "sent" | "bad" | "failed" | "paused">("idle")
   async function send(e?: React.FormEvent) {
@@ -60,7 +62,9 @@ function ResendForm() {
         label={t.notFound.emailLabel} helper={t.notFound.helper} submitLabel={t.notFound.send} busy={state === "sending"}
         error={state === "bad" ? t.notFound.badEmail : state === "failed" ? t.notFound.failed : state === "paused" ? t.paused.line : undefined}
         onChange={(e) => { setEmail(e.target.value); if (state !== "sending") setState("idle") }}
-        onSubmit={() => void send()} fallback={{ label: t.notFound.message, onClick: () => { window.location.href = "mailto:griffinandnadia@gmail.com" } }} />
+        onSubmit={() => void send()} />
+      {/* Or ask them directly (no invite, so the sheet asks for a name and an email too) */}
+      <AskUs><button type="button" className="btn-text mt-3 inline-flex min-h-11 items-center">{pending("ask.open", lang)}</button></AskUs>
     </form>
   )
 }

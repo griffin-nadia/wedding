@@ -1341,3 +1341,8 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
+/* Ask us (final run): "Is this it?" rows, and the field only a bot fills in */
+.ask-match { display: block; width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--surface-raised); color: var(--ink); text-align: left; outline: 2px solid transparent; outline-offset: 2px; }
+.ask-match:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .ask-match:hover { border-color: var(--line-strong); } }
+.ask-pot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

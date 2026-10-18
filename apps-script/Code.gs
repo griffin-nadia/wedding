@@ -41,7 +41,7 @@ const FIRST = "Griffin"
 const SECOND = "Nadia"
 const COUPLE = FIRST + " & " + SECOND
 
-const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", emails: "Emails" }
+const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", emails: "Emails", questions: "Questions" }
 
 const DEFAULTS = {
   SITE_URL: "https://griffin-nadia.github.io/wedding",
@@ -398,6 +398,7 @@ function doGet(e) {
       return json_({ ok: true, household: h })
     }
     if (action === "flying") return json_(flyingCounts_())
+    if (action === "questions") return json_(publishedQuestions_())
     if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_() })
     if (action === "stay") return json_(stayPicks_())
     if (action === "content") return json_(content_())
@@ -432,6 +433,7 @@ function doPost(e) {
     return fail_("bad_request")
   }
   if (body && body.action === "resend") return json_(resendLink_(body.email))
+  if (body && body.action === "ask") return json_(ask_(body))
   if (body && body.action === "flying") return json_(setFlying_(body.token, body.city))
   if (body && body.action === "stamps") return json_(setStamps_(body.token, body.stamps))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
@@ -940,17 +942,20 @@ function flushQueue() {
     const events = { open: {}, started: {} }
     keys.forEach((k) => {
       const parts = k.split(":")
-      if (parts[1] === "mail" && !mailOk) return // left queued for the wedding account
+      if ((parts[1] === "mail" || parts[1] === "out") && !mailOk) return // left queued for the wedding account
+      if (parts[1] === "out") return // the outbox, sent below
       if (parts[1] === "mail") mails.push({ token: parts[2], data: JSON.parse(all[k]) })
       else if (events[parts[1]]) (events[parts[1]][parts[2]] = events[parts[1]][parts[2]] || []).push(Number(all[k]) > 1 ? Number(all[k]) : Number(parts[3].slice(0, 13)))
     })
     if (Object.keys(events.open).length || Object.keys(events.started).length) writeVisits_(events)
-    keys.filter((k) => mailOk || k.indexOf("q:mail:") !== 0).forEach((k) => props.deleteProperty(k))
+    keys.filter((k) => k.indexOf("q:out:") !== 0 && (mailOk || k.indexOf("q:mail:") !== 0)).forEach((k) => props.deleteProperty(k))
   } finally {
     lock.releaseLock()
   }
   // Confirmations for replies just written: sent now from the wedding account, otherwise held for it
   if (!mailOk) { mails.forEach((m) => holdMail_(m.token, m.data.updated, m.data.changes, m.data.dropped)); mails = [] }
+  // The outbox (questions to the couple, answers to guests, links again), and published answers to queue for it
+  if (mailOk) { safely_(sendAnswers_); safely_(flushOut_) }
   mails.forEach((m) => {
     const h = getHousehold_(m.token)
     if (!h) return
@@ -1432,6 +1437,106 @@ function flyingCounts_() {
   const out = { ok: true, counts: counts, told: Object.values(counts).reduce((a, b) => a + b, 0), households: Object.keys(seen).length }
   cache.put("flying", JSON.stringify(out), 600)
   return out
+}
+
+// ---------- outbox: one-off emails, sent by flushQueue from the wedding account ----------
+
+/** Queues one email (to, subject, body, htmlBody, replyTo, name) for the wedding account's queue. */
+function queueOut_(mail) {
+  PropertiesService.getScriptProperties().setProperty("q:out:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8), JSON.stringify(mail))
+}
+/**
+ * Sends what's in the outbox, oldest first, while the day's email quota lasts. Under 100 guests fits the daily
+ * quota easily; if a send ever hits the limit, the rest wait in the outbox and go out the next day, by themselves.
+ */
+function flushOut_() {
+  const props = PropertiesService.getScriptProperties()
+  const keys = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:out:") === 0).sort()
+  for (const k of keys) {
+    if (MailApp.getRemainingDailyQuota() < 1) { CacheService.getScriptCache().put("quota_paused", new Date().toISOString(), 86400); break }
+    const m = JSON.parse(props.getProperty(k) || "null")
+    props.deleteProperty(k)
+    if (m) MailApp.sendEmail({ name: COUPLE, replyTo: prop_("REPLY_TO"), ...m })
+  }
+}
+
+// ---------- Ask us: questions to Griffin and Nadia ----------
+
+const QUESTION_HEAD = ["Time", "Household", "Token", "Email", "Question", "Status", "Answer", "Answer (ja)", "Publish", "Sent"]
+/** The Questions tab, made the first time (status new / answered / published; Publish is a tickbox). */
+function questionsSheet_() {
+  const ss = SpreadsheetApp.getActive()
+  let s = ss.getSheetByName(TABS.questions)
+  if (!s) {
+    s = ss.insertSheet(TABS.questions)
+    s.getRange(1, 1, 1, QUESTION_HEAD.length).setValues([QUESTION_HEAD]).setFontWeight("bold")
+    s.setFrozenRows(1)
+    s.getRange(2, QUESTION_HEAD.indexOf("Publish") + 1, 999, 1).insertCheckboxes()
+    s.getRange(2, QUESTION_HEAD.indexOf("Status") + 1, 999, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["new", "answered", "published"], true).build())
+  }
+  return s
+}
+
+/**
+ * A guest's question (the site's Ask us sheet). From an invite, the household is known; from "can't find your
+ * invite" there's no token, so a name and an email come with it. Kept out: anything in the hidden website field (a
+ * bot), more than 3 an hour from one household or email, empty or over 500 characters. Saved to the Questions tab
+ * (as plain text), then Griffin and Nadia hear about it: an email through the wedding account's queue, and Discord
+ * too if DISCORD_WEBHOOK_URL is set in Script Properties (docs/discord.md).
+ */
+function ask_(body) {
+  if (String(body.website || "")) return { ok: true } // the honeypot: say yes, keep nothing
+  const question = String(body.question || "").trim()
+  if (!question || question.length > 500) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
+  const token = String(body.token || "").trim()
+  let household = "", email = ""
+  if (token) {
+    const h = getHousehold_(token)
+    if (!h) return { ok: false, code: "not_found", error: ERRORS.not_found }
+    household = h.displayName
+    email = rows_(TABS.guests).filter((r) => r.Token === token).map((r) => String(r.Email || "").trim()).filter(Boolean)[0] || ""
+  } else {
+    household = String(body.name || "").trim().slice(0, 60)
+    email = String(body.email || "").trim().toLowerCase().slice(0, 120)
+    if (!household || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, code: "bad_email", error: ERRORS.bad_email }
+  }
+  const cache = CacheService.getScriptCache(), key = "ask:" + (token || email) + ":" + Math.floor(Date.now() / 3600000)
+  const n = Number(cache.get(key) || 0)
+  if (n >= 3) return { ok: false, code: "busy", error: ERRORS.busy }
+  cache.put(key, String(n + 1), 3700)
+  questionsSheet_().appendRow([new Date(), "'" + household, "'" + token, "'" + email, "'" + question, "new", "", "", false, ""])
+  const text = household + " asked:\n\n" + question + "\n\nAnswer it in the Questions tab; tick Publish to show it in the FAQs" + (email ? " and email it to them." : ".")
+  queueOut_({ to: prop_("REPLY_TO"), subject: "A question from " + household, body: text })
+  const hook = prop_("DISCORD_WEBHOOK_URL")
+  if (hook) safely_(() => UrlFetchApp.fetch(hook, { method: "post", contentType: "application/json", payload: JSON.stringify({ content: ("**A question from " + household + "**\n" + question).slice(0, 1900) }), muteHttpExceptions: true }))
+  return { ok: true }
+}
+
+/** Ticked questions with an answer, for the FAQs' "You asked" (questions and answers only, no names). 10 minutes. */
+function publishedQuestions_() {
+  const cache = CacheService.getScriptCache(), hit = cache.get("questions")
+  if (hit) return JSON.parse(hit)
+  const s = SpreadsheetApp.getActive().getSheetByName(TABS.questions)
+  const out = { ok: true, questions: [] }
+  if (s) rows_(TABS.questions).forEach((r) => { if (r.Publish === true && String(r.Answer || "").trim()) out.questions.push({ q: String(r.Question).replace(/^'/, ""), a: String(r.Answer).replace(/^'/, ""), a_ja: String(r["Answer (ja)"] || "").replace(/^'/, "") }) })
+  cache.put("questions", JSON.stringify(out), 600)
+  return out
+}
+
+/** Each newly published answer goes to the household by email (once), and the row says published. */
+function sendAnswers_() {
+  const s = SpreadsheetApp.getActive().getSheetByName(TABS.questions)
+  if (!s) return
+  const data = s.getDataRange().getValues(), head = data[0].map((h) => String(h).trim()), col = (n) => head.indexOf(n)
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i]
+    if (r[col("Publish")] !== true || !String(r[col("Answer")] || "").trim() || r[col("Sent")]) continue
+    const to = String(r[col("Email")] || "").replace(/^'/, "")
+    if (to) queueOut_({ to: to, subject: "Your question, answered", body: "Hi " + String(r[col("Household")]).replace(/^'/, "") + ",\n\nYou asked: " + String(r[col("Question")]).replace(/^'/, "") + "\n\n" + String(r[col("Answer")]) + "\n\nIt's in the FAQs now too.\n\n" + COUPLE })
+    s.getRange(i + 1, col("Status") + 1).setValue("published")
+    s.getRange(i + 1, col("Sent") + 1).setValue(new Date())
+    CacheService.getScriptCache().remove("questions")
+  }
 }
 
 // ---------- "Can't find your invite?" ----------
