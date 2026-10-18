@@ -37,7 +37,7 @@ test("a missing page file: one reload past the cache, then the card, never a loo
   await page.goto("travel?h=sample")
   const card = page.locator("#crash")
   await expect(card.getByRole("heading", { name: "Something went wrong, try refreshing" })).toBeFocused()
-  await expect(card.getByRole("link", { name: "Ask Griffin & Nadia" })).toHaveAttribute("href", "mailto:griffinandnadia@gmail.com")
+  await expect(card.getByRole("link", { name: "Ask us" })).toHaveAttribute("href", "mailto:griffinandnadia@gmail.com")
   await expect(card.getByRole("button", { name: "Refresh" })).toBeVisible()
   await page.waitForTimeout(500)
   expect(docs).toHaveLength(2)
