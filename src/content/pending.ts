@@ -31,6 +31,24 @@ export const PENDING = {
     en: "Your travel dates",
     ja: "旅の日程",
   },
+  // "Where are you flying from?": the field under the quick chips (final run)
+  "flying.orType": {
+    en: "Or type your city",
+    ja: "または都市名を入力",
+  },
+  // The journey stop's toggle (final run)
+  "journey.mapMode": {
+    en: "Map",
+    ja: "地図",
+  },
+  "journey.globe": {
+    en: "Globe",
+    ja: "地球儀",
+  },
+  "journey.flat": {
+    en: "Flat map",
+    ja: "平面の地図",
+  },
   // A way to actually message them where the copy says to (18e journey map): the wedding address already used on the
   // no-invite page
   "contact.emailUs": {
@@ -50,6 +68,8 @@ export const PENDING = {
  * When one has been read (and corrected in ja.ts), delete it here.
  */
 export const JA_TO_READ: { key: string; ja: string }[] = [
+  { key: "home.todo.food", ja: "お食事" },
+  { key: "home.todo.song", ja: "一曲" },
   { key: "rsvp.dietaryOther", ja: "詳しく教えてください（任意）" },
   { key: "rsvp.searchSong", ja: "検索" },
   { key: "rsvp.useTyped", ja: "入力したとおりに使う" },

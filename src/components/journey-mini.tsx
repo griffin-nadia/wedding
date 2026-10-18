@@ -1,9 +1,10 @@
 import { useId, useState } from "react"
 import type { Flying } from "@/lib/api"
 import { ART } from "@/lib/art"
-import { FROM, KYOTO, PLACES, arc } from "@/lib/journey"
+import { FROM, KYOTO, PLACES, arc, pointOfCity } from "@/lib/journey"
+import type { City } from "@/lib/city-search"
 import { LAND } from "@/lib/map-land"
-import { placeOf, pointOf } from "@/lib/places"
+import { placeOf } from "@/lib/places"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
 
@@ -88,25 +89,30 @@ export function JourneyLegend({ you = false }: { you?: boolean }) {
  * when they change it; Nadia's and Griffin's lines are always there; everyone else's are faint gold (counts only,
  * never names), theirs drawing in last. Still under reduced motion: every line already drawn.
  */
-export function JourneyMini({ you, counts, label, className }: { you: string | null; counts?: Partial<Record<Flying, number>> | null; label: string; className?: string }) {
+type Others = { name: string; country: string; lat: number; lon: number; n: number }[]
+export function JourneyMini({ you, counts, cities, label, className }: { you: City | null; counts?: Partial<Record<Flying, number>> | null; cities?: Others | null; label: string; className?: string }) {
   const id = useId().replace(/:/g, "")
-  const others = counts ? (Object.keys(counts) as Flying[]).filter((c) => FROM[c] && (counts[c] ?? 0) > 0) : []
+  // Everyone else's lines: per city once the sheet sends cities (final run), else the older per-answer counts
+  const lines: { key: string; at: [number, number] }[] = cities?.length
+    ? cities.filter((c) => c.n > 0).map((c) => ({ key: `${c.name}|${c.country}`, at: pointOfCity({ id: 0, name: c.name, region: "", country: c.country, lat: c.lat, lon: c.lon }) }))
+    : counts ? (Object.keys(counts) as Flying[]).filter((c) => FROM[c] && (counts[c] ?? 0) > 0).map((c) => ({ key: c, at: FROM[c] })) : []
+  const others = lines
   const youDelay = 900 + others.length * 120
-  const place = placeOf(you), mine = place ? pointOf(place) : null
+  const mine = you && you.id !== "jp" ? pointOfCity(you) : null
   return (
     <svg viewBox="0 0 400 320" role={label ? "img" : undefined} aria-label={label || undefined} aria-hidden={label ? undefined : true} className={cn("journey is-in journey-map journey-mini journey-hifi", className)}>
       <JourneyLand />
       <defs>
         {others.map((c, i) => (
-          <mask key={c} id={`${id}-o${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="320">
-            <path d={arc(FROM[c], KYOTO, 0.15)} className="journey-reveal journey-reveal-guest" style={{ animationDelay: `${900 + i * 120}ms` }} pathLength={1} />
+          <mask key={c.key} id={`${id}-o${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="320">
+            <path d={arc(c.at, KYOTO, 0.15)} className="journey-reveal journey-reveal-guest" style={{ animationDelay: `${900 + i * 120}ms` }} pathLength={1} />
           </mask>
         ))}
       </defs>
       <CoupleLines id={id} />
-      {others.map((c, i) => <path key={c} d={arc(FROM[c], KYOTO, 0.15)} className="journey-guest" mask={`url(#${id}-o${i})`} />)}
-      {mine && <path key={you} d={arc(mine, KYOTO, 0.25)} className="journey-you" pathLength={1} style={{ animationDelay: `${youDelay}ms` }} />}
-      {mine && <circle key={`${you}-dot`} cx={mine[0]} cy={mine[1]} r="5" className="journey-you-dot" />}
+      {others.map((c, i) => <path key={c.key} d={arc(c.at, KYOTO, 0.15)} className="journey-guest" mask={`url(#${id}-o${i})`} />)}
+      {mine && <path key={String(you!.id)} d={arc(mine, KYOTO, 0.25)} className="journey-you" pathLength={1} style={{ animationDelay: `${youDelay}ms` }} />}
+      {mine && <circle key={`${you!.id}-dot`} cx={mine[0]} cy={mine[1]} r="5" className="journey-you-dot" />}
       <JourneyPlaces />
       <g transform={`translate(${KYOTO[0] - 14} ${KYOTO[1] - 14})`} aria-hidden>
         <rect width="28" height="28" rx="6" className="journey-seal" />
@@ -121,7 +127,7 @@ export function JourneyMini({ you, counts, label, className }: { you: string | n
  * lines in words, counts per city, never names). Our story's last stop shows it without its own list (the story
  * has one).
  */
-export function GuestMap({ you, flying, label, listable = true }: { you: string | null; flying: { counts: Partial<Record<Flying, number>>; told: number; households: number } | null; label: string; listable?: boolean }) {
+export function GuestMap({ you, flying, label, listable = true }: { you: City | null; flying: { counts: Partial<Record<Flying, number>>; cities?: Others; told: number; households: number } | null; label: string; listable?: boolean }) {
   const { t } = useLang()
   const [list, setList] = useState(false)
   const name = (c: Flying) => t.flying.cities[c] ?? c
@@ -134,10 +140,10 @@ export function GuestMap({ you, flying, label, listable = true }: { you: string 
         ? <ul className="flex flex-col gap-1">
             <li>{t.journey.list.griffin}</li>
             <li>{t.journey.list.nadia}</li>
-            {you && <li className="font-medium text-foreground">{t.journey.list.you(placeName(you))}</li>}
+            {you && <li className="font-medium text-foreground">{t.journey.list.you(placeName(you.name))}</li>}
             {cities.map(([c, n]) => <li key={c}>{t.journey.list.city(name(c), n)}</li>)}
           </ul>
-        : <><JourneyMini you={you} counts={flying?.counts} label={label} /><JourneyLegend you={Boolean(you)} /></>}
+        : <><JourneyMini you={you} counts={flying?.counts} cities={flying?.cities} label={label} /><JourneyLegend you={Boolean(you)} /></>}
       {(listable || told) && <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         {told ? <p className="text-small text-muted-foreground">{t.journey.count(flying!.told, flying!.households)}</p> : <span />}
         {listable && <button type="button" className="btn-text min-h-11" onClick={() => setList((v) => !v)}>{list ? t.journey.seeMap : t.journey.seeList}</button>}

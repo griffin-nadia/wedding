@@ -16,11 +16,13 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "art-"))
 const JOBS = [
   // name, source, out folder, widths (CSS px at 1x, then 2x)
   ["envelope-closed", "envelope-closed.png", "envelope", [410, 820]],
-  ["envelope-open", "envelope-open.png", "envelope", [410, 820], "cut-top"],
+  // The open envelope is two layers since 18 Oct: scripts/envelope-layers.mjs
   ["wax-seal", "wax-seal.png", "seal", [64, 128, 256]],
   ["gum-leaves", "gum-leaves.png", "leaves", [160, 320]],
-  ["names-mask", "lettering-black.png", "names", [1040], "no-amp"],
-  ["amp-mask", "lettering-black.png", "names", [1040], "amp"],
+  // 18 Oct: the lettering from lettering-dark-ink.png (2500px), as masks at 1x and 2x; the cream file isn't needed
+  // (the theme fills the mask, so its grey speckling on "Nadia" never shows)
+  ["names-mask", "../nadia-art-18oct/lettering-dark-ink.png", "names", [520, 1040], "no-amp"],
+  ["amp-mask", "../nadia-art-18oct/lettering-dark-ink.png", "names", [520, 1040], "amp"],
 ]
 const b = await chromium.launch(), p = await b.newPage()
 const ratios = {}
@@ -48,8 +50,8 @@ for (const [name, file, dir, widths, fix] of JOBS) {
     x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(W, x1 + pad); y1 = Math.min(H, y1 + pad)
     const cw = x1 - x0, ch = y1 - y0
     if (fix === "amp" || fix === "no-amp") {
-      // The "&" sits between x 990 and 1150 of 2000, with clear paper either side
-      const a0 = 990 * W / 2000, a1 = 1150 * W / 2000
+      // The "&" sits between x 1191 and 1283 of 2500, with clear paper either side: cut in the middle of each gap
+      const a0 = 1106 * W / 2500, a1 = 1376 * W / 2500
       x.globalCompositeOperation = "destination-out"
       if (fix === "amp") { x.fillRect(0, 0, a0, H); x.fillRect(a1, 0, W - a1, H) } else x.fillRect(a0, 0, a1 - a0, H)
       x.globalCompositeOperation = "source-over"
