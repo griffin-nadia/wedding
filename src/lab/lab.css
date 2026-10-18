@@ -1,37 +1,9 @@
 /* The lab (local only). Nothing here reaches the guest site. */
 
-/* ── Styles (the style switcher), set on <html data-lab-style> in a frame ── */
-/* Paper: the shader's still frame behind the letter, the site's grain still over it */
-.lab-paper { position: absolute !important; inset: 0; z-index: -2; border-radius: inherit; overflow: hidden; pointer-events: none; }
-.lab-paper canvas { width: 100% !important; height: 100% !important; }
-[data-lab-style="paper"] .letter { background: transparent; }
-/* Quiet: the system font everywhere, hairlines instead of shadows */
-[data-lab-style="quiet"] {
-  --font-display: system-ui, -apple-system, "Segoe UI", sans-serif; --font-label: system-ui, -apple-system, "Segoe UI", sans-serif; --font-body: var(--font-label);
-  --elevation-paper: 0 0 0 1px var(--line-hairline); --elevation-sheet: 0 0 0 1px var(--line-strong);
-}
-[data-lab-style="quiet"] .letter { background: var(--letter-bg); }
-[data-lab-style="quiet"] .heading::after { height: 1px; }
-/* Ink: serif throughout, and the current tab underlined in ink instead of a tinted marker */
-[data-lab-style="ink"] { --font-label: "Oranienbaum", "Zen Old Mincho", Georgia, serif; --font-body: var(--font-label); }
-[data-lab-style="ink"] .nav-mark { background: none !important; box-shadow: none !important; }
-[data-lab-style="ink"] .site-nav-link.is-active::after { content: ""; position: absolute; left: 25%; right: 25%; bottom: 6px; height: 2px; border-radius: 2px; background: var(--ink); }
-[data-lab-style="ink"] .site-nav-link.is-active { color: var(--ink); }
-
-/* ── Layouts ── */
-.lab-progress { position: fixed; z-index: 60; top: 0; left: 0; right: 0; height: 3px; background: var(--action); transform-origin: left; transform: scaleX(0); }
-@supports (animation-timeline: scroll()) { .lab-progress { animation: lab-progress linear both; animation-timeline: scroll(root); } }
-@keyframes lab-progress { to { transform: scaleX(1); } }
-.lab-one { padding-bottom: var(--space-8); }
-.lab-chapter { padding-top: var(--space-6); border-top: 1px solid var(--line-hairline); }
-.lab-tabs ul { grid-auto-columns: 1fr; }
-.lab-tabs .site-nav-link { font-size: var(--type-small-size); }
-
 /* ── The shell ── */
 .lab-shell { min-height: 100svh; background: var(--background); color: var(--foreground); }
 .lab-bar { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-5); background: var(--letter-bg); border-bottom: 1px solid var(--line-hairline); }
 .lab-body { display: grid; gap: var(--space-5); padding: var(--space-5); }
-.lab-body[data-docked] { grid-template-columns: 380px minmax(0, 1fr); }
 .lab-frame { border: 1px solid var(--line-hairline); border-radius: var(--radius-section); background: #fff; box-shadow: var(--elevation-paper); }
 
 /* ── Playground (index, viewer, the experiment frame) ── */
