@@ -1,5 +1,7 @@
 # Data model (site data sheet)
 
+Every tab and column, with the tidy and the weekly routine: [sheets.md](sheets.md).
+
 Owned by the wedding Gmail. Only Griffin, Nadia and Jehan have access. Delete guest data about
 3 months after the wedding. Columns are found by header name: never rename them or the tabs.
 
