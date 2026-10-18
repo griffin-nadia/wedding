@@ -87,8 +87,97 @@ For the main run (not changed here, it's a live file): `src/index.css` lines 713
 
 ## Ready to ship
 
-READY_TO_SHIP
+For the main run to pick up. The lab never changes the live site. Numbers are from `scripts/lab-perf.mjs` (Pixel 7,
+CPU 4x slower, 1.6 Mbps and 150 ms, the built bundles served gzipped), in `src/lab/perf.json`.
+
+### 1. Faces clear of the envelope on phones (arrival-framing, take "zoom")
+
+- **Why:** today, on their day photo, the sealed envelope covers their faces by 28 px on a 360 wide phone and by
+  10 px on a 390 wide one (an iPhone 14). Zooming from the photo's bottom edge just enough, and moving the photo so
+  the faces sit in the middle, clears them by 24 px at every size.
+- **Files:** `src/index.css`, phones only, only while sealed. Replaces nothing in a component; it adds to the scene's
+  phone rules (today the photo is `object-fit: cover`, centred).
+- **The values** (the lab works them out per size; these bands cover 360 to 430 wide):
+
+```css
+@media (max-width: 767px) {
+  [data-sealed] .scene-photo img { object-position: 71% 50%; transform-origin: 50% 100%; }
+  [data-theme="lantern"] [data-sealed] .scene-photo img { object-position: 36% 50%; }
+  @media (max-height: 800px) { [data-sealed] .scene-photo img { scale: 1.24; } }
+  @media (min-height: 801px) and (max-height: 870px) { [data-sealed] .scene-photo img { scale: 1.16; } }
+  @media (min-height: 871px) and (max-height: 920px) { [data-sealed] .scene-photo img { scale: 1.08; } }
+  @media (min-height: 921px) { [data-sealed] .scene-photo img { scale: 1.06; } }
+}
+```
+
+  (Day needs 1.200 / 1.121 / 1.046 / 1.029 at 360, 390, 412, 430; night 1.238 / 1.156 / 1.078 / 1.062; the bands
+  take the larger. Check the selector: the sealed state is `data-sealed` on the shell in layout.tsx.)
+- **Weight:** none (CSS). Opening still keeps the same photo frame, so the zoom has to ease back to 1 as it opens
+  (one transition on `scale`), or stay for the arrival only.
+- **Risk:** a little softness at 1.24 on the smallest phones (the 1200 wide photo is drawn about 700 px wide, so it
+  holds). The night face box is wider than a phone, so night centres on the pair rather than fitting both edges.
+- **Test:** in `arrival.spec.ts`, at 360, 390, 412 and 430 wide: the envelope's box and the face box (from
+  scenes.json) don't overlap, by day and in Lantern.
+
+### 2. Warm the globe stop while the guest reads Home (loading-preload, the background part)
+
+- **Why:** on the throttled phone, the code for Our story's globe takes **2,383 ms** to arrive when the guest gets
+  there; warmed in the background while Home is idle, **15 ms**. The time to the sealed envelope doesn't change
+  (2,884 ms today, 2,690 ms with the warm and the art preload below) and a repeat visit is the same (220 to 238 ms):
+  nothing is added when things are cached.
+- **Files:** `src/components/layout.tsx` (or `src/main.tsx`): after the envelope is up (or the letter, on a return
+  visit) and `requestIdleCallback` fires, `import("@/components/journey-globe")` and `import("@/lib/paint-globe")`
+  (they pull three, the line modules and world-atlas land, 218 KB gzipped in all), then `import("@/lib/paper-live")`.
+  The song only when `navigator.connection.effectiveType === "4g"` and not `saveData`. About 10 lines.
+- **Replaces:** nothing; story-journey.tsx's lazy import then finds it already loaded.
+- **Risk:** 218 KB on a metered phone for a stop some guests never open. Skip the warm when `saveData` is on.
+- **Test:** a perf check (perf.spec.ts) that Home's own budget doesn't change (the warm happens after load), and a
+  unit test of the connection rule.
+
+### 3. The fortune unfolds in three, like a real omikuji (micro-motion, the fortune row)
+
+- **Why:** it won in the final run (confirm-fortune-unfold) but the site still unfolds the slip with one scaleY. The
+  three folds open toward you, top then bottom, each on its crease. 60 fps on the throttled phone, no long task.
+- **Files:** `src/components/fortune-card.tsx` (the open slip) and `src/index.css` (.omikuji-slip's slip-unfold).
+  The lab's version is in `src/lab/playground/x/micro/micro-motion.tsx` (Fortune): three panels showing the same slip
+  at -0, -1/3 and -2/3 of its height, the outer two turning from ±180°.
+- **Weight:** none (CSS transforms; the slip renders three times while it opens, once after).
+- **Risk:** Safari's preserve-3d; check on an iPhone. The slip's height must be known (it's fixed at 420 px in the
+  lab; on the site measure it once).
+- **Test:** rsvp.spec.ts still finds the slip and its "Save" link; reduced motion keeps the fade.
+
+### Also ready (smaller)
+
+- **The globe's turn and the Kyoto label** (journey-globe-styles): coalesced pointer events, the flick's speed from
+  the last 80 ms, about half a second to coast to rest, a soft spring at the top and bottom, arrow keys; and an HTML
+  "Kyoto 京都" label pinned to the city that fades as it turns away. In `journey-globe.tsx`; no weight. The ink and
+  gouache hands measure about the same as the site's globe (39 and 41 fps against 44, in software WebGL); the
+  see-through watercolour is slower (34, it draws the sphere twice). Test: globe.spec.ts plus a drag.
+- **Preload the arrival art** (loading-preload): `<link rel="preload" as="image" type="image/avif">` for the closed
+  envelope (820) in index.html's first-paint script, next to the scene's: the envelope shows about 200 ms sooner
+  (2,884 to 2,676 ms). Risk: the 410 or 820 choice must match the img's srcset for the phone's density.
+- **The light sweep on a theme change** (paper-light), if Jehan wants it: nothing measurable (the theme change's own
+  long task is 350 ms with or without it). One fixed element over #letter after the circle reveal, in
+  lantern-toggle.tsx.
+- **Dead lab CSS in the live file**: `src/index.css` lines 713 to 715 (`.lab-frame`, `.lab-desktop`).
+
+### Found on the way (for the main run)
+
+- **The theme change is a 350 ms long task** on the throttled phone (both with and without the sweep): the whole
+  page re-renders when the mode flips. Worth a profile in the main run; it's the site's, not the lab's.
 
 ## Waiting on
 
-WAITING_ON
+- **Jehan** (the Shortlist has all of these side by side): the letter out (hinge, pull or quick); Seal it again
+  (press, reverse or fade); the note (arrow first, words first or one line); the arrival framing (keep, zoom or lift);
+  the loading screen (worth it, and which take, or only the background warm); the flat map's hand; the paper preset;
+  the light sweep (yes or no); one curve or one spring for the small motions.
+- **Griffin and Nadia**: the seal (寿, 京 or G·N); the globe's hand (watercolour, ink or gouache, or Nadia paints it);
+  the story prints (scrapbook, polaroid or linen) and, for polaroids, a short caption per chapter; the logo (her
+  lettering, one ink, or today's).
+- **Nadia's art**:
+  - the arrow for "Open your invite" (the lab's is a stand-in), as an SVG or a transparent PNG
+  - the open envelope's flap as its own layer (docs/art.md), so the hinge turns her flap exactly rather than one cut
+    from the closed drawing
+  - her handwriting for the polaroid captions (a few words lettered per chapter, or enough letters for a font)
+  - optional: the painted land for the globe (ART.globeLand)
