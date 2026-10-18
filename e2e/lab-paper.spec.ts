@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test"
 test.describe.configure({ timeout: 90_000 })
 test("lab paper: four presets in both themes, sliders move the picked one", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]).catch(() => {})
-  await page.goto("lab-x2tyua87sy/lab-play.html?x=micro-paper")
+  await page.goto("lab/lab-play.html?x=micro-paper")
   const group = page.getByRole("radiogroup", { name: "Paper" })
   // Eight shaders start up first (slow in a browser without a GPU, as on CI)
   await expect(group.getByRole("radio")).toHaveCount(4, { timeout: 30_000 })

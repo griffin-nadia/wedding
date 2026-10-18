@@ -70,21 +70,20 @@ For a local preview of a song that isn't cleared yet, put it at `private/song.mp
 
 ## The lab (local only)
 
-`npm run lab` opens `lab.html` on the dev server, at the **Playground**: every part of the site (opening, navigation,
-page transitions, Home, The day, Travel, RSVP, Our story, the journey map, the confirmation and the small things) in
-two to four takes each, today's version among them. The index shows each with a thumbnail; open one to flip
-between a phone and a laptop frame, slow it to 0.25× or speed it to 2× (every animation follows the slider), replay
-it, and read where the idea comes from and what it would take to ship. Each take is one file in
+`npm run lab` opens `lab.html` on the dev server, at the **Playground**. Since the final run (18 Oct) it keeps only
+what's still useful: the choices still open (the opening's A / B / C, how the story prints sit, the paper and its
+comparison with Paper's own, the confirmation's seal), the winners now on the site (the spread, the globe, the
+fortune unfolding), each with what's left to decide, and two parked ideas (prints on a table, a stack you flick).
+Every item says **Deciding:** or **Parked:**. Open one to flip between a phone and a laptop frame, slow it to 0.25×
+or speed it to 2×, switch the theme and the paper, and replay it. Each take is one file in
 `src/lab/playground/x/<area>/` (the contract is in `src/lab/playground/README.md`) and opens on its own at
 `lab-play.html?x=<id>`. On your phone: `npm run lab -- --host`, then the Network address it prints plus
 `/wedding/lab.html#playground`, with the phone on the same wifi. Thumbnails: `node scripts/lab-thumbs.mjs` with the
-dev server running.
+dev server running. The other tab is the component gallery (every component, variant and state, light and dark).
 
-The other tabs: a component gallery (every component, variant and state, light
-and dark), the Options panel, a layout switcher (A five tabs, B one scrolling letter, C invite as home with sheets,
-D three tabs), a style switcher (Paper, Quiet, Ink) at phone and laptop size, and the experiments in
-`src/lab/experiments` (one file each, so a winner moves into the site in one PR). It is never built, deployed or
-linked: the build only reads `index.html`, and it fails if any lab code or lab page reaches `dist`.
+It is never deployed or linked: `npm run build` (and so the Pages deploy) doesn't build it, and fails if any lab code
+or lab page reaches `dist`. `npm run build:lab` builds it into `dist/lab/` for its own tests (the Playwright web server
+runs it after `npm run build`).
 
 
 All words live in `src/content/en.ts`, taken from their Inv details tab. Japanese goes in `ja.ts` with the

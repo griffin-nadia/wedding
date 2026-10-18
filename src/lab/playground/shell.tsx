@@ -23,25 +23,25 @@ function Card({ e, open }: { e: (typeof ALL)[number]; open: (id: string) => void
       <button type="button" className="lab-index-card" onClick={() => open(e.id)}>
         {thumb(e.id) ? <img src={thumb(e.id)} alt="" loading="lazy" className="lab-thumb" /> : <span aria-hidden className="lab-thumb" />}
         <span className="flex flex-col gap-1 text-left">
-          <span className="font-medium text-foreground">{e.title}{e.current && <span className="lab-tag">current</span>}</span>
+          <span className="font-medium text-foreground">{e.title}</span>
           {e.deciding && <span className="lab-deciding"><strong>Deciding:</strong> {e.deciding.replace(/^[^:]+: /, "")}</span>}
-          {e.decided && <span className="text-small text-muted-foreground">{e.decided}</span>}
-          {!e.decided && <span className="text-small text-muted-foreground">{e.summary}</span>}
+          {e.parked && <span className="text-small text-muted-foreground"><strong>Parked:</strong> {e.parked}</span>}
+          {!e.parked && <span className="text-small text-muted-foreground">{e.summary}</span>}
         </span>
       </button>
     </li>
   )
 }
 
-/** The index: only the open questions, by area; everything decided or superseded under Done / decided, collapsed. */
+/** The index: the open questions by area; the parked ideas under Parked, collapsed. */
 function Index({ open }: { open: (id: string) => void }) {
-  const openAreas = AREAS.map((a) => ({ ...a, entries: ALL.filter((e) => e.area === a.id && !e.decided) })).filter((a) => a.entries.some((e) => e.deciding))
-  const done = ALL.filter((e) => e.decided)
+  const openAreas = AREAS.map((a) => ({ ...a, entries: ALL.filter((e) => e.area === a.id && !e.parked) })).filter((a) => a.entries.length)
+  const parked = ALL.filter((e) => e.parked)
   return (
     <div className="lab-body flex flex-col gap-8">
       <p className="max-w-[70ch] text-small text-muted-foreground">
-        The open questions, each with what needs choosing. Open one to see it in the site's own shell, switch the theme and the paper, and replay it. A
-        link keeps the exact view (?v=, theme=, paper=), so it can be sent on.
+        The open questions, each with what needs choosing, and two parked ideas. Local only (npm run lab). Open one to see it in the site's own
+        shell, switch the theme and the paper, and replay it. A link keeps the exact view (?v=, theme=, paper=).
       </p>
       {openAreas.map((a) => (
         <section key={a.id} aria-labelledby={`area-${a.id}`} className="flex flex-col gap-3">
@@ -50,8 +50,8 @@ function Index({ open }: { open: (id: string) => void }) {
         </section>
       ))}
       <details className="lab-done">
-        <summary className="font-display text-heading text-foreground">Done / decided <span className="label-caps text-muted-foreground">{done.length}</span></summary>
-        <ul className="lab-index mt-4">{done.map((e) => <Card key={e.id} e={e} open={open} />)}</ul>
+        <summary className="font-display text-heading text-foreground">Parked <span className="label-caps text-muted-foreground">{parked.length}</span></summary>
+        <ul className="lab-index mt-4">{parked.map((e) => <Card key={e.id} e={e} open={open} />)}</ul>
       </details>
     </div>
   )
@@ -69,7 +69,7 @@ function Options({ e, view, set, replay, close, device, setDevice }: {
       <label className="lab-field">
         <span className="label-caps text-muted-foreground">Variant</span>
         <select className="field" value={e.id} onChange={(ev) => set({ v: ev.target.value })}>
-          {takes.map((x) => <option key={x.id} value={x.id}>{x.title}{x.decided ? " (decided)" : ""}</option>)}
+          {takes.map((x) => <option key={x.id} value={x.id}>{x.title}{x.parked ? " (parked)" : ""}</option>)}
         </select>
       </label>
       <Segmented label="Theme" value={view.theme} onChange={(theme) => set({ theme })} items={[{ value: "light", label: "Light" }, { value: "lantern", label: "Lantern" }]} />
@@ -158,11 +158,11 @@ function Viewer({ view, set, close }: { view: View; set: (v: Partial<View>) => v
         </div>
       </div>
       <aside className="lab-notes" aria-label="About this experiment">
-        <p className="label-caps text-muted-foreground">{e.areaTitle}{e.current ? " · the site today" : ""}</p>
+        <p className="label-caps text-muted-foreground">{e.areaTitle}</p>
         <h2 className="font-display text-heading text-foreground">{e.title}</h2>
         <Options e={e} view={view} set={set} replay={() => setN(n + 1)} close={close} device={device} setDevice={setDevice} />
         <p>{e.summary}</p>
-        {e.decided && <p className="text-small"><strong>Decided:</strong> {e.decided}</p>}
+        {e.parked && <p className="text-small"><strong>Parked:</strong> {e.parked}</p>}
         <h3 className="font-medium text-foreground">Inspired by</h3>
         <ul className="flex flex-col gap-1">{e.refs.map((r) => <li key={r.href}><a href={r.href} target="_blank" rel="noreferrer" className="btn-text text-small">{r.label}</a></li>)}</ul>
         <h3 className="font-medium text-foreground">To promote it</h3>

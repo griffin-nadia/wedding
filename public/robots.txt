@@ -1,4 +1,2 @@
 User-agent: *
 Disallow: /
-# The lab (a hidden path, never linked): never index it
-Disallow: /wedding/lab-
