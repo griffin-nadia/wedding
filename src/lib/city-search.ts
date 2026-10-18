@@ -70,7 +70,9 @@ export function searchCities(index: CityIndex, typed: string, limit = 6): City[]
   for (const e of index.entries) {
     let s = Infinity
     for (const k of e.keys) {
-      if (k === q) { s = -2; break } // a city of exactly that name sits with the suburbs' cities, at the top
+      // A city of exactly that name sits with the suburbs' cities, at the top; a small town of that name elsewhere
+      // (run 19 added towns of 30,000 in every country: Victoria, Texas) comes after a state's own suggestions
+      if (k === q) { s = HOME.has(e.country) || e.pop >= 100_000 ? -2 : 0.5; break }
       if (k.startsWith(q)) s = Math.min(s, 1)
     }
     if (s > 1 && e.words.some((w) => w.startsWith(q))) s = 1.5
