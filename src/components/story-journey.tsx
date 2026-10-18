@@ -85,16 +85,19 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     const el = track.current
     if (!el) return
     const p = pos.current, w = el.clientWidth, calm = still()
-    ;[...el.children].forEach((node, i) => {
-      const slide = node as HTMLElement, d = i - p, a = Math.abs(d)
-      const media = slide.querySelector<HTMLElement>(".story-media"), words = slide.querySelector<HTMLElement>(".story-words")
+    // Every read before any write (run 19): reading a size after a write forced a fresh layout per stop, every frame
+    const slides = [...el.children] as HTMLElement[]
+    const parts = slides.map((s) => [s.querySelector<HTMLElement>(".story-media"), s.querySelector<HTMLElement>(".story-words")] as const)
+    const offs = parts.map(([m]) => (m ? (w + m.offsetWidth) / 2 + 32 : 0))
+    slides.forEach((slide, i) => {
+      const d = i - p, a = Math.abs(d), [media, words] = parts[i]
       slide.style.visibility = a < 0.999 ? "" : "hidden" // only the stops on screen draw
       slide.style.zIndex = d >= 0 ? "2" : "1" // the arriving print comes in over the one easing back
       if (calm) { slide.style.opacity = a < 0.5 ? "1" : "0"; return }
       slide.style.opacity = ""
       if (media) {
         // Far enough that a whole stop along, the print (and its tilt) is clear of the track's edge
-        const off = (w + media.offsetWidth) / 2 + 32
+        const off = offs[i]
         media.style.transform = d >= 0
           ? `translate3d(${d * off}px, 0, 0) rotate(${d * 8}deg)` // arriving: from the right, turned, settling straight
           : `translate3d(${d * w * 0.16}px, 0, 0) scale(${1 + d * 0.08})` // leaving: eases back and away

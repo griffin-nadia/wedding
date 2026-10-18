@@ -46,7 +46,7 @@ function AccordionTrigger({
         {...props}
       >
         {children}
-        <ChevronDownIcon data-slot="accordion-trigger-icon" className="pointer-events-none size-5 shrink-0 transition-transform duration-200 ease-(--ease-paper) group-aria-expanded/accordion-trigger:rotate-180" />
+        <ChevronDownIcon data-slot="accordion-trigger-icon" className="pointer-events-none size-5 shrink-0 transition-transform duration-(--duration-base) ease-(--ease-paper) group-aria-expanded/accordion-trigger:rotate-180" />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   )
@@ -60,7 +60,7 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
-      className="accordion-content overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up"
+      className="accordion-content overflow-hidden"
       {...props}
     >
       <div
@@ -97,7 +97,7 @@ export function Disclosure({ label, children, onValueChange, ...props }: { label
     if (v && el) {
       const box = el.closest<HTMLElement>(".letter-scroll, .sheet-body")
       const scroll = (d: number) => (box ?? window).scrollBy({ top: d, behavior: "instant" })
-      const top = el.getBoundingClientRect().top, start = performance.now(), glide = still() ? 0 : 300, until = start + 450
+      const top = el.getBoundingClientRect().top, start = performance.now(), glide = still() ? 0 : 250, until = start + 450
       let goal: number | null = null // where the header ends up on screen, once its content is there to measure
       loop((now) => {
         if (goal === null) {
