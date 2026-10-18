@@ -61,7 +61,6 @@
   --shadow-paper: var(--elevation-paper);
   --shadow-sheet: var(--elevation-sheet);
   --ease-paper: var(--ease-paper);
-  --ease-spring: var(--ease-spring);
   /* Motion: three durations */
   --default-transition-duration: var(--duration-fast);
   --default-transition-timing-function: var(--ease-paper);
@@ -226,7 +225,7 @@
   border: 1px solid var(--input-line);
   background-color: var(--input-bg);
   transition: border-color var(--duration-fast) var(--ease-paper), box-shadow var(--duration-fast) var(--ease-paper),
-    background-color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-spring);
+    background-color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper);
   outline: 2px solid transparent;
   outline-offset: 2px;
   @media (hover: hover) {
@@ -271,7 +270,7 @@
   border: 1px solid transparent;
   outline: 2px solid transparent;
   outline-offset: 2px;
-  transition: background-color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-spring);
+  transition: background-color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper);
   /* Hover is border-only, like every control: same fill, a stronger line (v3 R) */
   @media (hover: hover) { &:hover:not(:disabled) { border-color: var(--button-line-hover); } }
   &[data-force="hover"] { border-color: var(--button-line-hover); }
@@ -299,7 +298,7 @@
 
 /* Press feedback for anything else tappable: instant and small */
 @utility press {
-  transition: transform var(--duration-fast) var(--ease-spring);
+  transition: transform var(--duration-fast) var(--ease-paper);
   &:active:not(:disabled) { transform: scale(var(--press-scale)); }
 }
 
@@ -543,7 +542,7 @@
   mix-blend-mode: var(--paper-blend); opacity: 0;
 }
 /* Once it's made (src/lib/paper-live.ts), it fades in over 400 ms at the strength that keeps text AA (--paper-on) */
-[data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper, .arrival-sheet)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity 400ms var(--ease-paper); }
+[data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper, .arrival-sheet)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity var(--duration-slow) var(--ease-paper); }
 /* The driver card stays bright paper in Lantern, where the sheet made is the night one: plain there */
 [data-theme="lantern"] .sheet-bright::after { display: none; }
 .letter .paper-feel::after, .sheet .paper-feel::after { display: none; }
@@ -557,7 +556,7 @@
 }
 .site-nav { isolation: isolate; }
 .site-nav::after { background-position: bottom center; }
-[data-paper] :is(.site-bar, .site-nav)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity 400ms var(--ease-paper); }
+[data-paper] :is(.site-bar, .site-nav)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity var(--duration-slow) var(--ease-paper); }
 @media (min-width: 768px) { .site-nav::after { display: none; } }
 @media print { .letter::after, .paper-feel::after { display: none; } }
 
@@ -695,8 +694,10 @@
 .field[aria-invalid="true"] { background-image: none !important; }
 .chip-tick { animation: tick-in var(--duration-fast) var(--ease-paper) both; }
 @keyframes tick-in { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
-/* Accordions open and close in 300 ms on the paper ease */
-.accordion-content[data-state] { animation-duration: var(--duration-base) !important; animation-timing-function: var(--ease-paper) !important; }
+/* Accordions (run 19): the answer opens at once and fades and rises into place, so nothing animates height and
+   re-lays out the page every frame; closing is a plain close */
+.accordion-content[data-state="open"] > * { animation: accordion-in var(--duration-base) var(--ease-paper) both; }
+@keyframes accordion-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 
 /* ─── Tuning panel (dev and VITE_TUNE builds only) ─────────────────────────── */
 .tune-panel { position: fixed; z-index: 90; top: 0; right: 0; bottom: 0; width: min(380px, 100vw); display: flex; flex-direction: column; background: var(--surface-raised); color: var(--ink-soft); border-left: 1px solid var(--line-hairline); box-shadow: var(--elevation-sheet); font-size: 15px; }
@@ -812,7 +813,7 @@ svg.lucide { stroke-width: 1.5; }
 
 /* Pull to open: the flap follows the finger (--pull 0..1); letting go springs (stiffness 120, damping 18 feel) */
 .arrival { touch-action: none; }
-.arrival .envelope-flap { transform: rotateX(calc(var(--pull, 0) * 180deg)); transition: transform var(--duration-base) var(--ease-spring); }
+.arrival .envelope-flap { transform: rotateX(calc(var(--pull, 0) * 180deg)); transition: transform var(--duration-base) var(--ease-paper); }
 .arrival.is-pulling .envelope-flap { transition: none; }
 .arrival .envelope-paper { transform: translateY(calc(var(--pull, 0) * -30%)); }
 .arrival.is-pulling .envelope-paper { transition: none; }
@@ -949,12 +950,9 @@ svg.lucide { stroke-width: 1.5; }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 /* One reveal, nothing else moving inside it (6 Oct): the photo swaps instantly under the snapshot, so it never
    fades twice. The circle itself is animated from lantern-toggle.tsx (exact pixels from the tapped button). */
-:root[data-vt="fade"]::view-transition-new(root) { animation: mode-fade var(--duration-slow) var(--ease-paper); }
-:root[data-vt="fade"]::view-transition-old(root) { animation: none; } /* the old mode stays put underneath, so the page never dips mid-fade */
 /* The new mode waits hidden until the circle starts, so it never flashes in full for a frame */
 /* (lantern-toggle.tsx writes the circle's resting clip and its keyframes in literal pixels at the button, before the
    transition starts, so even its first frame is centred on the button.) */
-@keyframes mode-fade { from { opacity: 0; } to { opacity: 1; } }
 :root[data-vt] .scene-layer, :root[data-vt] * { transition: none !important; }
 /* The page's words are their own group for page changes (polish.css); in a mode switch they join the page, so the
    circle reveals words and paper together instead of the words fading and rising on their own */
@@ -992,14 +990,14 @@ svg.lucide { stroke-width: 1.5; }
 .journey-seal { fill: var(--action); }
 .journey-seal-text { fill: var(--brand-shiro-kinari); font-family: var(--font-ja); font-size: 16px; }
 .journey-dots { display: flex; gap: var(--space-1); }
-.journey-dots span { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--line-strong); transition: width var(--duration-fast) var(--ease-paper); }
+.journey-dots span { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--line-strong); transition: background-color var(--duration-fast) var(--ease-paper); } /* the width steps, so nothing re-lays out each frame */
 .journey-dots span.is-on { width: 24px; background: var(--action); }
 /* Arrival (v3 R): land washes in (600), the two home routes draw to Kyoto (900, the second 300 later), the seal
    lands with the hanko press, then guests' lines one by one 120 apart, each with a soft pulse at Kyoto. */
 .journey .journey-land { opacity: 0; transition: opacity var(--duration-slow) var(--ease-paper); }
 .journey.is-in .journey-land { opacity: 1; }
 .journey-reveal { fill: none; stroke: #fff; stroke-width: 6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
-.journey.is-in .journey-reveal { animation: journey-reveal 900ms var(--ease-paper) forwards; animation-delay: 300ms; }
+.journey.is-in .journey-reveal { animation: journey-reveal calc(var(--duration-slow) * 2) var(--ease-paper) forwards; animation-delay: 300ms; }
 .journey.is-in .journey-reveal-2 { animation-delay: 600ms; }
 .journey.is-in .journey-reveal-guest { animation-duration: 700ms; }
 @keyframes journey-reveal { to { stroke-dashoffset: 0; } }
@@ -1018,7 +1016,7 @@ svg.lucide { stroke-width: 1.5; }
 @media (max-width: 767px) { .arrival .envelope { width: 260px; height: 168px; } .arrival .envelope-seal { width: 52px !important; height: 52px !important; } }
 .arrival .envelope { translate: 0 calc(var(--pull, 0) * 20px); opacity: calc(1 - var(--pull, 0) * 0.25); }
 .arrival .envelope-paper { transform: translateY(calc(var(--pull, 0) * -62%)); }
-.arrival:not(.is-pulling) .envelope { transition: translate var(--duration-base) var(--ease-spring), opacity var(--duration-base) var(--ease-paper), transform var(--duration-fast) var(--ease-paper); }
+.arrival:not(.is-pulling) .envelope { transition: translate var(--duration-base) var(--ease-paper), opacity var(--duration-base) var(--ease-paper), transform var(--duration-fast) var(--ease-paper); }
 /* From 1024 to 1279 the envelope sits on warm paper, not the photo: the note is ink there, not white (from 1280 it is over the photo again) */
 
 /* Phones: the letter's gap above the dock is the dock (64 + its hairline), the safe area and 12 of air. Content that
@@ -1142,8 +1140,8 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-part-2 { clip-path: inset(33.333% 0 33.333% 0); }
 .omikuji-part-3 { clip-path: inset(66.667% 0 0 0); }
 .omikuji-leaf { position: absolute; inset: 0; transform-style: preserve-3d; }
-.omikuji-leaf-2 { transform-origin: 50% 33.333%; animation: omikuji-leaf-2 1100ms cubic-bezier(0.45, 0.05, 0.3, 1) both; }
-.omikuji-leaf-3 { transform-origin: 50% 66.667%; animation: omikuji-leaf-3 1100ms cubic-bezier(0.45, 0.05, 0.3, 1) both; }
+.omikuji-leaf-2 { transform-origin: 50% 33.333%; animation: omikuji-leaf-2 1100ms var(--ease-paper-in-out) both; }
+.omikuji-leaf-3 { transform-origin: 50% 66.667%; animation: omikuji-leaf-3 1100ms var(--ease-paper-in-out) both; }
 /* Folded behind, zigzag: the middle swings down from behind the top, then the last from behind the middle, each
    landing with a little give */
 @keyframes omikuji-leaf-2 { 0% { transform: rotateX(-178deg); } 48% { transform: rotateX(3deg); } 60%, 100% { transform: rotateX(0deg); } }
@@ -1154,8 +1152,8 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); border-bottom: 6px solid var(--brand-sabi); }
 /* A third's shade lifts as it flattens */
 .omikuji-shade { position: absolute; inset: 0; z-index: 31; pointer-events: none; background: rgb(var(--tint-shadow) / 0.3); }
-.omikuji-part-2 .omikuji-shade { animation: omikuji-shade 1100ms ease-out both; }
-.omikuji-part-3 .omikuji-shade { animation: omikuji-shade-3 1100ms ease-out both; }
+.omikuji-part-2 .omikuji-shade { animation: omikuji-shade 1100ms var(--ease-paper) both; }
+.omikuji-part-3 .omikuji-shade { animation: omikuji-shade-3 1100ms var(--ease-paper) both; }
 @keyframes omikuji-shade { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes omikuji-shade-3 { 0%, 24% { opacity: 1; } 84%, 100% { opacity: 0; } }
 /* The creases, sharp while it opens, then easing out to the two faint lines the paper keeps */
@@ -1364,7 +1362,7 @@ svg.lucide { stroke-width: 1.5; }
   border: 1px solid var(--line-strong); border-radius: var(--input-radius); background: var(--input-bg); color: var(--ink-soft); /* line-strong: 3:1 or more on the paper in both modes */
   font-family: var(--font-label); font-size: var(--type-ui-size); font-weight: 500; text-align: center; cursor: pointer;
   outline: 2px solid transparent; outline-offset: 2px; -webkit-tap-highlight-color: transparent; user-select: none;
-  transition: border-color var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper), color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-spring);
+  transition: border-color var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper), color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper);
 }
 .radio-option:has(:focus-visible) { outline-color: var(--input-focus); }
 @media (hover: hover) { .radio-option:not([data-selected]):hover { background: color-mix(in oklab, var(--ink) 5%, var(--input-bg)); color: var(--ink); } }

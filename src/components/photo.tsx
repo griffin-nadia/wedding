@@ -43,7 +43,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
       {p.formats.webp && <source type="image/webp" srcSet={set("webp")} sizes={sizes} />}
       <img src={src(fallback)} alt={words.alt} width={p.width} height={p.height} sizes={sizes}
         loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" onLoad={() => setLoaded(true)}
-        className={cn("photo-img size-full object-cover object-[50%_30%] transition-opacity duration-[400ms]", loaded ? "opacity-100" : "opacity-0")} />
+        className={cn("photo-img size-full object-cover object-[50%_30%] transition-opacity duration-(--duration-slow)", loaded ? "opacity-100" : "opacity-0")} />
     </picture>
   ) : (
     <div role="img" aria-label={words.caption || pending("photo.toCome", lang)} className="photo-placeholder grid size-full place-items-center p-4 text-center">

@@ -37,7 +37,7 @@ let moving = 0
 const still_ = (el: HTMLElement) => { el.style.clipPath = ""; if (--moving <= 0) { moving = 0; document.documentElement.removeAttribute("data-turning") } }
 const turnMs = () => {
   const d = getComputedStyle(document.documentElement).getPropertyValue("--duration-base").trim()
-  return (d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000) || 280
+  return (d.endsWith("ms") ? parseFloat(d) : parseFloat(d) * 1000) || 250
 }
 let dragging = false
 /** Leaves the letter with no inline motion once it has settled, so nothing lingers on its own layer */
@@ -146,7 +146,7 @@ export function usePageTurn(enabled: boolean) {
       // The drag lets go of its hold; settle() or the arrival takes over (keeping the clip if the page is turning)
       if (go && !still()) moving--; else still_(el)
       if (!go) {
-        el.style.transition = "transform var(--duration-fast) var(--ease-spring)"; el.style.transform = ""; asSheet(el); settle(el)
+        el.style.transition = "transform var(--duration-fast) var(--ease-paper)"; el.style.transform = ""; asSheet(el); settle(el)
         return
       }
       if (!still()) leave(dir, dx)

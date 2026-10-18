@@ -101,7 +101,9 @@ test("each page has its own title", async ({ page }) => {
 })
 
 // 18e: the circle's origin is the toggle's centre, exactly, on the first switch and the second (at 390 and 1440).
-// Read from the circle the toggle writes, so a frame-timing quirk can't hide an off-centre start.
+// Read from the circle the toggle writes, so a frame-timing quirk can't hide an off-centre start. Run 19: and from the
+// circle the browser is actually drawing mid-reveal (the snapshot's computed clip), after a page change too (laptops
+// change pages with a view transition of their own), and the reveal is the slow token, 450 ms.
 test("the theme circle starts at the toggle's centre, first and second switch", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" })
   await page.addInitScript(() => {
@@ -113,13 +115,25 @@ test("the theme circle starts at the toggle's centre, first and second switch", 
   await page.waitForLoadState("networkidle")
   const btn = page.locator(".site-bar .mode-switches > button:last-child")
   const centre = async () => { const b = (await btn.boundingBox())!; return `${Math.round(b.x + b.width / 2)},${Math.round(b.y + b.height / 2)}` }
-  const want = [await centre()]
+  // Mid-reveal: the circle on screen has grown past 0 and is centred on the button
+  const drawn = async () => (await page.waitForFunction(() => {
+    const c = getComputedStyle(document.documentElement, "::view-transition-new(root)").clipPath.match(/circle\(([\d.]+)px at ([\d.]+)px ([\d.]+)px\)/)
+    return c && +c[1] > 0 ? `${Math.round(+c[2])},${Math.round(+c[3])}` : null
+  }, null, { polling: 16, timeout: 2000 })).jsonValue()
+  const want = [await centre()], seen = []
   await btn.click()
-  await page.waitForTimeout(1500) // the reveal finishes
+  seen.push(await drawn())
+  const ms = await page.evaluate(() => [...new Set(document.documentElement.getAnimations({ subtree: true }).filter((a) => (a.effect as KeyframeEffect).pseudoElement === "::view-transition-new(root)").map((a) => a.effect!.getTiming().duration))])
+  expect(ms).toEqual([450])
+  await page.waitForTimeout(1000) // the reveal finishes
+  await page.locator(".site-nav a").nth(2).click() // to Travel, then switch back
+  await page.waitForTimeout(800)
   want.push(await centre())
   await btn.click()
-  await page.waitForTimeout(1500)
+  seen.push(await drawn())
+  await page.waitForTimeout(1000)
   expect(await page.evaluate(() => (window as unknown as { __circles: string[] }).__circles)).toEqual(want)
+  expect(seen).toEqual(want)
 })
 
 // Final M: on phones the dock's pill follows a swipe, then settles on the page it opened
