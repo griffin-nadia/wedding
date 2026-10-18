@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test"
 // and the screen is screenshotted. The paper is made in the browser, so this test asks for it (ng-paper=on) and runs
 // with software WebGL.
 test.use({ reducedMotion: "no-preference", launchOptions: { args: ["--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } })
-test.describe.configure({ timeout: 90_000 })
+test.describe.configure({ timeout: 180_000 }) // software WebGL on CI makes the paper slowly
 
 for (const theme of ["autumn", "lantern"] as const) test(`the envelope's letter is the card's paper, frame by frame (${theme})`, async ({ page }) => {
   await page.addInitScript((t) => { localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t); localStorage.setItem("ng-paper", "on") }, theme)
