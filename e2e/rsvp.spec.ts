@@ -9,7 +9,14 @@ import { test, expect, type Page } from "@playwright/test"
 test.describe.configure({ timeout: 180_000 })
 
 async function openForm(page: Page) {
-  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.addInitScript(() => {
+    localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off")
+    // A phone keyboard, stood in for (18g: it overlays the page, nothing resizes): the VirtualKeyboard API's rectangle
+    let rect = new DOMRect(0, innerHeight, innerWidth, 0)
+    const ls = new Set<() => void>()
+    Object.defineProperty(navigator, "virtualKeyboard", { value: { overlaysContent: false, get boundingRect() { return rect }, addEventListener: (_: string, f: () => void) => ls.add(f), removeEventListener: (_: string, f: () => void) => ls.delete(f) } })
+    ;(window as unknown as { __kb: (h: number) => void }).__kb = (h) => { rect = new DOMRect(0, innerHeight - h, innerWidth, h); ls.forEach((f) => f()) }
+  })
   await page.goto("?h=sample")
   await page.waitForLoadState("networkidle")
   await page.locator("#letter").getByRole("button", { name: /RSVP/ }).first().click()
@@ -22,10 +29,9 @@ async function press(page: Page, name: RegExp) {
   await button.scrollIntoViewIfNeeded()
   await button.click()
 }
-/** A phone keyboard: the screen gets shorter while a field has focus (Android resizes the page like this) */
+/** A phone keyboard up or down: it covers the bottom 364px (down to a 480px-tall view), overlaying the page */
 async function keyboard(page: Page, up: boolean) {
-  const { width } = page.viewportSize()!
-  await page.setViewportSize({ width, height: up ? 480 : 844 })
+  await page.evaluate((h) => (window as unknown as { __kb: (h: number) => void }).__kb(h), up ? 364 : 0)
   await page.waitForTimeout(450)
 }
 /** Next until the check step */
