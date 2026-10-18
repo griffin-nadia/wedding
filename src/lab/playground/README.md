@@ -1,6 +1,7 @@
 # The playground (local only)
 
-`npm run lab` → Playground (local only, never deployed). Each experiment is one take on one part of the site, full screen in
+`npm run lab` (or `npm run lab -- --host` for a phone, with a QR in the terminal) → Playground (local only, never
+deployed). Each experiment is one idea for one part of the site, in 2 or 3 takes, full screen in
 `lab-play.html?x=<id>`, shown in a phone (390 × 844) or laptop (1440 × 900) frame at 0.25× to 2× speed.
 
 ## The contract for an experiment
@@ -22,5 +23,12 @@
 - **Australian English, no em dashes.** No new dependencies (Three.js and Paper's shaders are already in).
 - **Deciding or Parked:** every entry has one: `deciding` (what Jehan or Griffin and Nadia need to choose) or
   `parked` (an idea kept for later). Decided ones are deleted, with their thumbnails; the run log says what won.
+- **Takes, knobs, live (lab run 19):** 2 or 3 `takes` (read with `useTake()` from `../../params`), any `knobs` (read
+  with `useKnob()`), and `live`: where the site does this today, for Compare with live. All of it lives in the address
+  (`?take=&k.<knob>=&theme=&speed=&live=1`), so a link opens the exact view, and the Options sheet's Copy settings
+  turns it into a note for Claude Code. The Shortlist shows every `deciding` entry's takes side by side.
+- **Performance:** `node scripts/lab-perf.mjs` measures each one on a throttled phone (fps, long tasks, the code it
+  loads) into `src/lab/perf.json`, shown as the card's badge. Transform and opacity only; no long task over 50 ms; under
+  2 MB of extra code, loaded on demand.
 - **Entry text:** `summary` one or two plain sentences; `refs` the inspiration links; `promote` what it would take to
   ship it (the work, the weight on phones, the risks, what it replaces).
