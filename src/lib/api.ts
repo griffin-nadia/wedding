@@ -213,7 +213,7 @@ export const SAMPLE_JOURNEYS: Journey[] = [
 ]
 export async function getJourneys(): Promise<Journey[]> {
   if (!config.apiUrl) return SAMPLE_JOURNEYS
-  try { const d = await call(`${config.apiUrl}?action=journeys`); return d.ok ? (d.cities as Journey[]) : [] } catch { return [] }
+  try { const d = await call(`${config.apiUrl}?action=journeys`); return d.ok && Array.isArray(d.cities) ? (d.cities as Journey[]) : [] } catch { return [] } // an older back end has no journeys: none, not a crash
 }
 
 /** The 12 fortunes from the sheet's Content tab (falls back to the built-in drafts). */
