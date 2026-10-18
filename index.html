@@ -132,6 +132,8 @@
           var still = matchMedia("(prefers-reduced-motion: reduce)").matches
           var rsvp = new URLSearchParams(location.search).get("rsvp") === "1"
           var noren = /"arrival":"noren"/.test(localStorage.getItem("ng-tune") || "")
+          // Sealed from the first paint (run 19): the bar has no paper over the photo, the photo is framed for the envelope
+          if (home && !seen && !still && !rsvp) document.documentElement.setAttribute("data-sealed", "")
           if (home && !seen && !still && !rsvp && !noren) document.getElementById("arrival-shell").hidden = false
         } catch (e) {}
       })()
