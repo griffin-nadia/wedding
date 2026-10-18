@@ -39,3 +39,7 @@ On the site (`src/components/envelope.tsx`, `src/styles/polish.css`) the stack i
 - **Closed envelope, wax seal, gum leaves:** `private/nadia-art-17oct`, through `node scripts/art-export.mjs`.
 - **Favicon:** from the wax seal, through `node scripts/favicon.mjs`. The icons have a lighter monogram (18g); the seal elsewhere is as drawn.
 - **Painted map land for the journey map:** still to come (`ART.mapLand` in `src/lib/art.ts`).
+- **Painted land for the globe (final run):** still to come. One 2:1 world painting, sea included, laid out
+  equirectangular (longitude -180 to 180 across, latitude 90 to -90 down), about 4096 × 2048. Put it in
+  `public/art/map/` (e.g. `globe.webp`) and set `ART.globeLand` in `src/lib/art.ts`; until then the globe paints its
+  own land in the site's colours (`src/lib/paint-globe.ts`).

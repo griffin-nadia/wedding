@@ -218,6 +218,20 @@ export async function getFlying(): Promise<{ counts: Partial<Record<Flying, numb
   try { const d = await call(`${config.apiUrl}?action=flying`); return d.ok ? d : null } catch { return null }
 }
 
+/** The globe's lines: per city, how many coming households and where (never who). No back end (the lab, previews,
+ *  the plain build): a few sample cities. */
+export type Journey = { name: string; country: string; lat: number; lon: number; n: number }
+export const SAMPLE_JOURNEYS: Journey[] = [
+  { name: "Melbourne", country: "AU", lat: -37.81, lon: 144.96, n: 6 }, { name: "Sydney", country: "AU", lat: -33.87, lon: 151.21, n: 3 },
+  { name: "Gold Coast", country: "AU", lat: -28.0, lon: 153.43, n: 2 }, { name: "Perth", country: "AU", lat: -31.95, lon: 115.86, n: 1 },
+  { name: "Vancouver", country: "CA", lat: 49.28, lon: -123.12, n: 3 }, { name: "Calgary", country: "CA", lat: 51.05, lon: -114.07, n: 2 },
+  { name: "Auckland", country: "NZ", lat: -36.85, lon: 174.76, n: 1 }, { name: "London", country: "GB", lat: 51.51, lon: -0.13, n: 1 },
+]
+export async function getJourneys(): Promise<Journey[]> {
+  if (!config.apiUrl) return SAMPLE_JOURNEYS
+  try { const d = await call(`${config.apiUrl}?action=journeys`); return d.ok && Array.isArray(d.cities) ? (d.cities as Journey[]) : [] } catch { return [] } // an older back end has no journeys: none, not a crash
+}
+
 /** The 12 fortunes from the sheet's Content tab (falls back to the built-in drafts). */
 export async function getFortunes(): Promise<string[] | null> {
   if (!config.apiUrl) return null

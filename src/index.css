@@ -1356,3 +1356,6 @@ svg.lucide { stroke-width: 1.5; }
 .fly-chip:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .fly-chip:hover { border-color: var(--line-strong); } }
 .fly-chip[aria-pressed="true"] { background: var(--input-selected-bg); border-color: var(--input-selected-line); }
+/* The painted globe (final run): a square that fits the story's map stop */
+.journey-globe { position: relative; width: min(100%, 340px, 40svh); aspect-ratio: 1; touch-action: none; cursor: grab; }
+.journey-globe canvas { display: block; width: 100% !important; height: 100% !important; }

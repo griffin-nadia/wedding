@@ -399,6 +399,7 @@ function doGet(e) {
     }
     if (action === "flying") return json_(flyingCounts_())
     if (action === "questions") return json_(publishedQuestions_())
+    if (action === "journeys") return json_(journeys_())
     if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_() })
     if (action === "stay") return json_(stayPicks_())
     if (action === "content") return json_(content_())
@@ -1595,6 +1596,31 @@ function sendAnswers_() {
     s.getRange(i + 1, col("Sent") + 1).setValue(new Date())
     CacheService.getScriptCache().remove("questions")
   }
+}
+
+/**
+ * The globe's lines (final run): one per city that coming households are flying from, with how many and where. Only
+ * households with someone coming, never test ones, never names or tokens. Cached for 10 minutes.
+ */
+function journeys_() {
+  const cache = CacheService.getScriptCache()
+  const hit = cache.get("journeys")
+  if (hit) return JSON.parse(hit)
+  const coming = {}, seen = {}, cities = {}
+  rows_(TABS.guests).forEach((r) => { if (String(r.Attending || "").toLowerCase() === "yes") coming[String(r.Token || "").trim()] = true })
+  rows_(TABS.guests).forEach((r) => {
+    const t = String(r.Token || "").trim()
+    if (!t || !coming[t] || seen[t] || TEST_HOUSEHOLD.test(String(r.Household || ""))) return
+    seen[t] = true
+    const c = flyingOf_(r)
+    if (!c || c.lat === null) return
+    const k = c.name + "|" + c.country
+    cities[k] = cities[k] || { name: c.name, country: c.country, lat: Math.round(c.lat * 100) / 100, lon: Math.round(c.lon * 100) / 100, n: 0 }
+    cities[k].n++
+  })
+  const out = { ok: true, cities: Object.keys(cities).map((k) => cities[k]) }
+  cache.put("journeys", JSON.stringify(out), 600)
+  return out
 }
 
 // ---------- "Can't find your invite?" ----------
