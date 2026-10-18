@@ -124,7 +124,7 @@ export const en = {
     dateLine: `${DAY}, Kyoto`,
     rsvpButton: `RSVP by ${fmtDay(DATES.rsvpBy)}`,
     yourReply: "Your reply",
-    todo: { who: "Who's coming", food: "Food and a song", dates: "Travel dates", datesLater: "once you've booked", done: "done", toDo: "to do" },
+    todo: { who: "Who's coming", food: "Food", song: "A song", dates: "Travel dates", datesLater: "once you've booked", done: "done", toDo: "not yet" },
     greetingLine: "we're getting married in Kyoto, where it all started, and we'd love you there. Everything you need is right here.",
     daysToGo: (n: number) => `${n} days to go`,
     kyotoLine: (time: string) => `it's ${time} in Kyoto`,

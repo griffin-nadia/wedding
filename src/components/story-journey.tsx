@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { useHousehold } from "@/lib/household"
 import { cn } from "@/lib/utils"
 import { readFlying } from "@/lib/journey"
-import { getFlying } from "@/lib/api"
+import { getFlying, getJourneys, type Journey } from "@/lib/api"
+import { Segmented } from "@/components/segmented"
+import { pending } from "@/content/pending"
+import { startsFlat } from "@/lib/globe-mode"
 import { GuestMap, usePlaceName } from "@/components/journey-mini"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
@@ -15,19 +18,36 @@ const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matche
 // comes back (about 450 ms)
 const SPRING = { k: 170, c: 20 }
 
+// Three.js and the painted globe load only when the journey stop is showing
+const JourneyGlobe = lazy(() => import("@/components/journey-globe").then((m) => ({ default: m.JourneyGlobe })))
+const MODE = "ng-map"
+
 /**
- * The journey to Kyoto, once, as the last stop: Nadia's and Griffin's lines, and the guests' lines (counts per city,
- * never who) once anyone has said where they're flying from, with this household's own line when they have.
+ * The journey to Kyoto, once, as the last stop (final run): the painted globe, or the flat map (a small toggle,
+ * remembered on this device; no WebGL or a low-end phone starts flat). Nadia's and Griffin's lines, then the guests'
+ * (one per city, never who), then this household's own when they've said. The globe only runs while this stop shows.
  */
-function JourneyMap() {
-  const { t } = useLang()
+function JourneyMap({ active }: { active: boolean }) {
+  const { t, lang } = useLang()
   const { household } = useHousehold()
   const you = readFlying(household?.token)
   const [flying, setFlying] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
-  useEffect(() => { void getFlying().then(setFlying) }, [])
+  const [journeys, setJourneys] = useState<Journey[]>([])
+  useEffect(() => { void getFlying().then(setFlying); void getJourneys().then(setJourneys) }, [])
+  const [mode, setMode] = useState<"globe" | "flat">(() => { try { const m = localStorage.getItem(MODE); if (m === "globe" || m === "flat") return m } catch { /* fine */ } return startsFlat() ? "flat" : "globe" })
+  const pick = (m: "globe" | "flat") => { setMode(m); try { localStorage.setItem(MODE, m) } catch { /* private mode */ } }
   const nameOf = usePlaceName()
-  const name = you ? nameOf(you) : null
-  return <GuestMap you={you} flying={flying} label={t.journey.map(name, you ?? undefined)} listable={false} />
+  const name = you ? nameOf(you.name) : null
+  const label = t.journey.map(name, you?.id === "jp" ? "Already in Japan" : undefined)
+  const withCities = flying ? { ...flying, cities: journeys.length ? journeys : flying.cities } : journeys.length ? { counts: {}, cities: journeys, told: 0, households: 0 } : null
+  return (
+    <div className="flex w-full flex-col items-center gap-3">
+      <Segmented label={pending("journey.mapMode", lang)} value={mode} onChange={pick} items={[{ value: "globe", label: pending("journey.globe", lang) }, { value: "flat", label: pending("journey.flat", lang) }]} />
+      {mode === "globe" && active
+        ? <Suspense fallback={<div className="journey-globe" />}><JourneyGlobe you={you} cities={journeys} label={label} /></Suspense>
+        : mode === "globe" ? <div className="journey-globe" /> : <GuestMap you={you} flying={withCities} label={label} listable={false} />}
+    </div>
+  )
 }
 
 /**
@@ -203,7 +223,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         {stops.map((c, i) => slide(i + lead, c.photo
           ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" />
           : <span aria-hidden className="story-print-blank" />, words(c, i + 1), c.key))}
-        {slide(total - 1, <JourneyMap />, ends ? words(ends, chapters.length) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
+        {slide(total - 1, <JourneyMap active={at === total - 1} />, ends ? words(ends, chapters.length) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
       </div>
 
       <div className="story-controls">
