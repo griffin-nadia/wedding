@@ -31,6 +31,63 @@ export const PENDING = {
     en: "Your travel dates",
     ja: "旅の日程",
   },
+  // Ask us (final run): the sheet that replaces every "email Griffin & Nadia"
+  "ask.cta": {
+    en: "Still wondering? Ask Griffin & Nadia",
+    ja: "ほかに気になることは？グリフィンとナディアに聞く",
+  },
+  "ask.open": {
+    en: "Ask Griffin & Nadia",
+    ja: "グリフィンとナディアに聞く",
+  },
+  "ask.title": {
+    en: "Ask Griffin & Nadia",
+    ja: "グリフィンとナディアに聞く",
+  },
+  "ask.label": {
+    en: "Your question",
+    ja: "ご質問",
+  },
+  "ask.help": {
+    en: "Up to 500 characters. We'll reply as soon as we can.",
+    ja: "500文字まで。なるべく早くお返事します。",
+  },
+  "ask.isThis": {
+    en: "Is this it?",
+    ja: "こちらでしょうか？",
+  },
+  "ask.send": {
+    en: "Send",
+    ja: "送る",
+  },
+  "ask.sent": {
+    en: "Sent. We'll get back to you soon.",
+    ja: "送りました。近いうちにお返事します。",
+  },
+  "ask.failed": {
+    en: "We couldn't send that just now. Try again, or email us at",
+    ja: "今は送れませんでした。もう一度お試しいただくか、こちらへメールしてください：",
+  },
+  "ask.busy": {
+    en: "That's a few questions in a row. Try again in a little while.",
+    ja: "続けてのご質問が多いようです。少し時間をおいてお試しください。",
+  },
+  "ask.name": {
+    en: "Your name",
+    ja: "お名前",
+  },
+  "ask.email": {
+    en: "Your email",
+    ja: "メールアドレス",
+  },
+  "ask.emailHelp": {
+    en: "So we can write back.",
+    ja: "お返事のために使います。",
+  },
+  "ask.youAsked": {
+    en: "You asked",
+    ja: "いただいたご質問",
+  },
   // "Where are you flying from?": the field under the quick chips (final run)
   "flying.orType": {
     en: "Or type your city",

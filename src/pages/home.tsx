@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/skeleton"
 import type { Household } from "@/lib/api"
 import { pending } from "@/content/pending"
 import type { StepId } from "@/components/rsvp-sheet"
+import { AskUs } from "@/components/ask-us"
 
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
@@ -148,7 +149,7 @@ export function HomePage() {
             <Pill tone="good" className="self-start">{t.home.pills.replied}</Pill>
             <p className="text-small text-muted-foreground">{t.home.changeAfter}</p>
           </div>
-        ) : <div className="flex flex-col gap-2"><p>{t.home.rsvpClosed}</p><a href="mailto:griffinandnadia@gmail.com" className="btn-text inline-flex min-h-11 items-center self-start">{pending("contact.emailUs", lang)}</a></div>
+        ) : <div className="flex flex-col gap-2"><p>{t.home.rsvpClosed}</p><AskUs><button type="button" className="btn-text inline-flex min-h-11 items-center self-start">{pending("ask.open", lang)}</button></AskUs></div>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
