@@ -109,3 +109,7 @@ test("outbox emails carry their household's token (so test ones can be cleared) 
   assert.equal(b.__sent.length, 2)
   assert.ok(b.__sent.every((m) => !("token" in (m as object))))
 })
+
+test("two songs at most (run 19): the back end keeps the first two, like the form", () => {
+  assert.equal(vm.runInContext("MAX.songs", ctx), 2)
+})
