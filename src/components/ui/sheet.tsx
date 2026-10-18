@@ -32,7 +32,10 @@ function SheetContent({ className, children, tone = "letter", closeLabel, onClos
     const to = opener instanceof HTMLElement && opener.isConnected ? opener : document.getElementById("letter")
     to?.focus({ preventScroll: true })
     // While the RSVP sheet is open the letter is hidden (data-sheet), so focus can't land until that clears
-    if (to && document.activeElement !== to) requestAnimationFrame(() => { if (document.activeElement === document.body) to.focus({ preventScroll: true }) })
+    // (one frame isn't always enough on a slow phone): try each frame for up to a second, while nothing else has focus
+    let tries = 60
+    const retry = () => { if (!to || document.activeElement === to || document.activeElement !== document.body || !tries--) return; to.focus({ preventScroll: true }); requestAnimationFrame(retry) }
+    requestAnimationFrame(retry)
     window.scrollTo({ top: y, behavior: "instant" })
     letterScroll()?.scrollTo({ top: card, behavior: "instant" }) // the card's own scroll too (18e: the card scrolls, not the page)
   }
