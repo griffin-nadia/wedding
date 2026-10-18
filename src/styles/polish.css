@@ -116,10 +116,12 @@ html { scrollbar-gutter: stable; }
 .envelope.is-drawn .envelope-paper { opacity: 0; z-index: 2; }
 .envelope.is-drawn::after { display: none; }
 .envelope-drawn { position: absolute; left: 0; width: 100%; height: auto; pointer-events: none; user-select: none; transition: opacity var(--duration-base) var(--ease-paper); }
-.envelope-drawn.is-closed { top: 0; z-index: 3; }
+.envelope-drawn.is-closed { top: 0; z-index: 4; }
+/* The open envelope (18 Oct): its back under the letter, its pocket and seal over it, so the letter comes out of it */
 .envelope-drawn.is-open { bottom: 0; z-index: 1; opacity: 0; }
+.envelope-drawn.is-front { bottom: 0; z-index: 3; opacity: 0; }
 .is-opening .envelope.is-drawn .envelope-drawn.is-closed { opacity: 0; }
-.is-opening .envelope.is-drawn .envelope-drawn.is-open { opacity: 1; }
+.is-opening .envelope.is-drawn .envelope-drawn:is(.is-open, .is-front) { opacity: 1; }
 .is-opening .envelope.is-drawn .envelope-paper { opacity: 1; transition: opacity var(--duration-fast) var(--ease-paper) var(--duration-base), transform var(--duration-slow) var(--ease-paper) var(--duration-base); }
 @media (hover: hover) and (pointer: fine) {
   .arrival .envelope.is-drawn:hover { filter: drop-shadow(0 26px 30px rgb(var(--tint-shadow) / 0.36)); }

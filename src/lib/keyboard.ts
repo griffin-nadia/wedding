@@ -3,58 +3,80 @@ import { useEffect } from "react"
 // Fields that bring up a keyboard (ticks, choices and buttons don't)
 const FIELD = "input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=button]):not([type=submit]), textarea, select, [contenteditable=true]"
 
+type VK = { overlaysContent: boolean; boundingRect: DOMRect; addEventListener: (t: "geometrychange", f: () => void) => void; removeEventListener: (t: "geometrychange", f: () => void) => void }
+
 /**
- * Phones and tablets: the keyboard never hides what you're typing, and nothing sits on top of it. Android Chrome
- * shrinks the page above the keyboard (interactive-widget=resizes-content in index.html). iOS Safari keeps the page
- * and moves the visual viewport instead, so its height (--vvh) and offset (--vv-top) are written here and the reply
- * sheet sits exactly in what's visible. [data-typing] means the keyboard is really up: a field has focus and the
- * visible height is well short of its full height. Not focus alone: on an iPhone, tapping a chip or a button
- * doesn't take focus from the field, so the keyboard can go while the field keeps focus, and Back / Next must come
- * back then. While typing the dock steps aside, the sheet's Back / Next sit just above the keyboard, and the
- * focused field is scrolled into view above them. Switching between the letter, number and emoji keyboards changes
- * the keyboard's height: while typing the sheet only ever gets shorter (it keeps the shortest height seen), so the
- * layout never shifts back and forth. Written in the event itself (a frame later read as a jitter), and only when a
- * value changes.
+ * Phones and tablets (18g): the keyboard never shrinks anything. It overlays the page (interactive-widget=
+ * overlays-content in index.html, and the VirtualKeyboard API's overlaysContent where there is one, Android Chrome);
+ * iOS Safari overlays already. The card's frame, the photo, the bar, the dock and the sheets keep their keyboard-down
+ * size (they're sized in svh, never by the visible area). Room is made inside instead:
+ * - --kb is how much of the screen the keyboard covers; the scrolling card and the sheet's body get that much extra
+ *   bottom padding while typing, so anything can scroll above it;
+ * - the sheet's sticky Back / Next lift just above the keyboard (--kb-lift, a transform: nothing reflows);
+ * - the focused field, with its helper or error, is scrolled to sit just above the keyboard (and above Back / Next).
+ * Closing the keyboard drops the padding and the lift, back where they were. [data-typing] means the keyboard is
+ * really up: a field has focus and the keyboard covers more than 120px. --vv-top still follows iOS's panning, so the
+ * sheet's top stays where the guest sees it.
  */
 export function useKeyboardAvoid() {
   useEffect(() => {
+    const vk = (navigator as Navigator & { virtualKeyboard?: VK }).virtualKeyboard
+    if (vk) vk.overlaysContent = true
     const vv = window.visualViewport
     if (!vv || !matchMedia("(pointer: coarse), (max-width: 767px)").matches) return
     const root = document.documentElement
-    let h = 0, top = -1, full = 0, shown = 0, wide = innerWidth > innerHeight
+    let kb = -1, top = -1, lift = -1
     const field = () => { const a = document.activeElement; return a instanceof HTMLElement && a.matches(FIELD) ? a : null }
-    // The field to just above Back / Next, if it's hidden: once the new size is laid out, and again once a keyboard
-    // has finished rising (about 300 ms on an iPhone); the second is a no-op when it's already in view
-    const show = () => field()?.scrollIntoView({ block: "nearest" })
-    const reveal = () => { requestAnimationFrame(show); setTimeout(show, 320) }
-    // A keyboard takes at least 120px; the browser bar coming and going is about 56
-    const typing = () => root.toggleAttribute("data-typing", Boolean(field()) && h < full - 120)
-    const apply = () => {
-      const nh = Math.round(vv.height), nt = Math.round(vv.offsetTop)
-      const turned = (innerWidth > innerHeight) !== wide
-      if (turned) { wide = !wide; full = 0 } // a new orientation has its own full height
-      full = Math.max(full, nh)
-      const resized = nh !== h
-      if (nt !== top) { top = nt; root.style.setProperty("--vv-top", `${nt}px`) }
-      if (resized) {
-        h = nh; typing() // the keyboard just opened, closed or changed: say so
-        const next = root.hasAttribute("data-typing") && shown ? Math.min(shown, nh) : nh
-        if (next !== shown) { shown = next; root.style.setProperty("--vvh", `${next}px`) }
-        reveal() // and keep the field in view
-      }
+    // Where the keyboard's top edge is, in the page's own coordinates
+    const keyTop = () => (vk && vk.boundingRect.height > 0 ? innerHeight - vk.boundingRect.height : vv.offsetTop + vv.height)
+    const set = (name: string, v: number) => root.style.setProperty(name, `${v}px`)
+    /** The field, its helper or error, to just above the keyboard (and Back / Next), inside whatever scrolls it */
+    const show = () => {
+      const f = field()
+      if (!f || kb < 120) return
+      const box = f.closest<HTMLElement>(".form-field, .combo-field, .inline-submit") ?? f
+      const scroller = f.closest<HTMLElement>(".sheet-body, .letter-scroll")
+      if (!scroller) return
+      const footer = f.closest(".sheet")?.querySelector<HTMLElement>(".rsvp-actions")
+      const limit = keyTop() - (footer ? footer.offsetHeight : 0) - 12
+      const r = box.getBoundingClientRect(), s = scroller.getBoundingClientRect()
+      if (r.bottom > limit) scroller.scrollBy({ top: r.bottom - limit, behavior: "instant" })
+      else if (r.top < s.top + 8) scroller.scrollBy({ top: r.top - s.top - 8, behavior: "instant" })
     }
-    const focusIn = () => { if (field()) { typing(); reveal() } }
+    const reveal = () => { requestAnimationFrame(show); setTimeout(show, 320) } // now, and once a keyboard has finished rising
+    const apply = () => {
+      const covered = Math.max(0, Math.round(innerHeight - keyTop()))
+      if (covered !== kb) { kb = covered; set("--kb", covered) }
+      const nt = Math.round(vv.offsetTop)
+      if (nt !== top) { top = nt; set("--vv-top", nt) }
+      // The sheet's Back / Next: lifted by however much of the sheet the keyboard covers
+      const sheet = document.querySelector<HTMLElement>(".sheet")
+      const l = sheet ? Math.max(0, Math.round(sheet.getBoundingClientRect().bottom - keyTop())) : 0
+      if (l !== lift) { lift = l; set("--kb-lift", l) }
+      const typing = Boolean(field()) && kb >= 120
+      if (typing !== root.hasAttribute("data-typing")) {
+        // A card that's only as tall as what's on it (Home, the no-invite letter) keeps the height it had, so the
+        // extra room scrolls inside it instead of making it taller
+        const card = document.querySelector<HTMLElement>(".letter:not(.sheet)")
+        if (card) card.style.height = typing ? `${card.offsetHeight}px` : ""
+        root.toggleAttribute("data-typing", typing)
+      }
+      reveal()
+    }
+    const focusIn = () => { if (field()) apply() }
     // Moving from one field to the next keeps the keyboard up, so wait a tick before saying typing has stopped
-    const focusOut = () => setTimeout(typing, 50)
+    const focusOut = () => setTimeout(apply, 50)
     apply()
     vv.addEventListener("resize", apply)
     vv.addEventListener("scroll", apply, { passive: true })
+    vk?.addEventListener("geometrychange", apply)
     document.addEventListener("focusin", focusIn)
     document.addEventListener("focusout", focusOut)
     return () => {
-      vv.removeEventListener("resize", apply); vv.removeEventListener("scroll", apply)
+      vv.removeEventListener("resize", apply); vv.removeEventListener("scroll", apply); vk?.removeEventListener("geometrychange", apply)
       document.removeEventListener("focusin", focusIn); document.removeEventListener("focusout", focusOut)
-      root.style.removeProperty("--vvh"); root.style.removeProperty("--vv-top"); root.removeAttribute("data-typing")
+      for (const p of ["--kb", "--vv-top", "--kb-lift"]) root.style.removeProperty(p)
+      root.removeAttribute("data-typing")
     }
   }, [])
 }

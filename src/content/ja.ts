@@ -108,7 +108,7 @@ export const ja: DeepPartial<Content> = {
     dateLine: `${DAY}、京都`,
     rsvpButton: `${RSVP_BY}までにお返事を`,
     yourReply: "お返事",
-    todo: { who: "出席される方", food: "お食事と一曲", dates: "旅の日程", datesLater: "予約が済んでから", done: "済み", toDo: "まだ" },
+    todo: { who: "出席される方", food: "お食事", song: "一曲", dates: "旅の日程", datesLater: "予約が済んでから", done: "済み", toDo: "まだ" },
     greetingLine: "ふたりが出会った京都で、結婚式を挙げます。ぜひお越しください。必要なことは、すべてここにあります。",
     daysToGo: (n: number) => `あと${n}日`,
     kyotoLine: (time: string) => `京都は今${time}`,

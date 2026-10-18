@@ -13,7 +13,7 @@ export const InlineSubmit = forwardRef<HTMLInputElement, InputHTMLAttributes<HTM
   fallback?: { label: string; onClick: () => void }; error?: string; leading?: ReactNode; trailing?: ReactNode; popup?: ReactNode
 }>(function InlineSubmit({ label, helper, submitLabel, onSubmit, busy, fallback, error, leading, trailing, popup, id = "inline", className, ...input }, ref) {
   return (
-    <div className={cn("flex flex-col", className)}>
+    <div className={cn("inline-submit flex flex-col", className)}>
       <FormField id={id} label={label} help={helper} error={error}>
         <div className="relative">
           {leading && <span aria-hidden className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground">{leading}</span>}
