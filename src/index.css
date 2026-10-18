@@ -1359,6 +1359,10 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
+/* The hand-cut seal (final run, components/hanko.tsx): the rims and leaves are its own drawing, so no CSS ring */
+.hanko-seal { border: 0; box-shadow: none; display: inline-block; }
+.omikuji-slip .hanko { --hanko-paper: var(--brand-paper-bright); }
+.omikuji-seal { position: absolute; right: var(--space-3); bottom: var(--space-3); opacity: 0.9; transform: rotate(6deg); }
 
 /* Our story's prints, soft (final run): a thin white border, a layered shadow (a contact line, a short soft one, a long
    faint one), the seeded tilt, a faint grain on the print, and a strip of washi tape across the top in one of three
