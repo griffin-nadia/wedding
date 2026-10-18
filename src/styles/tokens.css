@@ -80,6 +80,10 @@
   --line-edge: var(--brand-forest);                 /* the letter's top edge */
   --surface-scrim: var(--brand-kinari);
   --tint-shadow: 66 26 5;
+  /* Button depth (final run P): a 1px lighter top edge (the sheen) and a soft 1 to 2px shadow below, very slight */
+  --button-sheen: rgb(255 255 255 / 0.22);
+  --button-sheen-secondary: rgb(255 255 255 / 0.65);
+  --button-drop: 0 1px 2px rgb(var(--tint-shadow) / 0.2);
   /* The paper (18f, lab only for now): Paper's PaperTexture, made in the browser at the screen's size
      (src/lib/paper-live.ts, preset in src/lib/paper.ts) as --paper-live, and laid over every paper surface
      (index.css), words, fields and buttons included. Not started on the guest site yet, so it's plain there. By day white paper multiplied in; in Lantern inverted (light fibres) and screened in. The hanko's ink is
@@ -118,6 +122,9 @@
   --line-edge: var(--brand-hachimitsu);
   --surface-scrim: var(--brand-yoru);
   --tint-shadow: 0 0 0;
+  --button-sheen: rgb(255 255 255 / 0.18);
+  --button-sheen-secondary: rgb(255 255 255 / 0.08);
+  --button-drop: 0 1px 2px rgb(0 0 0 / 0.45);
 }
 
 /* shadcn/ui and Tailwind read these names; they only alias the system layer.

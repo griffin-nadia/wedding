@@ -4,7 +4,8 @@
 // The open envelope has a stray beige block above its flap (the paper above the envelope's top edge); it's cut away
 // along the top edge (where the side folds start) and the outline redrawn along the cut, until Nadia re-exports it.
 // The lettering goes out as two masks on the same frame (its ink is set by the theme in CSS): the names without the
-// "&", and the "&" alone, split at the clear columns either side of it (measured on the 2000px original).
+// "&", and the "&" alone. Final run P: the words are pulled in so the gap either side of the "&" is the "&"'s own ink
+// width, then split in the middle of each gap.
 import { chromium } from "@playwright/test"
 import { execFileSync } from "node:child_process"
 import fs from "node:fs"
@@ -42,6 +43,21 @@ for (const [name, file, dir, widths, fix] of JOBS) {
       x.strokeStyle = "rgb(182 161 138)"; x.lineWidth = 30 * s; x.lineCap = "round"
       x.beginPath(); x.moveTo(xl + 15 * s, yl + 8 * s); x.lineTo(xr - 15 * s, yr + 8 * s); x.stroke()
     }
+    let cut = null
+    if (fix === "amp" || fix === "no-amp") {
+      // Final run P: Griffin and Nadia pulled in to the "&", the same gap both sides, the width of the "&"'s own ink,
+      // measured on the ink (alpha over 8), not the image box. Each word moves as one piece; the "&" stays put.
+      const a0 = 1106 * W / 2500, a1 = 1376 * W / 2500, px0 = x.getImageData(0, 0, W, H).data
+      const inkX = (from, to) => { let l = W, r = -1; for (let y = 0; y < H; y += 2) for (let X = Math.round(from); X < Math.round(to); X++) if (px0[(y * W + X) * 4 + 3] > 8) { if (X < l) l = X; if (X > r) r = X } return [l, r] }
+      const [, gR] = inkX(0, a0), [aL, aR] = inkX(a0, a1), [nL] = inkX(a1, W), gap = aR - aL
+      const moved = new OffscreenCanvas(W, H), m = moved.getContext("2d", { willReadFrequently: true })
+      m.drawImage(c, 0, 0, a0, H, aL - gap - gR, 0, a0, H) // Griffin: its last ink one "&" before the "&"
+      m.drawImage(c, a0, 0, a1 - a0, H, a0, 0, a1 - a0, H) // the "&"
+      m.drawImage(c, a1, 0, W - a1, H, a1 + aR + gap - nL, 0, W - a1, H) // Nadia: its first ink one "&" after it
+      console.log(`names: gap ${gR < aL ? aL - gR : 0}px / ${nL - aR}px on the ink → ${gap}px both sides (the "&" is ${gap}px)`)
+      c = moved; x = m
+      cut = [aL - gap / 2, aR + gap / 2] // the middle of each new gap
+    }
     // Trim to the drawing (alpha over 8), with 1% of air
     const px = x.getImageData(0, 0, W, H).data
     let x0 = W, y0 = H, x1 = 0, y1 = 0
@@ -49,11 +65,10 @@ for (const [name, file, dir, widths, fix] of JOBS) {
     const pad = Math.round(Math.max(x1 - x0, y1 - y0) * 0.01)
     x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad); x1 = Math.min(W, x1 + pad); y1 = Math.min(H, y1 + pad)
     const cw = x1 - x0, ch = y1 - y0
-    if (fix === "amp" || fix === "no-amp") {
-      // The "&" sits between x 1191 and 1283 of 2500, with clear paper either side: cut in the middle of each gap
-      const a0 = 1106 * W / 2500, a1 = 1376 * W / 2500
+    if (cut) {
+      // Trimmed first, so both masks keep the same frame; then the "&" alone, or everything but it
       x.globalCompositeOperation = "destination-out"
-      if (fix === "amp") { x.fillRect(0, 0, a0, H); x.fillRect(a1, 0, W - a1, H) } else x.fillRect(a0, 0, a1 - a0, H)
+      if (fix === "amp") { x.fillRect(0, 0, cut[0], H); x.fillRect(cut[1], 0, W - cut[1], H) } else x.fillRect(cut[0], 0, cut[1] - cut[0], H)
       x.globalCompositeOperation = "source-over"
     }
     const files = []
