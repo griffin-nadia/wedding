@@ -33,7 +33,9 @@ export function JourneyFlat({ you, cities, label, children }: { you: City | null
   useEffect(() => {
     let alive = true
     const countries = [...cities.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
-    void import("@/lib/paint-globe").then(async ({ paintGlobe, GLOBE_LOOK }) => {
+    // The painting is heavy (the whole world at 2048): only once the map is on screen, so a story opened on its
+    // first stop with the flat map remembered isn't held up by a map four stops away
+    const paint = () => void import("@/lib/paint-globe").then(async ({ paintGlobe, GLOBE_LOOK }) => {
       const src = await paintGlobe(theme === "lantern" ? GLOBE_LOOK.night : GLOBE_LOOK.day, 2048, countries)
       const c = art.current
       if (!alive || !c) return
@@ -42,7 +44,11 @@ export function JourneyFlat({ you, cities, label, children }: { you: City | null
       c.width = Math.round(SPAN * px); c.height = Math.round(TALL * px)
       for (const shift of [0, 360]) g.drawImage(src, (-180 + shift - FRAME.west) * px, (FRAME.north - 90) * px)
     }).catch(() => { /* the lines still show on the paper */ })
-    return () => { alive = false }
+    const el = art.current
+    if (!el || typeof IntersectionObserver === "undefined") { paint(); return () => { alive = false } }
+    const seen = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { seen.disconnect(); paint() } })
+    seen.observe(el)
+    return () => { alive = false; seen.disconnect() }
   }, [cities, you, theme])
   const kyoto = flatPoint(KYOTO)
   const others = cities.filter((c) => c.n > 0).map((c) => flatPoint([c.lat, c.lon]))
