@@ -124,6 +124,55 @@ try {
     await page.getByRole("dialog").getByRole("button", { name: "Draw one" }).waitFor({ timeout: 8000 })
     check("two tabs: both stay usable while one replies", await two.locator("#letter").isVisible())
     await b.close() }
+
+  // Ask us (final run): one tap sends once; the sheet's "busy" (a few in a row) and a lost connection each get their
+  // own calm line, the second with the wedding address to email instead
+  for (const [name, answer, line] of [
+    ["sends once and says so", (r, body) => (body?.action === "ask" ? { delay: 600, json: { ok: true } } : household()(r, body)), "Sent. We'll get back to you soon."],
+    ["busy: try again in a little while", (r, body) => (body?.action === "ask" ? { ok: false, code: "busy" } : household()(r, body)), "That's a few questions in a row"],
+    ["connection lost: try again, or email us", (r, body) => (body?.action === "ask" ? "drop" : household()(r, body)), "We couldn't send that just now"],
+  ]) {
+    const { b, page, log } = await open({ answer })
+    await page.goto(`${URL0}faqs?h=test6`); await page.waitForLoadState("networkidle")
+    await page.getByRole("button", { name: "Still wondering? Ask Griffin & Nadia" }).click()
+    const d = page.getByRole("dialog")
+    await d.getByLabel("Your question").fill("Is there a bus from the hotel to the venue?")
+    await d.getByRole("button", { name: "Send" }).dblclick()
+    const shown = await d.getByText(line, { exact: false }).waitFor({ timeout: 15000 }).then(() => true, () => false)
+    const sent = log.filter((l) => l.action === "ask").length
+    check(`Ask us: ${name}`, shown && (name.startsWith("connection") ? sent >= 1 : sent === 1), `${sent} sent`)
+    await b.close()
+  }
+
+  // Can't find your invite (final run): the same neutral line whether the email is on the list or not, and only the
+  // email goes to the back end
+  for (const found of [true, false]) {
+    let body0 = null
+    const { b, page } = await open({ answer: (r, body) => { if (body?.action === "resend") { body0 = body; return found ? { ok: true } : { ok: true } } return { ok: true, household: null } } })
+    await page.goto(`${URL0}?h=nope`); await page.waitForLoadState("networkidle")
+    await page.getByLabel("Your email").fill(found ? "on-the-list@example.com" : "not-on-it@example.com")
+    await page.getByRole("button", { name: /Send my link/ }).click()
+    const neutral = await page.getByText("If that email's on our list, your link is on its way.", { exact: false }).waitFor({ timeout: 10000 }).then(() => true, () => false)
+    check(`can't find your invite: the neutral line (${found ? "on the list" : "not on it"})`, neutral && body0 && Object.keys(body0).sort().join() === "action,email")
+    await b.close()
+  }
+
+  // Journeys at full size (final run): 99 made-up cities (under 100 guests in all) on Our story's last stop, flat map
+  // and globe: each shows and fits at 320
+  { const cities = Array.from({ length: 99 }, (_, i) => ({ name: `Test city ${i + 1}`, country: "AU", lat: -40 + (i % 30), lon: 110 + i * 0.4, n: 1 }))
+    const answer = (r, body) => (new URL(r.url()).searchParams.get("action") === "journeys" ? { ok: true, cities } : household()(r, body))
+    for (const mode of ["flat", "globe"]) {
+      const { b, c, page } = await open({ answer, size: { width: 320, height: 640 } })
+      await c.addInitScript((m) => localStorage.setItem("ng-map", m), mode)
+      await page.goto(`${URL0}our-story?h=test6`); await page.waitForLoadState("networkidle")
+      const next = page.getByRole("button", { name: /next chapter/i })
+      while (await next.isEnabled()) { await next.click(); await page.waitForTimeout(150) }
+      await page.waitForTimeout(1500)
+      const ok = mode === "flat" ? (await page.locator(".story-slide-map .journey-mini").isVisible()) : await page.locator(".journey-globe").isVisible()
+      check(`journeys: 99 cities, ${mode === "flat" ? "the flat map" : "the globe"} at 320`, ok && !(await spill(page)))
+      await b.close()
+    }
+  }
 } finally {
   server.kill()
 }
