@@ -195,7 +195,7 @@ export default function MicroMotion() {
   const [ticks, setTicks] = useState<Record<string, number>>({})
   const play = (id?: string) => setTicks((t) => Object.fromEntries(ROWS.map((r) => [r.id, (t[r.id] ?? 0) + (!id || id === r.id ? 1 : 0)])))
   // Once on arrival, so there's something to see
-  useEffect(() => { const id = setTimeout(() => play(), ms(600)); return () => clearTimeout(id) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { const id = setTimeout(() => play(), ms(600)); return () => clearTimeout(id) }, [])
   const vars = { ["--e" as string]: fam.e, ["--d1" as string]: `${fam.d[0]}ms`, ["--d2" as string]: `${fam.d[1]}ms`, ["--d3" as string]: `${fam.d[2]}ms` }
   return (
     <div className={P}>

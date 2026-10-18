@@ -43,7 +43,8 @@ function fit(W: number, H: number, photo: keyof typeof SCENES, take: string): Fi
   const m = SCENES[photo], [fx0, fy0, fx1, fy1] = m.face ?? [0.4, 0.4, 0.6, 0.6]
   const c = Math.max(W / m.w, H / m.h), iw = m.w * c, ih = m.h * c
   const envTop = H - Math.max(0.05 * H, 24) - LABEL - GAP - ENV_H
-  let left = (W - iw) / 2, top = (H - ih) / 2, s = 1, dy = 0
+  const top = (H - ih) / 2
+  let left = (W - iw) / 2, s = 1, dy = 0
   const faceAt = () => ({ x0: left + (W / 2 - left) * (1 - s) + fx0 * iw * s, x1: left + (W / 2 - left) * (1 - s) + fx1 * iw * s, y0: H - s * (H - (top + fy0 * ih)) + dy, y1: H - s * (H - (top + fy1 * ih)) + dy })
   if (take !== "today") {
     // Centre the faces sideways, as far as the photo's edges allow
