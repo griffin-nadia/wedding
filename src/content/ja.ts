@@ -212,7 +212,7 @@ export const ja: DeepPartial<Content> = {
     links: {
       haruka: { label: "HARUKA One-way Ticket", href: "https://www.westjr.co.jp/travel-information/en/tickets-passes/oneway/haruka/" },
       flights: { label: "航空券を比較", href: "https://www.google.com/travel/flights?q=Flights%20to%20KIX" },
-      trains: { label: "電車の時刻", href: "https://www.jrpass.com/timetable" },
+      trains: { label: "電車の時刻と経路 (NAVITIME)", href: "https://japantravel.navitime.com/en/" },
       walk: { label: "徒歩ルート", href: "https://www.google.com/maps/dir/?api=1&origin=Gion-Shijo+Station&destination=The+Sodoh+Higashiyama+Kyoto&travelmode=walking" },
       smartraveller: { label: "Smartravellerを確認", href: "https://www.smartraveller.gov.au/destinations/asia/japan" },
     },
