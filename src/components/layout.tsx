@@ -26,7 +26,7 @@ const links = [
 ] as const
 
 /** Five items, rendered once: a dock on phones, a thin top bar from 768. A sage marker slides to the current page (200 ms). */
-function Nav() {
+export function Nav() {
   const { t } = useLang()
   const linksKey = links.map((l) => `${l.to}:${t.nav[l.key]}`).join("|")
   const { pathname } = useLocation()

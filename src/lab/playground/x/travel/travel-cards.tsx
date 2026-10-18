@@ -16,7 +16,7 @@ import { ms, still } from "../../motion"
  * settles the card back down and focus returns to it. Reduced motion: no lean or lift, the sheet just opens.
  */
 const css = `
-.x-travel-cards { position: relative; min-height: 100svh; padding: 16px 12px 24px; }
+.x-travel-cards { position: relative; min-height: var(--stage-h, 100svh); padding: 16px 12px 24px; }
 @media (min-width: 768px) { .x-travel-cards { padding: var(--letter-top) 24px var(--space-8); } }
 @media (min-width: 1024px) { .x-travel-cards { padding-left: var(--letter-left); } }
 .x-travel-cards .letter { min-height: 0; }
