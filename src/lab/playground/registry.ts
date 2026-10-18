@@ -7,12 +7,14 @@ import { entries as paper } from "./x/paper"
 import { entries as micro } from "./x/micro"
 import { entries as logo } from "./x/logo"
 import { entries as arrival } from "./x/arrival"
+import { entries as loading } from "./x/loading"
 
 /**
  * What the lab keeps (lab run 19): the choices still open and the parked ideas, by area in the order guests meet
  * them. Decided ones are deleted; what ships is under Reference (the live site, one per area).
  */
 export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
+  { id: "loading", title: "Loading", entries: loading },
   { id: "opening", title: "Opening", entries: opening },
   { id: "arrival", title: "Arrival framing", entries: arrival },
   { id: "story", title: "Our story", entries: story },
