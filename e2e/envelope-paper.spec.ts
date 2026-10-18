@@ -50,6 +50,7 @@ for (const theme of ["autumn", "lantern"] as const) test(`the envelope's letter 
     expect(look.paper[0], `${pct}%: the card's paper texture, scale and blend`).toEqual(look.paper[1])
     expect(look.paper[0].image, `${pct}%: the paper is there`).toContain("url(")
     // One shot at the held frame (the photo's drift on laptops never lets two in a row match), the countdown masked
-    expect(await page.screenshot({ animations: "allow", mask: [page.locator(".count-boxes")] })).toMatchSnapshot(`envelope-${theme}-${pct}.png`, { maxDiffPixelRatio: 0.02 })
+    // The countdown is masked once the card shows (run 19: until then the card waits unseen, under the envelope)
+    expect.soft(await page.screenshot({ animations: "allow", mask: pct >= 75 ? [page.locator(".count-boxes")] : [] })).toMatchSnapshot(`envelope-${theme}-${pct}.png`, { maxDiffPixelRatio: 0.02 })
   }
 })
