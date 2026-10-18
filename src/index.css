@@ -709,9 +709,6 @@
 .tune-pinning, .tune-pinning * { cursor: crosshair !important; }
 /* Options lab */
 .tune-docked { position: sticky; top: 0; height: 100svh; width: auto; z-index: 1; box-shadow: none; }
-.lab-frame { border: 1px solid var(--line-hairline); border-radius: var(--radius-letter); background: var(--surface-paper); }
-.lab-desktop { width: 100%; max-width: 1080px; aspect-ratio: 1440 / 900; overflow: hidden; border-radius: var(--radius-letter); }
-.lab-desktop .lab-frame { width: 1440px; height: 900px; transform-origin: top left; }
 
 /* Textarea: 3 lines, grows to 6, then scrolls; no resize handle */
 .field-textarea { height: auto; min-height: var(--input-textarea-min); max-height: var(--input-textarea-max); padding-block: var(--space-3); field-sizing: content; resize: none; overflow-y: auto; }

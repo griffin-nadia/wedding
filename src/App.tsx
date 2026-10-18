@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/lib/theme"
 import { SceneDimProvider } from "@/components/letter/letter"
 import { Toaster } from "@/components/ui/toast"
 import { HomePage } from "@/pages/home"
+import { warm } from "@/lib/warm"
 
 // Pages beyond Home load when first visited, so the greeting paints sooner. One Suspense around the page (in
 // Layout), so a page change waits in a transition for the next page instead of showing an empty letter.
@@ -51,8 +52,13 @@ export function Gate() {
 
 // Load the other pages once the first one has painted, so moving between them never flashes blank (v3 S)
 if (typeof window !== "undefined") {
-  const warm = () => { void import("@/pages/day"); void import("@/pages/travel"); void import("@/pages/faqs"); void import("@/pages/our-story") }
-  window.addEventListener("load", () => ("requestIdleCallback" in window ? (window as unknown as { requestIdleCallback: (f: () => void) => void }).requestIdleCallback(warm) : setTimeout(warm, 1500)), { once: true })
+  // Our story's globe too (218 KB gzipped), unless the guest has Save-Data on, so it's there when they reach it: the
+  // component, and what it loads when it mounts (three and its line modules, the paint and the land)
+  const go = () => warm(navigator,
+    [() => import("@/pages/day"), () => import("@/pages/travel"), () => import("@/pages/faqs"), () => import("@/pages/our-story")],
+    [() => import("@/components/journey-globe"), () => import("three"), () => import("three/examples/jsm/lines/Line2.js"), () => import("three/examples/jsm/lines/LineMaterial.js"),
+      () => import("three/examples/jsm/lines/LineGeometry.js"), () => import("@/lib/paint-globe"), () => import("world-atlas/countries-110m.json")])
+  window.addEventListener("load", () => ("requestIdleCallback" in window ? (window as unknown as { requestIdleCallback: (f: () => void) => void }).requestIdleCallback(go) : setTimeout(go, 1500)), { once: true })
 }
 
 export default function App() {

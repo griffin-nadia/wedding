@@ -185,3 +185,31 @@ for (const theme of ["autumn", "lantern"] as const) test(`nothing covers their f
     else await info.attach(`faces-${w}x${h}`, { body: await page.screenshot(), contentType: "image/png" })
   }
 })
+
+// Lab run 19 (arrival-framing): on a first visit, sealed with motion on, the envelope sits clear below their faces at
+// the four common phone widths in both themes (#178 gave 170 to 260 px; before it, 28 px over at 360). The faces'
+// box is faceRect()'s sum (src/lib/face.ts).
+for (const theme of ["autumn", "lantern"] as const) test(`the sealed envelope clears their faces at phone widths (${theme})`, async ({ page }, info) => {
+  test.skip(info.project.name !== "phone", "phone widths")
+  const scenes = JSON.parse(fs.readFileSync("src/content/scenes.json", "utf8")) as Record<string, { w: number; h: number; face?: number[] }>
+  await page.addInitScript((t) => { localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t) }, theme)
+  for (const [w, h] of [[360, 780], [390, 844], [412, 915], [430, 932]] as const) {
+    await page.setViewportSize({ width: w, height: h })
+    await page.goto("?h=sample")
+    await expect(open(page)).toBeVisible()
+    expect(await page.evaluate(() => [localStorage.getItem("ng-opened"), document.documentElement.hasAttribute("data-sealed")])).toEqual([null, true])
+    await page.waitForFunction(() => document.querySelector<HTMLImageElement>("[data-photo].opacity-100 img")?.complete)
+    await page.waitForTimeout(1000) // the sealed framing transitions in
+    const gap = await page.evaluate((scenes) => {
+      const layer = document.querySelector<HTMLElement>("[data-photo].opacity-100")!, img = layer.querySelector("img")!, meta = scenes[layer.dataset.photo!]
+      const b = img.getBoundingClientRect(), k = Math.max(b.width / meta.w, b.height / meta.h)
+      const [px, py] = getComputedStyle(img).objectPosition.split(" ").map((v) => parseFloat(v) / 100)
+      const oy = b.top + (b.height - meta.h * k) * (Number.isNaN(py) ? 0.5 : py), ox = b.left + (b.width - meta.w * k) * (Number.isNaN(px) ? 0.5 : px)
+      const [x0, y0, x1, y1] = meta.face!, env = document.querySelector(".arrival .envelope")!.getBoundingClientRect()
+      const face = new DOMRect(ox + x0 * meta.w * k, oy + y0 * meta.h * k, (x1 - x0) * meta.w * k, (y1 - y0) * meta.h * k)
+      return Math.round(env.top - face.bottom)
+    }, scenes)
+    console.log(`${theme} ${w}: envelope ${gap} px below their faces`)
+    expect(gap, `${theme} ${w}×${h}: a gap between their faces and the envelope`).toBeGreaterThan(0)
+  }
+})
