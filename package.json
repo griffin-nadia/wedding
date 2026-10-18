@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "qr-cards": "node scripts/qr-cards.mjs",
     "check:pending": "node scripts/check-pending.mjs",
-    "lab": "vite --open /wedding/lab.html",
+    "lab": "node scripts/lab-serve.mjs",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots"
   },
