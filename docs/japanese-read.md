@@ -2,7 +2,7 @@
 
 **For Nadia:** the translating is done; it just needs someone fluent to read it over.
 
-Every Japanese line on the site, next to its English, by page. 511 lines: 18 new or changed since 17 Oct
+Every Japanese line on the site, next to its English, by page. 544 lines: 21 new or changed since 17 Oct
 (marked), 43 with no Japanese yet (the site shows the English there). The rest are the 6 Oct draft,
 which has never had a native read either. Fix anything straight in this file or the CSV
 ([japanese-read.csv](japanese-read.csv), for a sheet) and Jehan puts it into `src/content/ja.ts`.
@@ -28,7 +28,7 @@ are filled in by the site (a name, a date, a number).
 |  | Site by Jehan Baguley | サイト制作：Jehan Baguley | `letter.credit` |
 |  | Skip to the letter | 本文へ移動 | `letter.skip` |
 |  | Tap to open | タップしてひらく | `letter.open` |
-|  | open your invite | 招待状をひらいてね | `letter.note` |
+|  | Open your invite | 招待状をひらいてね | `letter.note` |
 |  | Open your invitation, {1} | 招待状をひらく（{1}さん） | `letter.openLabel` |
 |  | Open on your phone | スマホでひらく | `letter.phoneTitle` |
 |  | Scan to take this invite with you. | 読み取ると、この招待状をスマホで見られます。 | `letter.phoneBody` |
@@ -42,7 +42,7 @@ are filled in by the site (a name, a date, a number).
 |  | Or email Griffin & Nadia | またはグリフィン & ナディアにメールを | `notFound.message` |
 |  | Send my link | リンクを送る | `notFound.send` |
 |  | Sending… | 送信中… | `notFound.sending` |
-|  | If that email is on our list, your link is on its way. Check your inbox (and junk folder) in a few minutes. | そのアドレスがリストにあれば、リンクをお送りしました。数分後に受信箱（と迷惑メール）をご確認ください。 | `notFound.sent` |
+| **changed** | If that email's on our list, your link is on its way. Check junk too. | そのアドレスがリストにあれば、リンクをお送りしました。迷惑メールもご確認ください。 | `notFound.sent` |
 |  | That doesn't look like an email address. | メールアドレスの形式が正しくないようです。 | `notFound.badEmail` |
 |  | We couldn't send that just now. Try again, or message Griffin or Nadia. | 今は送信できませんでした。もう一度お試しいただくか、グリフィンかナディアにご連絡ください。 | `notFound.failed` |
 |  | That link doesn't look right | このリンクは正しくないようです | `unknown.title` |
@@ -82,11 +82,12 @@ are filled in by the site (a name, a date, a number).
 |  | RSVP by Mon 15 Feb 2027 | 2027年2月15日（月）までにお返事を | `home.rsvpButton` |
 |  | Your reply | お返事 | `home.yourReply` |
 |  | Who's coming | 出席される方 | `home.todo.who` |
-|  | Food and a song | お食事と一曲 | `home.todo.food` |
+| **changed** | Food | お食事 | `home.todo.food` |
+| **new** | A song | 一曲 | `home.todo.song` |
 |  | Travel dates | 旅の日程 | `home.todo.dates` |
 |  | once you've booked | 予約が済んでから | `home.todo.datesLater` |
 |  | done | 済み | `home.todo.done` |
-|  | to do | まだ | `home.todo.toDo` |
+|  | not yet | まだ | `home.todo.toDo` |
 |  | we're getting married in Kyoto, where it all started, and we'd love you there. Everything you need is right here. | ふたりが出会った京都で、結婚式を挙げます。ぜひお越しください。必要なことは、すべてここにあります。 | `home.greetingLine` |
 |  | {1} days to go | あと{1}日 | `home.daysToGo` |
 |  | it's {1} in Kyoto | 京都は今{1} | `home.kyotoLine` |
@@ -437,22 +438,22 @@ are filled in by the site (a name, a date, a number).
 | | English | Japanese | Key |
 |---|---|---|---|
 |  | FAQs | よくある質問 | `qa.title` |
-| **changed** | What should I wear? | 服装は？ | `qa.items.0.q` |
-| **changed** | There's no dress code. Wear what makes you feel your best. The streets around the venue are cobblestone, so bring shoes you can walk in. | ドレスコードはありません。いちばん自分らしくいられる服装で。会場周辺は石畳なので、歩きやすい靴でどうぞ。 | `qa.items.0.a` |
-| **changed** | Do I need a visa? | ビザは必要ですか？ | `qa.items.1.q` |
-| **changed** | Aussies don't need a visa for a short trip to Japan. Check your passport has at least 6 months left after you fly home. Travel has the rest. | オーストラリア国籍の方は、短期の日本滞在にビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートを確認してください。くわしくは「アクセス」のページへ。 | `qa.items.1.a` |
-| **changed** | Can I bring someone? | 同伴者を連れていけますか？ | `qa.items.2.q` |
-| **changed** | Your invite is for the people named on it. If there's room for a plus one, your reply will ask "Bringing someone?". Not sure? Message us, or email griffinandnadia@gmail.com. | 招待状はお名前のある方へのものです。お連れの方の枠がある場合は、お返事の中で「お連れの方はいらっしゃいますか？」とお聞きします。不明な点は、メッセージか griffinandnadia@gmail.com までどうぞ。 | `qa.items.2.a` |
-| **changed** | Gifts? | ご祝儀やプレゼントは？ | `qa.items.3.q` |
-| **changed** | No gifts, truly. Getting to Kyoto is a big ask already, so you being there is the present. | 本当に不要です。京都まで来ていただくこと自体が大変なので、お越しいただくことが何よりの贈り物です。 | `qa.items.3.a` |
-| **changed** | What about food? | お食事は？ | `qa.items.4.q` |
-| **changed** | Lunch is catered, and we'll set the menu a few months before. Tell us about any dietary needs in your reply. | 昼食をご用意します。メニューは数か月前に決めます。食事の制限やアレルギーは、お返事でお知らせください。 | `qa.items.4.a` |
-|  | Is it a traditional Japanese wedding? | 日本の伝統的な結婚式ですか？ | `qa.items.5.q` |
-|  | No, it's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are. | いいえ、日本らしさを少し添えた、くつろいだガーデンウェディングです。覚えることは何もありません。そのままの姿でお越しください。 | `qa.items.5.a` |
+| **changed** | Can I bring someone? | 同伴者を連れていけますか？ | `qa.items.0.q` |
+| **changed** | Your invite is for the people named on it. If there's room for a plus one, your reply will ask “Bringing someone?”. Not sure? Ask us below. | 招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下からお気軽にどうぞ。 | `qa.items.0.a` |
+| **changed** | Is it a traditional Japanese wedding? | 日本の伝統的な結婚式ですか？ | `qa.items.1.q` |
+| **changed** | Not really. It's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are. | いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。 | `qa.items.1.a` |
+|  | What should I wear? | 服装は？ | `qa.items.2.q` |
+| **changed** | Whatever you feel great in. There's no dress code, but the streets around the venue are cobblestone, so bring shoes you can walk in. | ドレスコードはありません。お好きな服装でどうぞ。ただ、会場のまわりは石畳なので、歩きやすい靴がおすすめです。 | `qa.items.2.a` |
+|  | What about food? | お食事は？ | `qa.items.3.q` |
+| **changed** | Lunch is catered, and we'll set the menu a few months before. Tell us any dietary needs in your reply. | 昼食をご用意します。メニューは数か月前に決めますので、食事の制限やアレルギーはお返事でお知らせください。 | `qa.items.3.a` |
+| **changed** | Gifts? | ご祝儀やプレゼントは？ | `qa.items.4.q` |
+| **changed** | No gifts, truly. Getting to Kyoto is a big ask already, so you being there is the present. | 本当に不要です。京都まで来てくださることが、何よりの贈り物です。 | `qa.items.4.a` |
+| **changed** | Do I need a visa? | ビザは必要ですか？ | `qa.items.5.q` |
+| **changed** | Not for Aussies on a short trip. Just check your passport has 6 months left after you fly home. Travel has the rest. | オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。 | `qa.items.5.a` |
 | **new** | What happens to my details? | 個人情報はどうなりますか？ | `qa.items.6.q` |
-| **new** | Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding. | お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。 | `qa.items.6.a` |
+| **new** | Your reply comes straight to us and no one else sees it. We'll delete it a few months after the wedding. | お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。 | `qa.items.6.a` |
 | **new** | Who made this site? | このサイトはどなたが作ったのですか？ | `qa.items.7.q` |
-| **new** | Nadia's brother Jehan designed and built it, with Nadia's drawings and our photos. Music: “A Town With an Ocean View” (Joe Hisaishi). | ナディアの兄のジェハンがデザインと制作をしました。絵はナディア、写真はわたしたちのものです。音楽：「A Town With an Ocean View」（久石譲） | `qa.items.7.a` |
+| **new** | Nadia's brother Jehan designed and built it, and Nadia drew everything you see. The song is “A Town With an Ocean View” (Joe Hisaishi), played on piano. | ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。曲は「A Town With an Ocean View」（久石譲）のピアノ版です。 | `qa.items.7.a` |
 |  | On the day, contact | 当日の連絡先： | `qa.onTheDay` |
 |  | Any questions at all, message either of us. We're always happy to help. | ご不明な点があれば、どちらにでもお気軽にご連絡ください。 | `qa.contact` |
 
@@ -559,5 +560,37 @@ are filled in by the site (a name, a date, a number).
 | placeholder | We're still writing this part in our own words. Check back closer to the day. | この章は、わたしたちの言葉でまだ書いているところです。もう少しお待ちください。 | `placeholders.story.chapterBody` |
 | placeholder | A photo of Griffin as a kid, on its way | グリフィンの子どもの頃の写真（準備中） | `placeholders.story.kidGriffin` |
 | placeholder | A photo to come | 写真は準備中です | `placeholders.photo.toCome` |
-| placeholder | We'll add who to call on the day closer to the time. | 当日の連絡先は、日が近づいたらここに載せます。 | `placeholders.faqs.contactDay` |
+| placeholder | Add your travel dates | 旅の日程を追加する | `placeholders.home.nextDates` |
+| placeholder | Plan your trip | 旅の計画を立てる | `placeholders.home.nextTrip` |
+| placeholder | Your travel dates | 旅の日程 | `placeholders.rsvp.travelTitle` |
+| placeholder | Can't see your question here? Ask us and we'll get back to you. | 知りたいことが見つからないときは、お気軽に聞いてください。お返事します。 | `placeholders.ask.intro` |
+| placeholder | Ask us | 質問する | `placeholders.ask.button` |
+| placeholder | Ask Griffin & Nadia | グリフィンとナディアに聞く | `placeholders.ask.open` |
+| placeholder | Ask Griffin & Nadia | グリフィンとナディアに聞く | `placeholders.ask.title` |
+| placeholder | Your question | ご質問 | `placeholders.ask.label` |
+| placeholder | Up to 500 characters. We'll reply as soon as we can. | 500文字まで。なるべく早くお返事します。 | `placeholders.ask.help` |
+| placeholder | Is this it? | こちらでしょうか？ | `placeholders.ask.isThis` |
+| placeholder | Send | 送る | `placeholders.ask.send` |
+| placeholder | Sent. We'll get back to you soon. | 送りました。近いうちにお返事します。 | `placeholders.ask.sent` |
+| placeholder | We couldn't send that just now. Try again, or email us at | 今は送れませんでした。もう一度お試しいただくか、こちらへメールしてください： | `placeholders.ask.failed` |
+| placeholder | That's a few questions in a row. Try again in a little while. | 続けてのご質問が多いようです。少し時間をおいてお試しください。 | `placeholders.ask.busy` |
+| placeholder | Your name | お名前 | `placeholders.ask.name` |
+| placeholder | Your email | メールアドレス | `placeholders.ask.email` |
+| placeholder | So we can write back. | お返事のために使います。 | `placeholders.ask.emailHelp` |
+| placeholder | You asked | いただいたご質問 | `placeholders.ask.youAsked` |
+| placeholder | Or type your city | または都市名を入力 | `placeholders.flying.orType` |
+| placeholder | Map | 地図 | `placeholders.journey.mapMode` |
+| placeholder | Globe | 地球儀 | `placeholders.journey.globe` |
+| placeholder | Flat map | 平面の地図 | `placeholders.journey.flat` |
+| placeholder | Email Griffin & Nadia | グリフィンとナディアにメールする | `placeholders.contact.emailUs` |
+| placeholder | Your invite is for the people named on it. If there's room for a plus one, your reply will ask “Bringing someone?”. Not sure? Ask us below. | 招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下からお気軽にどうぞ。 | `placeholders.faqs.bring.a` |
+| placeholder | Not really. It's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are. | いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。 | `placeholders.faqs.style.a` |
+| placeholder | Whatever you feel great in. There's no dress code, but the streets around the venue are cobblestone, so bring shoes you can walk in. | ドレスコードはありません。お好きな服装でどうぞ。ただ、会場のまわりは石畳なので、歩きやすい靴がおすすめです。 | `placeholders.faqs.wear.a` |
+| placeholder | Lunch is catered, and we'll set the menu a few months before. Tell us any dietary needs in your reply. | 昼食をご用意します。メニューは数か月前に決めますので、食事の制限やアレルギーはお返事でお知らせください。 | `placeholders.faqs.food.a` |
+| placeholder | No gifts, truly. Getting to Kyoto is a big ask already, so you being there is the present. | 本当に不要です。京都まで来てくださることが、何よりの贈り物です。 | `placeholders.faqs.gifts.a` |
+| placeholder | Not for Aussies on a short trip. Just check your passport has 6 months left after you fly home. Travel has the rest. | オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。 | `placeholders.faqs.visa.a` |
+| placeholder | Your reply comes straight to us and no one else sees it. We'll delete it a few months after the wedding. | お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。 | `placeholders.faqs.details.a` |
+| placeholder | Nadia's brother Jehan designed and built it, and Nadia drew everything you see. | ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。 | `placeholders.faqs.whoMade.a` |
+| placeholder | The song is {song}, played on piano. | 曲は{song}のピアノ版です。 | `placeholders.faqs.whoMade.song` |
+| placeholder | On the day, call Jehan or Noya. We'll add their numbers closer to the time. | 当日は、ジェハンかノヤにご連絡ください。電話番号は日が近づいたらここに載せます。 | `placeholders.faqs.contactDay` |
 
