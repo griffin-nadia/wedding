@@ -22,7 +22,10 @@ createRoot(document.getElementById("root")!).render(
 // The paper (18g): made after the page has painted, at idle or on the first input, whichever comes first, in its own
 // chunk; it fades in once made. Under reduced motion or Save-Data the paper stays plain (and without WebGL).
 {
-  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches || (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData
+  // Automated browsers (the gates) skip it unless a test asks for it (ng-paper=on): drawn on a CI runner's software
+  // WebGL it holds the page up for seconds, which isn't what the other tests are measuring
+  const tested = navigator.webdriver && (() => { try { return localStorage.getItem("ng-paper") !== "on" } catch { return true } })()
+  const calm = tested || matchMedia("(prefers-reduced-motion: reduce)").matches || (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData
   if (!calm) {
     const kinds = ["pointerdown", "keydown", "wheel", "touchstart"] as const
     let started = false
