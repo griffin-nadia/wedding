@@ -42,8 +42,9 @@ test("the music credit is only in FAQs, in the last answer", async ({ page }) =>
   await expect(last).toContainText("Music: “A Town With an Ocean View” (Joe Hisaishi).")
 })
 
-// Coming back to the tab: it carries on from where it stopped and is back at 30% within a second, not a slow restart
-test("back on the tab, the song carries on from where it stopped, quickly back to 30%", async ({ page }, info) => {
+// Coming back to the tab: it carries on from where it stopped and is back at 20% within a second, not a slow restart.
+// 18g: the level is the Web Audio gain node (iOS ignores audio.volume), so the tests read the gain
+test("back on the tab, the song carries on from where it stopped, quickly back to 20%", async ({ page }, info) => {
   test.skip(info.project.name !== "phone", "once is enough")
   await page.addInitScript(() => {
     localStorage.setItem("ng-opened", "1")
@@ -53,9 +54,10 @@ test("back on the tab, the song carries on from where it stopped, quickly back t
   await page.goto("?h=sample")
   await expect(page.locator("[data-music-toggle]").filter({ visible: true }).first()).toBeVisible()
   await page.locator("#letter").click({ position: { x: 20, y: 200 } })
-  const a = () => page.evaluate(() => { const x = (window as unknown as { __a: HTMLAudioElement }).__a; return { t: x?.currentTime ?? 0, v: x?.volume ?? 0, paused: x?.paused ?? true } })
-  await expect.poll(async () => (await a()).v, { timeout: 9000 }).toBeGreaterThan(0.29)
-  expect((await a()).v).toBeLessThanOrEqual(0.3)
+  const a = () => page.evaluate(() => { const x = (window as unknown as { __a: HTMLAudioElement }).__a; return { t: x?.currentTime ?? 0, v: (window as unknown as { __ngGain?: () => number }).__ngGain?.() ?? 0, paused: x?.paused ?? true, element: x?.volume ?? 0 } })
+  await expect.poll(async () => (await a()).v, { timeout: 9000 }).toBeGreaterThan(0.19)
+  expect((await a()).v).toBeLessThanOrEqual(0.2)
+  expect((await a()).element).toBe(1) // the element stays at full; the gain sets the level
   await page.evaluate(() => dispatchEvent(new PageTransitionEvent("pagehide")))
   const stopped = await a()
   expect(stopped.paused).toBe(true)
@@ -64,12 +66,12 @@ test("back on the tab, the song carries on from where it stopped, quickly back t
   const back = await a()
   expect(back.paused).toBe(false)
   expect(back.t).toBeGreaterThanOrEqual(stopped.t)
-  expect(back.v).toBeGreaterThan(0.29)
+  expect(back.v).toBeGreaterThan(0.19)
 })
 
-// 18e: the first touch anywhere starts it at once (no wait), easing out to 30% over about 2.5 s and never above 35%;
-// until then the toggle shows it's waiting
-test("the first tap starts the song at once, eases to 30% and never goes over 35%", async ({ page }, info) => {
+// 18e: the first touch anywhere starts it at once (no wait), easing out over about 2.5 s; 18g: to 20%, never above 25%
+// (the gain node); until then the toggle shows it's waiting
+test("the first tap starts the song at once, eases to 20% and never goes over 25%", async ({ page }, info) => {
   test.skip(info.project.name !== "phone", "once is enough")
   await page.addInitScript(() => {
     localStorage.setItem("ng-opened", "1")
@@ -80,19 +82,19 @@ test("the first tap starts the song at once, eases to 30% and never goes over 35
   const toggle = page.locator("[data-music-toggle]").filter({ visible: true }).first()
   await expect(toggle).toHaveAttribute("data-waiting", "true")
   await page.locator("#letter").tap({ position: { x: 20, y: 200 } })
-  const v = () => page.evaluate(() => { const a = (window as unknown as { __a?: HTMLAudioElement }).__a; return a && !a.paused ? a.volume : -1 })
+  const v = () => page.evaluate(() => { const a = (window as unknown as { __a?: HTMLAudioElement }).__a; return a && !a.paused ? (window as unknown as { __ngGain?: () => number }).__ngGain?.() ?? 0 : -1 })
   await expect.poll(v, { timeout: 1500, intervals: [50] }).toBeGreaterThan(0)
   await expect(toggle).not.toHaveAttribute("data-waiting")
   // Eased out: well past half way at the half-way mark
   await page.waitForTimeout(1250)
-  expect(await v()).toBeGreaterThan(0.22)
+  expect(await v()).toBeGreaterThan(0.15)
   let top = 0
   for (let i = 0; i < 20; i++) { top = Math.max(top, await v()); await page.waitForTimeout(100) }
-  expect(top).toBeGreaterThan(0.29)
-  expect(top).toBeLessThanOrEqual(0.35)
+  expect(top).toBeGreaterThan(0.19)
+  expect(top).toBeLessThanOrEqual(0.25)
 })
 
-test("switched on with the toggle, it's at 30% within about half a second", async ({ page }, info) => {
+test("switched on with the toggle, it's at 20% within about half a second", async ({ page }, info) => {
   test.skip(info.project.name !== "phone", "once is enough")
   await page.addInitScript(() => {
     localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off")
@@ -103,5 +105,5 @@ test("switched on with the toggle, it's at 30% within about half a second", asyn
   const toggle = page.locator("[data-music-toggle]").filter({ visible: true }).first()
   await expect(toggle).not.toHaveAttribute("data-waiting")
   await toggle.tap()
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __a?: HTMLAudioElement }).__a?.volume ?? 0), { timeout: 1200, intervals: [50] }).toBeGreaterThan(0.29)
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __ngGain?: () => number }).__ngGain?.() ?? 0), { timeout: 1200, intervals: [50] }).toBeGreaterThan(0.19)
 })

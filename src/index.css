@@ -542,8 +542,10 @@
 .letter::after, .sheet-bright::after, .paper-feel::after, .envelope-paper::after {
   content: ""; position: absolute; inset: 0; z-index: 30; border-radius: inherit; pointer-events: none;
   background: var(--paper-live, none) center / cover no-repeat;
-  mix-blend-mode: var(--paper-blend); opacity: var(--paper-strength);
+  mix-blend-mode: var(--paper-blend); opacity: 0;
 }
+/* Once it's made (src/lib/paper-live.ts), it fades in over 400 ms at the strength that keeps text AA (--paper-on) */
+[data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity 400ms var(--ease-paper); }
 /* The driver card stays bright paper in Lantern, where the sheet made is the night one: plain there */
 [data-theme="lantern"] .sheet-bright::after { display: none; }
 .letter .paper-feel::after, .sheet .paper-feel::after { display: none; }

@@ -14,6 +14,7 @@ export const entries: Entry[] = [
   },
   {
     id: "day-scrub",
+    deciding: "Jehan: keep The day's timeline as it is, or let guests scrub through the day?",
     title: "Scrub through the day",
     summary: "A ruler of the hours under a fixed playhead: drag it and the time ticks past, each part of the day lifting into view as you reach it while the sky warms from late morning to afternoon.",
     refs: [
@@ -25,6 +26,7 @@ export const entries: Entry[] = [
   },
   {
     id: "day-map",
+    deciding: "Jehan: does The day also want a map of where each part happens?",
     title: "The day as a map",
     summary: "An illustrated plate of the grounds with the three parts of the day: a dotted line walks from the ceremony in The Garden to the reception on The Terrace, landing each pin with its time. Tap a stop for its card.",
     refs: [

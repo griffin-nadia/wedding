@@ -11,7 +11,7 @@ import { STORY_PLAN } from "@/content/story-plan"
  * (a gentle Ken Burns). Backdrops cross-fade over 700 ms; reduced motion: no drift, a plain cut.
  */
 const css = `
-.x-pr { position: relative; isolation: isolate; min-height: 100svh; display: grid; place-items: center; gap: var(--space-5); padding: var(--space-6) var(--space-4); overflow: hidden; background: var(--letter-bg); color: var(--ink); }
+.x-pr { position: relative; isolation: isolate; min-height: var(--stage-h, 100svh); display: grid; place-items: center; gap: var(--space-5); padding: var(--space-6) var(--space-4); overflow: hidden; background: var(--letter-bg); color: var(--ink); }
 .x-pr-back { position: absolute; inset: -40px; z-index: -1; opacity: 0; transition: opacity 700ms var(--ease-paper); }
 .x-pr-back[data-on] { opacity: 1; }
 .x-pr-back img { width: 100%; height: 100%; object-fit: cover; filter: blur(28px) saturate(1.1); }

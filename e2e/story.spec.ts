@@ -27,9 +27,9 @@ test.describe("with motion", () => {
     expect(mid[1].shown).toBe(true)
     expect(mid[1].deg).toBeGreaterThan(0.5) // still turned on the way in
     expect(mid[1].words).toBeLessThan(1) // its words are still fading in (the opener has none to fade out)
-    await page.waitForTimeout(900)
+    // Settled (the spring takes about 450 ms; a busy moment, like the paper being made, can stretch it a little)
+    await expect.poll(async () => (await stops(page))[1], { timeout: 3000 }).toMatchObject({ deg: 0, x: 0, words: 1, shown: true })
     const rest = await stops(page)
-    expect(rest[1]).toMatchObject({ deg: 0, x: 0, words: 1, shown: true })
     expect(rest.filter((s) => s.shown)).toHaveLength(1)
     expect(await current(page)).toBe(1)
   })

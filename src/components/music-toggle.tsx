@@ -5,15 +5,16 @@ import { useLang } from "@/lib/lang"
 import { loop } from "@/lib/frame"
 
 const KEY = "ng-music"
-/** The site's only sound is the music, at this level, and never louder than MAX_VOLUME. */
-export const SITE_VOLUME = 0.3
-const MAX_VOLUME = 0.35
-/** The first tap anywhere (usually the envelope): from silence to 30% over 2.5 s, eased out */
+/** The site's only sound is the music, at this level, and never louder than MAX_VOLUME (18g: 0.2, at most 0.25; the
+ *  file itself is normalised to about -20 LUFS) */
+export const SITE_VOLUME = 0.2
+const MAX_VOLUME = 0.25
+/** The first tap anywhere (usually the envelope): from silence to 20% over 2.5 s, eased out */
 const FADE_IN = 2500
 /** Switched on with the toggle: they asked for it, so it comes in quickly */
 const TOGGLE_FADE = 500
 const FADE_OUT = 600
-/** Coming back to the tab: it carries on from where it stopped, back up to 30% in half a second (not the first 2.5 s fade) */
+/** Coming back to the tab: it carries on from where it stopped, back up to 20% in half a second (not the first 2.5 s fade) */
 const RESUME_FADE = 500
 
 /** One second of silence as a WAV, in case ART.music.src is ever empty. */
@@ -33,6 +34,29 @@ function silentWav() {
  */
 let audio: HTMLAudioElement | null = null
 let fade = () => {}
+/*
+ * The level goes through Web Audio (18g): the song is a MediaElementSource into a GainNode, because iOS Safari
+ * ignores audio.volume (it was always full, and the fades did nothing). Made on the first play, inside the guest's tap
+ * (iOS only allows it then). Where Web Audio isn't there, audio.volume as before.
+ */
+let ctx: AudioContext | null = null
+let gain: GainNode | null = null
+function graph() {
+  if (gain || !audio) return gain
+  try {
+    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+    if (!AC) return null
+    ctx = new AC()
+    gain = ctx.createGain()
+    gain.gain.value = 0
+    ctx.createMediaElementSource(audio).connect(gain).connect(ctx.destination)
+    audio.volume = 1
+    ;(window as unknown as { __ngGain?: () => number }).__ngGain = () => gain!.gain.value // for the music test
+  } catch { gain = null }
+  return gain
+}
+const level = () => (gain ? gain.gain.value : audio?.volume ?? 0)
+const setLevel = (v: number) => { const x = Math.max(0, Math.min(MAX_VOLUME, v)); if (gain) gain.gain.value = x; else if (audio) audio.volume = x }
 // On by default: with nothing remembered, the song starts on their first tap anywhere (usually opening the envelope)
 let on = (() => { try { return localStorage.getItem(KEY) !== "off" } catch { return true } })()
 let armed = false
@@ -55,13 +79,14 @@ function el() {
   return audio
 }
 function ramp(to: number, ms: number, then?: () => void) {
-  const a = el(), from = a.volume, start = performance.now()
+  el()
+  const from = level(), start = performance.now()
   fade()
   fade = loop((now) => {
     const k = Math.min(1, (now - start) / ms)
     // Eased out (it's audible at once, then settles gently) so it sounds faded in rather than switched on
     const eased = 1 - Math.pow(1 - k, 3)
-    a.volume = Math.max(0, Math.min(MAX_VOLUME, from + (to - from) * eased))
+    setLevel(from + (to - from) * eased)
     if (k < 1) return true
     then?.(); return false
   })
@@ -74,6 +99,8 @@ function play(fadeMs = FADE_IN) {
   if (!a.paused) { ramp(SITE_VOLUME, fadeMs); return }
   if (starting) return // visibilitychange and pageshow can both ask at once on a phone: one start is enough
   starting = true
+  graph()
+  void ctx?.resume().catch(() => {})
   void a.play().then(() => { played = true; sound(true); ramp(SITE_VOLUME, fadeMs); session("playing") }).catch(() => {}).finally(() => { starting = false })
 }
 function pause() { if (audio && !audio.paused) ramp(0, FADE_OUT, () => { audio?.pause(); sound(false); session("paused") }) }
@@ -89,7 +116,7 @@ function sound(next: boolean) { if (sounding !== next) { sounding = next; emit()
 function hardStop() {
   fade()
   if (!audio) return
-  audio.volume = 0
+  setLevel(0)
   audio.pause()
   sound(false)
   session("none")
@@ -157,7 +184,7 @@ function arm() {
 
 /**
  * Background music (Options → Music toggle). On by default, but browsers never allow sound before a tap, so it starts
- * on the guest's first tap anywhere (usually opening the envelope), fading in over 2.5 s to 30% (half a second from the toggle), fades out when paused, remembers the choice on this
+ * on the guest's first tap anywhere (usually opening the envelope), fading in over 2.5 s to 20% (half a second from the toggle), fades out when paused, remembers the choice on this
  * device, keeps playing across pages, and stops at once while the tab is hidden. The track is ART.music.
  */
 export default function MusicToggle() {
