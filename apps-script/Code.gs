@@ -13,6 +13,9 @@
  *   Emails   invite and reminder wording (created by the menu, edited by Nadia)
  *   Content  fortunes, Our story chapters and the site mode (created by the menu, edited by Nadia)
  *   Crew     four crew links for /kit and /lab (created by "Make crew links"; no guest data)
+ *   Questions  Ask us questions and their answers (created on the first question)
+ *   Summary, How to update  ours; the tidy adds the To look at box and "Your weekly 5 minutes"
+ *   Archive  rows and columns the tidy moved out of other tabs (never deleted; docs/sheets.md)
  *
  * Visit counts (privacy first, only in this sheet: no cookies, IP addresses or third parties) go in
  * columns added at the END of Guests: First opened, Last opened, Opens, Started RSVP.
@@ -144,7 +147,13 @@ function onOpen() {
     .addSeparator()
     .addItem("Schedule the February reminder…", "scheduleReminder")
     .addItem("Cancel the February reminder", "cancelReminder")
+    .addSeparator()
+    .addItem("Tidy the sheets (report)", "tidySheets")
+    .addItem("Tidy the sheets: do it", "tidySheetsForReal")
+    .addItem("Refresh the To look at box", "refreshLookAt")
     .addToUi()
+  // Once the tidy has added it, the Summary's To look at box is fresh every time the sheet opens
+  safely_(() => refreshLookAt_(false))
 }
 
 /**
@@ -743,10 +752,11 @@ function forgetAllHouseholds_() {
 }
 
 /** Simple trigger: any hand edit in the sheet (names, emails, rows) clears the cache. */
-function onEdit() {
+function onEdit(e) {
   forgetAllHouseholds_()
   // Edits to the Content tab show on the site straight away (fortunes, story, mode)
   CacheService.getScriptCache().removeAll(["fortunes", "content"])
+  safely_(() => stampSeen_(e))
 }
 
 // ---------- stay picks (Travel → Where to stay) ----------
@@ -1535,7 +1545,7 @@ function flushOut_() {
 
 // ---------- Ask us: questions to Griffin and Nadia ----------
 
-const QUESTION_HEAD = ["Time", "Household", "Token", "Email", "Question", "Status", "Answer", "Answer (ja)", "Publish", "Sent"]
+const QUESTION_HEAD = ["Time", "Household", "Token", "Email", "Question", "Status", "Answer", "Answer (ja)", "Publish", "Sent", "Seen"]
 /** The Questions tab, made the first time (status new / answered / published; Publish is a tickbox). */
 function questionsSheet_() {
   const ss = SpreadsheetApp.getActive()
@@ -1544,7 +1554,9 @@ function questionsSheet_() {
     s = ss.insertSheet(TABS.questions)
     s.getRange(1, 1, 1, QUESTION_HEAD.length).setValues([QUESTION_HEAD]).setFontWeight("bold")
     s.setFrozenRows(1)
-    s.getRange(2, QUESTION_HEAD.indexOf("Publish") + 1, 999, 1).insertCheckboxes()
+    // A tickbox rule, not insertCheckboxes: that writes FALSE on every row and appendRow then lands after row 1000
+    const box = SpreadsheetApp.newDataValidation().requireCheckbox().build()
+    ;["Publish", "Seen"].forEach((k) => s.getRange(2, QUESTION_HEAD.indexOf(k) + 1, 999, 1).setDataValidation(box))
     s.getRange(2, QUESTION_HEAD.indexOf("Status") + 1, 999, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["new", "answered", "published"], true).build())
   }
   return s
@@ -2222,6 +2234,391 @@ function emailsFor_(token) {
     .filter((r) => r.Token === token)
     .map((r) => String(r.Email || "").trim())
     .filter((e, i, all) => e && all.indexOf(e) === i)
+}
+
+// ---------- tidy the sheets (run 19): a report that changes nothing, then "do it" only when Jehan clicks it ----------
+//
+// Never deletes a row of anyone's data: test-era Log rows and stale helper columns are copied to the Archive tab
+// exactly as they are (copyTo keeps the leading ' on guest text), checked, and only then taken out of their tab.
+// Columns are never renamed or reordered (ask_ appends to Questions by position, everything else goes by header).
+
+const TAB_ORDER = ["Summary", "Guests", "RSVPs", "Questions", "Songs", "Content", "How to update"]
+const TAB_LAST = ["Crew", "Log", "Archive"]
+const ARCHIVE = "Archive"
+const DATA_TABS = [TABS.guests, TABS.rsvps, TABS.questions, TABS.songs, "Content", TABS.emails, "Crew", TABS.log]
+const LOOK_TITLE = "To look at"
+const LOOK_ITEMS = 10
+const LOOK_ROWS = LOOK_ITEMS + 3 // the title, the headings, the items, one blank row above what was there
+const LOOK_BG = "#f6f0e1" // cream paper
+const DATE_FORMAT = "d mmm yyyy, h:mm am/pm"
+const TIMESTAMPS = ["Time", "Responded at", "Added at", "First opened", "Last opened", "Started RSVP", "Invite sent", "Sent", "Seen at"]
+const WIDTHS = {
+  Household: 180, "Guest ID": 80, "First name": 120, "Last name": 120, Email: 220, Phone: 120, Token: 110, Link: 300,
+  Attending: 90, Dietary: 200, Notes: 240, Arriving: 110, Leaving: 110, Message: 320, "Photos OK": 90, Seen: 60,
+  Song: 260, Question: 320, Status: 100, Answer: 320, "Answer (ja)": 280, Publish: 80, Kind: 120, Coming: 200,
+  "Not coming": 160, Songs: 220, Dates: 150, Flag: 220, "What changed": 320, Payload: 160, Key: 160, Text: 480,
+  Name: 140, Role: 100, "Kit link": 360, "Lab link": 360, Stamps: 160, "Flying from": 160,
+}
+TIMESTAMPS.forEach((k) => (WIDTHS[k] = WIDTHS[k] || 170))
+// Every column the back end or the docs know, per tab. Anything else is a "helper" column (only moved when empty)
+const KNOWN_COLUMNS = {
+  Guests: ["Household", "Guest ID", "First name", "Last name", "Email", "Phone", "Token", "Link", "Attending", "Dietary", "Notes", "Invite sent", "Stamps", "Flying from", "Flying id", "Flying region", "Flying country", "Flying lat", "Flying lon"].concat(VISITS),
+  RSVPs: ["Token", "Household", "Arriving", "Leaving", "Message", "Responded at", "Photos OK", "Seen", "Seen at"],
+  Songs: ["Token", "Household", "Song", "Added at"],
+  Questions: QUESTION_HEAD,
+  Log: LOG_COLUMNS,
+}
+
+/** The tabs in their tidy order: the main ones first, any others where they are, then Crew, Log and Archive. */
+function tabOrder_(names) {
+  const first = TAB_ORDER.filter((n) => names.indexOf(n) >= 0)
+  const last = TAB_LAST.filter((n) => names.indexOf(n) >= 0)
+  return first.concat(names.filter((n) => first.indexOf(n) < 0 && last.indexOf(n) < 0), last)
+}
+
+const time_ = (v) => (v instanceof Date ? v.getTime() : v ? new Date(v).getTime() : NaN)
+
+/**
+ * Test-era Log rows: every row from before the first real invite went out (Kind "Invite sent", or the older rows'
+ * wording). Nothing until an invite has gone. log: the Log tab as objects. Returns sheet row numbers and what they are.
+ */
+function testEraRows_(log) {
+  const invite = (r) => r.Kind === "Invite sent" || /^Invite sent/.test(String(r["What changed"] || ""))
+  const firsts = log.filter(invite).map((r) => time_(r.Time)).filter((t) => !isNaN(t))
+  if (!firsts.length) return { cutoff: null, rows: [] }
+  const cutoff = Math.min.apply(null, firsts)
+  const rows = []
+  log.forEach((r, i) => { const t = time_(r.Time); if (!isNaN(t) && t < cutoff) rows.push({ row: i + 2, time: t, kind: String(r.Kind || logKind_(String(r["What changed"] || ""))), household: String(r.Household || "") }) })
+  return { cutoff: cutoff, rows: rows }
+}
+
+/**
+ * Helper columns that would move to Archive: to the right of every column we know, and either empty under a heading
+ * we don't know, or holding something under no heading at all. A column of someone's own notes under a heading of
+ * their own stays put (listed as left). header: row 1; filled: per column, whether any cell under it has something.
+ */
+function staleColumns_(tab, header, filled) {
+  const known = KNOWN_COLUMNS[tab]
+  if (!known) return { move: [], left: [] }
+  const name = (i) => String(header[i] == null ? "" : header[i]).trim()
+  let lastKnown = -1
+  header.forEach((h, i) => { if (known.indexOf(name(i)) >= 0) lastKnown = i })
+  const move = [], left = []
+  header.forEach((h, i) => {
+    if (i <= lastKnown || known.indexOf(name(i)) >= 0) return
+    const col = { col: i + 1, header: name(i), filled: Boolean(filled[i]) }
+    if (name(i) ? !col.filled : col.filled) move.push(col)
+    else if (name(i)) left.push(col)
+  })
+  return { move: move, left: left }
+}
+
+/**
+ * Empty rows in the middle of a tab (all blank, apart from an unticked box) and the rows under them, which move up so
+ * the next new row lands straight under the others. A tickbox made with insertCheckboxes holds FALSE on every row,
+ * and appendRow then writes after the last of them (Questions made by questionsSheet_ put new questions at row 1001).
+ * rows: the data rows under the header; boxes: the tickbox columns (0-based). Sheet row numbers.
+ */
+function gapPlan_(rows, boxes) {
+  const empty = (r) => r.every((v, c) => v === "" || v === null || (v === false && boxes.indexOf(c) >= 0))
+  const clear = [], moves = []
+  let next = 0 // the first empty row, once there is one: where the next row with something in it goes
+  rows.forEach((r, i) => {
+    if (empty(r)) { if (r.some((v) => v === false)) clear.push(i + 2); if (!next) next = i + 2; return }
+    if (next) moves.push({ from: i + 2, to: next++ })
+  })
+  return { clear: clear, moves: moves }
+}
+
+/** A reply the household changed after it was ticked Seen (its Responded at is later than Seen at). */
+function changedSinceSeen_(r) {
+  return r.Seen === true && !isNaN(time_(r["Seen at"])) && time_(r["Responded at"]) > time_(r["Seen at"])
+}
+
+/**
+ * The Summary's "To look at" box, from plain rows (each with _row, its sheet row): new questions, new or changed
+ * replies since they were last ticked Seen, households who haven't replied, and the dietary needs of everyone coming.
+ */
+function toLookAt_(t) {
+  const out = (title, tab, items) => ({ title: title, tab: tab, items: items })
+  const qs = (t.questions || []).filter((r) => r.Seen !== true && (!String(r.Status || "").trim() || String(r.Status).trim() === "new"))
+    .map((r) => ({ tab: TABS.questions, row: r._row, text: String(r.Household || "Someone") + ": " + String(r.Question || "").replace(/\s+/g, " ") }))
+  const replies = []
+  ;(t.rsvps || []).forEach((r) => {
+    if (r.Seen !== true) replies.push({ tab: TABS.rsvps, row: r._row, text: "New: " + String(r.Household || r.Token) })
+    else if (changedSinceSeen_(r)) replies.push({ tab: TABS.rsvps, row: r._row, text: "Changed: " + String(r.Household || r.Token) })
+  })
+  const replied = {}
+  ;(t.rsvps || []).forEach((r) => (replied[String(r.Token)] = true))
+  const waiting = [], seen = {}
+  ;(t.guests || []).forEach((g) => {
+    const k = String(g.Token || "")
+    if (!k || seen[k] || replied[k]) return
+    seen[k] = true
+    waiting.push({ tab: TABS.guests, row: g._row, text: String(g.Household || g["First name"]) })
+  })
+  const diet = (t.guests || []).filter((g) => g.Attending === "yes" && String(g.Dietary || "").trim() && String(g.Dietary).trim() !== "None")
+    .map((g) => ({ tab: TABS.guests, row: g._row, text: String(g["First name"]) + " (" + String(g.Household) + "): " + String(g.Dietary) }))
+  return [out("New questions", TABS.questions, qs), out("New or changed replies", TABS.rsvps, replies), out("Not replied yet", TABS.guests, waiting), out("Dietary needs", TABS.guests, diet)]
+}
+
+/** The box as cell values: a column per list, each item a link to its row (gids: tab name to sheet id). */
+function lookAtValues_(sections, gids, when) {
+  const grid = Array.from({ length: LOOK_ROWS }, () => sections.map(() => ""))
+  grid[0][0] = LOOK_TITLE + (when ? " (updated " + when + ")" : "")
+  sections.forEach((s, c) => {
+    grid[1][c] = s.title + " (" + s.items.length + ")"
+    const shown = s.items.length > LOOK_ITEMS ? s.items.slice(0, LOOK_ITEMS - 1) : s.items
+    shown.forEach((it, i) => {
+      const label = String(it.text).replace(/[\r\n]+/g, " ").slice(0, 80).replace(/"/g, '""')
+      grid[2 + i][c] = gids[it.tab] == null ? label : '=HYPERLINK("#gid=' + gids[it.tab] + "&range=A" + it.row + '","' + label + '")'
+    })
+    if (shown.length < s.items.length) grid[1 + LOOK_ITEMS][c] = "and " + (s.items.length - shown.length) + " more in " + s.tab
+    if (!s.items.length) grid[2][c] = "Nothing"
+  })
+  return grid
+}
+
+function colLetter_(n) {
+  let s = ""
+  for (; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + ((n - 1) % 26)) + s
+  return s
+}
+
+function numberedRows_(name) {
+  return SpreadsheetApp.getActive().getSheetByName(name) ? rows_(name).map((r, i) => Object.assign(r, { _row: i + 2 })) : []
+}
+
+/** Writes (or, with make, first adds) the To look at box at the top of Summary. Refreshed on open once it's there. */
+function refreshLookAt_(make) {
+  const ss = SpreadsheetApp.getActive()
+  let s = ss.getSheetByName("Summary")
+  if (!s) { if (!make) return; s = ss.insertSheet("Summary", 0) }
+  if (String(s.getRange(1, 1).getValue()).indexOf(LOOK_TITLE) !== 0) { if (!make) return; s.insertRowsBefore(1, LOOK_ROWS) }
+  const gids = {}
+  ss.getSheets().forEach((x) => (gids[x.getName()] = x.getSheetId()))
+  const sections = toLookAt_({ questions: numberedRows_(TABS.questions), rsvps: numberedRows_(TABS.rsvps), guests: numberedRows_(TABS.guests) })
+  const when = Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), "d MMM, h:mm a")
+  const box = s.getRange(1, 1, LOOK_ROWS, sections.length)
+  box.clearContent()
+  box.setValues(lookAtValues_(sections, gids, when)).setFontWeight("normal").setFontSize(10)
+  s.getRange(1, 1, LOOK_ROWS - 1, sections.length).setBackground(LOOK_BG).setVerticalAlignment("top")
+  s.getRange(1, 1, 2, sections.length).setFontWeight("bold")
+}
+
+function refreshLookAt() {
+  refreshLookAt_(true)
+  SpreadsheetApp.getActive().toast("The To look at box on Summary is up to date.")
+}
+
+/** Simple-trigger part of onEdit: ticking Seen on an RSVPs row stamps Seen at (unticking clears it). */
+function stampSeen_(e) {
+  const r = e && e.range
+  if (!r || r.getSheet().getName() !== TABS.rsvps) return
+  const s = r.getSheet(), head = headers_(s)
+  if (!("Seen" in head) || !("Seen at" in head)) return
+  const c = head.Seen + 1
+  if (c < r.getColumn() || c > r.getLastColumn()) return
+  const top = Math.max(2, r.getRow()), n = r.getLastRow() - top + 1
+  if (n < 1) return
+  const seen = s.getRange(top, c, n, 1).getValues()
+  s.getRange(top, head["Seen at"] + 1, n, 1).setValues(seen.map((v) => [v[0] === true ? new Date() : ""]))
+}
+
+const WEEKLY_HEAD = "Your weekly 5 minutes"
+const WEEKLY_ROUTINE = [
+  [WEEKLY_HEAD],
+  ["1. Open Summary. The To look at box at the top has everything new (it refreshes when you open the sheet)."],
+  ["2. Work through it. Each line is a link: click it to jump to that row."],
+  ["3. Tick Seen on each reply and question you've read. If a household changes their reply after that, its row lights up (Changed) and it's back in the box."],
+  ["4. Answer questions: type the Answer (and Answer (ja) if you can) and set Status to answered."],
+  ["5. Tick Publish to put the answer in the FAQs. The household gets it by email and Status turns to published."],
+  [""],
+]
+
+/** What the tidy would do, as steps: the words for the report and the change itself, read again when it runs. */
+function tidyPlan_() {
+  const ss = SpreadsheetApp.getActive()
+  const steps = [], left = []
+  const step = (text, run) => steps.push({ text: text, run: run })
+  const fmt = (t) => Utilities.formatDate(new Date(t), ss.getSpreadsheetTimeZone(), "d MMM yyyy, h:mm a")
+
+  // 1. Archive first (taking a column out shifts the ones after it, so the rest is worked out again when it runs)
+  const log = ss.getSheetByName(TABS.log)
+  const era = log ? testEraRows_(rows_(TABS.log)) : { rows: [] }
+  if (era.rows.length) {
+    step("Archive: move " + era.rows.length + " Log row(s) from before the first invite (" + fmt(era.cutoff) + "):\n" +
+      era.rows.map((r) => "    Log row " + r.row + ": " + fmt(r.time) + ", " + r.kind + ", " + r.household).join("\n"),
+    () => archiveRows_(log, era.rows.map((r) => r.row), "Rows from before the first invite"))
+  }
+  Object.keys(KNOWN_COLUMNS).forEach((tab) => {
+    const s = ss.getSheetByName(tab)
+    if (!s || s.getLastColumn() < 1) return
+    const values = s.getDataRange().getValues()
+    const filled = values[0].map((h, c) => values.slice(1).some((r) => r[c] !== "" && r[c] !== null && r[c] !== false))
+    const cols = staleColumns_(tab, values[0], filled)
+    cols.left.forEach((c) => left.push(tab + " column " + colLetter_(c.col) + " \"" + c.header + "\" (has something in it, and isn't one of ours)"))
+    if (cols.move.length) step("Archive: move helper column(s) from " + tab + ": " + cols.move.map((c) => colLetter_(c.col) + " " + (c.header ? "\"" + c.header + "\" (empty)" : "(no heading)")).join(", "),
+      () => cols.move.slice().reverse().forEach((c) => archiveColumn_(s, c.col, tab + " column " + colLetter_(c.col) + " " + (c.header || "(no heading)"))))
+  })
+
+  // 2. Empty rows in the middle (unticked boxes on every row) and the rows under them
+  ;[[TABS.questions, ["Publish", "Seen"]], [TABS.rsvps, ["Seen"]]].forEach(([tab, boxNames]) => {
+    const s = ss.getSheetByName(tab)
+    if (!s || s.getLastRow() < 2) return
+    const values = s.getDataRange().getValues(), head = values[0].map((h) => String(h).trim())
+    const plan = gapPlan_(values.slice(1), boxNames.map((n) => head.indexOf(n)).filter((i) => i >= 0))
+    if (plan.clear.length) step(tab + ": clear the unticked box on " + plan.clear.length + " empty row(s), so new rows land under the others (the tickboxes stay)",
+      () => runs_(plan.clear).forEach((x) => s.getRange(x.from, 1, x.to - x.from + 1, s.getLastColumn()).clearContent()))
+    if (plan.moves.length) step(tab + ": move " + plan.moves.length + " row(s) up to close the gap above them: " + plan.moves.map((m) => "row " + m.from + " to " + m.to).join(", "),
+      () => plan.moves.forEach((m) => s.getRange(m.from, 1, 1, s.getLastColumn()).moveTo(s.getRange(m.to, 1))))
+  })
+
+  // 3. Every data tab: header, filter, banding, widths, dates; Seen tickboxes; the Questions dropdown and colours
+  DATA_TABS.forEach((tab) => {
+    const s = ss.getSheetByName(tab)
+    if (!s || s.getLastColumn() < 1) return
+    const head = headers_(s), want = []
+    if (s.getFrozenRows() !== 1) want.push("freeze the header row")
+    if (!s.getFilter()) want.push("turn the filter on")
+    if (!s.getBandings().length) want.push("light banding")
+    const widths = Object.keys(head).filter((k) => WIDTHS[k] && s.getColumnWidth(head[k] + 1) !== WIDTHS[k])
+    if (widths.length) want.push("widths for " + widths.join(", "))
+    const dates = Object.keys(head).filter((k) => TIMESTAMPS.indexOf(k) >= 0 && s.getRange(2, head[k] + 1).getNumberFormat() !== DATE_FORMAT)
+    if (dates.length) want.push("readable dates (like 3 Oct 2026, 9:41 am) in " + dates.join(", "))
+    const seenCols = tab === TABS.rsvps ? ["Seen", "Seen at"] : tab === TABS.questions ? ["Seen"] : []
+    const missing = seenCols.filter((k) => !(k in head))
+    if (missing.length) want.push("add " + missing.join(" and ") + " at the end (a tickbox for when you've read it" + (tab === TABS.rsvps ? "; Seen at is filled in when you tick" : "") + ")")
+    if (tab === TABS.questions && "Status" in head && !s.getRange(2, head.Status + 1).getDataValidation()) want.push("a Status dropdown (new, answered, published)")
+    if (tab === TABS.questions && !hasRule_(s, "Status")) want.push("colour the rows still new")
+    if (tab === TABS.rsvps && !hasRule_(s, "Changed")) want.push("light up a reply changed since it was ticked Seen (Changed)")
+    if (want.length) step(tab + ": " + want.join("; "), () => formatTab_(s, tab))
+  })
+
+  // 4. The Summary box and the weekly routine
+  const summary = ss.getSheetByName("Summary")
+  const hasBox = summary && String(summary.getRange(1, 1).getValue()).indexOf(LOOK_TITLE) === 0
+  step(hasBox ? "Summary: refresh the To look at box" : "Summary: add the To look at box at the top (" + LOOK_ROWS + " new rows; what's there now moves down and its formulas keep working)" + (summary ? "" : ", in a new Summary tab"),
+    () => refreshLookAt_(true))
+  const how = ss.getSheetByName("How to update")
+  const howNew = !how
+  if (!how || how.getDataRange().getValues().map((r) => r.join(" ")).join(" ").indexOf(WEEKLY_HEAD) < 0) {
+    step("How to update: add \"" + WEEKLY_HEAD + "\" at the top" + (how ? "" : " (a new tab)"), () => {
+      const s = ss.getSheetByName("How to update") || ss.insertSheet("How to update")
+      s.insertRowsBefore(1, WEEKLY_ROUTINE.length)
+      s.getRange(1, 1, WEEKLY_ROUTINE.length, 1).setValues(WEEKLY_ROUTINE).setWrap(true)
+      s.getRange(1, 1).setFontWeight("bold").setFontSize(12)
+    })
+  }
+
+  // 5. Tab order, last (the Archive tab may be new)
+  const names = ss.getSheets().map((x) => x.getName())
+  const later = names.concat(steps.some((x) => /^Archive:/.test(x.text)) && names.indexOf(ARCHIVE) < 0 ? [ARCHIVE] : [], summary ? [] : ["Summary"], howNew ? ["How to update"] : [])
+  const order = tabOrder_(later)
+  if (order.join("|") !== later.join("|")) step("Tab order: " + order.join(", "), () => order.forEach((n, i) => { const x = ss.getSheetByName(n); if (x) { ss.setActiveSheet(x); ss.moveActiveSheet(i + 1) } }))
+  return { steps: steps, left: left }
+}
+
+function hasRule_(s, kind) {
+  return s.getConditionalFormatRules().some((r) => { const b = r.getBooleanCondition(); return b && String(b.getCriteriaValues()[0] || "").indexOf(kind === "Status" ? '="new"' : ">$") >= 0 })
+}
+
+/** Header, filter, banding, widths, dates, tickboxes and colours for one data tab (safe to run again). */
+function formatTab_(s, tab) {
+  if (tab === TABS.rsvps) ensureColumns_(s, ["Seen", "Seen at"])
+  if (tab === TABS.questions) ensureColumns_(s, ["Seen"])
+  const head = headers_(s), rows = Math.max(1, s.getMaxRows() - 1), width = s.getLastColumn()
+  const all = s.getRange(1, 1, s.getMaxRows(), width)
+  s.setFrozenRows(1)
+  s.getRange(1, 1, 1, width).setFontWeight("bold")
+  if (!s.getFilter()) all.createFilter()
+  if (!s.getBandings().length) all.applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY, true, false)
+  Object.keys(head).forEach((k) => {
+    if (WIDTHS[k]) s.setColumnWidth(head[k] + 1, WIDTHS[k])
+    if (TIMESTAMPS.indexOf(k) >= 0) s.getRange(2, head[k] + 1, rows, 1).setNumberFormat(DATE_FORMAT)
+  })
+  const box = SpreadsheetApp.newDataValidation().requireCheckbox().build()
+  ;["Seen"].concat(tab === TABS.questions ? ["Publish"] : []).forEach((k) => { if (k in head) s.getRange(2, head[k] + 1, rows, 1).setDataValidation(box) })
+  const L = (k) => "$" + colLetter_(head[k] + 1) + "2"
+  const rules = s.getConditionalFormatRules()
+  const add = (formula) => rules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied(formula).setBackground(LOG_FLAG_BG).setRanges([s.getRange(2, 1, rows, width)]).build())
+  if (tab === TABS.questions && "Status" in head) {
+    s.getRange(2, head.Status + 1, rows, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["new", "answered", "published"], true).build())
+    if (!hasRule_(s, "Status")) add("=" + L("Status") + '="new"')
+  }
+  if (tab === TABS.rsvps && !hasRule_(s, "Changed")) add("=AND(" + L("Seen") + "=TRUE," + L("Seen at") + '<>"",' + L("Responded at") + ">" + L("Seen at") + ")")
+  s.setConditionalFormatRules(rules)
+}
+
+/** The Archive tab, made at the end the first time. */
+function archiveSheet_() {
+  const ss = SpreadsheetApp.getActive()
+  return ss.getSheetByName(ARCHIVE) || ss.insertSheet(ARCHIVE, ss.getSheets().length)
+}
+
+/** Copies a block to the bottom of Archive under a dated title, exactly as it is, and checks it arrived. */
+function archiveBlock_(title, ranges) {
+  const a = archiveSheet_()
+  let row = a.getLastRow() + (a.getLastRow() ? 2 : 1)
+  a.getRange(row, 1).setValue(title + ", moved " + Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "d MMM yyyy, h:mm a")).setFontWeight("bold")
+  row++
+  ranges.forEach((r) => {
+    if (a.getMaxColumns() < r.getNumColumns()) a.insertColumnsAfter(a.getMaxColumns(), r.getNumColumns() - a.getMaxColumns())
+    if (a.getMaxRows() < row + r.getNumRows()) a.insertRowsAfter(a.getMaxRows(), row + r.getNumRows() - a.getMaxRows())
+    const to = a.getRange(row, 1, r.getNumRows(), r.getNumColumns())
+    r.copyTo(to)
+    SpreadsheetApp.flush()
+    if (JSON.stringify(to.getValues()) !== JSON.stringify(r.getValues())) throw new Error("Archive copy didn't match (" + title + "): nothing was taken out")
+    row += r.getNumRows()
+  })
+}
+
+/** Row numbers as runs of neighbours, [{ from, to }], so a sheet call covers each run. */
+function runs_(rowNumbers) {
+  const runs = []
+  rowNumbers.slice().sort((x, y) => x - y).forEach((r) => { const last = runs[runs.length - 1]; if (last && last.to === r - 1) last.to = r; else runs.push({ from: r, to: r }) })
+  return runs
+}
+
+/** Moves whole rows (with the header above them) to Archive, then takes them out of their tab, bottom up. */
+function archiveRows_(s, rowNumbers, title) {
+  const width = s.getLastColumn(), runs = runs_(rowNumbers)
+  archiveBlock_(title + " (" + s.getName() + ")", [s.getRange(1, 1, 1, width)].concat(runs.map((x) => s.getRange(x.from, 1, x.to - x.from + 1, width))))
+  runs.reverse().forEach((x) => s.deleteRows(x.from, x.to - x.from + 1))
+}
+
+/** Moves one column (its heading and every row) to Archive, then takes it out of its tab. */
+function archiveColumn_(s, col, title) {
+  archiveBlock_(title, [s.getRange(1, col, Math.max(1, s.getLastRow()), 1)])
+  s.deleteColumn(col)
+}
+
+function tidyReport_(plan, done) {
+  return (done ? "Done:\n\n" : "Nothing has changed. \"Tidy the sheets: do it\" would:\n\n") +
+    (plan.steps.length ? plan.steps.map((x, i) => (i + 1) + ". " + x.text).join("\n\n") : "Nothing: the sheets are tidy.") +
+    (plan.left.length ? "\n\nLeft where they are (say if they should go to Archive):\n" + plan.left.map((x) => "    " + x).join("\n") : "") +
+    "\n\nNo row of anyone's data is deleted: anything that moves is copied to the Archive tab first."
+}
+
+function tidySheets() {
+  showResult_("Tidy the sheets (report)", tidyReport_(tidyPlan_(), false))
+}
+
+function tidySheetsForReal() {
+  const ui = SpreadsheetApp.getUi()
+  let plan = tidyPlan_()
+  if (ui.alert("Tidy the sheets: do it", plan.steps.length + " change(s), listed in \"Tidy the sheets (report)\". Anything that moves is copied to Archive first. Go ahead?", ui.ButtonSet.YES_NO) !== ui.Button.YES) return
+  const lock = LockService.getScriptLock()
+  if (!lock.tryLock(30000)) return ui.alert("A reply is being saved. Try again in a minute.")
+  try {
+    plan = tidyPlan_() // again, under the lock: nothing can save in between
+    plan.steps.forEach((x) => x.run())
+    SpreadsheetApp.flush()
+  } finally {
+    lock.releaseLock()
+  }
+  forgetAllHouseholds_()
+  showResult_("Tidy the sheets: done", tidyReport_(plan, true))
 }
 
 function isLocked_() {

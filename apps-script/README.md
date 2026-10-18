@@ -34,6 +34,9 @@ still point at the old one.
 | Prepare for launch: run for real… | Type LAUNCH; backs up both sheets to Wedding backups first, then does it. Never sends |
 | Weekly backup: check (report only)… | The backups folder, the weekly copies there, what the next run makes and bins, whether the trigger is on. Changes nothing |
 | Weekly backup: turn on | Wedding account only: every Monday about 3 am Kyoto, a dated copy of Site-Data in Wedding backups, the newest 8 kept |
+| Tidy the sheets (report) | Changes nothing. Lists every change the tidy would make and every row and column that would move to Archive, by row number (docs/sheets.md) |
+| Tidy the sheets: do it | Asks, then does exactly that: tab order, frozen headers, filters, widths, banding, readable dates, Seen tickboxes, the Questions dropdown and colour, the RSVPs Changed highlight, the Summary's To look at box, "Your weekly 5 minutes" in How to update, and test-era Log rows and stale helper columns copied to Archive before they're taken out. Never deletes anything |
+| Refresh the To look at box | Rewrites the box at the top of Summary (it also refreshes on open once the tidy has added it) |
 
 ## Script properties (all optional)
 
