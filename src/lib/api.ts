@@ -158,7 +158,7 @@ export async function askUs(q: { question: string; token?: string; name?: string
 export type Asked = { q: string; a: string; a_ja?: string }
 export async function getQuestions(): Promise<Asked[]> {
   if (!config.apiUrl) return []
-  try { const d = await call(`${config.apiUrl}?action=questions`); return d.ok ? (d.questions as Asked[]) : [] } catch { return [] }
+  try { const d = await call(`${config.apiUrl}?action=questions`); return d.ok && Array.isArray(d.questions) ? (d.questions as Asked[]) : [] } catch { return [] } // an older back end has none: none, not a crash
 }
 
 /** "Can't find your invite?": asks the back end to email the household link. Same answer either way. */
