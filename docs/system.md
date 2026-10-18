@@ -62,16 +62,19 @@ Components only use purpose or component tokens; nothing invents a colour or an 
 | Sheet | `--elevation-sheet` | the one sheet (reply, journey map, driver card): the paper, the deeper shadow |
 | Overlay | `--elevation-overlay` | the dim behind a sheet |
 
-The paper (18f) is Paper's PaperTexture shader with no image, baked once per theme to a seamless opaque WebP tile
-(`--paper`: `paper-light.webp` cream, `paper-lantern.webp` walnut, and `--paper-bright` for the fortune slip and the
-driver card; 480px on screen, baked at 2x) by `scripts/paper-bake.mjs` from the preset in `src/lib/paper.ts`. It is the
-bottom layer of the letter, every sheet, `.paper-feel` and the sent letter. Lantern keeps drops and wrinkles lower, so
-dark paper never reads as scratched. Guests only get the images: no WebGL, nothing animated. To change it, pick in
-the lab's Paper experiment, put the settings in `PAPER` and re-run the bake. There is one backdrop blur on the site,
-on the nav, and blur is never animated.
+The paper (18f) is in the lab only for now (Jehan, 18 Oct): the guest site's paper is plain until one is picked in
+the lab's Paper experiment. It's Paper's PaperTexture shader (https://shaders.paper.design/paper-texture), made in the browser:
+one still sheet the size of the screen at its pixel density, once per theme (`src/lib/paper-live.ts`, preset in
+`src/lib/paper.ts`), copied out as `--paper-live`, after which the WebGL context is let go. No image is downloaded for
+it. Every paper surface (the letter, every sheet, the driver card, `.paper-feel`) lays it over itself, so the words,
+fields and buttons are printed on it, as in Paper's example. By day white paper with neutral grey grain (no colour of its own) is multiplied in; in
+Lantern it's inverted (light fibres on black) and screened in, so the dark paper lifts. Once it's on the site, it's made on the first tap,
+key, scroll or wheel (a large paint before that would count as the page's LCP), so a new guest's envelope tap brings
+it. Without WebGL the paper stays plain. To change it, pick in the lab's Paper experiment and put the settings in
+`PAPER`. There is one backdrop blur on the site, on the nav, and blur is never animated.
 
 Paper you could hold (`.paper-feel`): the fortune box and its slip, the flying-from card, the envelope and the sent
-letter carry the paper and an edge shadow in four parts (contact hairline, short soft, long faint, lit top and
+letter carry an edge shadow in four parts (contact hairline, short soft, long faint, lit top and
 shaded bottom edges). The slip shows two fold creases. The hanko is vermilion (`--ink-stamp`) with real ink: one
 small SVG filter (`#ink-bleed` in `index.html`) lets its edge bleed into the paper, a baked mask (`--texture-ink`)
 leaves small dry specks, and on light paper it multiplies in. All images and CSS; no canvas or shader on the guest

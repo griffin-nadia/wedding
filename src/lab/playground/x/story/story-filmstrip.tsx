@@ -15,7 +15,7 @@ import { still } from "../../motion"
  */
 const css = `
 .x-film { --fw: min(64vw, 52svh, 560px); --gap: 14px; --step: calc(var(--fw) + var(--gap)); --band: 30px; position: relative; isolation: isolate; background: color-mix(in oklab, var(--letter-bg) 60%, var(--surface-alt)); color: var(--ink); min-height: 100svh; }
-.x-film::before { content: ""; position: fixed; inset: 0; z-index: -1; background-image: var(--paper); background-size: var(--paper-size); opacity: 0.6; pointer-events: none; }
+.x-film::before { content: ""; position: fixed; inset: 0; z-index: -1; background: var(--paper-live, none) center / cover; mix-blend-mode: var(--paper-blend); opacity: 0.6; pointer-events: none; }
 .x-film-intro { min-height: 72svh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px 16px; text-align: center; }
 .x-film-intro h1 { margin: 0; font-family: var(--font-display); font-size: clamp(2.5rem, 10vw, 4.5rem); line-height: 1; color: var(--ink); }
 .x-film-intro p { color: var(--ink-story); font: 500 var(--type-label-size) / var(--type-label-leading) var(--font-label); letter-spacing: var(--type-label-tracking); text-transform: uppercase; }

@@ -1,10 +1,8 @@
 import { Component, useState, type ReactNode } from "react"
 import { PaperTexture } from "@paper-design/shaders-react"
 import { useLang } from "@/lib/lang"
-import { COLOURS, PRESETS, TILE, forTone, type PaperParams } from "@/lib/paper"
+import { PRESETS, TILE, inkFor, type PaperParams } from "@/lib/paper"
 import { Stage } from "../../stage"
-import paperLight from "@/assets/paper-light.webp"
-import paperLantern from "@/assets/paper-lantern.webp"
 import hatchLight from "./hatch-light.webp"
 import hatchLantern from "./hatch-lantern.webp"
 
@@ -23,13 +21,16 @@ const css = `
 .x-pp-name { font: 500 var(--type-label-size) / 1.4 var(--font-label); }
 .x-pp-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
 .x-pp-swatch { position: relative; height: 180px; overflow: hidden; border-radius: var(--radius-chip); }
-.x-pp-swatch > div:first-child { position: absolute; top: 0; left: 0; }
+.x-pp-swatch > div:first-child { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; } /* over the words, as on the site */
 .x-pp-swatch span { position: absolute; left: var(--space-3); bottom: var(--space-2); font: 400 var(--type-heading-size) / 1.2 var(--font-display); }
 .x-pp-tools { display: grid; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-control); background: var(--surface-raised); color: var(--ink); }
 .x-pp-tools label { display: grid; grid-template-columns: 6rem 1fr 3rem; align-items: center; gap: var(--space-3); font: 500 var(--type-small-size) / 1.4 var(--font-label); }
 .x-pp-tools input { width: 100%; min-height: 24px; accent-color: var(--action); }
 .x-pp-tools output { font-variant-numeric: tabular-nums; text-align: end; }
 `
+// The site's paper colours and how strongly the paper is multiplied in (tokens.css --paper-strength)
+const BG = { light: "#f3e7d3", lantern: "#2e1b12" }
+const STRENGTH = { light: 0.45, lantern: 0.3 }
 const SLIDERS = [["folds", "Folds"], ["wrinkles", "Wrinkles"], ["drops", "Drops"], ["fiber", "Fibre"]] as const
 
 /** No WebGL (an old phone, a headless test browser): the baked tile the site uses instead of the live one */
@@ -41,9 +42,11 @@ class NoGl extends Component<{ fallback: ReactNode; children: ReactNode }, { fai
 
 function Swatch({ params, tone, words }: { params: PaperParams; tone: "light" | "lantern"; words: string }) {
   return (
-    <div className="x-pp-swatch">
-      <NoGl fallback={<div style={{ width: TILE, height: TILE, background: `url(${tone === "light" ? paperLight : paperLantern}) 0 0 / ${TILE}px` }} />}>
-        <PaperTexture speed={0} fit="cover" {...forTone(params, tone)} {...COLOURS[tone]} style={{ width: TILE, height: TILE }} />
+    <div className="x-pp-swatch" style={{ background: BG[tone], isolation: "isolate" }}>
+      {/* The site's way: the paper over the theme's colour, at a card's size: white multiplied in by day, inverted and
+          screened in at night */}
+      <NoGl fallback={<div />}>
+        <PaperTexture speed={0} fit="cover" {...params} {...inkFor(tone === "lantern")} style={{ width: TILE, height: 600, mixBlendMode: tone === "lantern" ? "screen" : "multiply", opacity: STRENGTH[tone] }} />
       </NoGl>
       <span style={{ color: tone === "light" ? "#421a05" : "#f3e7d3" }}>{words}</span>
     </div>
@@ -57,7 +60,7 @@ export default function Paper() {
   // "copied", or the settings shown to copy by hand when the clipboard isn't there
   const [copied, setCopied] = useState<"" | "copied" | "shown">("")
   const now = sets[pick]
-  const text = JSON.stringify({ preset: pick, params: now, lanternParams: forTone(now, "lantern"), colours: COLOURS }, null, 2)
+  const text = JSON.stringify({ preset: pick, params: now }, null, 2)
   const copy = async () => {
     // A clipboard that never answers (some browsers wait on a permission) counts as failed after a second
     const wrote = await Promise.race([navigator.clipboard?.writeText(text).then(() => true, () => false) ?? false, new Promise<boolean>((r) => setTimeout(() => r(false), 1000))])
@@ -80,8 +83,8 @@ export default function Paper() {
           <div className="x-pp-row" role="group" aria-label="Nadia's crosshatch (18e), for comparison">
             <span className="x-pp-name">Nadia's crosshatch (18e, for comparison)</span>
             <span className="x-pp-pair">
-              <span className="x-pp-swatch" style={{ background: `url(${hatchLight}) 0 0 / 512px, ${COLOURS.light.colorPaper}`, backgroundBlendMode: "multiply" }}><span style={{ color: "#421a05" }}>{t.meta.shortTitle}</span></span>
-              <span className="x-pp-swatch" style={{ background: `url(${hatchLantern}) 0 0 / 512px, ${COLOURS.lantern.colorPaper}`, backgroundBlendMode: "screen" }}><span style={{ color: "#f3e7d3" }}>{t.meta.shortTitle}</span></span>
+              <span className="x-pp-swatch" style={{ background: `url(${hatchLight}) 0 0 / 512px, ${BG.light}`, backgroundBlendMode: "multiply" }}><span style={{ color: "#421a05" }}>{t.meta.shortTitle}</span></span>
+              <span className="x-pp-swatch" style={{ background: `url(${hatchLantern}) 0 0 / 512px, ${BG.lantern}`, backgroundBlendMode: "screen" }}><span style={{ color: "#f3e7d3" }}>{t.meta.shortTitle}</span></span>
             </span>
           </div>
         </div>
