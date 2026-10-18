@@ -67,7 +67,7 @@ function YourReply({ h, open }: { h: Household; open: (step: StepId) => void }) 
           <li key={r.key}>
             <button type="button" onClick={() => open(r.step)} className="reply-chip" data-done={r.done || undefined}>
               {r.done ? <Check className="size-5 text-success" aria-hidden /> : <Minus className="size-5 text-muted-foreground" aria-hidden />}
-              <span>{r.label}{!r.done && r.note ? <span className="text-muted-foreground">, {r.note}</span> : null}</span>
+              <span>{r.label}{!r.done && r.note ? <span className="reply-chip-note text-muted-foreground">, {r.note}</span> : null}</span>
               <span className="sr-only">, {r.done ? t.home.todo.done : t.home.todo.toDo}</span>
             </button>
           </li>
