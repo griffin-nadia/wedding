@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { loop } from "@/lib/frame"
+import { LAND_GAP, loop, still, stuckBottom } from "@/lib/frame"
 import { Accordion as AccordionPrimitive } from "radix-ui"
 import { ChevronDownIcon } from "lucide-react"
 
@@ -77,18 +77,44 @@ function AccordionContent({
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
 
+/** How much of an opened row's content must show under its header (or all of it, when it's shorter) */
+const REVEAL = 120
+/** The fade at the card's bottom edge (.letter-scroll's mask) */
+const FADE = 16
+
 /**
  * The site's accordion: one open at a time everywhere (Jehan, 6 Oct). Opening a row closes the open one, and when
  * that one is above it the page would pull the tapped row up as it closes; the page scrolls with it instead, so the
  * row you tapped stays exactly under your finger.
+ * Run 19: and if the opened row's header and the top of its content wouldn't be on screen (a row low on the card, or
+ * tucked under Travel's stuck tab row), the card glides just far enough to show them, and no further; at once under
+ * reduced motion. Rows already in view don't move. FAQs, Travel and the sheets all use this.
  */
 export function Disclosure({ label, children, onValueChange, ...props }: { label: string; children: React.ReactNode; onValueChange?: (v: string) => void } & Omit<React.ComponentProps<typeof AccordionPrimitive.Root>, "type" | "children" | "onValueChange">) {
   const tapped = React.useRef<HTMLElement | null>(null)
   const change = (v: string) => {
     const el = tapped.current
     if (v && el) {
-      const top = el.getBoundingClientRect().top, until = performance.now() + 450
-      loop((now) => { const d = el.getBoundingClientRect().top - top; if (Math.abs(d) >= 1) (el.closest<HTMLElement>(".letter-scroll, .sheet-body") ?? window).scrollBy({ top: d, behavior: "instant" }); return now < until })
+      const box = el.closest<HTMLElement>(".letter-scroll, .sheet-body")
+      const scroll = (d: number) => (box ?? window).scrollBy({ top: d, behavior: "instant" })
+      const top = el.getBoundingClientRect().top, start = performance.now(), glide = still() ? 0 : 300, until = start + 450
+      let goal: number | null = null // where the header ends up on screen, once its content is there to measure
+      loop((now) => {
+        if (goal === null) {
+          const inner = el.closest("[data-slot=accordion-item]")?.querySelector<HTMLElement>("[data-slot=accordion-content] > div")
+          if (inner) {
+            const r = box?.getBoundingClientRect(), viewTop = (r ? r.top + stuckBottom(box!) : 0) + LAND_GAP, viewBottom = (r ? r.bottom : innerHeight) - FADE
+            const need = el.offsetHeight + Math.min(inner.offsetHeight, REVEAL)
+            goal = top < viewTop ? viewTop : top + need > viewBottom ? Math.max(viewTop, viewBottom - need) : top
+          }
+        }
+        // The header follows a short ease from where it was to its goal, held there while the row above closes
+        const k = goal === null || !glide ? 1 : Math.min(1, (now - start) / glide), ease = 1 - (1 - k) ** 3
+        const want = top + ((goal ?? top) - top) * ease
+        const d = el.getBoundingClientRect().top - want
+        if (Math.abs(d) >= 1) scroll(d)
+        return now < until || k < 1
+      })
     }
     onValueChange?.(v)
   }
