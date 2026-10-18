@@ -42,4 +42,10 @@ export const ART = {
    * drawn SVG land shows meanwhile. Put the file in public/art/map/ and set its path here (e.g. "art/map/land.webp").
    */
   mapLand: "",
+  /**
+   * Nadia's painted land for the globe (final run): one 2:1 world painting (longitude -180 to 180 across, latitude 90
+   * to -90 down, the equirectangular layout), sea included. Empty until it lands; the globe paints its own meanwhile
+   * (src/lib/paint-globe.ts). Put the file in public/art/map/ and set its path here (e.g. "art/map/globe.webp").
+   */
+  globeLand: "",
 }

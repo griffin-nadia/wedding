@@ -36,6 +36,19 @@ export const PENDING = {
     en: "Or type your city",
     ja: "または都市名を入力",
   },
+  // The journey stop's toggle (final run)
+  "journey.mapMode": {
+    en: "Map",
+    ja: "地図",
+  },
+  "journey.globe": {
+    en: "Globe",
+    ja: "地球儀",
+  },
+  "journey.flat": {
+    en: "Flat map",
+    ja: "平面の地図",
+  },
   // A way to actually message them where the copy says to (18e journey map): the wedding address already used on the
   // no-invite page
   "contact.emailUs": {
