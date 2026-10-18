@@ -2,6 +2,9 @@
 // to the seal, then favicon.ico (16, 32, 48), icon-192.png and icon-512.png (transparent), icon-512-maskable.png and
 // apple-touch-icon.png (180, on the cream paper; a phone fills transparency with black). At 16 and 32 the seal is
 // drawn edge to edge with a little extra contrast so it still reads as a red seal in a browser tab.
+// 18g: in the icons only (not the seal anywhere else on the site), the seal's dark detail (the G·N monogram and the
+// inner ring lines) is lifted to a near-white warm cream (#f6e9dc), a soft light red at 16px (#f2b8a8), blended on
+// luminance so its edges stay soft; the red wax and the scalloped edge stay as they are.
 import { chromium } from "@playwright/test"
 import fs from "node:fs"
 
@@ -20,10 +23,30 @@ const out = await p.evaluate(async ([src, jobs]) => {
   let x0 = i.width, y0 = i.height, x1 = 0, y1 = 0
   for (let y = 0; y < i.height; y += 2) for (let X = 0; X < i.width; X += 2) if (px[(y * i.width + X) * 4 + 3] > 24) { x0 = Math.min(x0, X); x1 = Math.max(x1, X); y0 = Math.min(y0, y); y1 = Math.max(y1, y) }
   const w = x1 - x0, h = y1 - y0, side = Math.max(w, h), cx = x0 + w / 2, cy = y0 + h / 2
+  // The dark detail to a light colour: how dark a pixel is against the wax (luminance 70 and up is wax, 30 and down
+  // is fully detail, smooth between), inside 0.74 of the seal's radius, fading out by 0.8 (past it is the scalloped
+  // edge's own shading)
+  const lifted = (hex) => {
+    const [tr, tg, tb] = [1, 3, 5].map((k) => parseInt(hex.slice(k, k + 2), 16))
+    const o = new OffscreenCanvas(i.width, i.height), ox = o.getContext("2d"), d = new ImageData(new Uint8ClampedArray(px), i.width, i.height)
+    const R = side / 2
+    for (let y = 0; y < i.height; y++) for (let X = 0; X < i.width; X++) {
+      const k = (y * i.width + X) * 4
+      if (d.data[k + 3] < 8) continue
+      const r = Math.hypot(X - cx, y - cy) / R
+      if (r > 0.8) continue
+      const L = 0.2126 * d.data[k] + 0.7152 * d.data[k + 1] + 0.0722 * d.data[k + 2]
+      const t0 = Math.min(1, Math.max(0, (70 - L) / 40)), t = t0 * t0 * (3 - 2 * t0) * Math.min(1, Math.max(0, (0.8 - r) / 0.06))
+      d.data[k] += (tr - d.data[k]) * t; d.data[k + 1] += (tg - d.data[k + 1]) * t; d.data[k + 2] += (tb - d.data[k + 2]) * t
+    }
+    ox.putImageData(d, 0, 0)
+    return o
+  }
+  const SRC = { cream: lifted("#f6e9dc"), pink: lifted("#f2b8a8") }
   const res = {}
   for (const [name, n, fill, bg] of jobs) {
     // Step down by halves for a clean small version (one big jump to 16px loses the seal's edge)
-    let cur = c, sx = cx - side / 2, sy = cy - side / 2, s = side
+    let cur = n === 16 ? SRC.pink : SRC.cream, sx = cx - side / 2, sy = cy - side / 2, s = side
     while (s / 2 > n * 2) { const h2 = new OffscreenCanvas(Math.ceil(s / 2), Math.ceil(s / 2)), hx = h2.getContext("2d"); hx.imageSmoothingQuality = "high"; hx.drawImage(cur, sx, sy, s, s, 0, 0, s / 2, s / 2); cur = h2; sx = 0; sy = 0; s = s / 2 }
     const o = new OffscreenCanvas(n, n), ox = o.getContext("2d")
     if (bg) { ox.fillStyle = bg; ox.fillRect(0, 0, n, n) }

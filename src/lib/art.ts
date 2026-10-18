@@ -9,7 +9,7 @@ export const ART = {
    * Her lettering for the names (17 Oct), as two masks (the names, the "&"), filled with theme tokens in CSS. The
    * page keeps the names as text for screen readers and the title. ratio holds the space before it loads (no jump).
    */
-  names: { mask: "art/names/names-mask", amp: "art/names/amp-mask", ratio: 3.2457 },
+  names: { mask: "art/names/names-mask", amp: "art/names/amp-mask", ratio: 4.1402 }, // 18 Oct lettering, 520 and 1040 wide
   /** Her wax seal and gum leaves on their own (17 Oct): the seal wherever the G&N seal shows alone, the leaves in the lab */
   seal: { src: "art/seal/wax-seal", widths: [64, 128, 256] },
   leaves: { src: "art/leaves/gum-leaves", widths: [160, 320], ratio: 0.743 },
@@ -17,7 +17,13 @@ export const ART = {
    * Nadia's drawn envelope (17 Oct, painted): closed (maple, gum leaf and the G·N seal) and open, transparent, as
    * <name>-410 and <name>-820 in .avif and .webp. ratio: width ÷ height of the closed one, which sets the envelope's box.
    */
-  drawnEnvelope: { closed: "art/envelope/envelope-closed", open: "art/envelope/envelope-open", widths: [410, 820], ratio: 1.3948 },
+  drawnEnvelope: {
+    closed: "art/envelope/envelope-closed",
+    // 18 Oct: her clean open envelope as two layers the letter comes out between (scripts/envelope-layers.mjs,
+    // docs/art.md): the back (back panel, inside and open flap) and the front (the pocket and the seal)
+    open: "art/envelope/envelope-open-back", openFront: "art/envelope/envelope-open-front",
+    widths: [410, 820], ratio: 1.3948,
+  },
   /**
    * Background music (the speaker beside the sun): the file and its credit together. The credit is said once, in the
    * last FAQ ("Who made this site?"); artist is what a phone's Now Playing shows under "Griffin & Nadia". To swap the
