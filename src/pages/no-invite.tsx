@@ -52,7 +52,9 @@ function ResendForm() {
       await resendLink(email)
       setState("sent")
     } catch (err) {
-      setState(err instanceof ApiError && err.code === "bad_email" ? "bad" : err instanceof ApiError && err.code === "paused" ? "paused" : "failed")
+      // Only a real failure to reach us is an error; anything the back end says (held, busy, paused) gets the same
+      // neutral line, so it never reveals who's invited or that mail is waiting
+      setState(err instanceof ApiError && err.code === "bad_email" ? "bad" : err instanceof ApiError && err.code === "network" ? "failed" : "sent")
     }
   }
   if (state === "sent") return <p role="status" className="rounded-md bg-section-alt p-4">{t.notFound.sent}</p>

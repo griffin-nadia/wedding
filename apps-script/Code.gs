@@ -1543,13 +1543,13 @@ function sendAnswers_() {
 
 /**
  * Emails the household link to an address on the guest list. Always answers the same way, so it
- * never reveals who's invited. Rate limited per address and overall. Until RESEND_LIVE is "yes",
- * it only sends to test households (so nothing reaches real guests before invites go out).
+ * never reveals who's invited, and never says whether it could send (final run): the email goes into the wedding
+ * account's outbox, so if mail is held (the web app isn't running as the wedding account yet) it just waits there.
+ * Rate limited per address (3 an hour) and overall. Until RESEND_LIVE is "yes", it only sends to test households
+ * (so nothing reaches real guests before invites go out).
  */
 function resendLink_(email) {
   const same = { ok: true }
-  // "Email me my link" sends as the web app's account: only ever the wedding account
-  if (!isWeddingAccount_()) { wrongAccount_("The web app"); return { ok: false, code: "busy", error: ERRORS.busy } }
   email = String(email || "").trim().toLowerCase().slice(0, 120)
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, code: "bad_email", error: ERRORS.bad_email }
   const cache = CacheService.getScriptCache()
@@ -1572,8 +1572,9 @@ function resendLink_(email) {
       button: { label: "Open your invite", url: h.link },
       notes: ["This link is just for your household, so please don't share it.", "If you didn't ask for this, you can ignore it."],
     })
-    MailApp.sendEmail({ to: email, replyTo: prop_("REPLY_TO"), name: COUPLE, subject: "Your link for " + COUPLE + "'s wedding", body: mail.text, htmlBody: mail.html })
-    log_(h.name, h.token, "Link re-sent to " + email + " (asked on the site)", "")
+    // Queued, not sent here: the wedding account's queue sends it (or holds it until it can)
+    queueOut_({ to: email, subject: "Your link for " + COUPLE + "'s wedding", body: mail.text, htmlBody: mail.html })
+    log_(h.name, h.token, "Link re-sent to " + email + " (asked on the site, queued)", "")
   })
   return same
 }

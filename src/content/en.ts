@@ -384,7 +384,7 @@ export const en = {
     message: `Or email ${BOTH}`,
     send: "Send my link",
     sending: "Sending…",
-    sent: "If that email is on our list, your link is on its way. Check your inbox (and junk folder) in a few minutes.",
+    sent: "If that email's on our list, your link is on its way. Check junk too.",
     badEmail: "That doesn't look like an email address.",
     failed: `We couldn't send that just now. Try again, or message ${A} or ${B}.`,
   },
