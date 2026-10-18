@@ -30,6 +30,11 @@ export const REFERENCE: { id: string; title: string; path: string; note: string;
 ]
 /** The live site at a path, as the lab opens it (the sample household, no back end) */
 export const liveUrl = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}${path.includes("?") ? "&" : "?"}h=sample`
+/** Before opening the live site: the sealed envelope or not, and the same theme as the view (localhost only: the lab's
+ *  origin is the dev server, never the guest site's) */
 export const openLive = (r: { path: string; arrival?: boolean }) => {
-  try { if (r.arrival) localStorage.removeItem("ng-opened"); else localStorage.setItem("ng-opened", "1") } catch { /* private mode */ }
+  try {
+    if (r.arrival) localStorage.removeItem("ng-opened"); else localStorage.setItem("ng-opened", "1")
+    localStorage.setItem("ng-theme", document.documentElement.getAttribute("data-theme") === "lantern" ? "lantern" : "autumn")
+  } catch { /* private mode */ }
 }

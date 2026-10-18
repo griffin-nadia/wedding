@@ -9,6 +9,8 @@ export const entries: Entry[] = [
     summary: "The confirmation's hand-cut seal (uneven rim, patchy ink, a maple and a gum leaf in the rim) with each of three marks, and what each says.",
     refs: [{ label: "Kotobuki (寿)", href: "https://en.wikipedia.org/wiki/Kotobuki" }],
     promote: "寿 is on the site (components/hanko.tsx), in the confirmation head and on the fortune slip. Another mark is one prop.",
+    takes: [{ id: "kotobuki", label: "寿 celebration" }, { id: "kyo", label: "京 Kyoto" }, { id: "gn", label: "G·N initials" }],
+    live: { path: "/?rsvp=1" },
     Component: lazy(() => import("./confirm-stamp")),
   },
 ]

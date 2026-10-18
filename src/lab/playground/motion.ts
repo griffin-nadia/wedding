@@ -11,7 +11,9 @@ import { loop } from "@/lib/frame"
  */
 const KEY = "ng-lab-speed"
 const read = () => { try { const v = parseFloat(localStorage.getItem(KEY) ?? "1"); return v >= 0.25 && v <= 2 ? v : 1 } catch { return 1 } }
-let speed = read()
+// A link's ?speed= wins over the saved one, so a copied view plays at its own speed
+const fromUrl = typeof location === "undefined" ? NaN : parseFloat(new URLSearchParams(location.search).get("speed") ?? "")
+let speed = fromUrl >= 0.25 && fromUrl <= 2 ? fromUrl : read()
 const subs = new Set<() => void>()
 if (typeof window !== "undefined") addEventListener("storage", (e) => { if (e.key === KEY) { speed = read(); subs.forEach((f) => f()) } })
 
