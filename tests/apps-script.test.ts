@@ -69,7 +69,7 @@ function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: st
   const sent: unknown[] = [], posted: string[] = [], cache: Record<string, string> = {}
   const g = {
     __sent: sent, __posted: posted, console: { error() {} },
-    PropertiesService: { getScriptProperties: () => ({ getProperty: (k: string) => props[k] ?? null, getProperties: () => props, setProperty: (k: string, v: string) => { props[k] = v } }) },
+    PropertiesService: { getScriptProperties: () => ({ getProperty: (k: string) => props[k] ?? null, getProperties: () => props, setProperty: (k: string, v: string) => { props[k] = v }, deleteProperty: (k: string) => { delete props[k] } }) },
     CacheService: { getScriptCache: () => ({ get: (k: string) => cache[k] ?? null, put: (k: string, v: string) => { cache[k] = v } }) },
     MailApp: { getRemainingDailyQuota: () => 97, sendEmail: (m: unknown) => sent.push(m) },
     UrlFetchApp: { fetch: (_u: string, o: { payload: string }) => posted.push(o.payload) },
@@ -77,8 +77,8 @@ function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: st
     SpreadsheetApp: { getActive: () => ({ getSheetByName: () => (opts.sheet === false ? null : { getLastRow: () => 40 }) }) },
   }
   vm.createContext(g)
-  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_ }", g)
-  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void } }
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_ }", g)
+  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void } }
 }
 test("?action=health: ok only when the sheet opens and the queue is moving; counts, no guest data", () => {
   assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "service", "sheet"])
@@ -97,4 +97,15 @@ test("errors alert by email and Discord only when set up, once an hour per kind,
   assert.doesNotMatch(JSON.stringify(on.__sent) + on.__posted.join(""), /abcdefghijklmnop/)
   const wrong = backEnd({ ALERT_EMAIL: "alerts@example.com" }, { me: "someone@example.com" }); wrong.__f.alert_("x", "y")
   assert.equal(wrong.__sent.length, 0) // email only from the wedding account
+})
+test("outbox emails carry their household's token (so test ones can be cleared) and never send it", () => {
+  const props: Record<string, string> = {}
+  const b = backEnd(props)
+  b.__f.queueOut_({ to: "test@example.com", subject: "Your link", body: "x" }, "tok1")
+  b.__f.queueOut_({ to: "us@example.com", subject: "A question", body: "y" })
+  const kept = Object.keys(props).filter((k) => k.startsWith("q:out:")).map((k) => JSON.parse(props[k]).token)
+  assert.deepEqual(kept.sort(), ["tok1", undefined].sort())
+  b.__f.flushOut_()
+  assert.equal(b.__sent.length, 2)
+  assert.ok(b.__sent.every((m) => !("token" in (m as object))))
 })

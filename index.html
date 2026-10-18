@@ -27,6 +27,55 @@
         window.__ngScene = { n: n, b: b }
       })()
     </script>
+    <script>
+      // The safety net against a blank page (run 19). If the app's script, or a piece of it, fails to load (most often
+      // an old copy of this page asking for files a newer deploy replaced), load the page again once, past the cache:
+      // never twice within a minute, so never a loop. If that can't help, or the app breaks while it runs, a plain
+      // paper card says so, with a way to ask Griffin & Nadia. Plain HTML here, so it works with nothing else loaded.
+      (function () {
+        window.__ngReload = function () {
+          if (window.__ngReloading) return true
+          var u = new URL(location.href), now = Date.now(), last = 0
+          try { last = +sessionStorage.getItem("ng-reloaded") || 0; sessionStorage.setItem("ng-reloaded", String(now)) }
+          catch (e) { last = u.searchParams.has("fresh") ? now : 0 } // storage blocked: the address remembers instead
+          if (now - last < 60000) return false
+          u.searchParams.set("fresh", now.toString(36))
+          window.__ngReloading = true
+          location.replace(u.href)
+          return true
+        }
+        window.__ngCrash = function () {
+          if (!document.body) return addEventListener("DOMContentLoaded", window.__ngCrash, { once: true })
+          if (document.getElementById("crash")) return
+          var ja = false
+          try { ja = localStorage.getItem("ng-lang") === "ja" } catch (e) {}
+          var night = document.documentElement.getAttribute("data-theme") === "lantern"
+          var bg = night ? "#2e1b12" : "#f3e7d3", ink = night ? "#f3e7d3" : "#421a05"
+          var c = ja
+            ? ["問題が発生しました。ページを再読み込みしてください。", "それでも直らないときは、お気軽にご連絡ください。", "再読み込み", "グリフィンとナディアに聞く"]
+            : ["Something went wrong, try refreshing", "If it keeps happening, let us know.", "Refresh", "Ask Griffin & Nadia"]
+          var tap = "display:inline-flex;align-items:center;min-height:44px;font:inherit;"
+          var d = document.createElement("div")
+          d.id = "crash"
+          d.setAttribute("style", "position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:16px;overflow:auto;background:var(--surface-paper," + bg + ");color:var(--ink," + ink + ");font:17px/1.5 Inter,system-ui,sans-serif")
+          d.innerHTML = '<main lang="' + (ja ? "ja" : "en") + '" style="box-sizing:border-box;width:100%;max-width:26rem;padding:32px 24px;border:1px solid currentColor;border-radius:6px">'
+            + '<h1 tabindex="-1" style="margin:0 0 12px;font:400 1.6rem/1.25 Oranienbaum,\'Zen Old Mincho\',Georgia,serif;outline:none">' + c[0] + '</h1>'
+            + '<p style="margin:0 0 24px">' + c[1] + '</p>'
+            + '<div style="display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center">'
+            + '<button type="button" style="' + tap + 'padding:0 20px;border:0;border-radius:999px;cursor:pointer;background:var(--action,' + ink + ');color:var(--action-ink,' + bg + ')">' + c[2] + '</button>'
+            + '<a href="mailto:griffinandnadia@gmail.com" style="' + tap + 'color:inherit;text-decoration:underline;text-underline-offset:3px">' + c[3] + '</a></div></main>'
+          d.querySelector("button").onclick = function () { var u = new URL(location.href); u.searchParams.set("fresh", Date.now().toString(36)); location.replace(u.href) }
+          document.body.appendChild(d)
+          d.querySelector("h1").focus()
+        }
+        // The app's own script, or a file it needs, failed before it started (after that, the app reports its own)
+        addEventListener("error", function (e) {
+          var t = e.target
+          if (window.__ngBooted || !t || t.tagName !== "SCRIPT" && !(t.tagName === "LINK" && t.rel === "modulepreload")) return
+          if (!window.__ngReload()) window.__ngCrash()
+        }, true)
+      })()
+    </script>
     <!-- Paper behind everything from the first paint, in the mode just picked: never a white frame -->
     <style>html{background:#f3e7d3}html[data-theme="lantern"]{background:#2e1b12;color-scheme:dark}</style>
     <meta property="og:title" content="Griffin & Nadia · Kyoto, 15 October 2027" />
@@ -64,7 +113,7 @@
         var s = window.__ngScene, el = document.getElementById("scene-shell")
         if (!s || !el || innerWidth >= 1024) { document.getElementById("scene-shell-band").remove(); return el && el.remove() }
         var band = document.getElementById("scene-shell-band")
-        if (location.pathname.replace(/\/+$/, "").endsWith("/wedding") && !localStorage.getItem("ng-opened")) band.remove() // sealed envelope: no dock yet
+        if (location.pathname.replace(/\/+$/, "").endsWith("/wedding") && !(function () { try { return localStorage.getItem("ng-opened") } catch (e) { return "1" } })()) band.remove() // sealed envelope: no dock yet
         el.innerHTML = '<div class="scene-layer absolute inset-0"><picture class="scene-photo absolute inset-0"><source type="image/avif" sizes="max(100vw, 75vh)" srcset="' + s.b + '800.avif 800w, ' + s.b + '1200.avif 1200w, ' + s.b + '1600.avif 1600w, ' + s.b + '2000.avif 2000w, ' + s.b + '2400.avif 2400w"><img alt="" class="size-full object-cover" fetchpriority="high" src="' + s.b + '1600.webp"></picture></div>'
         el.hidden = false
         if (band.isConnected) { band.innerHTML = el.innerHTML; band.hidden = false }
@@ -83,6 +132,8 @@
           var still = matchMedia("(prefers-reduced-motion: reduce)").matches
           var rsvp = new URLSearchParams(location.search).get("rsvp") === "1"
           var noren = /"arrival":"noren"/.test(localStorage.getItem("ng-tune") || "")
+          // Sealed from the first paint (run 19): the bar has no paper over the photo, the photo is framed for the envelope
+          if (home && !seen && !still && !rsvp) document.documentElement.setAttribute("data-sealed", "")
           if (home && !seen && !still && !rsvp && !noren) document.getElementById("arrival-shell").hidden = false
         } catch (e) {}
       })()
