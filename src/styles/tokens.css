@@ -95,7 +95,7 @@
   --row-press-mix: 11%;
   color-scheme: dark;
   --paper-blend: screen;
-  --paper-strength: 0.3;
+  --paper-strength: 0.2; /* very subtle (final run) */
   --surface-paper: var(--brand-yoru);
   --surface-raised: var(--brand-yoru-raised);
   --surface-alt: var(--brand-yoru-sage);
