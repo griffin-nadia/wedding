@@ -5,6 +5,7 @@ import { entries as journey } from "./x/journey"
 import { entries as confirmation } from "./x/confirmation"
 import { entries as paper } from "./x/paper"
 import { entries as micro } from "./x/micro"
+import { entries as logo } from "./x/logo"
 
 /**
  * What the lab keeps (lab run 19): the choices still open and the parked ideas, by area in the order guests meet
@@ -17,6 +18,7 @@ export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "confirmation", title: "Confirmation", entries: confirmation },
   { id: "paper", title: "Paper and light", entries: paper },
   { id: "micro", title: "Micro-interactions", entries: micro },
+  { id: "logo", title: "Logo", entries: logo },
 ]
 export const ALL = AREAS.flatMap((a) => a.entries.map((e) => ({ ...e, area: a.id, areaTitle: a.title })))
 export const byId = (id: string) => ALL.find((e) => e.id === id)
