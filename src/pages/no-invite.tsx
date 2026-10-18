@@ -2,6 +2,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { InlineSubmit } from "@/components/inline-submit"
 import { ApiError, resendLink } from "@/lib/api"
+import { AskUs } from "@/components/ask-us"
+import { pending } from "@/content/pending"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
@@ -38,7 +40,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
 
 /** Email in, link out. The answer is the same whether or not the email is on the list. */
 function ResendForm() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [email, setEmail] = useState("")
   const [state, setState] = useState<"idle" | "sending" | "sent" | "bad" | "failed" | "paused">("idle")
   async function send(e?: React.FormEvent) {
@@ -50,7 +52,9 @@ function ResendForm() {
       await resendLink(email)
       setState("sent")
     } catch (err) {
-      setState(err instanceof ApiError && err.code === "bad_email" ? "bad" : err instanceof ApiError && err.code === "paused" ? "paused" : "failed")
+      // Only a real failure to reach us is an error; anything the back end says (held, busy, paused) gets the same
+      // neutral line, so it never reveals who's invited or that mail is waiting
+      setState(err instanceof ApiError && err.code === "bad_email" ? "bad" : err instanceof ApiError && err.code === "network" ? "failed" : "sent")
     }
   }
   if (state === "sent") return <p role="status" className="rounded-md bg-section-alt p-4">{t.notFound.sent}</p>
@@ -60,7 +64,9 @@ function ResendForm() {
         label={t.notFound.emailLabel} helper={t.notFound.helper} submitLabel={t.notFound.send} busy={state === "sending"}
         error={state === "bad" ? t.notFound.badEmail : state === "failed" ? t.notFound.failed : state === "paused" ? t.paused.line : undefined}
         onChange={(e) => { setEmail(e.target.value); if (state !== "sending") setState("idle") }}
-        onSubmit={() => void send()} fallback={{ label: t.notFound.message, onClick: () => { window.location.href = "mailto:griffinandnadia@gmail.com" } }} />
+        onSubmit={() => void send()} />
+      {/* Or ask them directly (no invite, so the sheet asks for a name and an email too) */}
+      <AskUs><button type="button" className="btn-text mt-3 inline-flex min-h-11 items-center">{pending("ask.open", lang)}</button></AskUs>
     </form>
   )
 }

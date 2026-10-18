@@ -43,11 +43,11 @@ test("200% zoom on a laptop (720 wide): nothing spills, every page still reads",
   for (const p of PAGES) { await go(page, p); expect(await overflow(page), p || "home").toEqual({ wide: false, out: [] }) }
 })
 
-test("after Fri 30 Apr 2027: no reply means a closed note with a way to email, no RSVP button", async ({ page }) => {
+test("after Fri 30 Apr 2027: no reply means a closed note with a way to ask them, no RSVP button", async ({ page }) => {
   await page.clock.setFixedTime(new Date("2027-05-02T01:00:00Z"))
   await go(page, "")
   await expect(page.locator("#letter")).toContainText("Replies are closed now")
-  await expect(page.locator("#letter a[href^='mailto:']")).toBeVisible()
+  await expect(page.locator("#letter").getByRole("button", { name: "Ask Griffin & Nadia" })).toBeVisible()
   await expect(page.locator("#letter").getByRole("button", { name: /RSVP by/ })).toHaveCount(0)
 })
 

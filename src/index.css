@@ -1345,6 +1345,15 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
+/* Ask us (final run): "Is this it?" rows, and the field only a bot fills in */
+.ask-match { display: block; width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--surface-raised); color: var(--ink); text-align: left; outline: 2px solid transparent; outline-offset: 2px; }
+.ask-match:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .ask-match:hover { border-color: var(--line-strong); } }
+.ask-pot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+/* The hand-cut seal (final run, components/hanko.tsx): the rims and leaves are its own drawing, so no CSS ring */
+.hanko-seal { border: 0; box-shadow: none; display: inline-block; }
+.omikuji-slip .hanko { --hanko-paper: var(--brand-paper-bright); }
+.omikuji-seal { position: absolute; right: var(--space-3); bottom: var(--space-3); opacity: 0.9; transform: rotate(6deg); }
 
 /* Our story's prints, soft (final run): a thin white border, a layered shadow (a contact line, a short soft one, a long
    faint one), the seeded tilt, a faint grain on the print, and a strip of washi tape across the top in one of three

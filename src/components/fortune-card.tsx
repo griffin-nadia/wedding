@@ -1,3 +1,4 @@
+import { Hanko } from "@/components/hanko"
 import { useEffect, useRef, useState } from "react"
 import { nextFrame } from "@/lib/frame"
 import { FORTUNES } from "@/content/en"
@@ -107,6 +108,8 @@ export function SlipWords({ i, of, text }: { i: number; of: number; text: string
       </p>
       <p className="omikuji-text">{text}</p>
       <p className="label-caps omikuji-count">{t.fortune.number(i + 1, of)}</p>
+      {/* The same hand-cut 寿 seal as the confirmation's head, small, as if stamped on the slip */}
+      <Hanko size="sm" className="omikuji-seal" />
     </>
   )
 }
