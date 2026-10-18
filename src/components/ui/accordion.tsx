@@ -97,7 +97,7 @@ export function Disclosure({ label, children, onValueChange, ...props }: { label
     if (v && el) {
       const box = el.closest<HTMLElement>(".letter-scroll, .sheet-body")
       const scroll = (d: number) => (box ?? window).scrollBy({ top: d, behavior: "instant" })
-      const top = el.getBoundingClientRect().top, start = performance.now(), glide = still() ? 0 : 300, until = start + 450
+      const top = el.getBoundingClientRect().top, start = performance.now(), glide = still() ? 0 : 250, until = start + 450
       let goal: number | null = null // where the header ends up on screen, once its content is there to measure
       loop((now) => {
         if (goal === null) {
