@@ -74,7 +74,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
   )
   if (treatment === "print") {
     return (
-      <figure className={cn("photo-print", className)} style={varied ? ({ "--tilt": varied.tilt } as React.CSSProperties) : undefined} data-frame={varied ? (varied.ratio === "4 / 3" ? "landscape" : "portrait") : undefined}>
+      <figure className={cn("photo-print", className)} style={varied ? ({ "--tilt": varied.tilt, "--lean": varied.lean } as React.CSSProperties) : undefined} data-frame={varied ? (varied.ratio === "4 / 3" ? "landscape" : "portrait") : undefined} data-tape={varied ? varied.tape : undefined}>
         {frame}
         {words.caption && <figcaption className="mt-2 text-small text-muted-foreground">{words.caption}</figcaption>}
       </figure>
