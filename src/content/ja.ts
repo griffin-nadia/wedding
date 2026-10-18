@@ -83,7 +83,7 @@ export const ja: DeepPartial<Content> = {
     map: (city: string | null, key?: string) => (key === "Already in Japan" ? "京都までの道のりを描いた小さな地図（すでに日本にいらっしゃいます）" : city ? `${city}から京都までのあなたの線を描いた小さな地図` : "京都までの道のりを描いた小さな地図"),
     review: "出発地", notSaying: "未回答",
     onMap: "あなたの線が地図に加わりました", pick: "都市を選ぶ",
-    kyoto: "京都・2027年10月15日", brisbane: "ブリスベン", canada: "カナダ",
+    kyoto: "京都・2027年10月15日", kyotoPin: "京都、2027年10月15日", brisbane: "ブリスベン", canada: "カナダ",
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "ゲスト", you: "あなたの線" },
     count: (n: number, of: number) => `${of}本中${n}本の線が描かれました`,
     seeList: "リストで見る", seeMap: "地図で見る",

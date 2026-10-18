@@ -9,7 +9,8 @@ import { getFlying, getJourneys, type Journey } from "@/lib/api"
 import { Segmented } from "@/components/segmented"
 import { pending } from "@/content/pending"
 import { startsFlat } from "@/lib/globe-mode"
-import { GuestMap, usePlaceName } from "@/components/journey-mini"
+import { JourneyLegend, usePlaceName } from "@/components/journey-mini"
+import { JourneyFlat } from "@/components/journey-flat"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
 
@@ -33,19 +34,22 @@ function JourneyMap({ active }: { active: boolean }) {
   const you = readFlying(household?.token)
   const [flying, setFlying] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
   const [journeys, setJourneys] = useState<Journey[]>([])
-  useEffect(() => { void getFlying().then(setFlying); void getJourneys().then(setJourneys) }, [])
+  useEffect(() => { void getFlying().then(setFlying); void getJourneys(household?.token).then(setJourneys) }, [household?.token])
   const [mode, setMode] = useState<"globe" | "flat">(() => { try { const m = localStorage.getItem(MODE); if (m === "globe" || m === "flat") return m } catch { /* fine */ } return startsFlat() ? "flat" : "globe" })
   const pick = (m: "globe" | "flat") => { setMode(m); try { localStorage.setItem(MODE, m) } catch { /* private mode */ } }
   const nameOf = usePlaceName()
   const name = you ? nameOf(you.name) : null
-  const label = t.journey.map(name, you?.id === "jp" ? "Already in Japan" : undefined)
-  const withCities = flying ? { ...flying, cities: journeys.length ? journeys : flying.cities } : journeys.length ? { counts: {}, cities: journeys, told: 0, households: 0 } : null
+  const label = t.journey.map(name, you?.id === "jp" || you?.country === "JP" ? "Already in Japan" : undefined)
+  const told = flying && flying.households > 0 ? flying : null
+  const toggle = <Segmented label={pending("journey.mapMode", lang)} size="sm" className="journey-mode" value={mode} onChange={pick} items={[{ value: "globe", label: pending("journey.globe", lang) }, { value: "flat", label: pending("journey.flat", lang) }]} />
   return (
-    <div className="flex w-full flex-col items-center gap-3">
-      <Segmented label={pending("journey.mapMode", lang)} value={mode} onChange={pick} items={[{ value: "globe", label: pending("journey.globe", lang) }, { value: "flat", label: pending("journey.flat", lang) }]} />
+    <div className="flex w-full flex-col items-center gap-2">
+      {/* Globe / Flat map: a small segmented control in the map's own bottom corner (run 19), remembered on this device */}
       {mode === "globe" && active
-        ? <Suspense fallback={<div className="journey-globe" />}><JourneyGlobe you={you} cities={journeys} label={label} /></Suspense>
-        : mode === "globe" ? <div className="journey-globe" /> : <GuestMap you={you} flying={withCities} label={label} listable={false} />}
+        ? <Suspense fallback={<div className="journey-globe">{toggle}</div>}><JourneyGlobe you={you} cities={journeys} label={label}>{toggle}</JourneyGlobe></Suspense>
+        : mode === "globe" ? <div className="journey-globe">{toggle}</div> : <JourneyFlat you={you} cities={journeys} label={label}>{toggle}</JourneyFlat>}
+      {mode === "flat" && <JourneyLegend you={Boolean(you && you.id !== "jp")} />}
+      {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )
 }
@@ -138,7 +142,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     if (!el) return
     let start: { x: number; y: number; p: number; id: number } | null = null, dragging = false, samples: [number, number][] = []
     const down = (e: PointerEvent) => {
-      if (e.button !== 0 || (e.target as Element).closest("button, a, input")) return
+      if (e.button !== 0 || (e.target as Element).closest("button, a, input, .journey-globe")) return // the globe turns, it doesn't swipe
       start = { x: e.clientX, y: e.clientY, p: pos.current, id: e.pointerId }; dragging = false; samples = [[e.timeStamp, e.clientX]]
     }
     const move = (e: PointerEvent) => {
