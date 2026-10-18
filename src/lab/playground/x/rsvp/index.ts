@@ -5,6 +5,7 @@ import type { Entry } from "../../types"
 export const entries: Entry[] = [
   {
     id: "rsvp-current",
+    decided: "The reply as it is.",
     title: "Reply sheet (the site today)",
     summary: "The reply as it ships: a sheet over the letter with three short steps, then the hanko and the fortune.",
     refs: [{ label: "WAI-ARIA APG radio group", href: "https://www.w3.org/WAI/ARIA/apg/patterns/radio/" }],
@@ -14,6 +15,7 @@ export const entries: Entry[] = [
   },
   {
     id: "rsvp-one-question",
+    decided: "Shipped as one question per step (18f).",
     title: "One question per screen",
     summary: "The same reply, one big question at a time, each screen sliding in on a spring while a line along the top springs ahead. Back is always there and Enter moves on.",
     refs: [{ label: "motion.dev examples", href: "https://motion.dev/examples" }, { label: "Emil Kowalski, great animations", href: "https://emilkowal.ski/ui/great-animations" }],
@@ -22,6 +24,7 @@ export const entries: Entry[] = [
   },
   {
     id: "rsvp-chat",
+    decided: "Kept the steps: a chat made answers hard to check and change.",
     title: "A conversation",
     summary: "The reply as a calm chat with Griffin and Nadia: their questions arrive after a moment's typing, and each answer is a chip that flies up into a sent bubble. Tap any answer to change it.",
     refs: [{ label: "Benji Taylor, Family values", href: "https://benji.org/family-values" }, { label: "Rauno Freiberg, interaction design", href: "https://rauno.me/craft/interaction-design" }],

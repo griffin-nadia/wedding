@@ -10,7 +10,7 @@ import { useLang } from "@/lib/lang"
  * All CSS animation, so the lab's speed applies. Reduced motion: everything already inked; a tap fades it back in.
  */
 const css = `
-.x-ink { position: relative; isolation: isolate; min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px 16px; background: var(--letter-bg); color: var(--ink); }
+.x-ink { position: relative; isolation: isolate; min-height: var(--stage-h, 100svh); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 24px 16px; background: var(--letter-bg); color: var(--ink); }
 .x-ink::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--paper-live, none) center / cover; mix-blend-mode: var(--paper-blend); opacity: 0.6; pointer-events: none; }
 .x-ink-eyebrow { margin: 0; font: 500 var(--type-label-size) / var(--type-label-leading) var(--font-label); letter-spacing: var(--type-label-tracking); text-transform: uppercase; color: var(--ink-story); }
 .x-ink-card { position: relative; width: min(100%, 980px, 125svh); border-radius: var(--radius-section); box-shadow: var(--elevation-paper); }

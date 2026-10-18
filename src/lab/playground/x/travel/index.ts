@@ -5,6 +5,7 @@ import type { Entry } from "../../types"
 export const entries: Entry[] = [
   {
     id: "travel-current",
+    decided: "Travel as it is: one page, jump links, accordions.",
     title: "Accordion (the site today)",
     summary: "The real Travel page: four sections down one page, jump links at the top, one accordion row open at a time.",
     refs: [],
@@ -14,6 +15,7 @@ export const entries: Entry[] = [
   },
   {
     id: "travel-cards",
+    decided: "Kept the one page with jump links (18e).",
     title: "Cards that open sheets",
     summary: "The four sections as paper cards with a folded corner, two columns on laptops. A card leans toward the pointer, rises off the letter when tapped, and the site's sheet comes up with that section.",
     refs: [
@@ -25,6 +27,7 @@ export const entries: Entry[] = [
   },
   {
     id: "travel-steps",
+    decided: "Kept the one page with jump links (18e).",
     title: "Step by step: Fly, Train, Stay, Day",
     summary: "A four-step stepper with a marker that springs between steps, and one card per step that you swipe, tap through or move with the arrow keys. Steps you have seen get a tick, and it remembers where you were for the visit.",
     refs: [
