@@ -5,7 +5,9 @@ import { PAPER, inkFor, nightOf, type PaperParams } from "@/lib/paper"
 
 /**
  * The paper, made here (18f): Paper's PaperTexture shader draws one still sheet the size of the screen, at the
- * screen's pixel density, once per theme (no image is downloaded). It's copied out as the --paper-live background
+ * screen's real pixel size and devicePixelRatio, once per theme (no image is downloaded). It's kept lossless (a PNG
+ * bitmap, never JPEG or WebP, so nothing is compressed on any screen) and cached for the session: a theme switched
+ * back, or the same width again, reuses it. It's copied out as the --paper-live background
  * every paper surface lays over itself (index.css), and the WebGL context is let go straight away, so nothing keeps
  * running. Light: white paper with warm grain, multiplied in. Lantern: the same inverted, light fibres on black,
  * screened in, so the dark paper lifts instead of darkening. Drawn again only when the theme or the screen's width
@@ -39,7 +41,7 @@ async function draw(params: PaperParams, night: boolean, w: number, h: number, d
     }
     for (let i = 0; i < 6; i++) await frame()
     if (!canvas) throw new Error("no WebGL")
-    const url = await new Promise<string>((ok, fail) => canvas!.toBlob((b) => (b ? ok(URL.createObjectURL(b)) : fail(new Error("no blob"))), "image/webp", 0.85))
+    const url = await new Promise<string>((ok, fail) => canvas!.toBlob((b) => (b ? ok(URL.createObjectURL(b)) : fail(new Error("no blob"))), "image/png"))
     // Its darkest (or, at night, lightest) spot, sampled small: what the text contrast has to survive
     const probe = new OffscreenCanvas(Math.round(W / 4), Math.round(H / 4)), x = probe.getContext("2d", { willReadFrequently: true })!
     x.drawImage(canvas, 0, 0, probe.width, probe.height)

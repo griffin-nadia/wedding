@@ -64,7 +64,7 @@ Components only use purpose or component tokens; nothing invents a colour or an 
 
 The paper (18f, on the site from 18g) is Paper's PaperTexture shader (https://shaders.paper.design/paper-texture), made in
 the browser: one still sheet the size of the screen at its pixel density, once per theme (`src/lib/paper-live.ts`,
-preset in `src/lib/paper.ts`, Jehan's pick), copied out as `--paper-live`, after which the WebGL context is let go. No
+preset in `src/lib/paper.ts`, Jehan's pick), copied out as `--paper-live` (a lossless PNG bitmap, never JPEG or WebP, cached for the session), after which the WebGL context is let go. No
 image is downloaded for it. Every paper surface (the letter, every sheet, the driver card, `.paper-feel`, the night
 letter in the envelope) lays it over itself, so the words, fields and buttons are printed on it. By day white paper
 with neutral grey grain is multiplied in; in Lantern it's inverted (grey fibres on black, fewer drops and softer
