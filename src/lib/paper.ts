@@ -1,9 +1,8 @@
-// The paper (18f, in the lab for now: Jehan, 18 Oct, "keep in lab"): Paper's PaperTexture shader
-// (https://shaders.paper.design/paper-texture), no image, made in the browser once per theme at the screen's size and
-// pixel density (src/lib/paper-live.ts), then laid over every paper surface, words, fields and buttons included, like
-// Paper's own printed example. The guest site doesn't start it (main.tsx), so its paper is plain until one is picked. Light: white paper with warm grain,
-// multiplied in. Lantern: inverted, light fibres on black, screened in. The lab's "Paper" experiment shows the
-// presets live; the one picked is PAPER below.
+// The paper (18f, on the site from 18g): Paper's PaperTexture shader (https://shaders.paper.design/paper-texture), no
+// image, made in the browser once per theme at the screen's size and pixel density (src/lib/paper-live.ts), then laid
+// over every paper surface, words, fields and buttons included, like Paper's own printed example. Light: white paper
+// with neutral grey grain, multiplied in. Lantern: inverted, grey fibres on black, screened in. The lab's "Paper"
+// experiment shows the presets live; the one picked is PAPER below.
 
 export type PaperParams = {
   roughness: number; roughnessSize: number; fiber: number; fiberSize: number
@@ -20,15 +19,23 @@ export const inkFor = (night: boolean) => (night ? NIGHT : WHITE)
 
 const NONE = { roughness: 0, roughnessSize: 0.5, fiber: 0, fiberSize: 0.5, folds: 0, foldSizeX: 1, foldSizeY: 1, wrinkles: 0, wrinkleSize: 0.65, crumples: 0, drops: 0, distortion: 0, blending: 1, angle: 300, seed: 4, scale: 0.9 }
 
-/** Organic and quiet: Paper's fibre a touch larger and stronger than its grain, a few drops, the faintest folds */
-export const CHOSEN: PaperParams = { ...NONE, roughness: 0.3, roughnessSize: 0.4, fiber: 0.5, fiberSize: 0.6, drops: 0.06, folds: 0.06, wrinkles: 0.1, distortion: 0.75 }
+/** Jehan's pick (18g), from Paper's playground: no folds or crumples, full wrinkles, Paper's grain, fibre and drops */
+export const CHOSEN: PaperParams = {
+  ...NONE, blending: 0.4, distortion: -0.15, angle: 300, seed: 4, roughness: 0.4, roughnessSize: 0.5, fiber: 0.4, fiberSize: 0.5,
+  folds: 0, crumples: 0, wrinkles: 1, wrinkleSize: 0.65, drops: 0.4, scale: 0.9,
+}
+/** Lantern keeps fewer drops and softer wrinkles (18g: drops 0.2, wrinkles 0.6 at most), so the dark paper never looks
+ *  speckled */
+export const nightOf = (p: PaperParams): PaperParams => ({ ...p, drops: Math.min(p.drops, 0.2), wrinkles: Math.min(p.wrinkles, 0.6) })
+/** The 18f pick, for comparison: organic and quiet */
+const ORGANIC: PaperParams = { ...NONE, roughness: 0.3, roughnessSize: 0.4, fiber: 0.5, fiberSize: 0.6, drops: 0.06, folds: 0.06, wrinkles: 0.1, distortion: 0.75 }
 
 /** The four for the lab, side by side */
 export const PRESETS: { id: string; label: string; params: PaperParams }[] = [
-  { id: "subtle", label: "Very subtle", params: { ...CHOSEN, roughness: 0.28, fiber: 0.28, drops: 0.05, folds: 0.06, wrinkles: 0.1 } },
-  { id: "chosen", label: "Chosen", params: CHOSEN },
-  { id: "fibre", label: "More fibre", params: { ...CHOSEN, fiber: 0.65, fiberSize: 0.4 } },
-  { id: "nofolds", label: "No folds at all", params: { ...CHOSEN, folds: 0, wrinkles: 0 } },
+  { id: "chosen", label: "Chosen (Jehan's)", params: CHOSEN },
+  { id: "organic", label: "Organic (18f)", params: ORGANIC },
+  { id: "subtle", label: "Very subtle", params: { ...ORGANIC, roughness: 0.28, fiber: 0.28, drops: 0.05, folds: 0.06, wrinkles: 0.1 } },
+  { id: "nofolds", label: "No folds or wrinkles", params: { ...CHOSEN, folds: 0, wrinkles: 0 } },
 ]
 
 /** The one the site uses */

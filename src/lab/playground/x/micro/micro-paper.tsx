@@ -1,7 +1,7 @@
 import { Component, useState, type ReactNode } from "react"
 import { PaperTexture } from "@paper-design/shaders-react"
 import { useLang } from "@/lib/lang"
-import { PRESETS, TILE, inkFor, type PaperParams } from "@/lib/paper"
+import { PRESETS, TILE, inkFor, nightOf, type PaperParams } from "@/lib/paper"
 import { Stage } from "../../stage"
 import hatchLight from "./hatch-light.webp"
 import hatchLantern from "./hatch-lantern.webp"
@@ -46,7 +46,7 @@ function Swatch({ params, tone, words }: { params: PaperParams; tone: "light" | 
       {/* The site's way: the paper over the theme's colour, at a card's size: white multiplied in by day, inverted and
           screened in at night */}
       <NoGl fallback={<div />}>
-        <PaperTexture speed={0} fit="cover" {...params} {...inkFor(tone === "lantern")} style={{ width: TILE, height: 600, mixBlendMode: tone === "lantern" ? "screen" : "multiply", opacity: STRENGTH[tone] }} />
+        <PaperTexture speed={0} fit="cover" {...(tone === "lantern" ? nightOf(params) : params)} {...inkFor(tone === "lantern")} style={{ width: TILE, height: 600, mixBlendMode: tone === "lantern" ? "screen" : "multiply", opacity: STRENGTH[tone] }} />
       </NoGl>
       <span style={{ color: tone === "light" ? "#421a05" : "#f3e7d3" }}>{words}</span>
     </div>

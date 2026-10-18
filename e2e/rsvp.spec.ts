@@ -222,7 +222,7 @@ test("where are you flying from: chips, then real cities as you type, all on thi
   await expect(city).toHaveValue(before)
 })
 
-test("the sent letter: plain paper on the guest site for now (the made paper is lab only), no canvas, the hanko's ink", async ({ page }) => {
+test("the sent letter under reduced motion: plain paper (no paper made), no canvas, the hanko's ink", async ({ page }) => {
   await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
   await openForm(page)
   const dialog = page.getByRole("dialog")

@@ -19,3 +19,21 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>,
 )
 
+// The paper (18g): made after the page has painted, at idle or on the first input, whichever comes first, in its own
+// chunk; it fades in once made. Under reduced motion or Save-Data the paper stays plain (and without WebGL).
+{
+  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches || (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData
+  if (!calm) {
+    const kinds = ["pointerdown", "keydown", "wheel", "touchstart"] as const
+    let started = false
+    const go = () => {
+      if (started) return
+      started = true
+      kinds.forEach((k) => removeEventListener(k, go, true))
+      void import("./lib/paper-live").then((m) => m.startPaper())
+    }
+    kinds.forEach((k) => addEventListener(k, go, { capture: true, passive: true }))
+    // Idle once the page has settled (3 s after load), so making it never competes with the first paints
+    addEventListener("load", () => setTimeout(() => ("requestIdleCallback" in window ? requestIdleCallback(go, { timeout: 4000 }) : go()), 3000), { once: true })
+  }
+}
