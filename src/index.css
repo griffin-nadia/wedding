@@ -1330,7 +1330,7 @@ svg.lucide { stroke-width: 1.5; }
 }
 
 /* Travel: three summary lines, and jump links that stay with the page header (the current section marked) */
-:root { --travel-head: 64px; } /* the slim jump-link row at the card's top, and a little air (18e) */
+:root { --travel-head: 56px; } /* the slim jump-link row at the card's top (48px) and 8px of air, where a tap lands (18e, run 19) */
 .jump-links ul { position: relative; display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--space-1)); padding: var(--space-1); scroll-padding-inline: var(--space-6);
   /* A soft fade at whichever edge has more links past it (18f), never a hard cut through a word */
   --fade-l: 0px; --fade-r: 0px;
