@@ -23,7 +23,7 @@ import { spring, still } from "../../motion"
  * Nothing is sent: the reply only lives in this component. Reduced motion: screens cross-fade, the line just moves.
  */
 const css = `
-.x-oq { position: relative; isolation: isolate; min-height: 100svh; height: 100svh; display: grid; grid-template-rows: auto 1fr auto; background: var(--letter-bg); color: var(--ink); overflow: hidden; }
+.x-oq { position: relative; isolation: isolate; min-height: var(--stage-h, 100svh); height: var(--stage-h, 100svh); display: grid; grid-template-rows: auto 1fr auto; background: var(--letter-bg); color: var(--ink); overflow: hidden; }
 .x-oq::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--paper-live, none) center / cover; mix-blend-mode: var(--paper-blend); opacity: 0.6; pointer-events: none; }
 .x-oq-top { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px 14px; }
 .x-oq-line { position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--line-hairline); }
@@ -50,7 +50,7 @@ const css = `
 .x-oq-review dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
 .x-oq-edit { min-height: 44px; padding-inline: 12px; border-radius: var(--radius-control); color: var(--ink-link); font: 500 var(--type-ui-small-size) / 1 var(--font-label); text-decoration: underline; text-underline-offset: 3px; flex-shrink: 0; }
 .x-oq-edit:focus-visible { outline: 2px solid var(--input-focus); outline-offset: 2px; }
-.x-oq-done { min-height: 100svh; display: grid; place-items: center; padding: 24px 16px; text-align: center; }
+.x-oq-done { min-height: var(--stage-h, 100svh); display: grid; place-items: center; padding: 24px 16px; text-align: center; }
 .x-oq-done > div { display: flex; flex-direction: column; align-items: center; gap: 20px; max-width: 30rem; animation: x-oq-rise 600ms var(--ease-paper) both; }
 @keyframes x-oq-rise { from { opacity: 0; transform: translateY(24px); } }
 @media (prefers-reduced-motion: reduce) {

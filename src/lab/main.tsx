@@ -90,6 +90,8 @@ function Experiments() {
   )
 }
 
+const TABS = [["playground", "Playground"], ["gallery", "Gallery"], ["layouts", "Layouts"], ["experiments", "Experiments"]] as const
+
 function Lab() {
   // The gallery keeps its own page in the hash (#type, #button…), so any other hash means the gallery
   const [tab, setTab] = useState(() => { const h = location.hash.slice(1); return h.startsWith("playground") ? "playground" : ["layouts", "experiments"].includes(h) ? h : h ? "gallery" : "playground" })
@@ -98,7 +100,11 @@ function Lab() {
     <div className="lab-shell" data-mark={LAB_MARK}>
       <header className="lab-bar">
         <p className="font-display text-heading">G&amp;N <span className="label-caps text-muted-foreground">lab · local only</span></p>
-        <Segmented label="Lab" value={tab} onChange={setTab} items={[{ value: "playground", label: "Playground" }, { value: "gallery", label: "Gallery" }, { value: "layouts", label: "Layouts" }, { value: "experiments", label: "Experiments" }]} />
+        {/* Phones: a select, so no tab is ever cut off; wider: the segmented tabs */}
+        <span className="lab-tabs-wide"><Segmented label="Lab" value={tab} onChange={setTab} items={TABS.map(([value, label]) => ({ value, label }))} /></span>
+        <label className="lab-tabs-narrow"><span className="sr-only">Lab</span>
+          <select className="field" value={tab} onChange={(e) => setTab(e.target.value)}>{TABS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+        </label>
         <span className="ml-auto"><LanternToggle /></span>
       </header>
       {tab === "playground" && <Playground />}

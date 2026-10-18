@@ -7,7 +7,7 @@ import { useLang } from "@/lib/lang"
  * The household's own line comes from Brisbane as an example. No guest counts: those are real data, so none are made up.
  */
 const css = `
-.x-journey-current { min-height: 100svh; display: grid; place-items: center; padding: 24px 16px; background: var(--surface-alt); }
+.x-journey-current { min-height: var(--stage-h, 100svh); display: grid; place-items: center; padding: 24px 16px; background: var(--surface-alt); }
 .x-journey-current .x-journey-current-letter { min-height: 0; height: auto; position: relative; width: 100%; max-width: 620px; display: flex; flex-direction: column; gap: 16px; }
 `
 export default function JourneyCurrent() {
