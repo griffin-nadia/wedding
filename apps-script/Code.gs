@@ -1390,46 +1390,104 @@ function setStamps_(token, stamps) {
 
 const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Already in Japan", "Somewhere else"]
 
-/** Saves the household's "Flying from" pick (a fixed list, never free text) in a Guests column at the end. */
+// Where the old fixed answers are (18f and before), so their rows still draw a line (final run): a row with only an
+// answer in "Flying from" and no coordinates is read as this city, until the household picks again
+const FLYING_AT = {
+  "Brisbane": [-27.468, 153.028, "AU"], "Melbourne": [-37.814, 144.963, "AU"], "Sydney": [-33.868, 151.207, "AU"],
+  "Perth": [-31.952, 115.861, "AU"], "Adelaide": [-34.929, 138.599, "AU"], "Elsewhere in Australia": [-25.5, 134, "AU"],
+  "Canada": [53, -100, "CA"], "Already in Japan": [35.68, 139.69, "JP"], "Somewhere else": [null, null, ""],
+}
+
+/**
+ * Saves where the household is flying from (final run): the city they picked from the site's list of real cities
+ * (its GeoNames id, name, region, country and coordinates), or one of the older fixed answers. Never free text: the
+ * site only sends a picked city, and everything is checked here too. In Guests columns at the end.
+ */
 function setFlying_(token, city) {
   token = String(token || "").trim()
-  city = String(city || "")
-  if (FLYING.indexOf(city) < 0) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
+  let row
+  if (typeof city === "string") {
+    if (FLYING.indexOf(city) < 0) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
+    const at = FLYING_AT[city]
+    row = { name: city, id: "", region: "", country: at[2], lat: at[0], lon: at[1] }
+  } else if (city && typeof city === "object") {
+    const id = String(city.id || ""), name = String(city.name || "").trim(), country = String(city.country || "").trim().toUpperCase()
+    const lat = city.lat === null ? null : Number(city.lat), lon = city.lon === null ? null : Number(city.lon)
+    const okId = /^(\d{1,10}|jp|else)$/.test(id), okName = name.length > 0 && name.length <= 80
+    const okCountry = country === "" || /^[A-Z]{2}$/.test(country)
+    const okAt = (lat === null && lon === null) || (isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180)
+    if (!okId || !okName || !okCountry || !okAt) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
+    row = { name: name, id: id, region: String(city.region || "").slice(0, 80), country: country, lat: lat, lon: lon }
+  } else return { ok: false, code: "bad_request", error: ERRORS.bad_request }
   const lock = LockService.getUserLock()
   if (!lock.tryLock(10000)) return { ok: false, code: "busy", error: ERRORS.busy }
   try {
     const s = sheet_(TABS.guests)
-    const head = ensureColumns_(s, ["Flying from"])
+    const head = ensureColumns_(s, ["Flying from", "Flying id", "Flying region", "Flying country", "Flying lat", "Flying lon"])
     const data = s.getDataRange().getValues()
     let found = false
     for (let i = 1; i < data.length; i++) {
       if (String(data[i][head.Token]).trim() !== token) continue
-      s.getRange(i + 1, head["Flying from"] + 1).setValue(city)
+      s.getRange(i + 1, head["Flying from"] + 1).setValue("'" + row.name)
+      s.getRange(i + 1, head["Flying id"] + 1).setValue("'" + row.id)
+      s.getRange(i + 1, head["Flying region"] + 1).setValue("'" + row.region)
+      s.getRange(i + 1, head["Flying country"] + 1).setValue("'" + row.country)
+      s.getRange(i + 1, head["Flying lat"] + 1).setValue(row.lat === null ? "" : row.lat)
+      s.getRange(i + 1, head["Flying lon"] + 1).setValue(row.lon === null ? "" : row.lon)
       found = true
     }
     if (!found) return { ok: false, code: "not_found", error: ERRORS.not_found }
     CacheService.getScriptCache().remove("flying")
+    CacheService.getScriptCache().remove("journeys")
     return { ok: true }
   } finally {
     lock.releaseLock()
   }
 }
 
-/** Households per city plus how many households there are. Counts only, never names. */
+/** A Guests row's city: its picked city, or (an older answer) the fixed answer's place. Null when there's none. */
+function flyingOf_(r) {
+  const name = String(r["Flying from"] || "").replace(/^'/, "")
+  if (!name) return null
+  let lat = r["Flying lat"], lon = r["Flying lon"], country = String(r["Flying country"] || "").replace(/^'/, "")
+  if ((lat === "" || lat === undefined) && FLYING_AT[name]) { lat = FLYING_AT[name][0]; lon = FLYING_AT[name][1]; country = FLYING_AT[name][2] }
+  return { name: name, country: country, lat: lat === "" || lat === null || lat === undefined ? null : Number(lat), lon: lon === "" || lon === null || lon === undefined ? null : Number(lon) }
+}
+
+/** Nearest of the older fixed answers, so a site from before the final run still gets its counts */
+function bucketOf_(c) {
+  if (FLYING.indexOf(c.name) >= 0) return c.name
+  if (c.country === "CA") return "Canada"
+  if (c.country === "JP") return "Already in Japan"
+  if (c.country !== "AU" || c.lat === null) return "Somewhere else"
+  let best = "Elsewhere in Australia", d = Infinity
+  ;["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide"].forEach(function (b) { const at = FLYING_AT[b], dd = Math.pow(at[0] - c.lat, 2) + Math.pow((at[1] - c.lon) * Math.cos(c.lat * Math.PI / 180), 2); if (dd < d) { d = dd; best = b } })
+  return best
+}
+
+/** Households per city (with its coordinates) and per older answer, and how many households there are. Counts only, never names. */
 function flyingCounts_() {
   const cache = CacheService.getScriptCache()
   const hit = cache.get("flying")
   if (hit) return JSON.parse(hit)
   const seen = {}
   const counts = {}
+  const cities = {}
   rows_(TABS.guests).forEach((r) => {
     const t = String(r.Token || "").trim()
     if (!t || TEST_HOUSEHOLD.test(String(r.Household || "")) || seen[t]) return
     seen[t] = true
-    const c = String(r["Flying from"] || "")
-    if (c) counts[c] = (counts[c] || 0) + 1
+    const c = flyingOf_(r)
+    if (!c) return
+    const b = bucketOf_(c)
+    counts[b] = (counts[b] || 0) + 1
+    if (c.lat === null) return
+    const k = c.name + "|" + c.country
+    cities[k] = cities[k] || { name: c.name, country: c.country, lat: c.lat, lon: c.lon, n: 0 }
+    cities[k].n++
   })
-  const out = { ok: true, counts: counts, told: Object.values(counts).reduce((a, b) => a + b, 0), households: Object.keys(seen).length }
+  const list = Object.keys(cities).map((k) => cities[k])
+  const out = { ok: true, counts: counts, cities: list, told: Object.values(counts).reduce((a, b) => a + b, 0), households: Object.keys(seen).length }
   cache.put("flying", JSON.stringify(out), 600)
   return out
 }

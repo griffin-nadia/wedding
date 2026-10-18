@@ -187,40 +187,39 @@ test("Enter in a field goes to the next field, never the next step", async ({ pa
   await expect(dialog.getByText("Step 4 of 5")).toBeVisible()
 })
 
-test("where are you flying from: type to filter, pick, and the map line follows", async ({ page }) => {
+test("where are you flying from: chips, then real cities as you type, all on this device", async ({ page }) => {
   await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
   await openForm(page)
   const dialog = page.getByRole("dialog")
   await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
   await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
   await toCheck(page); await press(page, /^Send our reply$/)
-  const city = dialog.getByRole("combobox", { name: "Where are you flying from?" })
-  await city.fill("mel")
-  await expect(dialog.getByRole("option")).toHaveText(["Melbourne"])
-  await city.press("ArrowDown"); await city.press("Enter")
-  await expect(city).toHaveValue("Melbourne")
+  // Quick chips: one tap picks the city, and the line draws
+  await dialog.getByRole("button", { name: "Melbourne", exact: true }).click()
+  await expect(dialog.getByRole("button", { name: "Melbourne", exact: true })).toHaveAttribute("aria-pressed", "true")
   await expect(dialog.getByText("From Melbourne")).toBeVisible()
   await expect(dialog.locator(".journey-end .journey-you")).toHaveCount(1)
-  await city.fill("zzz")
-  await expect(dialog.locator(".combo-note")).toHaveText("Nothing matches. Try Somewhere else.")
-  // Words that match nothing keep the last real choice (never another place)
-  await city.press("Enter")
-  await expect(city).toHaveValue("Melbourne")
-  await expect(dialog.getByText("From Melbourne")).toBeVisible()
-  // Typos and suburbs find the city, and the field shows it
-  for (const [typed, shown] of [["Noeth Melb", "Melbourne"], ["Brunswick", "Melbourne"], ["Bondi", "Sydney"], ["Brisbne", "Brisbane"]]) {
+  // Typing: the index loads on focus; from then on nothing is fetched while typing
+  const city = dialog.getByRole("combobox", { name: "Or type your city" })
+  const loaded = page.waitForResponse((r) => r.url().endsWith("data/cities.json"))
+  await city.focus()
+  await loaded
+  const asked: string[] = []
+  page.on("request", (r) => asked.push(r.url()))
+  for (const [typed, first] of [["Melborne", "Melbourne"], ["Vancover", "Vancouver"], ["North Melbourne", "Melbourne"], ["東京", "Tokyo"], ["Montreal", "Montréal"]] as const) {
     await city.fill(typed)
-    await expect(dialog.getByRole("option").first()).toHaveText(shown)
-    await city.press("Enter")
-    await expect(city).toHaveValue(shown)
-    await expect(dialog.getByText(`From ${shown}`)).toBeVisible()
+    await expect(dialog.getByRole("option").first()).toContainText(first)
   }
-  // Leaving the field with a typo picks the best match too
-  await city.fill("North Melbourne"); await city.blur()
-  await expect(city).toHaveValue("Melbourne")
-  // No "Elsewhere in Australia" row any more
-  await city.fill("")
-  await expect(dialog.getByRole("option", { name: /Elsewhere/ })).toHaveCount(0)
+  // Ambiguous: the region says which
+  await city.fill("Victoria")
+  await expect(dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ })).toBeVisible()
+  await city.press("Enter")
+  expect(asked.filter((u) => !u.startsWith("data:"))).toEqual([]) // no network while typing or picking
+  await expect(city).toHaveValue(/^Victoria, British Columbia, Canada$|^Melbourne, Victoria, Australia$/)
+  // Free text that matches nothing keeps the last real choice
+  const before = await city.inputValue()
+  await city.fill("zzzzqq"); await city.blur()
+  await expect(city).toHaveValue(before)
 })
 
 test("the sent letter: plain paper on the guest site for now (the made paper is lab only), no canvas, the hanko's ink", async ({ page }) => {

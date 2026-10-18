@@ -31,6 +31,11 @@ export const PENDING = {
     en: "Your travel dates",
     ja: "旅の日程",
   },
+  // "Where are you flying from?": the field under the quick chips (final run)
+  "flying.orType": {
+    en: "Or type your city",
+    ja: "または都市名を入力",
+  },
   // A way to actually message them where the copy says to (18e journey map): the wedding address already used on the
   // no-invite page
   "contact.emailUs": {

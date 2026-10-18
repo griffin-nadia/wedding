@@ -1339,3 +1339,9 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
+/* "Where are you flying from?" quick chips (final run): wrap, never clip; the picked one marked */
+.fly-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.fly-chip { min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--line-hairline); border-radius: var(--radius-pill); background: var(--surface-raised); color: var(--ink); font: 500 var(--type-small-size) / 1.2 var(--font-label); outline: 2px solid transparent; outline-offset: 2px; transition: background-color var(--duration-fast) var(--ease-paper), border-color var(--duration-fast) var(--ease-paper); }
+.fly-chip:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .fly-chip:hover { border-color: var(--line-strong); } }
+.fly-chip[aria-pressed="true"] { background: var(--input-selected-bg); border-color: var(--input-selected-line); }
