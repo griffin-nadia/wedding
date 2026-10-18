@@ -25,7 +25,7 @@ still point at the old one.
 | Check song search (Spotify) | Tells you if the Spotify keys work |
 | Turn on the fast email queue | Run it signed in as the wedding account only: the minute trigger sends emails as whoever turned it on, so it refuses from any other account. Removes that account's old trigger and makes a fresh one. `?action=ping` shows `queueAccount` (wedding, other or unknown) |
 | Check the email queue… | Lists what's waiting (replies to write, confirmation emails, visit counts), says which households aren't test households, shows when the minute trigger last ran and which account it last ran as, then offers to write and send it all now. Emails only ever send from the wedding account (docs/email-queue.md) |
-| Clear queued items for test households… | Deletes queued items for test households only, without writing or sending them |
+| Clear queued items for test households… | Deletes queued items for test households only (replies, confirmations, and from 19 Oct their Ask us, "Send my link" and answer emails too), without writing or sending them |
 | Reset test households… | Clears answers, songs, Log rows, visits, stamps and duplicate flags for households named "Test …" or "… (Test)" |
 | Send the "Final numbers soon" note… | Before changes lock, asks households who are coming to check their reply (Emails tab keys `final_*`; test households skipped) |
 | Make crew links | Makes the Crew tab (Jehan, Griffin, Nadia, wedding Gmail) and writes each person's /kit and /lab link. No guest data |
@@ -34,6 +34,9 @@ still point at the old one.
 | Prepare for launch: run for real… | Type LAUNCH; backs up both sheets to Wedding backups first, then does it. Never sends |
 | Weekly backup: check (report only)… | The backups folder, the weekly copies there, what the next run makes and bins, whether the trigger is on. Changes nothing |
 | Weekly backup: turn on | Wedding account only: every Monday about 3 am Kyoto, a dated copy of Site-Data in Wedding backups, the newest 8 kept |
+| Tidy the sheets (report) | Changes nothing. Lists every change the tidy would make and every row and column that would move to Archive, by row number (docs/sheets.md) |
+| Tidy the sheets: do it | Asks, then does exactly that: tab order, frozen headers, filters, widths, banding, readable dates, Seen tickboxes, the Questions dropdown and colour, the RSVPs Changed highlight, the Summary's To look at box, "Your weekly 5 minutes" in How to update, and test-era Log rows and stale helper columns copied to Archive before they're taken out. Never deletes anything |
+| Refresh the To look at box | Rewrites the box at the top of Summary (it also refreshes on open once the tidy has added it) |
 
 ## Script properties (all optional)
 
@@ -51,7 +54,7 @@ with the error's code and message only (docs/monitoring.md).
 | `GET ?action=household&token=…[&open=1]` | The household. `open=1` counts a visit |
 | `GET ?action=started&token=…` | Records "Started RSVP" once |
 | `GET ?action=songs&q=…` | Up to 6 Spotify matches, or `not_configured` |
-| `GET ?action=check&token=…` | That household's own saved rows, for testing (plus how many of its rows carry the duplicate flag) |
+| `GET ?action=check&token=…` | That household's own saved rows, for testing (plus how many of its rows carry the duplicate flag, and the city it said it's flying from) |
 | `GET ?action=stay` | Their hotel and Airbnb picks from the planner's Accommodation Options tab (`PLANNER_ID` script property), links without tracking, cached 6 hours |
 | `GET ?action=content` | Our story chapters (Content tab: `story_1_title`, `story_1_year`, `story_1_body`… up to 6), `mode` (invite, week-of, keepsake) and `contact_day` (shown under the FAQs) |
 | `GET ?action=health` | For UptimeRobot: `{ok, sheet, queueMoving, pending, emailQuota, at}`. `ok` is true only when the sheet opens and the email queue is moving. No guest data (docs/monitoring.md) |

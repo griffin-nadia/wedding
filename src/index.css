@@ -387,22 +387,21 @@
 .envelope:active { transform: scale(var(--press-scale)); }
 .envelope > span { position: absolute; inset: 0; border-radius: var(--radius-card); }
 .envelope-back { background: var(--surface-fill); }
-.envelope-paper { inset: 12px 16px 24px !important; background: var(--surface-paper); border-top: 4px solid var(--letter-edge-color); transition: transform var(--duration-base) var(--ease-paper); }
+.envelope-paper { inset: 12px 16px 24px !important; background: var(--surface-paper); transition: transform var(--duration-base) var(--ease-paper); }
 .envelope-front { background: var(--surface-raised); clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%); }
 .envelope-flap { background: color-mix(in oklab, var(--surface-fill) 80%, var(--ink)); clip-path: polygon(0 0, 100% 0, 50% 60%); transform-origin: top; transition: transform var(--duration-base) var(--ease-paper); backface-visibility: hidden; }
 .envelope-seal { inset: auto !important; left: 50% !important; top: 58% !important; width: 56px; height: 56px; translate: -50% -50%; display: grid; border-radius: var(--radius-pill) !important; transition: opacity var(--duration-fast); }
 .is-opening .envelope-flap { transform: rotateX(180deg) !important; }
 .is-opening .envelope-seal { opacity: 0; }
-.is-opening .envelope-paper { transform: translateY(-40%) !important; transition: transform var(--duration-slow) var(--ease-paper) var(--duration-base); }
-.is-opening .envelope { animation: envelope-sink var(--duration-slow) var(--ease-out) var(--duration-base) both; }
+/* The kit's paper envelope demo: its letter rises (the arrival draws its own steps in envelope.tsx) */
+.is-opening:not(.arrival) .envelope-paper { transform: translateY(-40%); transition: transform var(--duration-slow) var(--ease-paper) var(--duration-base); }
 @keyframes envelope-sink { to { transform: translateY(48px); opacity: 0; } }
 /* Options lab: noren curtain (two panels part, 600 ms) */
 .noren { position: relative; width: 300px; height: 260px; display: flex; gap: 6px; padding-top: 12px; outline: 2px solid transparent; outline-offset: 6px; border-radius: var(--radius-card); cursor: pointer; }
 .noren:focus-visible { outline-color: var(--input-focus); }
 .is-opening .noren { animation: envelope-sink var(--duration-slow) var(--ease-out) var(--duration-base) both; }
-.letter-sealed { opacity: 0; transform: translateY(48px); }
-.letter-rise { animation: letter-rise var(--duration-slow) var(--ease-paper) var(--duration-base) both; }
-@keyframes letter-rise { from { opacity: 0; transform: translateY(48px); } to { opacity: 1; transform: none; } }
+/* The card waits, unseen, exactly where it will be (run 19: no offset, so the letter can grow straight into it) */
+.letter-sealed { opacity: 0; }
 
 /* Journey map: each route draws in once (1.2 s); a soft honey glow in Lantern mode. */
 
@@ -543,13 +542,13 @@
    way of a tap. Until it's made (or without WebGL) the paper is plain. */
 /* Every surface lays the sheet at the screen's size (it's made at the screen's size), so the grain is the same scale on
    the card, the envelope's letter, the bar and the dock (final run P), not stretched to each box. */
-.letter::after, .sheet-bright::after, .paper-feel::after, .envelope-paper::after {
+.letter::after, .sheet-bright::after, .paper-feel::after, .envelope-paper::after, .arrival-sheet::after {
   content: ""; position: absolute; inset: 0; z-index: 30; border-radius: inherit; pointer-events: none;
   background: var(--paper-live, none) center / 100vw 100vh no-repeat;
   mix-blend-mode: var(--paper-blend); opacity: 0;
 }
 /* Once it's made (src/lib/paper-live.ts), it fades in over 400 ms at the strength that keeps text AA (--paper-on) */
-[data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity 400ms var(--ease-paper); }
+[data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper, .arrival-sheet)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity 400ms var(--ease-paper); }
 /* The driver card stays bright paper in Lantern, where the sheet made is the night one: plain there */
 [data-theme="lantern"] .sheet-bright::after { display: none; }
 .letter .paper-feel::after, .sheet .paper-feel::after { display: none; }
@@ -780,7 +779,9 @@
 /* The sealed envelope never scrolls: the letter waiting under it (hidden) used to make short laptops scroll 10-40px.
    The scrollbar's space is kept (scrollbar-gutter: stable), so nothing shifts when it opens. */
 :root[data-sealed] { overflow: hidden; }
-[data-sealed] .site-bar::before { display: none; }
+/* Run 19: no bar paper (colour or texture) over the photo while sealed, just the switches; it comes back once open */
+[data-sealed] .site-bar::before, [data-sealed] .site-bar::after { opacity: 0 !important; }
+.site-bar::before { transition: opacity var(--duration-fast) var(--ease-paper); }
 .arrival { align-content: end; gap: var(--space-4); padding-top: 0; padding-bottom: max(5svh, 24px); }
 @media (max-width: 767px) { .arrival .envelope { width: 240px; height: 156px; } .arrival .envelope-seal { width: 48px !important; height: 48px !important; } }
 @media (min-width: 1024px) { .arrival { align-content: end; padding-bottom: 14svh; } }
