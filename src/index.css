@@ -516,6 +516,8 @@
 /* Except Home: its card is only as tall as what's on it (up to the frame) */
 :root .letter[data-page="home"] { flex-grow: 0; }
 .letter-wrap:has(.letter[data-page="home"]) .letter-sealed { flex-grow: 0; }
+/* And Our story on laptops (18f): only as tall as the spread, not a tall frame round a small print */
+@media (min-width: 1024px) { :root .letter[data-page="story"] { flex-grow: 0; } }
 .letter-scroll {
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--letter-gap);
   padding: var(--letter-pad); overflow-y: auto; overscroll-behavior: contain;
@@ -1199,10 +1201,19 @@ svg.lucide { stroke-width: 1.5; }
 .story-track[data-dragging] { cursor: grabbing; }
 .story-track img { -webkit-user-drag: none; }
 /* Every stop in the same cell, so the track is the tallest stop's height and nothing below it moves */
-.story-track:focus-visible { outline-color: var(--input-focus); }
-.story-slide { --print-h: min(34svh, 300px); grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
+/* No box round the whole story when it has focus (18f, Jehan: "too boxy"): the focus shows on the current stop's dot */
+.story-track:focus-visible { outline-color: transparent; }
+.story:has(.story-track:focus-visible) .journey-dots .is-on { outline: 2px solid var(--input-focus); outline-offset: 3px; }
+.story-slide { --print-h: min(34svh, 300px); --caption-h: 2.75rem; grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-4); overflow: hidden; padding-block: var(--space-2); text-align: center; }
 .story-media { flex: none; display: grid; place-items: center; max-width: 100%; }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
+/* Every photo stop's print sits on the same line in the same-sized box, so its caption lands in the same spot on
+   every stop, right under the photo (18f): a landscape print is shorter, so it sits low in the box, not centred */
+.story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); place-items: end center; }
+/* …and the stop starts at the top, so a two-line title under it never moves the photo up */
+.story-slide:not(.story-slide-map):not(.story-slide-opener) { justify-content: flex-start; }
+
+.story-print figcaption { min-height: 1.25rem; }
 /* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
 .story-print { margin: var(--space-2); }
 .story-print > div { height: var(--print-h); width: auto; }
@@ -1227,9 +1238,9 @@ svg.lucide { stroke-width: 1.5; }
 /* Short phones (an SE at 667): a smaller print, so a stop still fits one screen */
 @media (max-height: 760px) { .story-slide { --print-h: 22svh; gap: var(--space-3); padding-block: 0; } .story-slide-map .journey-mini { max-height: 24svh; } }
 @media (min-width: 1024px) {
-  .story-slide { --print-h: min(42svh, 360px); flex-direction: row; gap: var(--space-6); text-align: left; padding-inline: var(--space-2); }
-  .story-media { flex: 0 1 auto; }
-  .story-words { flex: 0 1 300px; }
+  /* Laptops as phones (18f, Jehan: "too big… like we did with mobile"): the print centred like a photo, its chapter
+     under it, smaller, so the page isn't so tall (a small map beside the words was tried and left out) */
+  .story-slide { --print-h: min(32svh, 260px); gap: var(--space-4); }
   .story-slide-map .story-media { flex: 0 1 360px; }
   .story-slide-map .journey-mini { max-height: 46svh; }
   .story-controls { justify-content: center; gap: var(--space-5); }
