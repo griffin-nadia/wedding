@@ -26,8 +26,8 @@ function JourneyMap() {
   const [flying, setFlying] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
   useEffect(() => { void getFlying().then(setFlying) }, [])
   const nameOf = usePlaceName()
-  const name = you ? nameOf(you) : null
-  return <GuestMap you={you} flying={flying} label={t.journey.map(name, you ?? undefined)} listable={false} />
+  const name = you ? nameOf(you.name) : null
+  return <GuestMap you={you} flying={flying} label={t.journey.map(name, you?.id === "jp" ? "Already in Japan" : undefined)} listable={false} />
 }
 
 /**

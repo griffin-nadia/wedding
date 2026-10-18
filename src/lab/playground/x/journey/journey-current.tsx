@@ -17,7 +17,7 @@ export default function JourneyCurrent() {
       <style>{css}</style>
       <Letter className="x-journey-current-letter">
         <h1 className="heading">{t.journey.title}</h1>
-        <GuestMap you="Brisbane" flying={null} label={t.journey.map(t.journey.brisbane, "Brisbane")} />
+        <GuestMap you={{ id: 2174003, name: "Brisbane", region: "Queensland", country: "AU", lat: -27.468, lon: 153.028 }} flying={null} label={t.journey.map(t.journey.brisbane, "Brisbane")} />
       </Letter>
     </div>
   )
