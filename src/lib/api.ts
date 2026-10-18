@@ -145,6 +145,22 @@ export function warmUp() {
   fetch(`${config.apiUrl}?action=ping`, { mode: "no-cors" }).catch(() => {})
 }
 
+/**
+ * Ask us (final run): a question to Griffin and Nadia. From an invite the token says who; without one (can't find
+ * your invite) a name and an email come with it. `website` is the hidden field only a bot fills in.
+ */
+export async function askUs(q: { question: string; token?: string; name?: string; email?: string; website?: string }): Promise<void> {
+  if (!config.apiUrl) { await new Promise((r) => setTimeout(r, 400)); return }
+  const data = await call(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "ask", ...q }) })
+  if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
+}
+/** The questions Griffin and Nadia have answered and published, for the FAQs' "You asked" (no names) */
+export type Asked = { q: string; a: string; a_ja?: string }
+export async function getQuestions(): Promise<Asked[]> {
+  if (!config.apiUrl) return []
+  try { const d = await call(`${config.apiUrl}?action=questions`); return d.ok && Array.isArray(d.questions) ? (d.questions as Asked[]) : [] } catch { return [] } // an older back end has none: none, not a crash
+}
+
 /** "Can't find your invite?": asks the back end to email the household link. Same answer either way. */
 export async function resendLink(email: string): Promise<void> {
   if (!config.apiUrl) { await new Promise((r) => setTimeout(r, 400)); return }
