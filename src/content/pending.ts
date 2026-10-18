@@ -32,9 +32,14 @@ export const PENDING = {
     ja: "旅の日程",
   },
   // Ask us (final run): the sheet that replaces every "email Griffin & Nadia"
-  "ask.cta": {
-    en: "Still wondering? Ask Griffin & Nadia",
-    ja: "ほかに気になることは？グリフィンとナディアに聞く",
+  // The end of FAQs (run 19): a line in their voice, then the button
+  "ask.intro": {
+    en: "Can't see your question here? Ask us and we'll get back to you.",
+    ja: "知りたいことが見つからないときは、お気軽に聞いてください。お返事します。",
+  },
+  "ask.button": {
+    en: "Ask us",
+    ja: "質問する",
   },
   "ask.open": {
     en: "Ask Griffin & Nadia",
@@ -112,6 +117,44 @@ export const PENDING = {
     en: "Email Griffin & Nadia",
     ja: "グリフィンとナディアにメールする",
   },
+  // The FAQ answers (run 19): shorter, in their voice, for Griffin and Nadia to tweak (the questions are in en.ts)
+  "faqs.bring.a": {
+    en: "Your invite is for the people named on it. If there's room for a plus one, your reply will ask “Bringing someone?”. Not sure? Ask us below.",
+    ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下からお気軽にどうぞ。",
+  },
+  "faqs.style.a": {
+    en: "Not really. It's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are.",
+    ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。",
+  },
+  "faqs.wear.a": {
+    en: "Whatever you feel great in. There's no dress code, but the streets around the venue are cobblestone, so bring shoes you can walk in.",
+    ja: "ドレスコードはありません。お好きな服装でどうぞ。ただ、会場のまわりは石畳なので、歩きやすい靴がおすすめです。",
+  },
+  "faqs.food.a": {
+    en: "Lunch is catered, and we'll set the menu a few months before. Tell us any dietary needs in your reply.",
+    ja: "昼食をご用意します。メニューは数か月前に決めますので、食事の制限やアレルギーはお返事でお知らせください。",
+  },
+  "faqs.gifts.a": {
+    en: "No gifts, truly. Getting to Kyoto is a big ask already, so you being there is the present.",
+    ja: "本当に不要です。京都まで来てくださることが、何よりの贈り物です。",
+  },
+  "faqs.visa.a": {
+    en: "Not for Aussies on a short trip. Just check your passport has 6 months left after you fly home. Travel has the rest.",
+    ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。",
+  },
+  "faqs.details.a": {
+    en: "Your reply comes straight to us and no one else sees it. We'll delete it a few months after the wedding.",
+    ja: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。",
+  },
+  "faqs.whoMade.a": {
+    en: "Nadia's brother Jehan designed and built it, and Nadia drew everything you see.",
+    ja: "ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。",
+  },
+  // {song} is the music credit (src/lib/art.ts), said here only
+  "faqs.whoMade.song": {
+    en: "The song is {song}, played on piano.",
+    ja: "曲は{song}のピアノ版です。",
+  },
   "faqs.contactDay": {
     en: "On the day, call Jehan or Noya. We'll add their numbers closer to the time.",
     ja: "当日は、ジェハンかノヤにご連絡ください。電話番号は日が近づいたらここに載せます。",
@@ -120,7 +163,7 @@ export const PENDING = {
 
 /**
  * New Japanese lines written by us, not by a native speaker: each needs a native read before launch
- * (`npm run check:pending` lists them). The text is as it stands in ja.ts (the music credit in art.ts); a unit test
+ * (`npm run check:pending` lists them). The text is as it stands in ja.ts, PENDING above or art.ts (the music credit); a unit test
  * keeps them the same.
  * When one has been read (and corrected in ja.ts), delete it here.
  */
@@ -135,12 +178,18 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "rsvp.listResults", ja: "件の候補" },
   { key: "flying.placeholder", ja: "都市名を入力して探す" },
   { key: "flying.noMatch", ja: "見つかりません。「その他」を選んでください。" },
-  { key: "faqs.wear.a", ja: "会場周辺は石畳なので、歩きやすい靴でどうぞ。" },
+  { key: "ask.intro", ja: "知りたいことが見つからないときは、お気軽に聞いてください。お返事します。" },
+  { key: "ask.button", ja: "質問する" },
+  { key: "faqs.bring.a", ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下からお気軽にどうぞ。" },
+  { key: "faqs.style.a", ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。" },
+  { key: "faqs.wear.a", ja: "ドレスコードはありません。お好きな服装でどうぞ。ただ、会場のまわりは石畳なので、歩きやすい靴がおすすめです。" },
+  { key: "faqs.food.a", ja: "昼食をご用意します。メニューは数か月前に決めますので、食事の制限やアレルギーはお返事でお知らせください。" },
+  { key: "faqs.gifts.a", ja: "本当に不要です。京都まで来てくださることが、何よりの贈り物です。" },
   { key: "faqs.visa.q", ja: "ビザは必要ですか？" },
-  { key: "faqs.visa.a", ja: "帰国日から6か月以上の有効期限があるか、パスポートを確認してください。くわしくは「アクセス」のページへ。" },
-  { key: "faqs.plusOne.a", ja: "不明な点は、メッセージか griffinandnadia@gmail.com までどうぞ。" },
+  { key: "faqs.visa.a", ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。" },
   { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
-  { key: "faqs.whoMade.a", ja: "ナディアの兄のジェハンがデザインと制作をしました。絵はナディア、写真はわたしたちのものです。" },
+  { key: "faqs.whoMade.a", ja: "ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。" },
+  { key: "faqs.whoMade.song", ja: "曲は{song}のピアノ版です。" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]

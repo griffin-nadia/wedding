@@ -4,6 +4,7 @@
 // Nothing here says more than the English does: no facts added.
 import type { Content } from "./en"
 import { ART } from "@/lib/art"
+import { pending } from "./pending"
 
 type DeepPartial<T> = { [K in keyof T]?: T[K] extends (...a: never[]) => unknown ? T[K] : T[K] extends object ? DeepPartial<T[K]> : T[K] }
 
@@ -83,7 +84,7 @@ export const ja: DeepPartial<Content> = {
     map: (city: string | null, key?: string) => (key === "Already in Japan" ? "京都までの道のりを描いた小さな地図（すでに日本にいらっしゃいます）" : city ? `${city}から京都までのあなたの線を描いた小さな地図` : "京都までの道のりを描いた小さな地図"),
     review: "出発地", notSaying: "未回答",
     onMap: "あなたの線が地図に加わりました", pick: "都市を選ぶ",
-    kyoto: "京都・2027年10月15日", brisbane: "ブリスベン", canada: "カナダ",
+    kyoto: "京都・2027年10月15日", kyotoPin: "京都、2027年10月15日", brisbane: "ブリスベン", canada: "カナダ",
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "ゲスト", you: "あなたの線" },
     count: (n: number, of: number) => `${of}本中${n}本の線が描かれました`,
     seeList: "リストで見る", seeMap: "地図で見る",
@@ -259,14 +260,14 @@ export const ja: DeepPartial<Content> = {
   qa: {
     title: "よくある質問",
     items: [
-      { q: "服装は？", a: "ドレスコードはありません。いちばん自分らしくいられる服装で。会場周辺は石畳なので、歩きやすい靴でどうぞ。" },
-      { q: "ビザは必要ですか？", a: "オーストラリア国籍の方は、短期の日本滞在にビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートを確認してください。くわしくは「アクセス」のページへ。" },
-      { q: "同伴者を連れていけますか？", a: `招待状はお名前のある方へのものです。お連れの方の枠がある場合は、お返事の中で「お連れの方はいらっしゃいますか？」とお聞きします。不明な点は、メッセージか griffinandnadia@gmail.com までどうぞ。` },
-      { q: "ご祝儀やプレゼントは？", a: "本当に不要です。京都まで来ていただくこと自体が大変なので、お越しいただくことが何よりの贈り物です。" },
-      { q: "お食事は？", a: "昼食をご用意します。メニューは数か月前に決めます。食事の制限やアレルギーは、お返事でお知らせください。" },
-      { q: "日本の伝統的な結婚式ですか？", a: "いいえ、日本らしさを少し添えた、くつろいだガーデンウェディングです。覚えることは何もありません。そのままの姿でお越しください。" },
-      { q: "個人情報はどうなりますか？", a: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。" },
-      { q: "このサイトはどなたが作ったのですか？", a: `ナディアの兄のジェハンがデザインと制作をしました。絵はナディア、写真はわたしたちのものです。音楽：${ART.music.credit.ja}` },
+      { q: "同伴者を連れていけますか？", a: pending("faqs.bring.a", "ja") },
+      { q: "日本の伝統的な結婚式ですか？", a: pending("faqs.style.a", "ja") },
+      { q: "服装は？", a: pending("faqs.wear.a", "ja") },
+      { q: "お食事は？", a: pending("faqs.food.a", "ja") },
+      { q: "ご祝儀やプレゼントは？", a: pending("faqs.gifts.a", "ja") },
+      { q: "ビザは必要ですか？", a: pending("faqs.visa.a", "ja") },
+      { q: "個人情報はどうなりますか？", a: pending("faqs.details.a", "ja") },
+      { q: "このサイトはどなたが作ったのですか？", a: `${pending("faqs.whoMade.a", "ja")}${pending("faqs.whoMade.song", "ja").replace("{song}", ART.music.credit.ja)}` },
     ],
     onTheDay: "当日の連絡先：",
     contact: "ご不明な点があれば、どちらにでもお気軽にご連絡ください。",

@@ -86,10 +86,12 @@ export async function saveRsvp(token: string, payload: RsvpPayload, before: Hous
   return { household: data.household, updated: Boolean(data.updated), changes: data.changes ?? [] }
 }
 
-/** "all" coming, "none" coming, or "mixed". Guests without an answer count as not coming. */
+/** "all" coming, "none" coming, or "mixed". Guests without an answer count as not coming. A plus one nobody is
+ * bringing isn't someone missing (run 19 UX test: every named guest coming read "Thanks, got it", not "all set"). */
 export function answerOf(h: Pick<Household, "guests">): "all" | "none" | "mixed" {
-  const yes = h.guests.filter((g) => g.attending === "yes").length
-  return yes === h.guests.length ? "all" : yes === 0 ? "none" : "mixed"
+  const counted = h.guests.filter((g) => !g.plusOne || g.attending === "yes")
+  const yes = counted.filter((g) => g.attending === "yes").length
+  return yes === counted.length && yes > 0 ? "all" : yes === 0 ? "none" : "mixed"
 }
 
 /**
@@ -219,7 +221,7 @@ export async function getFlying(): Promise<{ counts: Partial<Record<Flying, numb
 }
 
 /** The globe's lines: per city, how many coming households and where (never who). No back end (the lab, previews,
- *  the plain build): a few sample cities. */
+ *  the plain build) or the sample household (run 19: so the look can always be judged): a few sample cities. */
 export type Journey = { name: string; country: string; lat: number; lon: number; n: number }
 export const SAMPLE_JOURNEYS: Journey[] = [
   { name: "Melbourne", country: "AU", lat: -37.81, lon: 144.96, n: 6 }, { name: "Sydney", country: "AU", lat: -33.87, lon: 151.21, n: 3 },
@@ -227,8 +229,8 @@ export const SAMPLE_JOURNEYS: Journey[] = [
   { name: "Vancouver", country: "CA", lat: 49.28, lon: -123.12, n: 3 }, { name: "Calgary", country: "CA", lat: 51.05, lon: -114.07, n: 2 },
   { name: "Auckland", country: "NZ", lat: -36.85, lon: 174.76, n: 1 }, { name: "London", country: "GB", lat: 51.51, lon: -0.13, n: 1 },
 ]
-export async function getJourneys(): Promise<Journey[]> {
-  if (!config.apiUrl) return SAMPLE_JOURNEYS
+export async function getJourneys(token?: string): Promise<Journey[]> {
+  if (!config.apiUrl || token === "sample") return SAMPLE_JOURNEYS
   try { const d = await call(`${config.apiUrl}?action=journeys`); return d.ok && Array.isArray(d.cities) ? (d.cities as Journey[]) : [] } catch { return [] } // an older back end has no journeys: none, not a crash
 }
 

@@ -45,3 +45,32 @@ test("around the venue: no label overlaps the river, a route, a leaf or another 
     expect(hits, name).toBe(0)
   }
 })
+
+// Run 19: a tapped sub-tab lands its section just under the stuck tab row (8px of air), the tab in the strip's view;
+// a row opened low on the card glides up just far enough to show its header and the top of its answer (FAQs too)
+test("taps land in the right place: sections under the tab row, opened rows on screen", async ({ page }) => {
+  await page.goto("travel?h=sample"); await page.locator(".jump-link").first().waitFor()
+  for (const id of ["on-the-day", "stay", "before", "to-kyoto"]) {
+    await page.locator(`.jump-link[href="#${id}"]`).click()
+    await expect.poll(() => page.evaluate((id) => {
+      const row = document.querySelector(".jump-links")!.getBoundingClientRect(), sec = document.getElementById(id)!.getBoundingClientRect()
+      const ul = document.querySelector(".jump-links ul")!.getBoundingClientRect(), a = document.querySelector(`.jump-link[href="#${id}"]`)!
+      const ar = a.getBoundingClientRect()
+      return { gap: Math.round(sec.top - row.bottom), current: a.hasAttribute("aria-current"), inView: ar.left >= ul.left - 1 && ar.right <= ul.right + 1 }
+    }, id), id).toEqual({ gap: 8, current: true, inView: true })
+  }
+  for (const [url, sel] of [["travel?h=sample", "#medicines"], ["faqs?h=sample", "#q6"]]) {
+    await page.goto(url)
+    const trigger = page.locator(`${sel} [data-slot=accordion-trigger]`)
+    await trigger.waitFor()
+    // The row's header right at the bottom of the card
+    await trigger.evaluate((t) => { const s = t.closest(".letter-scroll")!; s.scrollTop += t.getBoundingClientRect().bottom - s.getBoundingClientRect().bottom + 4 })
+    await trigger.click()
+    await expect.poll(() => trigger.evaluate((t) => {
+      const s = t.closest(".letter-scroll")!.getBoundingClientRect(), r = t.getBoundingClientRect()
+      const c = t.closest("[data-slot=accordion-item]")!.querySelector("[data-slot=accordion-content]")!.getBoundingClientRect()
+      const top = document.querySelector(".jump-links[data-stuck]")?.getBoundingClientRect().bottom ?? s.top
+      return r.top >= top && s.bottom - c.top >= Math.min(c.height, 120)
+    }), sel).toBe(true)
+  }
+})

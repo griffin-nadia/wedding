@@ -273,8 +273,10 @@ for (const theme of ["autumn", "lantern"] as const) test(`the done screen (${the
   await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
   await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
   await toCheck(page); await press(page, /^Send our reply$/)
-  await expect(dialog.locator(".done-head").getByRole("heading", { name: /all set|got it/ })).toBeVisible()
+  // Run 19 UX test: everyone named coming, no plus one, is "all set"; the sheet sits inside the screen
+  await expect(dialog.locator(".done-head").getByRole("heading", { name: "You're all set" })).toBeVisible()
   await expect(dialog.locator(".done-head .hanko")).toBeVisible()
+  expect(await dialog.evaluate((e) => e.getBoundingClientRect().right <= innerWidth)).toBe(true)
   const layout = await page.evaluate(() => {
     const x = document.querySelector(".sheet-close")!.getBoundingClientRect()
     const blocks = [...document.querySelectorAll(".done-column > *")].map((e) => e.getBoundingClientRect())
@@ -284,6 +286,9 @@ for (const theme of ["autumn", "lantern"] as const) test(`the done screen (${the
   })
   expect(layout.overlaps).toBe(0)
   expect(new Set(layout.gaps).size, `gaps ${layout.gaps}`).toBe(1)
+  // Back to your invite: the RSVP button it opened from is gone, so focus goes to the letter, not the page
+  await dialog.getByRole("button", { name: "Back to your invite" }).click()
+  await expect(page.locator("#letter")).toBeFocused()
 })
 
 // Run 19: the fortune is centred and folds open like an omikuji slip (three thirds over the real slip, which holds

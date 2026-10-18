@@ -17,6 +17,13 @@ test("Home's four tags show what's done and open their step", async ({ page }) =
   const tags = page.locator("#letter .reply-chips button")
   await expect(tags).toHaveCount(4)
   await expect(tags).toHaveText([/Who's coming.*done/, /Food.*done/, /A song.*not yet/, /Travel dates.*not yet/])
+  // Run 19 (6b): on a phone, a calm 2x2 grid (four in a row don't fit at 390), nothing spilling out of its tag
+  if (test.info().project.name === "phone") {
+    const boxes = await tags.evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { top: Math.round(r.top), left: Math.round(r.left), w: Math.round(r.width), fits: e.scrollWidth <= e.clientWidth } }))
+    expect(boxes[0].top).toBe(boxes[1].top); expect(boxes[2].top).toBe(boxes[3].top); expect(boxes[2].top).toBeGreaterThan(boxes[0].top)
+    expect(boxes[0].left).toBe(boxes[2].left); expect(new Set(boxes.map((b) => b.w)).size).toBe(1)
+    for (const b of boxes) expect(b.fits).toBe(true)
+  }
   for (const [tag, heading] of [["A song", /song for the dance floor/], ["Food", /dietary needs/], ["Travel dates", /travel dates/], ["Who's coming", /Who's coming/]] as const) {
     await tags.filter({ hasText: tag }).click()
     await expect(page.getByRole("dialog").getByRole("heading", { name: heading })).toBeVisible()
