@@ -43,3 +43,10 @@ test("fast enough to feel instant", () => {
   for (const q of ["Melborne", "Vancover", "Brisbne", "Toront", "Osak", "Christchur"]) searchCities(index, q)
   assert.ok((performance.now() - t0) / 6 < 100)
 })
+test("every country (run 19): the Pacific and Hawaii resolve, and every country has a city", () => {
+  assert.match(top("Suva"), /^Suva, Central, Fiji/)
+  assert.match(top("Nadi"), /^Nadi, Western, Fiji/)
+  assert.match(top("Auckland"), /^Auckland, Auckland, New Zealand/)
+  assert.match(top("Honolulu"), /^Honolulu, Hawaii, United States/)
+  assert.ok(Object.keys(index.countries).length >= 240, String(Object.keys(index.countries).length))
+})

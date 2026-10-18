@@ -783,22 +783,18 @@
 @media (min-width: 1024px) { .arrival { align-content: end; padding-bottom: 14svh; } }
 /* Icons: Lucide everywhere at 1.5 stroke (v3 A) */
 svg.lucide { stroke-width: 1.5; }
-/* The credit (18e): a small plain link outside the card, on a small chip of the letter's paper so it stays readable
-   (AA) over any photo; quiet through size and the muted ink rather than transparency. Laptops: fixed at the very
-   bottom left, on every page. Phones: the last line of Home, centred under the card. */
-.credit-mark { display: inline-flex; align-items: center; min-height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-chip); background: var(--letter-bg); color: var(--ink-muted); font-size: var(--type-small-size); line-height: var(--type-small-leading); outline: 2px solid transparent; outline-offset: 2px; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--duration-fast), text-decoration-color var(--duration-fast); }
-.credit-mark:hover, .credit-mark:focus-visible { color: var(--ink); text-decoration-color: currentColor; }
-.credit-mark:focus-visible { outline-color: var(--input-focus); }
-.credit-mark:not(.credit-foot) { display: none; }
-.credit-foot { display: flex; width: fit-content; align-self: center; margin: var(--space-2) auto 0; }
+/* The credit (run 19): laptops only. Nadia's seal at the very bottom left, faint (decorative at rest: the link's name
+   is always the words); hover or focus brings the seal to full and reveals "Site by Jehan Baguley" beside it in full
+   ink on a small chip of the letter's paper, so it reads (AA) over any photo. The link box is the 24px seal; the words
+   hang off it and only take the pointer once shown. No credit on phones: the FAQs answer "Who made this site?". */
+.credit-mark { display: none; }
 @media (min-width: 1024px) {
-  .credit-foot { display: none; }
-  /* No chip on laptops (final M): 12px, quiet (ink at 66%, the lightest that stays AA on the paper; the muted ink at 60%
-     would be 2.4:1), full ink on hover or focus. It sits in the gap under the
-     card, over the photo, so a soft halo of the letter's paper keeps it readable (AA) without a box. */
-  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-1); background: none; padding: 0 var(--space-1); font-size: 12px; line-height: 16px; color: color-mix(in oklab, var(--ink) 66%, var(--letter-bg)); text-shadow: 0 0 1px var(--letter-bg), 0 0 2px var(--letter-bg), 0 0 4px var(--letter-bg); }
-  .credit-mark:not(.credit-foot):not(:hover, :focus-visible) { text-decoration-line: none; } /* the halo would draw the hidden line */
-  .credit-mark:not(.credit-foot):hover, .credit-mark:not(.credit-foot):focus-visible { color: var(--ink); }
+  .credit-mark { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-2); align-items: center; border-radius: var(--radius-pill); outline: 2px solid transparent; outline-offset: 2px; }
+  .credit-mark:focus-visible { outline-color: var(--input-focus); }
+  .credit-seal { width: 24px; height: 24px; opacity: 0.4; transition: opacity var(--duration-fast); }
+  .credit-text { position: absolute; left: calc(100% + var(--space-2)); padding: 2px var(--space-2); border-radius: var(--radius-chip); background: var(--letter-bg); white-space: nowrap; font-size: 12px; line-height: 16px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; opacity: 0; pointer-events: none; transition: opacity var(--duration-fast); }
+  .credit-mark:hover .credit-seal, .credit-mark:focus-visible .credit-seal { opacity: 1; }
+  .credit-mark:hover .credit-text, .credit-mark:focus-visible .credit-text { opacity: 1; pointer-events: auto; }
 }
 /* Names reveal once, letter by letter, the first time the letter opens (v3 L). Nothing else animates text. */
 .names-reveal .name-char { display: inline-block; animation: name-in var(--duration-slow) var(--ease-paper) both; }
@@ -1297,6 +1293,8 @@ svg.lucide { stroke-width: 1.5; }
 /* The map fits the same box: the Globe / Flat switch (about 56px with its gap) and the map under it */
 .story-slide-map .journey-mini { max-height: calc(var(--stop-h) - 56px); }
 .story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 56px)); }
+/* The flat map in the same box (run 19 globe: its height token) */
+.story-slide-map { --flat-h: calc(var(--stop-h) - 56px); }
 /* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */
 .letter[data-page="story"] .letter-body { flex: 1 0 auto; }
 .letter[data-page="story"] .story { flex: 1 0 auto; justify-content: center; }
@@ -1438,10 +1436,36 @@ svg.lucide { stroke-width: 1.5; }
 .story-print[data-tape="2"] { --tape: color-mix(in oklab, var(--brand-sabi) 45%, white); }
 /* "Where are you flying from?" quick chips (final run): wrap, never clip; the picked one marked */
 .fly-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.fly-chip-group { display: flex; flex-direction: column; gap: var(--space-1); }
 .fly-chip { min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--line-hairline); border-radius: var(--radius-pill); background: var(--surface-raised); color: var(--ink); font: 500 var(--type-small-size) / 1.2 var(--font-label); outline: 2px solid transparent; outline-offset: 2px; transition: background-color var(--duration-fast) var(--ease-paper), border-color var(--duration-fast) var(--ease-paper); }
 .fly-chip:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .fly-chip:hover { border-color: var(--line-strong); } }
 .fly-chip[aria-pressed="true"] { background: var(--input-selected-bg); border-color: var(--input-selected-line); }
 /* The painted globe (final run): a square that fits the story's map stop */
-.journey-globe { position: relative; width: min(100%, 340px, 40svh); aspect-ratio: 1; touch-action: none; cursor: grab; }
-.journey-globe canvas { display: block; width: 100% !important; height: 100% !important; }
+.journey-globe { position: relative; width: min(100%, 340px, 40svh); aspect-ratio: 1; }
+/* The globe itself: the drag surface (the corner control stays a plain control) */
+.journey-globe-art { position: absolute; inset: 0; touch-action: none; cursor: grab; }
+.journey-globe-art canvas { display: block; width: 100% !important; height: 100% !important; }
+.journey-globe-art[data-dragging] { cursor: grabbing; }
+/* Run 19: Kyoto pinned on the globe: an upright label that follows it round (moved by transform each frame), on the
+   side that keeps it in the square, dimmed while Kyoto is round the back (the globe is see-through) */
+.globe-pin { position: absolute; top: 0; left: 0; width: 0; height: 0; pointer-events: none; will-change: transform; }
+.globe-pin:not([data-side]) { visibility: hidden; }
+.globe-pin-body { display: flex; align-items: center; gap: 6px; width: max-content; translate: 10px -50%; transition: opacity var(--duration-fast) var(--ease-paper); }
+.globe-pin[data-side="left"] .globe-pin-body { flex-direction: row-reverse; translate: calc(-100% - 10px) -50%; }
+.globe-pin-seal { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 5px; background: var(--action); color: var(--brand-shiro-kinari); font-family: var(--font-ja); font-size: 13px; line-height: 1; }
+.globe-pin-text { padding: 2px 6px; border-radius: 4px; background: color-mix(in oklab, var(--surface-raised) 82%, transparent); color: var(--ink); font: 500 12px / 1.2 var(--font-label); }
+.globe-pin[data-back="true"] .globe-pin-body { opacity: 0.5; }
+@media (prefers-reduced-motion: reduce) { .globe-pin-body { transition: none; } }
+/* The map and its Globe / Flat control in the bottom corner, over the map's empty corner, never on top of it */
+.segmented.journey-mode { position: absolute; right: var(--space-1); bottom: var(--space-1); display: inline-flex; margin: 0; gap: 0; padding: 2px; background: color-mix(in oklab, var(--surface-raised) 90%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+.journey-mode .segmented-mark { top: 2px; bottom: 2px; }
+.segmented.journey-mode .segmented-item { min-height: 28px; padding-inline: var(--space-2); gap: 0; font-size: 12px; }
+.journey-mode .segmented-item::after, .journey-mode .segmented-tick { display: none; }
+/* The flat map: the globe's painting cut to the Pacific, the lines over it (5:4, the 400 × 320 viewBox) */
+.journey-flat { position: relative; width: min(100%, calc(var(--flat-h, 36svh) * 1.25)); aspect-ratio: 5 / 4; border-radius: var(--radius-section); overflow: hidden; background: var(--surface-alt); }
+.journey-flat-art, .journey-flat-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
+.journey-flat-lines.journey-map { background: none; }
+.journey-flat-seal { font-size: 13px; }
+.journey-flat-kyoto { font-size: 11px; font-weight: 500; fill: var(--ink); paint-order: stroke; stroke: var(--surface-raised); stroke-width: 3px; stroke-linejoin: round; }
+.journey-you-edge { stroke: var(--ink); stroke-width: 6; opacity: 0.22; }

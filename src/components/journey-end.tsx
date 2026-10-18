@@ -10,7 +10,8 @@ import { pending } from "@/content/pending"
 
 /**
  * After the fortune, on "You're all set": one optional card. Where are you flying from? (final run)
- * - Quick chips first (src/content/flying-chips.ts): the cities most guests come from, and Already in Japan.
+ * - Quick chips first (src/data/flying-chips.json, the one config for them): Brisbane, Melbourne, Sydney; Edmonton,
+ *   Victoria (BC), Vancouver; and, already in Japan, Tokyo, Osaka, Kyoto (run 19).
  * - Or type: real cities only, with their region and country ("Victoria, British Columbia, Canada"), from 2 letters,
  *   searched on this device (src/lib/city-search.ts; the index loads on first focus, nothing is sent while typing).
  * Only a picked city is saved: Enter takes the top suggestion, and words that match nothing keep the last real
@@ -47,17 +48,22 @@ export function JourneyEnd({ token }: { token: string }) {
     <section aria-label={t.flying.endTitle} className="journey-end paper-feel">
       <div className="flex flex-col gap-2">
         <p id="fly-chips" className="form-label label-caps text-foreground">{t.flying.endTitle}</p>
-        <ul aria-labelledby="fly-chips" className="fly-chips">
-          {(CHIPS as City[]).map((c) => (
-            <li key={String(c.id)}><button type="button" aria-pressed={city?.id === c.id} onClick={() => choose(c)} className="fly-chip">{c.id === "jp" ? t.flying.cities["Already in Japan"] ?? c.name : c.name}</button></li>
-          ))}
-        </ul>
+        {(CHIPS as { label: string; cities: (City & { chip?: string })[] }[]).map((g, i) => (
+          <div key={i} className="fly-chip-group">
+            {g.label && <p id={`fly-chips-${i}`} className="text-small text-muted-foreground">{t.flying.cities[g.label] ?? g.label}</p>}
+            <ul aria-labelledby={g.label ? `fly-chips fly-chips-${i}` : "fly-chips"} className="fly-chips">
+              {g.cities.map((c) => (
+                <li key={String(c.id)}><button type="button" aria-pressed={city?.id === c.id} onClick={() => choose(c)} className="fly-chip">{c.chip ?? c.name}</button></li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
       <Combobox id="fly-from" label={pending("flying.orType", lang)} help={t.flying.hint} placeholder={t.flying.placeholder} query={q} onQuery={(v) => { load(); setQ(v) }} onFocusField={load} onLeave={settle}
         options={results.map((c) => ({ key: String(c.id), label: c.name, sub: [c.region, c.countryName].filter(Boolean).join(", ") || undefined, selected: city?.id === c.id }))}
         onPick={(o) => { const c = results.find((x) => String(x.id) === o.key); if (c) choose(c) }} onSubmit={() => (results[0] ? choose(results[0]) : settle())}
         status={status} emptyText={t.flying.noMatch} errorText={t.flying.noMatch} enterKeyHint="done" />
-      <JourneyMini you={city} counts={counts?.counts} cities={counts?.cities} label={t.journey.map(city ? city.name : null, city?.id === "jp" ? "Already in Japan" : undefined)} className="journey-end-map" />
+      <JourneyMini you={city} counts={counts?.counts} cities={counts?.cities} label={t.journey.map(city ? city.name : null, city?.id === "jp" || city?.country === "JP" ? "Already in Japan" : undefined)} className="journey-end-map" />
       {city && <p role="status" className="text-small text-muted-foreground">{t.flying.yours(city.id === "jp" ? "Already in Japan" : city.id === "else" ? "Somewhere else" : "city", city.name)}</p>}
     </section>
   )
