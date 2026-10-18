@@ -5,6 +5,7 @@
 import { DATES } from "@/lib/wedding-dates"
 import { fmtDay } from "@/lib/dates"
 import { ART } from "@/lib/art"
+import { pending } from "./pending"
 
 const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
 const LOCK = fmtDay(DATES.changesLock)
@@ -293,15 +294,17 @@ export const en = {
   },
   qa: {
     title: "FAQs",
+    // In the order guests wonder (run 19): the invite, the day, the trip, then the site. Answers are pending.ts, for
+    // Griffin and Nadia to tweak. The music credit is said here only.
     items: [
-      { q: "What should I wear?", a: "There's no dress code. Wear what makes you feel your best. The streets around the venue are cobblestone, so bring shoes you can walk in." },
-      { q: "Do I need a visa?", a: "Aussies don't need a visa for a short trip to Japan. Check your passport has at least 6 months left after you fly home. Travel has the rest." },
-      { q: "Can I bring someone?", a: `Your invite is for the people named on it. If there's room for a plus one, your reply will ask "Bringing someone?". Not sure? Message us, or email griffinandnadia@gmail.com.` },
-      { q: "Gifts?", a: "No gifts, truly. Getting to Kyoto is a big ask already, so you being there is the present." },
-      { q: "What about food?", a: "Lunch is catered, and we'll set the menu a few months before. Tell us about any dietary needs in your reply." },
-      { q: "Is it a traditional Japanese wedding?", a: "No, it's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are." },
-      { q: "What happens to my details?", a: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding." },
-      { q: "Who made this site?", a: `Nadia's brother Jehan designed and built it, with Nadia's drawings and our photos. Music: ${ART.music.credit.en}.` },
+      { q: "Can I bring someone?", a: pending("faqs.bring.a", "en") },
+      { q: "Is it a traditional Japanese wedding?", a: pending("faqs.style.a", "en") },
+      { q: "What should I wear?", a: pending("faqs.wear.a", "en") },
+      { q: "What about food?", a: pending("faqs.food.a", "en") },
+      { q: "Gifts?", a: pending("faqs.gifts.a", "en") },
+      { q: "Do I need a visa?", a: pending("faqs.visa.a", "en") },
+      { q: "What happens to my details?", a: pending("faqs.details.a", "en") },
+      { q: "Who made this site?", a: `${pending("faqs.whoMade.a", "en")} ${pending("faqs.whoMade.song", "en").replace("{song}", ART.music.credit.en)}` },
     ],
     onTheDay: "On the day, contact",
     contact: "Any questions at all, message either of us. We're always happy to help.",

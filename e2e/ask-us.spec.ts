@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => { await page.addInitScript(() => { localStor
 
 test("from the FAQs: matches as you type, one opens its FAQ, or send", async ({ page }) => {
   await page.goto("faqs?h=sample")
-  await page.getByRole("button", { name: "Still wondering? Ask Griffin & Nadia" }).click()
+  await page.getByRole("button", { name: "Ask us", exact: true }).click()
   const d = page.getByRole("dialog")
   await expect(d.getByRole("heading", { name: "Ask Griffin & Nadia" })).toBeVisible()
   await expect(d.getByLabel("Your name")).toHaveCount(0) // the invite says who
@@ -19,7 +19,7 @@ test("from the FAQs: matches as you type, one opens its FAQ, or send", async ({ 
   await expect(page.getByRole("dialog")).toBeHidden()
   await expect(page.locator("#letter").getByRole("button", { name: new RegExp(faq!.replace(/[?]/g, "\\?")) })).toHaveAttribute("aria-expanded", "true")
   // Sending is still there
-  await page.getByRole("button", { name: "Still wondering? Ask Griffin & Nadia" }).click()
+  await page.getByRole("button", { name: "Ask us", exact: true }).click()
   await page.getByRole("dialog").getByLabel("Your question").fill("Is there a bus from the hotel?")
   await page.getByRole("dialog").getByRole("button", { name: "Send" }).click()
   await expect(page.getByRole("dialog").getByText("Sent. We'll get back to you soon.")).toBeVisible()
