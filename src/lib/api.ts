@@ -215,7 +215,7 @@ export async function setFlying(token: string, city: FlyingCity): Promise<void> 
 /** Households per city and how many have told us, e.g. 17 of 40. Never names. */
 export async function getFlying(): Promise<{ counts: Partial<Record<Flying, number>>; cities?: { name: string; country: string; lat: number; lon: number; n: number }[]; told: number; households: number } | null> {
   if (!config.apiUrl) return null
-  try { const d = await call(`${config.apiUrl}?action=flying`); return d.ok ? d : null } catch { return null }
+  try { const d = await call(`${config.apiUrl}?action=flying`); return d.ok && d.counts && typeof d.counts === "object" ? d : null } catch { return null } // no counts (an odd answer): none, not a crash
 }
 
 /** The globe's lines: per city, how many coming households and where (never who). No back end (the lab, previews,
