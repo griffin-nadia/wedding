@@ -4,7 +4,7 @@ import type { Entry } from "../../types"
 /** Opening: the first few seconds of a first visit. */
 export const entries: Entry[] = [
   {
-    id: "opening-letter-out",
+    id: "opening-letter-out", bare: true,
     title: "The letter out of the envelope",
     deciding: "Jehan: the hinge (unhurried), pull (you draw it out) or quick (the site's length)? The site keeps its own unless one is clearly better.",
     summary: "Nadia's envelope cut into its real parts: the flap turns on its hinge in perspective and darkens as it faces away, the letter slides out of the pocket with a slight bend, then rests in front with its shadow on the pocket.",
@@ -15,7 +15,7 @@ export const entries: Entry[] = [
     Component: lazy(() => import("./opening-letter-out")),
   },
   {
-    id: "opening-seal-reverse",
+    id: "opening-seal-reverse", bare: true,
     title: "Seal it again, backwards",
     deciding: "Jehan: does Home's \"Seal it again\" play the opening backwards (reverse), with the wax seal pressed at the end (press), or fade (calm)?",
     summary: "The letter lifts off the pocket, goes back in with a slight bend, the flap turns shut on its hinge; in press, Nadia's wax seal is then pressed down, squashing a touch as it meets the paper.",
@@ -26,7 +26,7 @@ export const entries: Entry[] = [
     Component: lazy(() => import("./opening-seal-reverse")),
   },
   {
-    id: "opening-note",
+    id: "opening-note", bare: true,
     title: "Open your invite, handwritten",
     deciding: "Jehan, then Nadia: arrow first, words first, or one line? Nadia draws the real arrow.",
     summary: "The note under the sealed envelope writes itself letter by letter, and a hand-drawn arrow draws on toward the envelope.",

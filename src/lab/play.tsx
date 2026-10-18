@@ -33,8 +33,8 @@ document.title = entry ? `${entry.title} · G&N lab` : "G&N lab · play"
 if (q.get("theme")) document.documentElement.setAttribute("data-theme", q.get("theme") === "lantern" ? "lantern" : "autumn")
 // Whole-page takes (the opening, Our story, arrival framing, loading), each with its own photo and backdrop, bring their
 // own room; the component experiments sit in the site's own shell
-const BARE = new Set(["opening", "story", "arrival", "loading"])
-const bare = !entry || BARE.has(entry.area)
+// (entry.bare: lab run 19)
+const bare = !entry || !!entry.bare
 
 function Play() {
   useEffect(() => installSpeed(), [])

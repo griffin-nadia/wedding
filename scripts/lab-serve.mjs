@@ -5,6 +5,8 @@ import { createServer } from "vite"
 import qrcode from "qrcode-generator"
 
 const args = process.argv.slice(2)
+// Their photos (public since 4 Oct, the web sizes are committed): the lab shows the real ones, not the paper frames
+process.env.PUBLIC_PHOTOS ??= "1"
 const host = args.includes("--host")
 const port = Number(args[args.indexOf("--port") + 1]) || undefined
 let lan = ""

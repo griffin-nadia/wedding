@@ -4,7 +4,18 @@ import type { Entry } from "../../types"
 /** Our story: two parked ways to hold the prints (the spread is on the site: Compare with live) */
 export const entries: Entry[] = [
   {
-    id: "story-stack",
+    id: "story-prints",
+    title: "The prints: scrapbook, polaroid or linen",
+    deciding: "Griffin and Nadia: a scrapbook spread (mixed tape, corners, plain), polaroids with the chapter written under each, or plain prints on linen?",
+    summary: "Their story photos with the planner's chapters three ways: a hand-laid scrapbook spread, instant-film frames with a drawn caption, or plain prints on a linen cloth. Tap one to lift it.",
+    takes: [{ id: "scrapbook", label: "Scrapbook spread" }, { id: "polaroid", label: "Polaroid captions" }, { id: "linen", label: "Prints on linen" }],
+    live: { path: "/our-story" },
+    refs: [{ label: "Our story", href: "../our-story" }, { label: "Rauno Freiberg, craft", href: "https://rauno.me/craft" }],
+    promote: "In index.css (.story-print) and our-story.tsx: scrapbook adds photo corners beside the tape the site already has (four clip-path triangles per print, data-hold); polaroid adds the caption block under the photo (needs Griffin and Nadia's short captions, and ideally Nadia's handwriting as a font or lettering); linen is a CSS background on the spread (no image). All CSS, no weight. Test: story.spec.ts screenshots.",
+    Component: lazy(() => import("./story-prints")),
+  },
+  {
+    id: "story-stack", bare: true,
     parked: "A stack you flick: kept for later. The spread won (one stop at a time).",
     title: "A stack you flick",
     summary: "The story's prints in a hand-laid pile. Drag the top one and it follows your finger, turning as it goes; flick it away and the next settles up, with Undo to bring it back.",
@@ -13,7 +24,7 @@ export const entries: Entry[] = [
     Component: lazy(() => import("./story-stack")),
   },
   {
-    id: "story-canvas",
+    id: "story-canvas", bare: true,
     parked: "Prints on a table: kept for later. The spread won (one stop at a time).",
     title: "Prints on a table",
     summary: "The prints scattered on an endless paper table you pan by dragging, gliding on when you let go. Tap a print and it lifts to the middle with its chapter words.",
