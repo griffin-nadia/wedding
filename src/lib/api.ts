@@ -187,15 +187,17 @@ export function clearDraft(token: string) {
 export const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Already in Japan", "Somewhere else"] as const
 export type Flying = (typeof FLYING)[number]
 
-/** Optional, after RSVP: where the household is flying from (a fixed list). Only counts are ever shown. */
-export async function setFlying(token: string, city: Flying): Promise<void> {
+/** Optional, after RSVP: where the household is flying from (final run: the city, with its id, country and
+ *  coordinates, so the globe can draw any city). Only counts per city are ever shown, never who. */
+export type FlyingCity = { id: number | string; name: string; region?: string; country: string; lat: number | null; lon: number | null }
+export async function setFlying(token: string, city: FlyingCity): Promise<void> {
   if (!config.apiUrl) return
   const data = await call(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "flying", token, city }) })
   if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
 }
 
 /** Households per city and how many have told us, e.g. 17 of 40. Never names. */
-export async function getFlying(): Promise<{ counts: Partial<Record<Flying, number>>; told: number; households: number } | null> {
+export async function getFlying(): Promise<{ counts: Partial<Record<Flying, number>>; cities?: { name: string; country: string; lat: number; lon: number; n: number }[]; told: number; households: number } | null> {
   if (!config.apiUrl) return null
   try { const d = await call(`${config.apiUrl}?action=flying`); return d.ok ? d : null } catch { return null }
 }
