@@ -29,15 +29,16 @@ export function firstPhase(enabled: boolean): Phase {
 /** Put the letter back in the envelope (v3 S): the next render shows it sealed again, even under reduced motion. */
 export function resetArrival() { try { localStorage.removeItem(KEY) } catch { /* fine */ } }
 
-/** One of Nadia's two drawn envelopes, at the size the envelope renders (410 on laptops, 260 on phones). */
-function DrawnEnvelope({ which }: { which: "closed" | "open" }) {
+/** Nadia's drawn envelope, closed or one of the open one's two layers, at the size it renders (410 on laptops, 260 on
+ *  phones). Stacked: the open back, the letter, the open front (the pocket and seal), then the closed one on top. */
+function DrawnEnvelope({ which }: { which: "closed" | "open" | "openFront" }) {
   const b = `${import.meta.env.BASE_URL}${ART.drawnEnvelope[which]}`
   const set = (fmt: string) => ART.drawnEnvelope.widths.map((w) => `${b}-${w}.${fmt} ${w}w`).join(", ")
   const sizes = "(min-width: 768px) 410px, 260px"
   return (
     <picture className="contents">
       <source type="image/avif" sizes={sizes} srcSet={set("avif")} />
-      <img aria-hidden alt="" sizes={sizes} srcSet={set("webp")} src={`${b}-820.webp`} className={`envelope-drawn is-${which}`}
+      <img aria-hidden alt="" sizes={sizes} srcSet={set("webp")} src={`${b}-820.webp`} className={`envelope-drawn is-${which === "openFront" ? "front" : which}`}
         decoding="async" fetchPriority={which === "closed" ? "high" : "low"} draggable={false} />
     </picture>
   )
@@ -111,7 +112,8 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
         <div className="arrival-stack">
         {/* Floats: a slow bob and tilt with a breathing shadow, paused where it is the moment it opens */}
         <div className="envelope-float">
-        {/* Nadia's painted envelope (17 Oct): closed, then her open envelope as the letter rises, her lettering on it */}
+        {/* Nadia's painted envelope: closed (17 Oct), then her open envelope (18 Oct) as the letter rises out of it, from
+            between its back and its pocket, her lettering on it */}
         <button ref={button} type="button" onClick={() => { if (suppressClick.current) { suppressClick.current = false; return } open() }} aria-label={t.letter.openLabel(first)} className="envelope paper is-drawn"
           style={{ ["--drawn-mask" as string]: `url(${import.meta.env.BASE_URL}${ART.drawnEnvelope.closed}-410.webp)`, ["--drawn-ratio" as string]: String(ART.drawnEnvelope.ratio) }}>
           <span aria-hidden className="envelope-back" />
@@ -119,7 +121,7 @@ export function Arrival({ enabled, onOpened, children, sealedAgain = false }: { 
           <span aria-hidden className="envelope-front" />
           <span aria-hidden className="envelope-flap" />
           <span aria-hidden className="envelope-seal"><BrandSeal className="size-full" /></span>
-          <DrawnEnvelope which="open" /><DrawnEnvelope which="closed" />
+          <DrawnEnvelope which="open" /><DrawnEnvelope which="openFront" /><DrawnEnvelope which="closed" />
         </button>
         </div>
         {/* The one calm label: a real button for anyone who'd rather not tap a picture (the envelope is the tab stop) */}

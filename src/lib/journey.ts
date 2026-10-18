@@ -1,5 +1,7 @@
 import type { Flying } from "@/lib/api"
 import { placeOf, pointOf } from "@/lib/places"
+import { onMap, type Region } from "@/lib/map-land"
+import type { City } from "@/lib/city-search"
 
 // The guest map's places: each country's real outline at its own scale (scripts/map-land.mjs), so not to scale
 // between them. viewBox 400 × 320. Shared by Our story, the reply's mini map and the map after the fortune, so it
@@ -16,13 +18,31 @@ export const arc = ([x1, y1]: [number, number], [x2, y2]: [number, number], lift
   return `M${x1} ${y1}Q${mx} ${my} ${x2} ${y2}`
 }
 
-/** Where this household said it's flying from (a place's name), kept on this device (the sheet only ever gets counts). */
-const flyKey = (token: string) => `ng-flying:${token}`
-export function readFlying(token?: string): string | null {
-  if (!token) return null
-  try { return placeOf(localStorage.getItem(flyKey(token)))?.name ?? null } catch { return null }
+/** Where on the flat map a city's line starts: on its country's outline (Australia, New Zealand, Japan, Canada), or
+ *  in from the edge it would fly from (the Americas from the east, everywhere else from the west) */
+const REGIONS = new Set(["AU", "NZ", "JP", "CA"])
+export function pointOfCity(c: City): [number, number] {
+  if (c.lat == null || c.lon == null || !c.country) return [10, 168]
+  if (REGIONS.has(c.country)) { const [x, y] = onMap(c.country as Region, c.lat, c.lon); return [Math.max(6, Math.min(394, x)), Math.max(6, Math.min(314, y))] }
+  return c.lon < -30 ? [392, 150] : [10, 168]
 }
-export function keepFlying(token: string, city: string) {
-  try { localStorage.setItem(flyKey(token), city) } catch { /* private mode */ }
+
+/**
+ * Where this household said it's flying from, kept on this device (final run: the city itself, with its id, region,
+ * country and coordinates). An older answer (a place's name from 18f) is read as that place.
+ */
+const flyKey = (token: string) => `ng-flying:${token}`
+export function readFlying(token?: string): City | null {
+  if (!token) return null
+  try {
+    const raw = localStorage.getItem(flyKey(token))
+    if (!raw) return null
+    if (raw.startsWith("{")) return JSON.parse(raw) as City
+    const p = placeOf(raw)
+    return p ? { id: `place:${p.name}`, name: p.name, region: "", country: p.region ?? "", lat: p.region ? p.lat : null, lon: p.region ? p.lon : null } : null
+  } catch { return null }
+}
+export function keepFlying(token: string, city: City) {
+  try { localStorage.setItem(flyKey(token), JSON.stringify(city)) } catch { /* private mode */ }
   window.dispatchEvent(new Event("ng-flying")) // Home's map card shows the moment they pick
 }
