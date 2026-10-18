@@ -1,101 +1,129 @@
-import { useLang } from "@/lib/lang"
-import { useTheme } from "@/lib/theme"
-import { SCENES, photoFor } from "@/lib/scenes"
-import { art } from "../opening/art"
+import { useEffect, useRef, useState } from "react"
+import { SCENES } from "@/lib/scenes"
+import { liveUrl, openLive } from "../../registry"
 import { useKnob, useTake } from "../../params"
 
 /**
- * Arrival framing on phones (lab run 19): their photo behind the sealed envelope at four phone sizes, with where
- * their faces are (scenes.json, face: the box round both faces) and where the envelope sits, so it's plain whether
- * the envelope covers a face. The envelope and its label sit as on the site (index.css .arrival, polish.css): 260 px
- * wide at Nadia's ratio, 16 px above the 44 px label, max(5svh, 24px) off the bottom.
- * - today: object-fit cover, centred (the site on phones)
- * - zoom: the photo grows from its bottom edge just enough that both faces clear the envelope by 24 px, and slides
- *   sideways so the faces sit in the middle (one transform; the smallest zoom for each size)
- * - lift: no zoom; the photo moves up so the faces clear the envelope, and its bottom fades into the card's paper
- *   behind the envelope (a transform and a mask)
- * The numbers under each phone are what the main run would ship (docs/lab.md).
+ * Arrival framing on phones (lab run 19): the live site's sealed envelope at four phone sizes, each in its own frame,
+ * measured where it stands, so this never goes stale. For each phone: where their faces land (scenes.json's face box,
+ * through the photo's real object-fit and object-position, as src/lib/face.ts does) and where the envelope is, and
+ * how far apart they are.
+ * - site: the site as it is (since #178: the photo in the top 60% of the screen, fading out where the envelope floats)
+ * - zoom: the alternative that keeps the photo full screen: no box and no fade; the photo grows from its bottom edge
+ *   just enough that both faces clear the envelope by 24 px, and slides sideways so the faces sit in the middle. It's
+ *   injected into the same live page (one style), worked out from that page's own envelope.
+ * Light shows the day photo, Lantern the night one.
  */
 const PHONES = [{ name: "Small Android", w: 360, h: 780 }, { name: "iPhone 14", w: 390, h: 844 }, { name: "Pixel 8", w: 412, h: 915 }, { name: "iPhone Pro Max", w: 430, h: 932 }]
-const ENV_W = 260, ENV_H = Math.round(260 / 1.3948), LABEL = 44, GAP = 16, CLEAR = 24
+const CLEAR = 24
 const P = "x-af"
 const css = `
 .${P} { min-height: 100svh; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5) var(--space-4) 120px; background: var(--surface-paper); color: var(--ink-soft); }
 .${P}-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
 @media (min-width: 900px) { .${P}-row { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .${P}-cell { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
-.${P}-phone { position: relative; width: 100%; overflow: hidden; border-radius: 18px; box-shadow: 0 0 0 6px #1b1410, var(--elevation-sheet); background: var(--scene-scrim, #222); container-type: inline-size; }
+.${P}-phone { position: relative; width: 100%; overflow: hidden; border-radius: 18px; box-shadow: 0 0 0 6px #1b1410, var(--elevation-sheet); background: #222; container-type: inline-size; }
 .${P}-screen { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
-.${P}-screen img.photo { position: absolute; max-width: none; transform-origin: 50% 100%; }
-.${P}-face { position: absolute; border: 2px dashed #ffd36a; border-radius: 10px; box-shadow: 0 0 0 1px rgb(0 0 0 / .35); }
-.${P}-env { position: absolute; width: ${ENV_W}px; filter: drop-shadow(0 18px 22px rgb(0 0 0 / .3)); }
-.${P}-label { position: absolute; left: 0; right: 0; height: ${LABEL}px; display: grid; place-items: center; color: #fff; text-shadow: 0 1px 6px rgb(0 0 0 / .45); font: 400 18px / 1 var(--font-display); }
-.${P}-fade { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, transparent, var(--letter-bg) 70%); }
+.${P}-screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+.${P}-face, .${P}-env { position: absolute; pointer-events: none; border-radius: 10px; }
+.${P}-face { border: 2px dashed #ffd36a; box-shadow: 0 0 0 1px rgb(0 0 0 / .35); }
+.${P}-env { border: 2px solid rgb(255 255 255 / .7); }
 .${P}-cap { font: 500 var(--type-small-size) / 1.35 var(--font-label); }
 .${P}-cap b { color: var(--ink); }
 .${P}-cap[data-bad] b { color: var(--ink-story); }
 .${P}-note { max-width: 70ch; font-size: var(--type-small-size); }
 `
-type Fit = { iw: number; ih: number; left: number; top: number; s: number; dy: number; face: { x0: number; y0: number; x1: number; y1: number }; envTop: number; clear: number }
+type Box = { x: number; y: number; w: number; h: number }
+type Got = { face: Box; env: Box; clear: number; zoom?: number; x?: number }
 
-/** Where everything lands on a W × H phone for a take, in that phone's own CSS pixels */
-function fit(W: number, H: number, photo: keyof typeof SCENES, take: string): Fit {
-  const m = SCENES[photo], [fx0, fy0, fx1, fy1] = m.face ?? [0.4, 0.4, 0.6, 0.6]
-  const c = Math.max(W / m.w, H / m.h), iw = m.w * c, ih = m.h * c
-  const envTop = H - Math.max(0.05 * H, 24) - LABEL - GAP - ENV_H
-  const top = (H - ih) / 2
-  let left = (W - iw) / 2, s = 1, dy = 0
-  const faceAt = () => ({ x0: left + (W / 2 - left) * (1 - s) + fx0 * iw * s, x1: left + (W / 2 - left) * (1 - s) + fx1 * iw * s, y0: H - s * (H - (top + fy0 * ih)) + dy, y1: H - s * (H - (top + fy1 * ih)) + dy })
-  if (take !== "today") {
-    // Centre the faces sideways, as far as the photo's edges allow
-    const cx = ((fx0 + fx1) / 2) * iw
-    left = Math.min(0, Math.max(W - iw, W / 2 - cx))
-    const need = envTop - CLEAR // the faces' bottom must be above this
-    const fyb = top + fy1 * ih
-    if (take === "zoom" && fyb > need) s = (H - need) / (H - fyb)
-    if (take === "lift" && fyb > need) dy = need - fyb
-  }
-  const face = faceAt()
-  return { iw, ih, left, top, s, dy, face, envTop, clear: Math.round(envTop - face.y1) }
+/** The face box on the page the way src/lib/face.ts finds it: the shown photo, its cover scale and object-position */
+function faceIn(doc: Document, wide: boolean): Box | null {
+  const box = doc.querySelector<HTMLElement>("[data-photo].opacity-100"), img = box?.querySelector("img")
+  const name = box?.dataset.photo as keyof typeof SCENES | undefined
+  const meta = name && (wide && SCENES[name].wide ? SCENES[name].wide : SCENES[name])
+  if (!img || !meta?.face || !img.complete) return null
+  const r = img.getBoundingClientRect(), s = Math.max(r.width / meta.w, r.height / meta.h)
+  const cs = doc.defaultView!.getComputedStyle(img)
+  const [px, py] = cs.objectPosition.split(" ").map((v) => parseFloat(v) / 100)
+  // (The zoom take's CSS scale is already in the rect, so the same sums hold)
+  const ox = r.left + (r.width - meta.w * s) * (Number.isNaN(px) ? 0.5 : px), oy = r.top + (r.height - meta.h * s) * (Number.isNaN(py) ? 0.5 : py)
+  const [x0, y0, x1, y1] = meta.face
+  return { x: ox + x0 * meta.w * s, y: oy + y0 * meta.h * s, w: (x1 - x0) * meta.w * s, h: (y1 - y0) * meta.h * s }
+}
+
+function Phone({ ph, take, faces }: { ph: (typeof PHONES)[number]; take: string; faces: boolean }) {
+  const frame = useRef<HTMLIFrameElement>(null)
+  const [got, setGot] = useState<Got | null>(null)
+  useEffect(() => {
+    setGot(null)
+    let alive = true, n = 0
+    const poll = () => {
+      if (!alive) return
+      const doc = frame.current?.contentDocument
+      const env = doc?.querySelector(".arrival .envelope")?.getBoundingClientRect()
+      const face = doc && faceIn(doc, false)
+      if (!doc || !env || !face || env.width === 0) { if (n++ < 80) setTimeout(poll, 150); return }
+      // Let the sealed framing settle (it transitions in) before measuring
+      if (n < 8) { n++; setTimeout(poll, 150); return }
+      if (take === "zoom" && !doc.getElementById("x-af-zoom")) {
+        // Full screen again, then just enough zoom from the bottom, faces centred
+        const st = doc.createElement("style"); st.id = "x-af-zoom"
+        st.textContent = `[data-sealed] .scene-photo { bottom: 0 !important; left: 0 !important; mask-image: none !important; transition: none !important; } [data-sealed] .scene-photo img { transition: none !important; }`
+        doc.head.appendChild(st)
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const f0 = faceIn(doc, false), e0 = doc.querySelector(".arrival .envelope")!.getBoundingClientRect()
+          const img = doc.querySelector<HTMLImageElement>("[data-photo].opacity-100 img")
+          if (!f0 || !img) return
+          const H = ph.h, need = e0.top - CLEAR, fb = f0.y + f0.h
+          const s = fb > need ? (H - need) / (H - fb) : 1
+          const r = img.getBoundingClientRect()
+          const name = img.closest<HTMLElement>("[data-photo]")!.dataset.photo as keyof typeof SCENES
+          const meta = SCENES[name], cover = Math.max(r.width / meta.w, r.height / meta.h), mw = meta.w * cover
+          const cx = ((meta.face![0] + meta.face![2]) / 2) * mw, over = Math.max(0, mw - ph.w)
+          const left = Math.min(0, Math.max(ph.w - mw, ph.w / 2 - cx)), xPct = over ? Math.round((-left / over) * 100) : 50
+          st.textContent += ` [data-sealed] .scene-photo img { object-position: ${xPct}% 50% !important; scale: ${s.toFixed(3)}; transform-origin: 50% 100%; }`
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            const face = faceIn(doc, false)!
+            if (alive) setGot({ face, env: { x: e0.left, y: e0.top, w: e0.width, h: e0.height }, clear: Math.round(e0.top - (face.y + face.h)), zoom: s, x: xPct })
+          }))
+        }))
+        return
+      }
+      setGot({ face, env: { x: env.left, y: env.top, w: env.width, h: env.height }, clear: Math.round(env.top - (face.y + face.h)) })
+    }
+    const f = frame.current
+    const on = () => { n = 0; setTimeout(poll, 300) }
+    f?.addEventListener("load", on)
+    return () => { alive = false; f?.removeEventListener("load", on) }
+  }, [take, ph])
+  const ok = got ? got.clear >= 0 : true
+  return (
+    <figure className={`${P}-cell`}>
+      <div className={`${P}-phone`} style={{ aspectRatio: `${ph.w} / ${ph.h}` }}>
+        <div className={`${P}-screen`} style={{ width: ph.w, height: ph.h, transform: `scale(calc(100cqw / ${ph.w}px))` }}>
+          <iframe ref={frame} key={take} title={`The live site, sealed, ${ph.w} by ${ph.h}`} src={liveUrl("/")} tabIndex={-1} />
+          {got && faces && <span className={`${P}-face`} style={{ left: got.face.x, top: got.face.y, width: got.face.w, height: got.face.h }} />}
+          {got && faces && <span className={`${P}-env`} style={{ left: got.env.x, top: got.env.y, width: got.env.w, height: got.env.h }} />}
+        </div>
+      </div>
+      <figcaption className={`${P}-cap`} data-bad={ok ? undefined : ""} aria-live="polite">
+        {ph.name}, {ph.w} × {ph.h}: <b>{!got ? "measuring…" : ok ? `faces clear by ${got.clear} px` : `envelope over the faces by ${-got.clear} px`}</b>
+        {got?.zoom && got.zoom > 1 && <> · zoom {got.zoom.toFixed(3)}, x {got.x}%</>}
+      </figcaption>
+    </figure>
+  )
 }
 
 export default function ArrivalFraming() {
-  const take = useTake("today")
-  const faces = useKnob("faces", "on")
-  const { theme } = useTheme()
-  const { t } = useLang()
-  const photo = photoFor(theme) as keyof typeof SCENES
-  const base = import.meta.env.BASE_URL
+  const take = useTake("site")
+  const faces = useKnob("faces", "on") === "on"
+  // The sealed envelope, as on a first visit (this origin only: the lab's dev server)
+  const [ready] = useState(() => { openLive({ path: "/", arrival: true }); return true })
   return (
     <div className={P}>
       <style>{css}</style>
-      <p className={`${P}-note`}>Their {photo === "kyoto-view" ? "day" : "night"} photo behind the sealed envelope, four phone sizes. The dashed box is both faces (scenes.json). Switch the theme for the other photo.</p>
-      <div className={`${P}-row`}>
-        {PHONES.map((ph) => {
-          const f = fit(ph.w, ph.h, photo, take)
-          const ok = f.clear >= 0
-          return (
-            <figure key={ph.name} className={`${P}-cell`}>
-              <div className={`${P}-phone`} style={{ aspectRatio: `${ph.w} / ${ph.h}` }}>
-                {/* The screen at its real size in CSS px, scaled down to the cell (container query units) */}
-                <div className={`${P}-screen`} style={{ width: ph.w, height: ph.h, transform: `scale(calc(100cqw / ${ph.w}px))` }}>
-                  <img className="photo" alt="" src={`${base}scenes/${photo}-1200.webp`} style={{ left: f.left, top: f.top, width: f.iw, height: f.ih, transform: `translateY(${f.dy}px) scale(${f.s})`, transformOrigin: `${ph.w / 2 - f.left}px ${ph.h - f.top}px` }} />
-                  {take === "lift" && f.dy < 0 && <span className={`${P}-fade`} style={{ height: -f.dy + 40 }} />}
-                  {faces === "on" && <span className={`${P}-face`} style={{ left: f.face.x0, top: f.face.y0, width: f.face.x1 - f.face.x0, height: f.face.y1 - f.face.y0 }} />}
-                  <img className={`${P}-env`} alt="" src={art("closed", 410)} style={{ left: (ph.w - ENV_W) / 2, top: f.envTop }} />
-                  <span className={`${P}-label`} style={{ top: f.envTop + ENV_H + GAP }}>{t.letter.note}</span>
-                </div>
-              </div>
-              <figcaption className={`${P}-cap`} data-bad={ok ? undefined : ""}>
-                {ph.name}, {ph.w} × {ph.h}: <b>{ok ? `faces clear by ${f.clear} px` : `envelope over the faces by ${-f.clear} px`}</b>
-                {take === "zoom" && f.s > 1 && <> · zoom {f.s.toFixed(3)}</>}
-                {take === "lift" && f.dy < 0 && <> · up {Math.round(-f.dy)} px</>}
-                {take !== "today" && <> · x {Math.round(f.left)} px</>}
-              </figcaption>
-            </figure>
-          )
-        })}
-      </div>
+      <p className={`${P}-note`}>The live site, sealed, at four phone sizes. Dashed: both faces (scenes.json). Solid: the envelope. Light shows the day photo, Lantern the night one (switch in Options).</p>
+      {ready && <div className={`${P}-row`}>{PHONES.map((ph) => <Phone key={ph.name} ph={ph} take={take} faces={faces} />)}</div>}
     </div>
   )
 }

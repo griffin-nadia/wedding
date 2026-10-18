@@ -6,7 +6,7 @@ export const entries: Entry[] = [
   {
     id: "opening-letter-out", bare: true,
     title: "The letter out of the envelope",
-    deciding: "Jehan: the hinge (unhurried), pull (you draw it out) or quick (the site's length)? The site keeps its own unless one is clearly better.",
+    deciding: "Jehan: the site opens in clear steps since #178 (Compare with live). Is real paper better: the hinge (unhurried), pull (you draw it out) or quick?",
     summary: "Nadia's envelope cut into its real parts: the flap turns on its hinge in perspective and darkens as it faces away, the letter slides out of the pocket with a slight bend, then rests in front with its shadow on the pocket.",
     takes: [{ id: "hinge", label: "Hinge, then slide" }, { id: "pull", label: "Pull it out" }, { id: "quick", label: "Quick" }],
     live: { path: "/", arrival: true },
@@ -17,7 +17,7 @@ export const entries: Entry[] = [
   {
     id: "opening-seal-reverse", bare: true,
     title: "Seal it again, backwards",
-    deciding: "Jehan: does Home's \"Seal it again\" play the opening backwards (reverse), with the wax seal pressed at the end (press), or fade (calm)?",
+    deciding: "Jehan: the site seals it again since #178 (the card shrinks into the letter, it slides in, the flap closes, the seal presses on). Keep that, or this one's flap on its hinge (press, reverse) or the calm fade?",
     summary: "The letter lifts off the pocket, goes back in with a slight bend, the flap turns shut on its hinge; in press, Nadia's wax seal is then pressed down, squashing a touch as it meets the paper.",
     takes: [{ id: "press", label: "Reverse and press" }, { id: "reverse", label: "Reverse" }, { id: "fade", label: "Fade" }],
     live: { path: "/" },
@@ -28,7 +28,7 @@ export const entries: Entry[] = [
   {
     id: "opening-note", bare: true,
     title: "Open your invite, handwritten",
-    deciding: "Jehan, then Nadia: arrow first, words first, or one line? Nadia draws the real arrow.",
+    deciding: "Jehan, then Nadia: the site has the note and its arrow since #178 (words, then the arrow). Keep that order, or arrow first, or one line? Nadia letters the words and draws the arrow.",
     summary: "The note under the sealed envelope writes itself letter by letter, and a hand-drawn arrow draws on toward the envelope.",
     takes: [{ id: "arrow-first", label: "Arrow first" }, { id: "words-first", label: "Words first" }, { id: "one-line", label: "One line" }],
     live: { path: "/", arrival: true },
