@@ -38,12 +38,4 @@ export const entries: Entry[] = [
     promote: "A different Our story page rather than a new carousel: the chapter order gets looser, so it suits a keepsake view after the day more than the story before it. Light on phones (transforms only, prints off screen hidden, about 80 small images that load lazily). Risks: no clear order or end, and a pannable surface fights page scroll, so it needs a list view beside it. Zoom was left out.",
     Component: lazy(() => import("./story-canvas")),
   },
-  {
-    id: "story-prints",
-    deciding: "Jehan, then Griffin and Nadia: how the prints sit (tape, corners or plain).", title: "Print shadows and backdrops",
-    summary: "One print at a time with four shadows (the site's, soft, lifted, taped to the table) and a backdrop that changes with the chapter: none, the chapter's photo blurred into a wash, or that wash slowly drifting.",
-    refs: [{ label: "Josh W. Comeau, designing shadows", href: "https://www.joshwcomeau.com/css/designing-shadows/" }],
-    promote: "A shadow is one box-shadow token on .photo-print, free on phones. The wash is one more image per chapter (a small blurred one, 40vw) under the spread, cross-fading as the chapter changes: about 30 to 60 kB each and a blur filter, so bake the blur into tiny images rather than blurring live. The drift is a CSS animation, off under reduced motion; skip it on phones if the page turn stutters.",
-    Component: lazy(() => import("./story-prints")),
-  },
 ]
