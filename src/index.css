@@ -430,13 +430,8 @@
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 /* Arrives with @starting-style (no keyframes, no JS) */
 .toast-in { transition: opacity var(--duration-fast) var(--ease-paper), translate var(--duration-fast) var(--ease-paper); @starting-style { opacity: 0; translate: 0 8px; } }
-/* Omikuji: the box tilts three times (900 ms), then the slip unfolds (400 ms). Reduced motion: fade only. */
+/* Omikuji: the box tilts three times (900 ms), then the slip folds open (run 19, below). Reduced motion: fade only. */
 @keyframes omikuji-shake { 0%, 100% { rotate: 0deg; } 16% { rotate: -12deg; } 33% { rotate: 12deg; } 50% { rotate: -10deg; } 66% { rotate: 10deg; } 83% { rotate: -6deg; } }
-@keyframes slip-unfold { from { opacity: 0; transform: scaleY(0.2); transform-origin: top; } to { opacity: 1; transform: none; } }
-.omikuji-slip { animation: slip-unfold var(--duration-base) var(--ease-paper) both; }
-@media (prefers-reduced-motion: reduce) {
-  .omikuji-slip { animation: toast-in var(--duration-fast) linear both; transform: none; }
-}
 /* Driver card full screen: bigger in landscape */
 /* Show the driver (v3 Q4): the shared sheet on the brightest paper, big Japanese, Done in the footer */
 .sheet.sheet-bright { background: var(--brand-paper-bright); color: var(--brand-ink-deep); border-radius: var(--radius-letter); }
@@ -1123,9 +1118,46 @@ svg.lucide { stroke-width: 1.5; }
   display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: 100%; max-width: 320px; margin-inline: auto;
   padding: var(--space-6) var(--space-5); text-align: center; background: var(--brand-paper-bright); color: var(--brand-kogecha);
   border-block: 6px solid var(--brand-sabi); border-radius: var(--radius-control); box-shadow: var(--elevation-paper);
-  outline: 2px solid transparent; outline-offset: 4px; transform-origin: top;
-  animation: slip-unfold var(--duration-base) var(--ease-paper) both;
+  outline: 2px solid transparent; outline-offset: 4px;
+  animation: toast-in var(--duration-base) var(--ease-paper) both; /* a slip opened before: it simply arrives */
 }
+/* Run 19: the slip, centred, folds open like a real omikuji (fortune-card.tsx). Three copies, each its third of the
+   slip; the middle hangs from the first crease, the last from the second (nested, so it rides with the middle). The
+   real slip holds its place underneath, unseen, then takes over with the creases easing out. */
+.done-column > .sent-next > .omikuji-stage { margin-inline: auto; }
+.omikuji-stage { position: relative; width: 100%; }
+.omikuji-slip.is-folded { opacity: 0; animation: none; }
+.omikuji-slip.is-fresh { animation: none; }
+.omikuji-fold { position: absolute; inset: 0; perspective: 1100px; transform-style: preserve-3d; pointer-events: none; }
+.omikuji-fold .omikuji-copy { position: absolute; inset: 0; height: 100%; animation: none; backface-visibility: hidden; }
+.omikuji-part-1 { clip-path: inset(0 0 66.667% 0); }
+.omikuji-part-2 { clip-path: inset(33.333% 0 33.333% 0); }
+.omikuji-part-3 { clip-path: inset(66.667% 0 0 0); }
+.omikuji-leaf { position: absolute; inset: 0; transform-style: preserve-3d; }
+.omikuji-leaf-2 { transform-origin: 50% 33.333%; animation: omikuji-leaf-2 1100ms cubic-bezier(0.45, 0.05, 0.3, 1) both; }
+.omikuji-leaf-3 { transform-origin: 50% 66.667%; animation: omikuji-leaf-3 1100ms cubic-bezier(0.45, 0.05, 0.3, 1) both; }
+/* Folded behind, zigzag: the middle swings down from behind the top, then the last from behind the middle, each
+   landing with a little give */
+@keyframes omikuji-leaf-2 { 0% { transform: rotateX(-178deg); } 48% { transform: rotateX(3deg); } 60%, 100% { transform: rotateX(0deg); } }
+@keyframes omikuji-leaf-3 { 0%, 24% { transform: rotateX(178deg); } 82% { transform: rotateX(-4deg); } 92% { transform: rotateX(1deg); } 100% { transform: rotateX(0deg); } }
+/* The back of each third: plain paper, seen while it swings past edge-on */
+.omikuji-back { position: absolute; inset-inline: 0; width: 100%; max-width: 320px; margin-inline: auto; background: color-mix(in oklab, var(--brand-paper-bright) 88%, var(--brand-kinari)); transform: rotateX(180deg); backface-visibility: hidden; }
+.omikuji-back-2 { top: 33.333%; height: 33.334%; }
+.omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); border-bottom: 6px solid var(--brand-sabi); }
+/* A third's shade lifts as it flattens */
+.omikuji-shade { position: absolute; inset: 0; z-index: 31; pointer-events: none; background: rgb(var(--tint-shadow) / 0.3); }
+.omikuji-part-2 .omikuji-shade { animation: omikuji-shade 1100ms ease-out both; }
+.omikuji-part-3 .omikuji-shade { animation: omikuji-shade-3 1100ms ease-out both; }
+@keyframes omikuji-shade { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes omikuji-shade-3 { 0%, 24% { opacity: 1; } 84%, 100% { opacity: 0; } }
+/* The creases, sharp while it opens, then easing out to the two faint lines the paper keeps */
+.omikuji-creases { position: absolute; inset: 0; z-index: 31; border-radius: inherit; pointer-events: none; opacity: 0;
+  background:
+    linear-gradient(to bottom, transparent calc(33.333% - 5px), rgb(var(--tint-shadow) / 0.16) calc(33.333% - 0.5px), rgb(255 255 255 / 0.85) calc(33.333% + 0.5px), transparent calc(33.333% + 5px)),
+    linear-gradient(to bottom, transparent calc(66.667% - 5px), rgb(255 255 255 / 0.85) calc(66.667% - 0.5px), rgb(var(--tint-shadow) / 0.16) calc(66.667% + 0.5px), transparent calc(66.667% + 5px)); }
+.omikuji-copy .omikuji-creases { opacity: 1; }
+.omikuji-slip.is-fresh .omikuji-creases { animation: omikuji-creases 900ms var(--ease-paper) both; }
+@keyframes omikuji-creases { from { opacity: 1; } to { opacity: 0; } }
 .omikuji-slip:focus-visible { outline-color: var(--input-focus); }
 .omikuji-slip .label-caps { color: var(--brand-kuri); }
 .omikuji-no { font-size: var(--type-small-size); letter-spacing: 0.2em; color: var(--brand-kuri); }
@@ -1133,8 +1165,6 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 26ch; }
 .omikuji-count { opacity: 0.8; }
 .omikuji-save { min-height: 44px; color: var(--brand-doro); } /* the one link style (btn-text), in the slip's own ink: it's always bright paper */
-/* Springs (Options → Fortune): Motion moves the tin, the stick and the slip, so their CSS animations stand down */
-.omikuji-slip.is-spring { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }
   .omikuji-stick { transition: none; }
