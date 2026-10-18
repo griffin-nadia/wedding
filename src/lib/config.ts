@@ -8,5 +8,4 @@ export const config = {
   rsvpDue: DATES.rsvpBy,
   // Changes lock (before final numbers)
   changesLock: DATES.changesLock,
-  maxSongs: 3,
 }
