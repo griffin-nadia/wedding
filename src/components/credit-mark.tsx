@@ -1,10 +1,17 @@
 import { useLang } from "@/lib/lang"
+import { BrandSeal } from "@/components/brand-seal"
 
 /**
- * The credit (18e): "Site by Jehan Baguley" as a plain link, outside the card. From 1024 it sits faint at the very
- * bottom left of the screen on every page; on phones it's the last line of Home's card (foot).
+ * The credit (run 19): laptops only, fixed at the very bottom left on every page. Nadia's seal, faint; hover or focus
+ * reveals "Site by Jehan Baguley" beside it. The words are always the link's name, so screen readers hear them at rest.
+ * No credit on phones: the FAQs' "Who made this site?" says it.
  */
-export function CreditMark({ foot = false }: { foot?: boolean }) {
+export function CreditMark() {
   const { t } = useLang()
-  return <a href="https://github.com/JehanBaguley" target="_blank" rel="noreferrer" className={foot ? "credit-mark credit-foot" : "credit-mark"}>{t.letter.credit}</a>
+  return (
+    <a href="https://github.com/JehanBaguley" target="_blank" rel="noreferrer" className="credit-mark">
+      <BrandSeal className="credit-seal" sizes="24px" />
+      <span className="credit-text">{t.letter.credit}</span>
+    </a>
+  )
 }

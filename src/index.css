@@ -782,22 +782,18 @@
 @media (min-width: 1024px) { .arrival { align-content: end; padding-bottom: 14svh; } }
 /* Icons: Lucide everywhere at 1.5 stroke (v3 A) */
 svg.lucide { stroke-width: 1.5; }
-/* The credit (18e): a small plain link outside the card, on a small chip of the letter's paper so it stays readable
-   (AA) over any photo; quiet through size and the muted ink rather than transparency. Laptops: fixed at the very
-   bottom left, on every page. Phones: the last line of Home, centred under the card. */
-.credit-mark { display: inline-flex; align-items: center; min-height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-chip); background: var(--letter-bg); color: var(--ink-muted); font-size: var(--type-small-size); line-height: var(--type-small-leading); outline: 2px solid transparent; outline-offset: 2px; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: color var(--duration-fast), text-decoration-color var(--duration-fast); }
-.credit-mark:hover, .credit-mark:focus-visible { color: var(--ink); text-decoration-color: currentColor; }
-.credit-mark:focus-visible { outline-color: var(--input-focus); }
-.credit-mark:not(.credit-foot) { display: none; }
-.credit-foot { display: flex; width: fit-content; align-self: center; margin: var(--space-2) auto 0; }
+/* The credit (run 19): laptops only. Nadia's seal at the very bottom left, faint (decorative at rest: the link's name
+   is always the words); hover or focus brings the seal to full and reveals "Site by Jehan Baguley" beside it in full
+   ink on a small chip of the letter's paper, so it reads (AA) over any photo. The link box is the 24px seal; the words
+   hang off it and only take the pointer once shown. No credit on phones: the FAQs answer "Who made this site?". */
+.credit-mark { display: none; }
 @media (min-width: 1024px) {
-  .credit-foot { display: none; }
-  /* No chip on laptops (final M): 12px, quiet (ink at 66%, the lightest that stays AA on the paper; the muted ink at 60%
-     would be 2.4:1), full ink on hover or focus. It sits in the gap under the
-     card, over the photo, so a soft halo of the letter's paper keeps it readable (AA) without a box. */
-  .credit-mark:not(.credit-foot) { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-1); background: none; padding: 0 var(--space-1); font-size: 12px; line-height: 16px; color: color-mix(in oklab, var(--ink) 66%, var(--letter-bg)); text-shadow: 0 0 1px var(--letter-bg), 0 0 2px var(--letter-bg), 0 0 4px var(--letter-bg); }
-  .credit-mark:not(.credit-foot):not(:hover, :focus-visible) { text-decoration-line: none; } /* the halo would draw the hidden line */
-  .credit-mark:not(.credit-foot):hover, .credit-mark:not(.credit-foot):focus-visible { color: var(--ink); }
+  .credit-mark { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-2); align-items: center; border-radius: var(--radius-pill); outline: 2px solid transparent; outline-offset: 2px; }
+  .credit-mark:focus-visible { outline-color: var(--input-focus); }
+  .credit-seal { width: 24px; height: 24px; opacity: 0.4; transition: opacity var(--duration-fast); }
+  .credit-text { position: absolute; left: calc(100% + var(--space-2)); padding: 2px var(--space-2); border-radius: var(--radius-chip); background: var(--letter-bg); white-space: nowrap; font-size: 12px; line-height: 16px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; opacity: 0; pointer-events: none; transition: opacity var(--duration-fast); }
+  .credit-mark:hover .credit-seal, .credit-mark:focus-visible .credit-seal { opacity: 1; }
+  .credit-mark:hover .credit-text, .credit-mark:focus-visible .credit-text { opacity: 1; pointer-events: auto; }
 }
 /* Names reveal once, letter by letter, the first time the letter opens (v3 L). Nothing else animates text. */
 .names-reveal .name-char { display: inline-block; animation: name-in var(--duration-slow) var(--ease-paper) both; }
