@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test"
 // text AA on its darkest spot; under reduced motion or Save-Data it stays plain. WebGL here is software (SwiftShader).
 test.use({ reducedMotion: "no-preference", launchOptions: { args: ["--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } })
 test.describe.configure({ timeout: 90_000 })
-test.beforeEach(async ({ page }) => { await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") }) })
+test.beforeEach(async ({ page }) => { await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-paper", "on") }) })
 
 for (const theme of ["autumn", "lantern"] as const) test(`the paper is made, fades in over the card, and keeps text AA (${theme})`, async ({ page }) => {
   await page.addInitScript((t) => localStorage.setItem("ng-theme", t), theme)
@@ -27,7 +27,7 @@ test("reduced motion or Save-Data: plain paper, nothing made", async ({ browser 
   for (const opts of [{ reducedMotion: "reduce" as const }, {}]) {
     const c = await browser.newContext(opts)
     if (!("reducedMotion" in opts)) await c.addInitScript(() => Object.defineProperty(navigator, "connection", { value: { saveData: true } }))
-    await c.addInitScript(() => localStorage.setItem("ng-opened", "1"))
+    await c.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-paper", "on") })
     const p = await c.newPage()
     await p.goto("?h=sample")
     await p.locator("#letter").click()
