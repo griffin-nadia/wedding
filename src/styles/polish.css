@@ -159,11 +159,9 @@ html { scrollbar-gutter: stable; }
    circle on laptops and the focus ring. The story arrows keep the outline. */
 .count-box, .utility-btn:not(.press) { box-shadow: inset 0 0 0 1px var(--line-hairline); }
 
-@media (min-width: 768px) {
-  :root .site-nav-link:not(.is-active) { box-shadow: inset 0 0 0 1px var(--line-hairline); }
-}
+/* The top-bar links sit bare at rest (final M): only the current page has the tinted pill and its line */
 @media (hover: hover) and (pointer: fine) {
-  .utility-btn:not(.press):hover, :root .site-nav-link:not(.is-active):hover { box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .utility-btn:not(.press):hover { box-shadow: inset 0 0 0 1px var(--line-strong); }
 }
 
 /* Night green (Options → Theme, Greener by default since 6 Oct): the Lantern sage, greener, so it matches the day's olive. The cream "Letter in

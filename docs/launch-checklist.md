@@ -20,7 +20,7 @@ live list of placeholders and Japanese lines.
   passes 9 of 9: a household of 6, long names, slow and lost connections, a double Send, a bad link, two tabs.
 - The back end (Apps Script, version 43): emails only send from the wedding account (held otherwise); name order
   check; Prepare for launch (report only until run for real); weekly backup; emails say Japan time.
-- The lab at a hidden path: https://griffin-nadia.github.io/wedding/lab-x2tyua87sy/ (noindex).
+- The lab is local only (`npm run lab`) since 18 Oct; the hidden path is gone from the deploy and from robots.txt.
 - The ICOCA & HARUKA link that was broken is replaced by JR West's HARUKA One-way Ticket page (18c).
 
 ## What Jehan does by hand, in this order
@@ -36,22 +36,34 @@ live list of placeholders and Japanese lines.
    - the reply form with the keyboard up (Back / Next never on the keyboard); the song search;
    - Our story: a drag follows the finger and never turns the page;
    - the music stops at once when the phone locks, and Now Playing clears;
-   - VoiceOver (iPhone) through the reply form once: each person's choice is read as a radio group.
+   - VoiceOver (iPhone) through the reply form once: each person's choice is read as a radio group;
+   - the keyboard (final run): it slides over the page and nothing shrinks or jumps, in the reply form, "Where are
+     you flying from?", "Can't find your invite?" and Ask us; the field you're typing in stays in view;
+   - the envelope letter: it slides up out of the open envelope, in front of the back and behind the front;
+   - the journey globe: it turns with a finger, Globe / Flat switches cleanly, and reduced motion starts it flat;
+   - the city search: "Noeth Melb" finds Melbourne, a chip picks a city, the gold line draws to Kyoto;
+   - Ask us: a question finds an answer, and "Send it to us" says it's sent;
+   - the music level: quiet under speech on an iPhone (it's set through Web Audio; iPhones ignore the old volume).
 2. [ ] **Email queue on from the wedding account**: [docs/email-queue.md](email-queue.md). Until this is done,
    every email is held (safely). Check `?action=ping` shows the wedding account, then send one test reply and see
    it arrive from the wedding address.
-3. [ ] **Make the gates required on `main`** (needs an admin): https://github.com/griffin-nadia/wedding/settings/branches
+3. [x] **Make the gates required on `main`** (done) (needs an admin): https://github.com/griffin-nadia/wedding/settings/branches
    → add a rule for `main` → Require status checks to pass → `gates`.
-4. [ ] **Weekly backup on** from the wedding account: [docs/launch.md](launch.md#weekly-backup).
-5. [ ] **Prepare for launch**: [docs/launch.md](launch.md). Run the report first (safe any time). When you say
+4. [ ] **Monitoring**: UptimeRobot on the back end's `?action=health` and the site, and the error alerts
+   (`ALERT_EMAIL`, optionally `DISCORD_WEBHOOK_URL`): [docs/monitoring.md](monitoring.md).
+5. [ ] **Weekly backup on** from the wedding account: [docs/launch.md](launch.md#weekly-backup).
+6. [ ] **Prepare for launch**: [docs/launch.md](launch.md). Run the report first (safe any time). When you say
    "clean for launch": Prepare for launch: run for real… (type LAUNCH). It backs up both sheets, clears the test
-   rows, resets visits and the queue, copies the planner's guest list in, and makes the links.
-6. [ ] **Send**: Send invites (test, to me only)… and check it (`node scripts/render-emails.mjs` shows every email locally
+   rows, resets visits and the queue, copies the planner's guest list in, and makes the links. Its last line says
+   whether the invite emails fit in today's Gmail limit ([launch.md](launch.md#the-email-quota)).
+7. [ ] **Send**: Send invites (test, to me only)… and check it (`node scripts/render-emails.mjs` shows every email locally
    first), then Send invites to everyone not yet invited…. For households with no email, text
    them their link (the launch report lists them; `npm run qr-cards` for printed cards).
 
 Before launch, Jehan picks the paper in the lab (the Paper experiment, or the Paper option on any experiment); the
 guest site's paper is plain until then (18f).
+
+The Crew tab's Kit and Lab links were cleared on 18 Oct 2026 (the lab is local only now: `npm run lab`).
 
 Optional: the Cloudflare previews ([docs/previews.md](previews.md)): move `docs/ci/previews.yml` into
 `.github/workflows/` from an account with the workflow scope, and add the two secrets.
@@ -82,7 +94,8 @@ Waiting on them:
   15 lines `check:pending` lists, the new ones above, and the city names for "Where are you flying from?"
   (`src/lib/places.ts`, katakana and kanji, 18f).
 - [ ] **FAQ facts**: are children invited (no FAQ says)? Visas only cover Australians (Griffin's side may fly from
-  Canada). "We'll delete it a few months after the wedding" still the plan?
+  Canada). "We'll delete it a few months after the wedding" still the plan? Pick the date (the suggestion is
+  15 Jan 2028); the steps are in [launch.md](launch.md#deleting-the-data-after-the-wedding).
 - [ ] **The music**: is there permission from Piano ZeroL for the cover of "A Town With an Ocean View"? If not,
   switch back (README → Music).
 - [ ] **Ideas in the lab for their yes**: the "Ask us" FAQ answer box, and the story print shadows and backdrops.

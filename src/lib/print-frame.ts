@@ -9,6 +9,17 @@ export function printFrame(name: string) {
   for (const ch of name) h = Math.imul(h ^ ch.charCodeAt(0), 16777619)
   h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h >>>= 0
   const tilt = [-2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2][(h >>> 8) % 8]
-  // Final run: one of three washi tapes (sage, honey, rust), and which way it leans
-  return { ratio: (h >>> 13) & 1 ? "4 / 3" : "3 / 4", tilt: `${tilt}deg`, tape: (h >>> 3) % 3, lean: (h >>> 20) & 1 ? 1 : -1 }
+  // A second hash for the rest, so the tape and edge don't follow the tilt
+  let g = Math.imul(h ^ 0x9e3779b9, 0x85ebca6b); g ^= g >>> 15; g = Math.imul(g, 0xc2b2ae35); g ^= g >>> 13; g >>>= 0
+  const lean = (h >>> 20) & 1 ? 1 : -1
+  // Final run: one of three washi tapes (sage, honey, rust), or none on about one print in four. Each strip is its own
+  // length, place and angle, and each print's white edge is its own width, so no two look stamped out
+  const tape = g % 4 === 3 ? null : (h >>> 3) % 3
+  return {
+    ratio: (h >>> 13) & 1 ? "4 / 3" : "3 / 4", tilt: `${tilt}deg`, tape, lean,
+    tapeWidth: `${[28, 32, 36, 40, 46][(g >>> 4) % 5]}%`,
+    tapeAt: `${[34, 42, 50, 58, 66][(g >>> 8) % 5]}%`,
+    tapeTurn: `${lean * [1.5, 2.5, 3.5, 5][(g >>> 12) % 4]}deg`,
+    edge: `${[4, 5, 6, 7, 8][(g >>> 16) % 5]}px`,
+  }
 }

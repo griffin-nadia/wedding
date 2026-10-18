@@ -39,7 +39,10 @@ still point at the old one.
 
 `SITE_URL`, `CHANGES_LOCK` (2027-04-30), `REPLY_TO`, `RSVP_BY` (2027-02-15), `TEST_EMAIL`,
 `NOTIFY_CHANGES` (`yes` emails REPLY_TO when someone changes from coming to not coming),
-`SPOTIFY_CLIENT_ID` + `SPOTIFY_CLIENT_SECRET` (song search; without them guests just type).
+`SPOTIFY_CLIENT_ID` + `SPOTIFY_CLIENT_SECRET` (song search; without them guests just type),
+`ALERT_EMAIL` (back-end errors emailed here, from the wedding account only) and `DISCORD_WEBHOOK_URL` (the same
+alerts, plus Ask us questions, to a Discord channel). Alerts send at most one email or post per kind of error an hour,
+with the error's code and message only (docs/monitoring.md).
 
 ## Web app API
 
@@ -51,6 +54,7 @@ still point at the old one.
 | `GET ?action=check&token=…` | That household's own saved rows, for testing (plus how many of its rows carry the duplicate flag) |
 | `GET ?action=stay` | Their hotel and Airbnb picks from the planner's Accommodation Options tab (`PLANNER_ID` script property), links without tracking, cached 6 hours |
 | `GET ?action=content` | Our story chapters (Content tab: `story_1_title`, `story_1_year`, `story_1_body`… up to 6), `mode` (invite, week-of, keepsake) and `contact_day` (shown under the FAQs) |
+| `GET ?action=health` | For UptimeRobot: `{ok, sheet, queueMoving, pending, emailQuota, at}`. `ok` is true only when the sheet opens and the email queue is moving. No guest data (docs/monitoring.md) |
 | `GET ?action=crew&token=…` | `{ok:true, name}` only for a token in the Crew tab |
 | `POST {action:"stamps", token, stamps}` | Saves the stamp book (fixed list) to the Guests "Stamps" column |
 | `POST {action:"rsvp", token, guests, songs, arrival, departure, message}` | `{ok, updated, changes, household}` or `{ok:false, code, error}` |
