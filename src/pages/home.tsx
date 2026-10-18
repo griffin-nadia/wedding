@@ -46,14 +46,17 @@ function Names() {
   )
 }
 
-/** What's left, quietly (v3 J): three lines with a tick or a soft dash, each opening its step. Hidden once all three are done. */
+/** The reply's steps as four tags (final run): Who's coming, Food, A song, Travel dates, each done or not yet with a
+ *  tick or a soft dash, and each opening its own step of the reply. Food counts as done once they've replied (no
+ *  dietary needs is an answer too). */
 function YourReply({ h, open }: { h: Household; open: (step: StepId) => void }) {
   const { t } = useLang()
   const coming = h.guests.filter((g) => g.attending === "yes")
   if (!coming.length) return null
   const rows = [
     { key: "who", label: t.home.todo.who, done: h.guests.every((g) => g.attending), step: "who" as const },
-    { key: "food", label: t.home.todo.food, done: h.songs.length > 0 || coming.some((g) => g.dietary && g.dietary !== "None"), step: "food" as const },
+    { key: "food", label: t.home.todo.food, done: Boolean(h.respondedAt) || coming.some((g) => g.dietary && g.dietary !== "None"), step: "food" as const },
+    { key: "song", label: t.home.todo.song, done: h.songs.length > 0, step: "song" as const },
     { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: "travel" as const, note: t.home.todo.datesLater },
   ]
   return (

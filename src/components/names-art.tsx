@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils"
  * are always the day ones. Decorative: the names are said as text by whatever holds it.
  */
 export function NamesArt({ className }: { className?: string }) {
-  const url = (m: string) => `url(${import.meta.env.BASE_URL}${m}-1040.webp)`
+  // 1x and 2x (18 Oct): the sharp one only where the screen needs it
+  const url = (m: string) => `image-set(url(${import.meta.env.BASE_URL}${m}-520.webp) 1x, url(${import.meta.env.BASE_URL}${m}-1040.webp) 2x)`
   return (
     <span aria-hidden className={cn("names-art-wrap", className)}
       style={{ aspectRatio: String(ART.names.ratio), ["--names-mask" as string]: url(ART.names.mask), ["--amp-mask" as string]: url(ART.names.amp) }}>
