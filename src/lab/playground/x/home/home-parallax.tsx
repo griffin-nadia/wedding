@@ -17,7 +17,7 @@ import { getSpeed, still } from "../../motion"
  * none of it, just the letter over the still photo.
  */
 const css = `
-.x-home-parallax { position: relative; min-height: 100svh; isolation: isolate; }
+.x-home-parallax { position: relative; min-height: var(--stage-h, 100svh); isolation: isolate; }
 .x-home-parallax-photo { position: fixed; z-index: -2; left: -24px; right: -24px; top: -24px; height: calc(100lvh + 34vh);
   @media (max-width: 767px) { top: -18vh; height: calc(100lvh + 40vh); } will-change: transform; background: var(--scene-scrim); }
 .x-home-parallax-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; filter: var(--scene-filter); }
