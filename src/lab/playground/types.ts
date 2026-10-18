@@ -12,5 +12,9 @@ export type Entry = {
   promote: string
   /** "current" for the site as it is today, so it can be compared */
   current?: boolean
+  /** Still open: one line on what Griffin and Nadia or Jehan need to choose */
+  deciding?: string
+  /** Done or superseded (archived under Done / decided, collapsed): what was decided */
+  decided?: string
   Component: LazyExoticComponent<ComponentType>
 }

@@ -14,7 +14,7 @@ import { getSpeed, spring, still } from "../../motion"
  * Reduced motion: no glide after a drag, and the print fades up in place of the lift.
  */
 const css = `
-.x-table { position: relative; isolation: isolate; height: 100svh; min-height: 100svh; overflow: hidden; background-color: color-mix(in oklab, var(--letter-bg) 55%, var(--surface-alt)); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; outline: none; }
+.x-table { position: relative; isolation: isolate; height: var(--stage-h, 100svh); min-height: var(--stage-h, 100svh); overflow: hidden; background-color: color-mix(in oklab, var(--letter-bg) 55%, var(--surface-alt)); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; outline: none; }
 .x-table[data-dragging] { cursor: grabbing; }
 .x-table::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--paper-live, none) center / cover; mix-blend-mode: var(--paper-blend); background-position: var(--bg-pos); opacity: 0.6; pointer-events: none; }
 .x-table-print { position: absolute; left: 0; top: 0; width: var(--card-w); padding: 0; border-radius: var(--radius-control); background: none; will-change: transform; cursor: pointer; }

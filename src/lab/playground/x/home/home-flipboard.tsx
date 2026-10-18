@@ -17,7 +17,7 @@ import { ms, still } from "../../motion"
  * load the board shuffles once before it settles. Reduced motion: the digits just swap.
  */
 const css = `
-.x-home-flipboard { position: relative; min-height: 100svh; padding: 16px 12px 24px; display: grid; align-items: start; }
+.x-home-flipboard { position: relative; min-height: var(--stage-h, 100svh); padding: 16px 12px 24px; display: grid; align-items: start; }
 @media (min-width: 768px) { .x-home-flipboard { padding: var(--letter-top) 24px var(--space-8); } }
 @media (min-width: 1024px) { .x-home-flipboard { padding-left: var(--letter-left); } }
 .x-home-flipboard .letter { min-height: 0; width: 100%; }
