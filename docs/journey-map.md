@@ -24,7 +24,7 @@ flowchart TD
   mode -- "week of the wedding" --> week["The day · Directions"]
   mode -- "after the wedding" --> keepsake["Thank-you letter<br/>Our story"]
 
-  rsvpBtn --> sheet["Reply: 1 Who's coming → 2 Food, song, dates → 3 Check"]
+  rsvpBtn --> sheet["Reply: Who's coming → Food → Song → Travel dates, anything else → Check<br/>(nobody coming: Who → a note → Check)"]
   replied -- "Change my reply / a chip" --> sheet
   sheet -- "Send our reply" --> fortune["Sent letter · draw a fortune"] -- close --> replied
   replied -- "no dates" --> nextDates["Add your travel dates"] --> sheet
@@ -56,6 +56,9 @@ flowchart TD
 | Last Travel section, last story stop | The end of the page | Fine: the tabs are always there (dock or bar) |
 | Sealed envelope | Only one way on (open it) | Intended: any key, a tap, the label button or a pull all open it |
 | Offline or paused | "Try again" only | Intended: nothing else would work without a connection |
+
+Checked again on 18 Oct 2026 (run 18f): the reply is five steps of one question each, the done screen is one column
+with the X in the head, and flying from never lands on the wrong place; no new dead ends.
 
 Nothing found that traps a guest with no way back: the dock (phones) or the bar (laptops) is on every page past the
 envelope, and every sheet closes with Escape, the close button or a tap outside.
