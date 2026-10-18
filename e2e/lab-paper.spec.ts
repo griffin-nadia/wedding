@@ -10,7 +10,7 @@ test("lab paper: four presets in both themes, sliders move the picked one", asyn
   await expect(group.getByRole("radio")).toHaveCount(4, { timeout: 30_000 })
   await expect(group.getByRole("radio", { name: /Chosen/ })).toHaveAttribute("aria-checked", "true")
   await expect(page.locator(".x-pp-swatch")).toHaveCount(10) // 4 presets and the crosshatch, each light and dark
-  await group.getByRole("radio", { name: /No folds at all/ }).click()
+  await group.getByRole("radio", { name: /No folds or wrinkles/ }).click()
   const folds = page.getByRole("slider", { name: "Folds" })
   await expect(folds).toHaveValue("0")
   await folds.fill("0.2")
