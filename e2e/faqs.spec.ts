@@ -1,11 +1,12 @@
 import { test, expect } from "@playwright/test"
 
-// FAQs in the order guests ask (docs/quality.md): dress, travel and visas, plus-ones, gifts, food, the day, their
-// details, and who made the site last. In Japanese the same order.
+// FAQs in the order guests ask (docs/quality.md). Run 19 regrouped them the way a guest wonders, reading the invite:
+// who's invited and what kind of day it is, then getting ready (dress, food, gifts), the trip (visas), the site (their
+// details), and who made the site last. In Japanese the same order.
 test("the questions come in the order guests ask them", async ({ page }) => {
   for (const [lang, qs] of [
-    ["en", ["What should I wear?", "Do I need a visa?", "Can I bring someone?", "Gifts?", "What about food?", "Is it a traditional Japanese wedding?", "What happens to my details?", "Who made this site?"]],
-    ["ja", ["服装は？", "ビザは必要ですか？", "同伴者を連れていけますか？", "ご祝儀やプレゼントは？", "お食事は？", "日本の伝統的な結婚式ですか？", "個人情報はどうなりますか？", "このサイトはどなたが作ったのですか？"]],
+    ["en", ["Can I bring someone?", "Is it a traditional Japanese wedding?", "What should I wear?", "What about food?", "Gifts?", "Do I need a visa?", "What happens to my details?", "Who made this site?"]],
+    ["ja", ["同伴者を連れていけますか？", "日本の伝統的な結婚式ですか？", "服装は？", "お食事は？", "ご祝儀やプレゼントは？", "ビザは必要ですか？", "個人情報はどうなりますか？", "このサイトはどなたが作ったのですか？"]],
   ] as const) {
     await page.addInitScript((l) => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-lang", l) }, lang)
     await page.goto("faqs?h=sample")
@@ -19,5 +20,6 @@ test("the questions come in the order guests ask them", async ({ page }) => {
 test("the end of FAQs has a way to ask Griffin and Nadia", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("ng-opened", "1"))
   await page.goto("faqs?h=sample")
-  await expect(page.locator("#letter").getByRole("button", { name: "Still wondering? Ask Griffin & Nadia" })).toBeVisible()
+  await expect(page.locator("#letter")).toContainText("Can't see your question here? Ask us and we'll get back to you.")
+  await expect(page.locator("#letter").getByRole("button", { name: "Ask us", exact: true })).toBeVisible()
 })
