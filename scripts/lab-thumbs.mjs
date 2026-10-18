@@ -11,11 +11,13 @@ fs.mkdirSync("src/lab/thumbs", { recursive: true })
 const b = await chromium.launch()
 const ctx = await b.newContext({ ...devices["Pixel 7"], viewport: { width: 390, height: 520 }, deviceScaleFactor: 1 })
 await ctx.addInitScript(() => { localStorage.setItem("ng-music", "off"); if (!location.search.includes("arrival=1")) localStorage.setItem("ng-opened", "1"); else localStorage.removeItem("ng-opened") })
+// Held on screen for the picture (the loading screen is gone in a moment otherwise)
+const EXTRA = { "loading-preload": "&k.hold=10" }
 const p = await ctx.newPage()
 await p.goto(`${base}lab.html`)
 const { entries, reference } = await p.evaluate(() => window.__labIndex)
 const shots = [
-  ...entries.flatMap((e) => (e.takes ?? [null]).map((t) => ({ name: t ? `${e.id}--${t}` : e.id, id: e.id, url: `${base}lab-play.html?x=${e.id}${t ? `&take=${t}` : ""}` }))),
+  ...entries.flatMap((e) => (e.takes ?? [null]).map((t) => ({ name: t ? `${e.id}--${t}` : e.id, id: e.id, url: `${base}lab-play.html?x=${e.id}${t ? `&take=${t}` : ""}${EXTRA[e.id] ?? ""}` }))),
   ...reference.map((r) => ({ name: r.id, id: r.id, url: `${base}${r.path.replace(/^\//, "")}${r.path.includes("?") ? "&" : "?"}h=sample${r.arrival ? "&arrival=1" : ""}` })),
 ].filter((s) => !only.length || only.includes(s.id))
 for (const s of shots) {

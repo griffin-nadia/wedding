@@ -1,18 +1,28 @@
 import type { Entry } from "./types"
 import { entries as opening } from "./x/opening"
 import { entries as story } from "./x/story"
+import { entries as journey } from "./x/journey"
 import { entries as confirmation } from "./x/confirmation"
+import { entries as paper } from "./x/paper"
 import { entries as micro } from "./x/micro"
+import { entries as logo } from "./x/logo"
+import { entries as arrival } from "./x/arrival"
+import { entries as loading } from "./x/loading"
 
 /**
  * What the lab keeps (lab run 19): the choices still open and the parked ideas, by area in the order guests meet
  * them. Decided ones are deleted; what ships is under Reference (the live site, one per area).
  */
 export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
+  { id: "loading", title: "Loading", entries: loading },
   { id: "opening", title: "Opening", entries: opening },
+  { id: "arrival", title: "Arrival framing", entries: arrival },
   { id: "story", title: "Our story", entries: story },
+  { id: "journey", title: "Journey", entries: journey },
   { id: "confirmation", title: "Confirmation", entries: confirmation },
-  { id: "micro", title: "Micro", entries: micro },
+  { id: "paper", title: "Paper and light", entries: paper },
+  { id: "micro", title: "Micro-interactions", entries: micro },
+  { id: "logo", title: "Logo", entries: logo },
 ]
 export const ALL = AREAS.flatMap((a) => a.entries.map((e) => ({ ...e, area: a.id, areaTitle: a.title })))
 export const byId = (id: string) => ALL.find((e) => e.id === id)

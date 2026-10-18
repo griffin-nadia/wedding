@@ -25,5 +25,7 @@ export type Entry = {
   knobs?: Knob[]
   /** Where the site does this today, for Compare with live. arrival: show the sealed envelope (clears "opened") */
   live?: { path: string; arrival?: boolean }
+  /** A whole-page take (its own photo and room, like the opening); the rest sit inside the site's own shell */
+  bare?: boolean
   Component: LazyExoticComponent<ComponentType>
 }

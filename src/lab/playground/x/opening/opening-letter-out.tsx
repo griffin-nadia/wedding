@@ -1,63 +1,141 @@
-import { useState } from "react"
-import { ART } from "@/lib/art"
-import { Segmented } from "@/components/segmented"
-import { Button } from "@/components/ui/button"
-import { NamesArt } from "@/components/names-art"
+import { useEffect, useRef, useState } from "react"
+import { useHousehold } from "@/lib/household"
+import { useLang } from "@/lib/lang"
 import { Stage } from "../../stage"
-import { still } from "../../motion"
+import { spring, still } from "../../motion"
+import { useTake } from "../../params"
+import { art, envelopeCss, LetterSheet } from "./art"
 
 /**
- * The letter coming out of Nadia's open envelope (18 Oct, two layers: the back, then the letter, then the pocket and
- * seal), three ways:
- * A: as the site does it, with better timing: the flap opens, a beat, the letter rises clear of the pocket, the envelope settles away.
- * B: the closed flap turns over in 3D with a soft shadow before the letter rises.
- * C: the letter lifts with a slight bend, as paper does, while the envelope eases down and away.
- * Reduced motion: each shows its last frame.
+ * The letter out of Nadia's envelope, with paper that behaves like paper (lab run 19). Her envelope cut into its real
+ * parts (art.tsx): the flap turns on its hinge in perspective, darkening as it faces away from the light; the letter
+ * slides out of the pocket with a slight bend and the pocket's lip shading it; once clear it comes to rest in front,
+ * casting a soft shadow on the pocket.
+ * - hinge: the whole thing, unhurried (about 1.7 s)
+ * - pull: the flap opens on a tap, then you draw the letter out with a finger (it bends with your speed); or the
+ *   "Take it out" button, so dragging is never the only way (WCAG 2.5.7)
+ * - quick: the site's length (about 1 s): flap and letter overlap, the envelope sinks away as on the site
+ * Transforms, opacity and filter only, on four layers. Reduced motion: the letter is out, resting in front.
  */
-const base = import.meta.env.BASE_URL
-const src = (k: "closed" | "open" | "openFront") => `${base}${ART.drawnEnvelope[k]}-820.webp`
-const css = `
-.x-lo { position: relative; width: min(80vw, 380px); aspect-ratio: ${ART.drawnEnvelope.ratio}; margin-top: 30%; perspective: 900px; }
-.x-lo img, .x-lo-letter { position: absolute; left: 0; width: 100%; height: auto; pointer-events: none; user-select: none; }
-.x-lo .back, .x-lo .front { bottom: 0; }
-.x-lo .back { z-index: 1; } .x-lo .front { z-index: 3; }
-.x-lo .closed { top: 0; z-index: 4; transform-origin: 50% 0; }
-.x-lo-letter { z-index: 2; left: 8%; width: 84%; top: 18%; aspect-ratio: 1.45; border-radius: 6px; background: var(--letter-bg); box-shadow: 0 1px 2px rgb(0 0 0 / .12), 0 10px 24px -14px rgb(0 0 0 / .4); display: grid; place-items: center; padding: 10%; transform-origin: 50% 100%; }
-.x-lo-letter .names-art-wrap { width: 100%; }
-/* A */
-.x-lo[data-v="A"][data-go] .closed { opacity: 0; transition: opacity 220ms ease-out; }
-.x-lo[data-v="A"][data-go] .x-lo-letter { transform: translateY(-62%); transition: transform 720ms cubic-bezier(.22,.9,.24,1) 260ms; }
-.x-lo[data-v="A"][data-go] :is(.back, .front) { transform: translateY(14%); opacity: .0; transition: transform 600ms ease-in 900ms, opacity 500ms ease-in 1000ms; }
-/* B */
-.x-lo[data-v="B"] .closed { clip-path: inset(0 0 52% 0); }
-.x-lo[data-v="B"] .closed-body { position: absolute; top: 0; left: 0; width: 100%; z-index: 4; clip-path: inset(48% 0 0 0); }
-.x-lo[data-v="B"][data-go] .closed { transform: rotateX(-178deg); filter: drop-shadow(0 -12px 10px rgb(0 0 0 / .18)) brightness(.92); opacity: 0; transition: transform 520ms cubic-bezier(.4,0,.2,1), filter 520ms, opacity 120ms linear 420ms; }
-.x-lo[data-v="B"][data-go] .closed-body { opacity: 0; transition: opacity 160ms linear 420ms; }
-.x-lo[data-v="B"][data-go] .x-lo-letter { transform: translateY(-62%); transition: transform 720ms cubic-bezier(.22,.9,.24,1) 560ms; }
-/* C */
-.x-lo[data-v="C"][data-go] .closed { opacity: 0; transition: opacity 220ms ease-out; }
-.x-lo[data-v="C"][data-go] .x-lo-letter { animation: x-lo-bend 900ms cubic-bezier(.3,.8,.3,1) 240ms both; }
-.x-lo[data-v="C"][data-go] :is(.back, .front) { transform: translateY(26%) scale(.96); opacity: 0; transition: transform 800ms cubic-bezier(.4,0,.6,1) 420ms, opacity 600ms ease-in 600ms; }
-@keyframes x-lo-bend { 0% { transform: none; } 45% { transform: translateY(-38%) rotateX(9deg) scaleY(.98); } 100% { transform: translateY(-64%) rotateX(0) scaleY(1); } }
-@media (prefers-reduced-motion: reduce) { .x-lo * { transition: none !important; animation: none !important; } }
+const P = "x-lo"
+const css = `${envelopeCss(P)}
+.${P}-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); margin-top: auto; margin-bottom: max(3svh, 12px); }
+.${P}-hit { border-radius: 12px; outline: 2px solid transparent; outline-offset: 6px; }
+.${P}-hit:focus-visible { outline-color: var(--input-focus); }
+.${P}-note { min-height: 44px; display: flex; align-items: center; color: #fff; text-shadow: 0 1px 6px rgb(0 0 0 / .45); font: var(--type-body-size) / 1.2 var(--font-display); }
+.${P}-letter.is-out { z-index: 5; }
+.${P}-letter.is-grab { cursor: grab; touch-action: none; }
 `
+type Phase = "sealed" | "flap" | "ready" | "out"
+
 export default function OpeningLetterOut() {
-  const [v, setV] = useState<"A" | "B" | "C">("A")
-  const [go, setGo] = useState(still())
-  const [n, setN] = useState(0)
-  const replay = () => { setGo(false); setN((k) => k + 1); if (!still()) setTimeout(() => setGo(true), 400); else setGo(true) }
+  const take = useTake("hinge")
+  const { t } = useLang()
+  const { household } = useHousehold()
+  const first = household?.guests.filter((g) => !g.plusOne).map((g) => g.firstName).join(" & ") ?? ""
+  const [phase, setPhase] = useState<Phase>(() => (still() ? "out" : "sealed"))
+  const env = useRef<HTMLDivElement>(null)
+  const anims = useRef<Animation[]>([])
+  const q = (s: string) => env.current?.querySelector<HTMLElement>(`.${P}-${s}`) ?? null
+  const run = (el: HTMLElement | null, k: Keyframe[], o: KeyframeAnimationOptions) => {
+    if (!el) return Promise.resolve()
+    const a = el.animate(k, { fill: "forwards", ...o }); anims.current.push(a)
+    return a.finished.catch(() => {})
+  }
+  useEffect(() => () => anims.current.forEach((a) => a.cancel()), [])
+  // The still version: the letter resting in front, its shadow on the pocket
+  useEffect(() => { if (phase === "out" && still()) restingFront() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** The flap: closed piece turns up to edge-on, then the open piece carries on to standing (one 180° turn) */
+  const openFlap = async (d: number) => {
+    await run(q("flap-closed"), [{ transform: "rotateX(0)", filter: "brightness(1)" }, { transform: "rotateX(90deg)", filter: "brightness(0.82)" }], { duration: d / 2, easing: "cubic-bezier(.5,0,.9,.6)" })
+    await run(q("flap-open"), [{ transform: "rotateX(-90deg)", filter: "brightness(0.78)" }, { transform: "rotateX(0)", filter: "brightness(1)" }], { duration: d / 2, easing: "cubic-bezier(.15,.5,.35,1)" })
+  }
+  /** Out of the pocket: up with a slight bend that eases flat as it clears */
+  const rise = (d: number, delay = 0) => run(q("letter"), [
+    { transform: "translateY(0) rotateX(0) scaleY(1)", "--bend": 0, offset: 0 } as Keyframe,
+    { transform: "translateY(-38%) rotateX(7deg) scaleY(0.985)", "--bend": 1, offset: 0.45 } as Keyframe,
+    { transform: "translateY(-92%) rotateX(0) scaleY(1)", "--bend": 0, offset: 1 } as Keyframe,
+  ], { duration: d, delay, easing: "cubic-bezier(.3,.7,.25,1)" })
+  /** Over the top of the pocket and down to rest in front, its shadow arriving on the pocket */
+  const settle = async (d: number) => {
+    q("letter")?.classList.add("is-out")
+    void run(q("shade"), [{ opacity: 0, transform: "scaleX(.8)" }, { opacity: 1, transform: "scaleX(1)" }], { duration: d, easing: "ease-out" })
+    await run(q("letter"), [{ transform: "translateY(-92%)" }, { transform: "translateY(-96%)", offset: 0.3 }, { transform: "translateY(-58%)" }], { duration: d, easing: "cubic-bezier(.4,0,.2,1)" })
+  }
+  const restingFront = () => {
+    const l = q("letter"), s = q("shade")
+    l?.classList.add("is-out"); l?.style.setProperty("transform", "translateY(-58%)"); s?.style.setProperty("opacity", "1")
+    q("flap-closed")?.style.setProperty("opacity", "0"); q("flap-open")?.style.setProperty("transform", "none")
+  }
+
+  const open = async () => {
+    if (phase !== "sealed") return
+    navigator.vibrate?.(8)
+    setPhase("flap")
+    if (take === "quick") {
+      void openFlap(380)
+      await rise(620, 200)
+      setPhase("out")
+      // As on the site: the envelope sinks and fades away under the letter
+      for (const k of ["body", "flap-open", "front"]) void run(q(k), [{ translate: "0 0", opacity: 1 }, { translate: "0 14%", opacity: 0 }], { duration: 500, delay: 80, easing: "ease-in" })
+      return
+    }
+    await openFlap(560)
+    if (take === "pull") { setPhase("ready"); return }
+    await rise(820, 40)
+    await settle(420)
+    setPhase("out")
+  }
+  const takeOut = async () => { setPhase("out"); await rise(640); await settle(380) }
+
+  // pull: the letter follows a finger; its bend follows the finger's speed; past half way it's out
+  const drag = useRef<{ y: number; h: number; p: number; v: number; t: number } | null>(null)
+  const setPull = (p: number, bend: number) => {
+    const l = q("letter"); if (!l) return
+    l.style.transform = `translateY(${(-92 * p).toFixed(2)}%) rotateX(${bend.toFixed(2)}deg)`
+    l.style.setProperty("--bend", String(Math.min(1, Math.abs(bend) / 7)))
+  }
+  const onDown = (e: React.PointerEvent) => {
+    if (phase !== "ready") return
+    const l = q("letter"); if (!l) return
+    l.setPointerCapture(e.pointerId)
+    drag.current = { y: e.clientY, h: l.offsetHeight * 0.92, p: 0, v: 0, t: performance.now() }
+  }
+  const onMove = (e: React.PointerEvent) => {
+    const d = drag.current; if (!d) return
+    const now = performance.now(), p = Math.max(0, Math.min(1, (d.y - e.clientY) / d.h))
+    d.v = (p - d.p) / Math.max(1, now - d.t) * 1000; d.p = p; d.t = now
+    setPull(p, Math.max(-2, Math.min(8, d.v * 4)))
+  }
+  const onUp = () => {
+    const d = drag.current; drag.current = null; if (!d) return
+    if (d.p > 0.5 || d.v > 1.5) {
+      setPhase("out")
+      const from = d.p
+      spring(from, 1, (v, done) => { setPull(v, (1 - v) * 3); if (done) void settle(380) }, { k: 220, c: 24, v: d.v })
+    } else spring(d.p, 0, (v) => setPull(v, 0), { k: 260, c: 26 })
+  }
+
   return (
-    <Stage photo hint="Tap the envelope. A is the site's (with better timing), B turns the flap in 3D, C bends the letter as it lifts.">
+    <Stage photo hint={take === "pull" ? "Tap to open the flap, then draw the letter out with your finger." : "Tap the envelope. Replay is in Options."}>
       <style>{css}</style>
-      <Segmented label="Opening" value={v} onChange={(x) => { setV(x); setGo(still()); setN((k) => k + 1) }} items={[{ value: "A", label: "A · Timing" }, { value: "B", label: "B · 3D flap" }, { value: "C", label: "C · Bend" }]} />
-      <button key={`${v}${n}`} type="button" className="x-lo" data-v={v} data-go={go || undefined} onClick={() => setGo(true)} aria-label="Open the envelope">
-        <img className="back" src={src("open")} alt="" draggable={false} />
-        <span className="x-lo-letter"><NamesArt /></span>
-        <img className="front" src={src("openFront")} alt="" draggable={false} />
-        <img className="closed" src={src("closed")} alt="" draggable={false} />
-        {v === "B" && <img className="closed closed-body" src={src("closed")} alt="" draggable={false} />}
-      </button>
-      <Button variant="secondary" size="sm" onClick={replay}>Replay</Button>
+      <div className={`${P}-wrap`}>
+        <button type="button" className={`${P}-hit`} onClick={phase === "ready" ? takeOut : open} aria-label={phase === "ready" ? "Take the letter out" : t.letter.openLabel(first)} disabled={phase === "out" || phase === "flap"}>
+          <div ref={env} className={`${P}-env`}>
+            <img className={`${P}-body`} src={art("open")} alt="" draggable={false} />
+            <img className={`${P}-flap-open`} src={art("open")} alt="" draggable={false} style={{ transform: "rotateX(-90deg)" }} />
+            <LetterSheet className={`${P}-letter${phase === "ready" ? " is-grab" : ""}`} />
+            <img className={`${P}-flap-closed`} src={art("closed")} alt="" draggable={false} />
+            <img className={`${P}-front`} src={art("openFront")} alt="" draggable={false} />
+            <img className={`${P}-closed-full`} src={art("closed")} alt="" draggable={false} style={{ opacity: phase === "sealed" ? 1 : 0 }} />
+            <span className={`${P}-shade`} style={{ top: "60%" }} />
+            {/* The drag surface for pull: over the letter only, once the flap is open */}
+            {phase === "ready" && <span aria-hidden className="absolute inset-x-[9%] top-[30%] bottom-[20%] z-10" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} />}
+          </div>
+        </button>
+        <p className={`${P}-note`} aria-live="polite">{phase === "sealed" ? t.letter.note : phase === "ready" ? "Draw it out, or tap to take it out" : phase === "out" ? "" : ""}</p>
+      </div>
     </Stage>
   )
 }
