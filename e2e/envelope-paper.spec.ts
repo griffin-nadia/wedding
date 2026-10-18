@@ -11,7 +11,7 @@ test.describe.configure({ timeout: 180_000 }) // software WebGL on CI makes the 
 for (const theme of ["autumn", "lantern"] as const) test(`the envelope's letter is the card's paper, frame by frame (${theme})`, async ({ page }) => {
   await page.addInitScript((t) => { localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t); localStorage.setItem("ng-paper", "on") }, theme)
   await page.goto("?h=sample")
-  await expect(page.getByRole("button", { name: "Open your invite" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Open", exact: true })).toBeVisible()
   test.skip(!(await page.evaluate(() => Boolean(document.createElement("canvas").getContext("webgl2")))), "no WebGL here")
   await page.mouse.click(5, 5) // the first input starts the paper
   await expect(page.locator("html[data-paper]")).toHaveCount(1, { timeout: 30_000 })
@@ -50,6 +50,7 @@ for (const theme of ["autumn", "lantern"] as const) test(`the envelope's letter 
     expect(look.paper[0], `${pct}%: the card's paper texture, scale and blend`).toEqual(look.paper[1])
     expect(look.paper[0].image, `${pct}%: the paper is there`).toContain("url(")
     // One shot at the held frame (the photo's drift on laptops never lets two in a row match), the countdown masked
-    expect(await page.screenshot({ animations: "allow", mask: [page.locator(".count-boxes")] })).toMatchSnapshot(`envelope-${theme}-${pct}.png`, { maxDiffPixelRatio: 0.02 })
+    // The countdown is masked once the card shows (run 19: until then the card waits unseen, under the envelope)
+    expect.soft(await page.screenshot({ animations: "allow", mask: pct >= 75 ? [page.locator(".count-boxes")] : [] })).toMatchSnapshot(`envelope-${theme}-${pct}.png`, { maxDiffPixelRatio: 0.02 })
   }
 })

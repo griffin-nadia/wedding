@@ -34,6 +34,13 @@ On the site (`src/components/envelope.tsx`, `src/styles/polish.css`) the stack i
 - `lettering-cream.png` isn't needed. Its grey speckling on "Nadia" never shows, because the mask decides the shape and the theme the colour. A clean cream file is still welcome, if a cream version is ever wanted as a picture.
 - The names are always there as text for screen readers and the page title.
 
+## The arrival note (run 19)
+
+The hand-lettered "Open your invite" beside or above the envelope, with its little drawn arrow (`src/components/arrival-note.tsx`).
+- The words are `public/art/note/note-en.svg` and `note-ja.svg` (「招待状をひらいてね」): outlines of La Belle Aurore and Klee One SemiBold (both SIL OFL), used as masks so the note takes its colour from the page. No font loads.
+- They stand in until Nadia letters the words herself. Save her lettering as an SVG or a transparent PNG in `public/art/note/`, then set `src` and `ratio` (width ÷ height) in `ART.note` (`src/lib/art.ts`).
+- The arrow is drawn in the component (an SVG line that draws on, its head last).
+
 ## The rest
 
 - **Closed envelope, wax seal, gum leaves:** `private/nadia-art-17oct`, through `node scripts/art-export.mjs`.
