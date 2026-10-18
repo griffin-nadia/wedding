@@ -103,3 +103,15 @@ test("each print ends on the same line on every stop, captions right under it", 
   expect(bottoms.length).toBeGreaterThan(3)
   expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThanOrEqual(6) // the prints' own small tilts
 })
+
+// Final run: the prints are soft, with a strip of washi tape in one of three colours (seeded by the photo, so the same everywhere)
+test("prints: a thin border, a layered shadow, a tilt and a strip of tape", async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto("our-story?h=sample")
+  const p = page.locator(".story-slide:not(.story-slide-opener):not(.story-slide-map) .story-print").first()
+  await expect(p).toHaveAttribute("data-tape", /^[012]$/)
+  const r = await p.evaluate((e) => { const s = getComputedStyle(e), t = getComputedStyle(e, "::before"); return { shadows: (s.boxShadow.match(/rgba?\(/g) ?? []).length, tilted: s.transform !== "none", tape: t.content !== "none" && parseFloat(t.width) > 20 } })
+  expect(r.shadows).toBeGreaterThanOrEqual(3)
+  expect(r.tilted).toBe(true)
+  expect(r.tape).toBe(true)
+})
