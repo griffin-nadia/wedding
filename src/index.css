@@ -1341,3 +1341,16 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
+
+/* Our story's prints, soft (final run): a thin white border, a layered shadow (a contact line, a short soft one, a long
+   faint one), the seeded tilt, a faint grain on the print, and a strip of washi tape across the top in one of three
+   colours, its ends torn. Calm: low contrast, nothing that moves. The lab has tape, photo corners and plain. */
+.story-print { position: relative; padding: 6px 6px 10px; box-shadow: 0 0 0 0.5px rgb(var(--tint-shadow) / 0.16), 0 1px 2px rgb(var(--tint-shadow) / 0.14), 0 10px 22px -12px rgb(var(--tint-shadow) / 0.4), 0 28px 44px -30px rgb(var(--tint-shadow) / 0.34); }
+.story-print::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0.06; background-image: radial-gradient(rgb(var(--tint-shadow)) 0.5px, transparent 0.6px); background-size: 3px 3px; }
+.story-print[data-tape]::before { content: ""; position: absolute; z-index: 2; top: -9px; left: 50%; width: 38%; height: 20px; translate: -50% 0; rotate: calc(var(--lean, 1) * 3deg); opacity: 0.82;
+  background: var(--tape, color-mix(in oklab, var(--brand-sage) 70%, white)); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent), repeating-linear-gradient(0deg, #000 0 2px, rgb(0 0 0 / 0.6) 2px 3px);
+  mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent), repeating-linear-gradient(0deg, #000 0 2px, rgb(0 0 0 / 0.6) 2px 3px);
+  -webkit-mask-composite: source-in; mask-composite: intersect; }
+.story-print[data-tape="1"] { --tape: color-mix(in oklab, var(--brand-hachimitsu) 60%, white); }
+.story-print[data-tape="2"] { --tape: color-mix(in oklab, var(--brand-sabi) 45%, white); }

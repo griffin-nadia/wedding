@@ -9,5 +9,6 @@ export function printFrame(name: string) {
   for (const ch of name) h = Math.imul(h ^ ch.charCodeAt(0), 16777619)
   h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h >>>= 0
   const tilt = [-2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2][(h >>> 8) % 8]
-  return { ratio: (h >>> 13) & 1 ? "4 / 3" : "3 / 4", tilt: `${tilt}deg` }
+  // Final run: one of three washi tapes (sage, honey, rust), and which way it leans
+  return { ratio: (h >>> 13) & 1 ? "4 / 3" : "3 / 4", tilt: `${tilt}deg`, tape: (h >>> 3) % 3, lean: (h >>> 20) & 1 ? 1 : -1 }
 }
