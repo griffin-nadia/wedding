@@ -901,6 +901,14 @@ svg.lucide { stroke-width: 1.5; }
 ::selection { background: color-mix(in oklab, var(--ink-moss) 35%, transparent); color: var(--ink); }
 /* What's left as one compact row of chips (v3 S): ticked or a soft dash, each opens its step */
 .reply-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+/* Run 19, on a phone: a 2x2 grid, calmer than four chips squeezed into one row (they don't fit at 390 at a legible
+   size). Each column at least the widest tag, so at 320 they stack instead of clipping. The dates' "once you've booked"
+   is said to screen readers only here: the next-step button under the tags already says it. */
+@media (max-width: 559px) {
+  .reply-chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(max(9.5rem, 40%), 1fr)); }
+  .reply-chip { width: 100%; }
+  .reply-chip-note { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 .reply-chip { @apply chip-shape; gap: var(--space-2); background: var(--surface-raised); color: var(--ink-soft); font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); outline: 2px solid transparent; outline-offset: 2px; transition: border-color var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper); }
 .reply-chip[data-done] { background: var(--surface-alt); color: var(--ink); }
 .reply-chip:focus-visible { outline-color: var(--input-focus); }
