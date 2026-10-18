@@ -131,7 +131,20 @@ html { scrollbar-gutter: stable; }
    from its first frame: walnut paper, cream names, the sage "&" (no white sheet, no flash on the way to the page) */
 [data-theme="lantern"] .envelope .envelope-paper {
   --ink: var(--brand-kinari); --action: var(--brand-sage); --letter-edge-color: var(--brand-hachimitsu);
-  background: var(--brand-yoru);
+  /* Final run P: the night card's own paper from the first frame, its corner tints and its paper blended the night
+     way (screen), not the envelope's day tokens (multiply) */
+  --paper-blend: screen;
+  background:
+    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 8%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%),
+    var(--brand-yoru);
+}
+/* By day, the card's paper too: its colour token and the same two corner tints as .letter::before */
+.envelope .envelope-paper {
+  background:
+    radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
+    radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%),
+    var(--letter-bg);
 }
 
 /* Her garden drawing on The day (Options → The day). The ink is a mask, so it takes the page's ink colour:
@@ -174,3 +187,17 @@ html { scrollbar-gutter: stable; }
 
 /* Phones (Options → The day → Garden on phones → Short band, default): the garden as a band about 140px tall, the
    drawing scaled so the pagoda and the start of the aisle both sit in it, so the timeline starts higher */
+
+/* Button depth (final run P): primary and secondary read as something to press through the paper. A 1px lighter top
+   edge, a soft shadow below, and on press they sink 1px with the shadow gone. Inset and shadow only, so nothing
+   changes size and the words keep their contrast. */
+.btn-primary, [data-slot="button"][data-variant="secondary"] {
+  box-shadow: inset 0 1px 0 var(--button-sheen), var(--button-drop);
+  transition: background-color var(--duration-fast) var(--ease-paper), border-color var(--duration-fast) var(--ease-paper), box-shadow var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper);
+}
+[data-slot="button"][data-variant="secondary"] { box-shadow: inset 0 1px 0 var(--button-sheen-secondary), var(--button-drop); }
+.btn-primary:active:not(:disabled), .btn-primary[data-force="pressed"],
+[data-slot="button"][data-variant="secondary"]:active:not(:disabled), [data-slot="button"][data-variant="secondary"][data-force="pressed"] {
+  transform: translateY(1px); box-shadow: inset 0 1px 0 transparent, 0 0 0 transparent;
+}
+.btn-primary:disabled, [data-slot="button"][data-variant="secondary"]:disabled { box-shadow: none; }

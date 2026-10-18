@@ -539,9 +539,11 @@
    screen's size (--paper-live, src/lib/paper-live.ts), so the words, fields and buttons take the paper too. On the
    letter, every sheet, the driver card and paper you could hold (not twice when one sits on another). Never in the
    way of a tap. Until it's made (or without WebGL) the paper is plain. */
+/* Every surface lays the sheet at the screen's size (it's made at the screen's size), so the grain is the same scale on
+   the card, the envelope's letter, the bar and the dock (final run P), not stretched to each box. */
 .letter::after, .sheet-bright::after, .paper-feel::after, .envelope-paper::after {
   content: ""; position: absolute; inset: 0; z-index: 30; border-radius: inherit; pointer-events: none;
-  background: var(--paper-live, none) center / cover no-repeat;
+  background: var(--paper-live, none) center / 100vw 100vh no-repeat;
   mix-blend-mode: var(--paper-blend); opacity: 0;
 }
 /* Once it's made (src/lib/paper-live.ts), it fades in over 400 ms at the strength that keeps text AA (--paper-on) */
@@ -549,6 +551,18 @@
 /* The driver card stays bright paper in Lantern, where the sheet made is the night one: plain there */
 [data-theme="lantern"] .sheet-bright::after { display: none; }
 .letter .paper-feel::after, .sheet .paper-feel::after { display: none; }
+/* Final run P: the top bar and the dock are the same paper as the card (its colour token and the same sheet made in the
+   browser), so bar, card and dock read as one sheet. The sheet is the screen's size, laid from the top for the bar and
+   from the bottom for the dock, so its grain lines up with the card's. From 768 the nav sits inside the bar. */
+.site-bar::after, .site-nav::after {
+  content: ""; position: absolute; inset: 0; z-index: 30; pointer-events: none;
+  background: var(--paper-live, none) top center / 100vw 100vh no-repeat;
+  mix-blend-mode: var(--paper-blend); opacity: 0;
+}
+.site-nav { isolation: isolate; }
+.site-nav::after { background-position: bottom center; }
+[data-paper] :is(.site-bar, .site-nav)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity 400ms var(--ease-paper); }
+@media (min-width: 768px) { .site-nav::after { display: none; } }
 @media print { .letter::after, .paper-feel::after { display: none; } }
 
 /* The top bar, on every screen and never hidden: the mark on the left, the switches on the right (the nav and RSVP
@@ -1120,10 +1134,10 @@ svg.lucide { stroke-width: 1.5; }
 .names-art-wrap { position: relative; display: block; }
 .names-art-ink, .names-art-amp { position: absolute; inset: 0; -webkit-mask: var(--names-mask) left center / contain no-repeat; mask: var(--names-mask) left center / contain no-repeat; background: var(--ink); }
 .names-art-amp { -webkit-mask-image: var(--amp-mask); mask-image: var(--amp-mask); background: var(--action); }
-.names-lettering { width: min(100%, 442px); } /* 15% under the 520 it was (18e) */
+.names-lettering { width: min(92%, 406px); } /* the letters as big as at 442 before the words moved in (final run P) */
 /* On the letter inside the envelope: centred, brown always (the envelope stays cream) */
 .envelope-paper { display: grid; place-items: start center; padding-top: 12%; }
-.envelope-names { width: 72%; }
+.envelope-names { width: 66%; } /* 72% before the words moved in: the same letter size (final run P) */
 .envelope-names > span { -webkit-mask-position: center; mask-position: center; }
 .names-lettering.is-revealing { animation: letter-draw 1400ms var(--ease-paper) 200ms both; }
 @keyframes letter-draw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }

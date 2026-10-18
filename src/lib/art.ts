@@ -9,7 +9,7 @@ export const ART = {
    * Her lettering for the names (17 Oct), as two masks (the names, the "&"), filled with theme tokens in CSS. The
    * page keeps the names as text for screen readers and the title. ratio holds the space before it loads (no jump).
    */
-  names: { mask: "art/names/names-mask", amp: "art/names/amp-mask", ratio: 4.1402 }, // 18 Oct lettering, 520 and 1040 wide
+  names: { mask: "art/names/names-mask", amp: "art/names/amp-mask", ratio: 3.8023 }, // 18 Oct lettering, 520 and 1040 wide; the words pulled in to the "&" (final run P)
   /** Her wax seal and gum leaves on their own (17 Oct): the seal wherever the G&N seal shows alone, the leaves in the lab */
   seal: { src: "art/seal/wax-seal", widths: [64, 128, 256] },
   leaves: { src: "art/leaves/gum-leaves", widths: [160, 320], ratio: 0.743 },
