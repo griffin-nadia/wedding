@@ -58,7 +58,7 @@ export const en = {
     signOff: "With love, G & N",
     credit: "Site by Jehan Baguley",
     skip: "Skip to the letter",
-    open: "Tap to open",
+    open: "Open", // the button under the envelope; the hand-lettered note says "Open your invite"
     note: "Open your invite",
     openLabel: (name: string) => `Open your invitation${name ? `, ${name}` : ""}`,
     phoneTitle: "Open on your phone",

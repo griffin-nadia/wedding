@@ -14,6 +14,13 @@ export const ART = {
   seal: { src: "art/seal/wax-seal", widths: [64, 128, 256] },
   leaves: { src: "art/leaves/gum-leaves", widths: [160, 320], ratio: 0.743 },
   /**
+   * The arrival note's words (run 19), one lettering per language, as masks filled with the note's colour. Stand-ins
+   * until Nadia letters them: La Belle Aurore and Klee One SemiBold (both SIL OFL) turned into outlines, so no font
+   * loads. To use hers: save her lettering as an SVG or a transparent PNG in public/art/note/ and set src and ratio
+   * (width ÷ height) here.
+   */
+  note: { en: { src: "art/note/note-en.svg", ratio: 4.2781 }, ja: { src: "art/note/note-ja.svg", ratio: 8.8812 } },
+  /**
    * Nadia's drawn envelope (17 Oct, painted): closed (maple, gum leaf and the G·N seal) and open, transparent, as
    * <name>-410 and <name>-820 in .avif and .webp. ratio: width ÷ height of the closed one, which sets the envelope's box.
    */
