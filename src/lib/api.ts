@@ -208,7 +208,7 @@ export async function getFortunes(): Promise<string[] | null> {
   try { const d = await call(`${config.apiUrl}?action=fortunes`); return d.ok && Array.isArray(d.fortunes) ? d.fortunes : null } catch { return null }
 }
 
-/** Crew links (/kit and /lab): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */
+/** Crew links (the tuning panel and /kit; the lab is local only since 18 Oct): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */
 export async function checkCrew(token: string): Promise<"yes" | "no" | "error"> {
   if (!config.apiUrl) return "yes"
   if (!token) return "no"

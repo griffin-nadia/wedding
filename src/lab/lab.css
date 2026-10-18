@@ -32,12 +32,7 @@
 .lab-bar { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-5); background: var(--letter-bg); border-bottom: 1px solid var(--line-hairline); }
 .lab-body { display: grid; gap: var(--space-5); padding: var(--space-5); }
 .lab-body[data-docked] { grid-template-columns: 380px minmax(0, 1fr); }
-.lab-frames { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-6); }
 .lab-frame { border: 1px solid var(--line-hairline); border-radius: var(--radius-section); background: #fff; box-shadow: var(--elevation-paper); }
-.lab-desktop { position: relative; flex: 1; min-width: 320px; aspect-ratio: 1440 / 900; overflow: hidden; border-radius: var(--radius-section); }
-.lab-desktop .lab-frame { position: absolute; top: 0; left: 0; width: 1440px; height: 900px; transform-origin: 0 0; }
-.lab-experiments { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: var(--space-5); }
-.lab-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); border-radius: var(--radius-section); background: var(--letter-bg); box-shadow: var(--elevation-raised); }
 
 /* ── Playground (index, viewer, the experiment frame) ── */
 .lab-index { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: var(--space-4); }
@@ -45,7 +40,6 @@
 .lab-index-card:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .lab-index-card:hover { transform: translateY(-2px); } }
 .lab-thumb { display: block; width: 100%; aspect-ratio: 390 / 520; object-fit: cover; object-position: top; border-radius: var(--radius-control); background: var(--surface-alt); }
-.lab-tag { margin-left: var(--space-2); padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--surface-alt); color: var(--ink-soft); font-size: var(--type-label-size); font-weight: 500; vertical-align: middle; }
 .lab-viewer { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
 @media (max-width: 900px) { .lab-viewer { grid-template-columns: 1fr; } }
 .lab-speed { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; }

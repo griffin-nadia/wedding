@@ -3,7 +3,8 @@
 Two optional Cloudflare Pages projects, deployed by `docs/ci/previews.yml` once it's moved to
 `.github/workflows/previews.yml` and the two secrets exist. Until then the workflow passes without doing anything.
 
-- **gn-lab**: the lab, on every merge to main. `https://gn-lab.pages.dev/` goes to the lab.
+- **gn-lab**: the lab, on every merge to main. Not used since 18 Oct: the lab is local only (`npm run lab`), so
+  leave this project out (or drop the "Deploy the lab" step) if the previews are ever turned on.
 - **gn-preview**: the guest site for each pull request. The address is posted as a comment on the PR
   (`https://pr-<number>.gn-preview.pages.dev/wedding/?h=sample`).
 
@@ -11,7 +12,7 @@ Both are built with no back end, so they show the sample household and nothing t
 Every response carries `X-Robots-Tag: noindex, nofollow`, and `scripts/preview-check.mjs` stops the deploy if the
 output holds a file from `private/`, a back-end address or anything that looks like a guest list.
 
-The lab on GitHub Pages (`/wedding/lab-x2tyua87sy/`) works without any of this; Cloudflare adds per-PR previews and
+The lab isn't on GitHub Pages any more (local only since 18 Oct); Cloudflare adds per-PR previews of the guest site and
 an optional sign-in.
 
 ## 1. Move the workflow (once, from an account with the workflow scope)

@@ -20,7 +20,7 @@ live list of placeholders and Japanese lines.
   passes 9 of 9: a household of 6, long names, slow and lost connections, a double Send, a bad link, two tabs.
 - The back end (Apps Script, version 43): emails only send from the wedding account (held otherwise); name order
   check; Prepare for launch (report only until run for real); weekly backup; emails say Japan time.
-- The lab at a hidden path: https://griffin-nadia.github.io/wedding/lab-x2tyua87sy/ (noindex).
+- The lab is local only (`npm run lab`) since 18 Oct; the hidden path is gone from the deploy and from robots.txt.
 - The ICOCA & HARUKA link that was broken is replaced by JR West's HARUKA One-way Ticket page (18c).
 
 ## What Jehan does by hand, in this order
