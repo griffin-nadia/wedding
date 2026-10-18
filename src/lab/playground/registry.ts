@@ -6,6 +6,7 @@ import { entries as confirmation } from "./x/confirmation"
 import { entries as paper } from "./x/paper"
 import { entries as micro } from "./x/micro"
 import { entries as logo } from "./x/logo"
+import { entries as arrival } from "./x/arrival"
 
 /**
  * What the lab keeps (lab run 19): the choices still open and the parked ideas, by area in the order guests meet
@@ -13,6 +14,7 @@ import { entries as logo } from "./x/logo"
  */
 export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "opening", title: "Opening", entries: opening },
+  { id: "arrival", title: "Arrival framing", entries: arrival },
   { id: "story", title: "Our story", entries: story },
   { id: "journey", title: "Journey", entries: journey },
   { id: "confirmation", title: "Confirmation", entries: confirmation },
