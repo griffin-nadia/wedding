@@ -44,11 +44,18 @@ export function JourneyFlat({ you, cities, label, children }: { you: City | null
       c.width = Math.round(SPAN * px); c.height = Math.round(TALL * px)
       for (const shift of [0, 360]) g.drawImage(src, (-180 + shift - FRAME.west) * px, (FRAME.north - 90) * px)
     }).catch(() => { /* the lines still show on the paper */ })
+    // On screen and its story stop showing (stops lie on top of each other under reduced motion, so "on screen"
+    // alone would paint it on load)
     const el = art.current
     if (!el || typeof IntersectionObserver === "undefined") { paint(); return () => { alive = false } }
-    const seen = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) { seen.disconnect(); paint() } })
+    const stop = el.closest("[inert]")
+    let onScreen = false, done = false
+    const go = () => { if (done || !onScreen || stop?.hasAttribute("inert")) return; done = true; seen.disconnect(); shown.disconnect(); paint() }
+    const seen = new IntersectionObserver((e) => { onScreen = e.some((x) => x.isIntersecting); go() })
+    const shown = new MutationObserver(go)
     seen.observe(el)
-    return () => { alive = false; seen.disconnect() }
+    if (stop) shown.observe(stop, { attributes: true, attributeFilter: ["inert"] })
+    return () => { alive = false; seen.disconnect(); shown.disconnect() }
   }, [cities, you, theme])
   const kyoto = flatPoint(KYOTO)
   const others = cities.filter((c) => c.n > 0).map((c) => flatPoint([c.lat, c.lon]))
