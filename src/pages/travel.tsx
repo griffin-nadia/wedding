@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
-import { letterScroll, nextFrame } from "@/lib/frame"
+import { letterScroll, nextFrame, scrollToEl, still } from "@/lib/frame"
 import { useLocation } from "react-router-dom"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowUpRight, ChevronRight } from "lucide-react"
@@ -24,12 +24,12 @@ function Ext({ href, children }: { href: string; children: React.ReactNode }) {
 
 /**
  * In-page links glide to their section instead of the browser's instant jump (and land at once under reduced
- * motion). The address keeps the hash, replaced rather than added, so Back still leaves the page.
+ * motion), just under the stuck tab row (run 19: one exact target worked out from the row, not a scroll margin).
+ * The address keeps the hash, replaced rather than added, so Back still leaves the page.
  */
-const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches
 function glide(e: React.MouseEvent, id: string) {
   e.preventDefault()
-  document.getElementById(id)?.scrollIntoView({ behavior: still() ? "instant" : "smooth" })
+  scrollToEl(document.getElementById(id))
   history.replaceState(history.state, "", `#${id}`)
 }
 
@@ -251,7 +251,7 @@ export function TravelPage() {
     first.current = false
     if (id === "hotels" || id === "airbnbs") setSheet(id)
     else if (!(SECTIONS as readonly string[]).includes(id) && id !== "picks" && id !== "getting-there") setOpen(id)
-    nextFrame(() => document.getElementById(id === "getting-there" ? "on-the-day" : id)?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" }))
+    nextFrame(() => scrollToEl(document.getElementById(id === "getting-there" ? "on-the-day" : id), smooth))
   }, [hash])
   const goStay = (e: React.MouseEvent) => glide(e, "stay")
   const one = { value: open, onValueChange: setOpen }
