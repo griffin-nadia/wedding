@@ -235,11 +235,15 @@ html { scrollbar-gutter: stable; }
 @media (prefers-reduced-motion: reduce) { .arrival-note-words { animation: none; clip-path: none; } .arrival-note-arrow path { animation: none; stroke-dashoffset: 0; } }
 
 /* Phones and tablets, sealed: their photo in its own box so their faces sit clear of the envelope and its note (in the
-   top 45% of the screen standing up, on the right lying down), fading into its own soft blur where the envelope
-   floats. The photo fills the screen's height exactly when standing, so object-position alone had nothing to move:
+   top 45% of the screen standing up, on the right lying down), fading into the card's paper where the envelope
+   floats (no blurred copy of the photo behind the envelope, 20 Oct, as on laptops). The photo fills the screen's height exactly when standing, so object-position alone had nothing to move:
    the box gives it room. Once open it glides back to filling the screen, behind the card. Laptops keep their framing. */
 @property --photo-fade { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
 @media (max-width: 1023.98px) {
+  [data-sealed] .scene-fill { background-image: none !important; background-color: var(--letter-bg); filter: none; transform: none; }
+  /* On the paper, so in ink (as on laptops' paper panel, 1024 to 1279) */
+  .arrival-open { color: var(--ink-soft); text-shadow: none; }
+  .arrival-note { color: var(--ink-soft); filter: none; }
   .scene-photo { --photo-fade: 0%; transition: bottom var(--duration-slow) var(--ease-paper), left var(--duration-slow) var(--ease-paper), --photo-fade var(--duration-slow) var(--ease-paper); }
   .scene-photo img { transition: object-position var(--duration-slow) var(--ease-paper); }
 }
