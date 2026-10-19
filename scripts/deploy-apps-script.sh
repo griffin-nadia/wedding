@@ -27,6 +27,8 @@ for i in 1 2 3 4 5 6; do
   out=$(node -e 'fetch(process.argv[1]+"?action=health"+(process.env.HEALTH_KEY?"&key="+process.env.HEALTH_KEY:"")).then(r=>r.json()).then(j=>console.log(j.ok===true&&j.sheet!==false?"ok":"bad "+JSON.stringify({ok:j.ok,sheet:j.sheet}))).catch(e=>console.log("bad "+e.message))' "$url")
   if [ "$out" = ok ]; then
     echo "✓ health ok"; echo "$now" > $seen
+    # The new version can take a few seconds to answer everywhere, so one more try before failing
+    node scripts/privacy-live.mjs "$url" >/dev/null || sleep 20
     node scripts/privacy-live.mjs "$url" || { echo "✖ a public answer says more than it should (above)"; exit 3; }
     exit 0
   fi

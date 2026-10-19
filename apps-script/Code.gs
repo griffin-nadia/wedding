@@ -71,7 +71,7 @@ const VISITS = ["First opened", "Last opened", "Opens", "Started RSVP"]
 const CACHE_SECONDS = 6 * 60 * 60
 
 // Invite week: ping the web app every 15 minutes so the first guests don't hit a cold start.
-const WARM = { from: "2026-10-15T00:00:00+11:00", to: "2026-10-23T00:00:00+11:00", url: "https://script.google.com/macros/s/AKfycbxkbvJ9oRlafnzMYY-iBGKeC-0u9TP85jUzPeRtHIAnXs7aNspQRciOagH9FKzHhWIbZw/exec" }
+const WARM = { from: "2026-10-15T00:00:00+11:00", to: "2026-10-23T00:00:00+11:00" } // the web app's own address comes from ScriptApp.getService()
 const REPEAT_OPEN_MS = 10 * 60 * 1000
 
 // Test sends stop after this many households, so a test never eats the day's email quota.
@@ -1018,7 +1018,7 @@ function flushQueue_() {
   })
   const now = Date.now()
   if (now >= new Date(WARM.from).getTime() && now < new Date(WARM.to).getTime() && new Date().getMinutes() % 15 === 0) {
-    safely_(() => UrlFetchApp.fetch(WARM.url + "?action=ping", { muteHttpExceptions: true }))
+    safely_(() => UrlFetchApp.fetch(ScriptApp.getService().getUrl() + "?action=ping", { muteHttpExceptions: true }))
   }
 }
 
