@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test"
 import fs from "node:fs"
 
 test.use({ reducedMotion: "no-preference" })
-const open = (page: Page) => page.getByRole("button", { name: "Open", exact: true })
+const open = (page: Page) => page.getByRole("button", { name: /^Open your invitation/ })
 
 // 18e: a calm Open button under a floating envelope, which never offers its picture on a long press
 test("the arrival: a real Open button, no long-press save, and the float pauses where it is on opening", async ({ page }) => {
@@ -19,11 +19,11 @@ test("the arrival: a real Open button, no long-press save, and the float pauses 
     }
   })
   expect(env).toEqual({ inLink: false, draggable: true, callout: "none", select: "none", floating: "envelope-float" })
-  // The envelope sits below the middle of the screen, the label under it
-  const [e, l, h] = await page.evaluate(() => [document.querySelector(".envelope")!.getBoundingClientRect().top, document.querySelector(".arrival-open")!.getBoundingClientRect().top, innerHeight])
+  // The envelope sits below the middle of the screen, with no word under it (Jehan, 20 Oct): the note says it
+  const [e, h] = await page.evaluate(() => [document.querySelector(".envelope")!.getBoundingClientRect().top, innerHeight])
   expect(e).toBeGreaterThan(h * 0.3)
-  expect(l).toBeGreaterThan(e)
-  await open(page).click()
+  await expect(page.locator(".arrival-open")).toHaveCount(0)
+  await open(page).click({ force: true }) // it floats, so it never holds still for a normal click
   await expect(page.locator(".envelope-float")).toHaveCSS("animation-play-state", "paused")
   await expect(page.locator("#letter")).toBeFocused({ timeout: 3000 })
 })
@@ -46,7 +46,7 @@ for (const theme of ["autumn", "lantern"] as const) test(`the envelope's letter 
     expect(before.bg).toBe("oklch(0.245 0.034 49)") // walnut, the night letter
     expect(before.ink).toBe("oklch(0.932 0.03 80.7)") // cream lettering
   }
-  await open(page).click()
+  await open(page).click({ force: true }) // it floats, so it never holds still for a normal click
   await page.waitForTimeout(150)
   expect((await look()).bg).toBe(before.bg) // the same paper while it opens: nothing swaps mid-way
   await expect(page.locator("#letter .names-art-amp").first()).toBeVisible({ timeout: 5000 })
@@ -142,9 +142,9 @@ test("open, seal, open, seal: one step at a time, held at 0, 25, 50, 75 and 100%
   await expect(page.locator(".envelope-float")).toHaveCSS("animation-play-state", "running") // floating again
 })
 
-// Run 19: their faces stay clear of the envelope, its note and Open, at every phone size standing and lying down and
-// at laptop sizes, in both themes. Boxes are drawn over the faces (red), the note (blue), the envelope (green) and Open
-// (yellow) for the screenshot. The faces' box is the photo's face rect (scenes.json) where the photo lands on screen.
+// Run 19: their faces stay clear of the envelope and its note, at every phone size standing and lying down and at
+// laptop sizes, in both themes. Boxes are drawn over the faces (red), the note (blue) and the envelope (green) for the
+// screenshot. 20 Oct: the photo fills the screen on phones as on every page (no box), zoomed to lift their faces. The faces' box is the photo's face rect (scenes.json) where the photo lands on screen.
 const phones = [[320, 568], [375, 667], [390, 844], [430, 932], [568, 320], [667, 375], [844, 390], [932, 430]] as const
 const laptops = [[1024, 768], [1280, 800], [1440, 900], [1920, 1080]] as const
 for (const theme of ["autumn", "lantern"] as const) test(`nothing covers their faces on the arrival (${theme})`, async ({ page }, info) => {
@@ -160,26 +160,30 @@ for (const theme of ["autumn", "lantern"] as const) test(`nothing covers their f
     await page.setViewportSize({ width: w, height: h })
     await page.waitForFunction(([w, h]) => innerWidth === w && innerHeight === h, [w, h])
     await page.waitForTimeout(200) // the note re-places itself on the resize (a ResizeObserver, then a render)
-    await expect(page.locator(".arrival-note-words"), `${w}×${h}: the note is there`).toBeVisible()
+    // Short phones in Lantern (under 700 tall; 20 Oct, the night photo full screen): no room for the note clear of
+    // their faces, so it's left off; the envelope is still the button. Everywhere else it's there.
+    const small = h < 700 && h > w && theme === "lantern"
+    if (!small) await expect(page.locator(".arrival-note-words"), `${w}×${h}: the note is there`).toBeVisible()
     const r = await page.evaluate((scenes) => {
       const layer = document.querySelector<HTMLElement>("[data-photo].opacity-100")!, img = layer.querySelector("img")!
-      const s = scenes[layer.dataset.photo!], meta = matchMedia("(min-width: 1280px)").matches && s.wide ? s.wide : s
+      const s = scenes[layer.dataset.photo!], meta = matchMedia("(min-width: 1280px), (orientation: landscape) and (max-width: 1023.98px)").matches && s.wide ? s.wide : s
       const b = img.getBoundingClientRect(), k = Math.max(b.width / meta.w, b.height / meta.h)
       const [px, py] = getComputedStyle(img).objectPosition.split(" ").map((v) => parseFloat(v) / 100)
       const ox = b.left + (b.width - meta.w * k) * px, oy = b.top + (b.height - meta.h * k) * py, [x0, y0, x1, y1] = meta.face!
       const face = new DOMRect(ox + x0 * meta.w * k, oy + y0 * meta.h * k, (x1 - x0) * meta.w * k, (y1 - y0) * meta.h * k)
-      const boxes = { face, words: document.querySelector(".arrival-note-words")!.getBoundingClientRect(), arrow: document.querySelector(".arrival-note-arrow")!.getBoundingClientRect(), envelope: document.querySelector(".envelope")!.getBoundingClientRect(), open: document.querySelector(".arrival-open")!.getBoundingClientRect() }
+      const note = document.querySelector(".arrival-note-words"), none = new DOMRect(-99, -99, 0, 0)
+      const boxes = { face, words: note?.getBoundingClientRect() ?? none, arrow: document.querySelector(".arrival-note-arrow")?.getBoundingClientRect() ?? none, envelope: document.querySelector(".envelope")!.getBoundingClientRect() }
       document.querySelectorAll(".face-box").forEach((e) => e.remove())
-      const colour = { face: "red", words: "blue", arrow: "blue", envelope: "lime", open: "yellow" }
+      const colour = { face: "red", words: "blue", arrow: "blue", envelope: "lime" }
       for (const [k, v] of Object.entries(boxes)) { const d = document.createElement("div"); d.className = "face-box"; Object.assign(d.style, { position: "fixed", zIndex: "99", left: `${v.x}px`, top: `${v.y}px`, width: `${v.width}px`, height: `${v.height}px`, outline: `2px solid ${colour[k as keyof typeof colour]}`, pointerEvents: "none" }); document.body.append(d) }
       const hit = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
       const names = Object.keys(boxes) as (keyof typeof boxes)[], overlaps: string[] = []
       for (const a of names) for (const b of names) if (a < b && !(a === "arrow" && b === "words") && hit(boxes[a], boxes[b])) overlaps.push(`${a} × ${b}`)
-      return { overlaps, faceBottom: face.bottom / innerHeight, side: document.querySelector<HTMLElement>(".arrival-note")!.dataset.side, wide: innerWidth >= 1024, portrait: innerHeight > innerWidth, onScreen: [boxes.words, boxes.arrow].every((b) => b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight) }
+      return { overlaps, faceBottom: face.bottom / innerHeight, side: document.querySelector<HTMLElement>(".arrival-note")?.dataset.side, wide: innerWidth >= 1024, portrait: innerHeight > innerWidth, onScreen: !note || [boxes.words, boxes.arrow].every((b) => b.left >= 0 && b.right <= innerWidth && b.top >= 0 && b.bottom <= innerHeight) }
     }, scenes)
     expect(r.overlaps, `${w}×${h}: nothing overlaps`).toEqual([])
     expect(r.onScreen, `${w}×${h}: the note is on screen`).toBe(true)
-    if (!r.wide && r.portrait) { expect(r.faceBottom, `${w}×${h}: their faces in the top 45%`).toBeLessThanOrEqual(0.45); expect(r.side).toBe("above") }
+    if (!r.wide && r.portrait && !small) expect(r.side, `${w}×${h}: the note above or below the envelope`).toMatch(/^(above|below)$/)
     if (r.wide) expect(r.side, `${w}×${h}: beside the envelope`).not.toBe("above")
     if (w === 390 || w === 1440) await expect(page).toHaveScreenshot(`arrival-faces-${theme}-${w}.png`)
     else await info.attach(`faces-${w}x${h}`, { body: await page.screenshot(), contentType: "image/png" })

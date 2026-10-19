@@ -11,7 +11,7 @@ test.describe.configure({ timeout: 180_000 }) // software WebGL on CI makes the 
 for (const theme of ["autumn", "lantern"] as const) test(`the envelope's letter is the card's paper, frame by frame (${theme})`, async ({ page }) => {
   await page.addInitScript((t) => { localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t); localStorage.setItem("ng-paper", "on") }, theme)
   await page.goto("?h=sample")
-  await expect(page.getByRole("button", { name: "Open", exact: true })).toBeVisible()
+  await expect(page.getByRole("button", { name: /^Open your invitation/ })).toBeVisible()
   test.skip(!(await page.evaluate(() => Boolean(document.createElement("canvas").getContext("webgl2")))), "no WebGL here")
   await page.mouse.click(5, 5) // the first input starts the paper
   await expect(page.locator("html[data-paper]")).toHaveCount(1, { timeout: 30_000 })

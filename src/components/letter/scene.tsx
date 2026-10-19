@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react"
-import { SCENES, type SceneSource } from "@/lib/scenes"
+import { SCENES, WIDE, type SceneSource } from "@/lib/scenes"
 import { cn } from "@/lib/utils"
 
 const base = import.meta.env.BASE_URL
 const set = (name: string, fmt: string) => [800, 1200, 1600, 2000, 2400].map((w) => `${base}scenes/${name}-${w}.${fmt} ${w}w`).join(", ")
 // From 1280: the 16:9 version (extended in Photoshop) with them in the right third, so it can fill the screen
 const wideSet = (name: string, fmt: string) => [1600, 2400].map((w) => `${base}scenes/${name}-wide-${w}.${fmt} ${w}w`).join(", ")
-const WIDE = "(min-width: 1280px)"
 
 /**
  * The scene behind the letter: their photo.
@@ -69,6 +68,17 @@ function PhotoPair({ name, dim, className }: { name: string; dim: boolean; class
   )
 }
 
+/**
+ * Phones standing up (20 Oct): the photo fills the screen's height, so their faces sit wherever they are in it. To give
+ * them the most room above the envelope, it's zoomed a little from its bottom edge, just enough to lift their faces
+ * into the top half (k), never past the top bar and never more than 1.5x; centred on them across. The same on every
+ * screen, so nothing moves when the envelope opens. polish.css applies it.
+ */
+function faceFrame([x0, y0, x1, y1]: number[]) {
+  const k = Math.min(1.5, 0.92 / (1 - y0), Math.max(1, 0.5 / (1 - y1)))
+  return { ["--face-x" as string]: `${Math.round((x0 + x1) * 50)}%`, ["--face-k" as string]: k.toFixed(3) }
+}
+
 function PhotoScene({ name, priority, onReady }: { name: string; priority: boolean; onReady: () => void }) {
   const meta = SCENES[name as keyof typeof SCENES]
   const img = useRef<HTMLImageElement>(null)
@@ -79,7 +89,8 @@ function PhotoScene({ name, priority, onReady }: { name: string; priority: boole
     <>
       {/* Blur-up and, from 1024, the soft fill the letter sits over */}
       <div className="scene-fill absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${meta.lqip})`, ["--scene-wide-lqip" as string]: meta.wide ? `url(${meta.wide.lqip})` : undefined }} />
-      <picture className="scene-photo absolute inset-0" data-wide={meta.wide ? "" : undefined}>
+      <picture className="scene-photo absolute inset-0" data-wide={meta.wide ? "" : undefined}
+        style={meta.face ? faceFrame(meta.face) : undefined}>
         {meta.wide && <source media={WIDE} type="image/avif" srcSet={wideSet(name, "avif")} sizes="100vw" />}
         {meta.wide && <source media={WIDE} type="image/webp" srcSet={wideSet(name, "webp")} sizes="100vw" />}
         <source type="image/avif" srcSet={set(name, "avif")} sizes="max(100vw, 75vh)" />

@@ -4,7 +4,7 @@ import { faceRect } from "@/lib/face"
 import { useLang } from "@/lib/lang"
 
 type Box = { x: number; y: number; w: number; h: number }
-type Place = { side: "above" | "left" | "right"; words: Box; arrow: Box }
+type Place = { side: "above" | "below" | "left" | "right"; words: Box; arrow: Box }
 
 const hits = (a: Box, b: DOMRect | Box) => {
   const bw = "width" in b ? b.width : b.w, bh = "height" in b ? b.height : b.h
@@ -38,7 +38,8 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
       const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--bar-h")) || 56
       const wide = matchMedia("(min-width: 1024px)").matches
       // A quarter larger on laptops where there's room beside the envelope
-      const base = lang === "ja" ? 180 : 160, ww = wide ? Math.max(base, Math.min(base * 1.25, e.left - 20)) : base, wh = Math.round(ww / art.ratio)
+      const base = lang === "ja" ? 180 : 160
+      let ww = wide ? Math.max(base, Math.min(base * 1.25, e.left - 20)) : base, wh = Math.round(ww / art.ratio)
       const above = (): Place => {
         const tip = { x: e.left + e.width / 2 + 18, y: e.top - 12 }
         let arrow = { x: tip.x - 38.6, y: tip.y - 43.9, w: 72, h: 48 }
@@ -46,6 +47,16 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
         const dx = Math.max(0, 12 - words.x) // a narrow phone: slide right, the arrow still lands on the flap
         arrow = { ...arrow, x: arrow.x + dx }; words = { ...words, x: words.x + dx }
         return { side: "above", words, arrow }
+      }
+      // Under the envelope, its arrow pointing up at the flap (20 Oct: the photo fills the screen and the word Open
+      // is gone, so on most phones this is the room left clear of their faces)
+      const below = (): Place => {
+        const tip = { x: e.left + e.width / 2 + 18, y: e.bottom + 12 }
+        let arrow = { x: tip.x - 38.6, y: tip.y - 4.1, w: 72, h: 48 }
+        let words = { x: arrow.x + 4 - ww, y: arrow.y + 40 - wh / 2, w: ww, h: wh }
+        const dx = Math.max(0, 12 - words.x)
+        arrow = { ...arrow, x: arrow.x + dx }; words = { ...words, x: words.x + dx }
+        return { side: "below", words, arrow }
       }
       const left = (): Place => {
         const tip = { x: e.left - 20, y: e.top + e.height * 0.5 }
@@ -59,11 +70,14 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
         const words = { x: Math.max(arrow.x + 78 - ww * 0.55, e.right + 12), y: arrow.y - wh + 2, w: ww, h: wh }
         return { side: "right", words, arrow }
       }
-      const tries = wide ? [left(), right(), above()] : [above(), left(), right()]
-      const keepOut = [grow(e, 6), ...(label ? [grow(label, 4)] : []), ...(face ? [face] : [])]
+      const tries = () => wide ? [left(), right(), above()] : [above(), below(), left(), right()]
+      const keepOut = [grow(e, 6), ...(label ? [grow(label, 4)] : []), ...(face ? [grow(face, 6)] : [])]
       const clear = (p: Place) => [p.words, p.arrow].every((b) =>
         b.x >= 8 && b.y >= bar && b.x + b.w <= innerWidth - 8 && b.y + b.h <= innerHeight - 8 && keepOut.every((k) => !hits(b, k)))
-      setPlace(tries.find(clear) ?? null)
+      let found = tries().find(clear)
+      // A small phone: the note a fifth smaller rather than none at all
+      if (!found && !wide) { ww = Math.round(ww * 0.8); wh = Math.round(ww / art.ratio); found = tries().find(clear) }
+      setPlace(found ?? null)
     }
     fit()
     // The viewport (the root) or the envelope changing size moves the note; no resize listener
@@ -80,7 +94,7 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
       <svg viewBox="0 0 96 64" className="arrival-note-arrow" fill="none" style={at(place.arrow)}>
         {/* In from the words at an angle, one loose loop, then the head: two short strokes of slightly different
             length meeting at the tip, drawn after the line lands. A little wobble in the curves, like a pen. */}
-        {place.side === "above"
+        {place.side === "above" || place.side === "below"
           ? <><path pathLength={1} d="M7 5 C 24 0.5, 43 5.5, 45.5 18 C 47.5 28.5, 33 31, 33.5 21.5 C 34 11.5, 55 14, 55.5 30 C 56 41, 54 50, 51.5 58.5" /><path className="head" pathLength={1} d="M43.8 51.2 L51.5 58.5 M51.5 58.5 L60.3 48.4" /></>
           : <><path pathLength={1} d="M7 4 C 5.5 17, 13 30.5, 25.5 26.5 C 36 23, 31 11.5, 23.5 17.5 C 15.5 25, 42 50.5, 80.5 52" /><path className="head" pathLength={1} d="M71.5 45.6 L81 52 M81 52 L71.8 59.4" /></>}
       </svg>
