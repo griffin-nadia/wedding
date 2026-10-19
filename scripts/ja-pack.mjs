@@ -1,6 +1,6 @@
 // node scripts/ja-pack.mjs [since-commit] — the Japanese read pack: every Japanese line on the site next to its English,
-// grouped by page, the ones new or changed since <since-commit> marked, as docs/japanese-read.md and
-// docs/japanese-read.csv (paste into a sheet for whoever reads it). Placeholders (pending.ts) and the music credit too.
+// grouped by page, the ones new or changed since <since-commit> marked, as .brief/docs/japanese-read.md and
+// .brief/docs/japanese-read.csv (paste into a sheet for whoever reads it). Placeholders (pending.ts) and the music credit too.
 import { build } from "esbuild"
 import { execFileSync } from "node:child_process"
 import fs from "node:fs"
@@ -75,6 +75,6 @@ for (const [page] of [...PAGES, ["Other"]]) {
 }
 const csvCell = (s) => `"${String(s).replace(/"/g, '""')}"`
 const csv = ["page,key,english,japanese,status,fix", ...rows.map((r) => [pageOf(r), key(r), r.en, r.ja, r.status, ""].map(csvCell).join(","))].join("\n") + "\n"
-fs.writeFileSync("docs/japanese-read.md", md)
-fs.writeFileSync("docs/japanese-read.csv", "﻿" + csv) // a BOM, so a spreadsheet opens it as UTF-8
+fs.writeFileSync(".brief/docs/japanese-read.md", md)
+fs.writeFileSync(".brief/docs/japanese-read.csv", "﻿" + csv) // a BOM, so a spreadsheet opens it as UTF-8
 console.log(counts)

@@ -1,12 +1,12 @@
 // node scripts/frame-shots.mjs [out-dir] — every tab at the top and the bottom of its scroll, at 390 and 1440, light and
 // dark, against the built site on vite preview (npm run build, then npx vite preview --port 4173). Full shots go to
-// out-dir (default .brief/shots, gitignored); one contact sheet per width to docs/runs/18e/. Prints the card's gap
+// out-dir (default .brief/shots, gitignored); one contact sheet per width to .brief/docs/runs/18e/. Prints the card's gap
 // under the bar and above the dock (or the screen's bottom), and whether the page itself scrolls (it never should).
 import { chromium, devices } from "@playwright/test"
 import fs from "node:fs"
 
 const out = process.argv[2] ?? ".brief/shots"
-fs.mkdirSync(out, { recursive: true }); fs.mkdirSync("docs/runs/18e", { recursive: true })
+fs.mkdirSync(out, { recursive: true }); fs.mkdirSync(".brief/docs/runs/18e", { recursive: true })
 const PAGES = ["", "the-day", "travel", "our-story", "faqs"]
 const b = await chromium.launch()
 for (const [name, opts] of [["390", { ...devices["Pixel 7"], viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 }], ["1440", { viewport: { width: 1440, height: 900 } }]]) {
@@ -35,7 +35,7 @@ for (const [name, opts] of [["390", { ...devices["Pixel 7"], viewport: { width: 
   const w = name === "390" ? 195 : 360, cols = name === "390" ? 10 : 5
   const page = await b.newPage({ viewport: { width: cols * (w + 8) + 8, height: 400 } })
   await page.setContent(`<body style="margin:0;padding:4px;background:#ddd;font:11px sans-serif;display:grid;grid-template-columns:repeat(${cols},${w}px);gap:8px">${shots.map(([l, f]) => `<figure style="margin:0"><img style="width:${w}px;display:block" src="data:image/png;base64,${fs.readFileSync(f).toString("base64")}"><figcaption>${l}</figcaption></figure>`).join("")}</body>`)
-  await page.screenshot({ path: `docs/runs/18e/frame-${name}.jpg`, fullPage: true, type: "jpeg", quality: 70 })
+  await page.screenshot({ path: `.brief/docs/runs/18e/frame-${name}.jpg`, fullPage: true, type: "jpeg", quality: 70 })
   await page.close()
 }
 await b.close()
