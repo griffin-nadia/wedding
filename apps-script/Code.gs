@@ -165,7 +165,7 @@ function fixNameOrder() {
   const ui = SpreadsheetApp.getUi()
   const wrong = /Nadia\s*(&|and|＆)\s*Griffin/g
   const hits = []
-  SpreadsheetApp.getActive().getSheets().forEach((sh) => {
+  ss_().getSheets().forEach((sh) => {
     const range = sh.getDataRange(), values = range.getValues(), formulas = range.getFormulas()
     values.forEach((row, r) => row.forEach((v, c) => {
       if (typeof v === "string" && v.match(wrong)) hits.push({ sh: sh, r: r + 1, c: c + 1, v: v, formula: Boolean(formulas[r][c]) })
@@ -308,7 +308,7 @@ function prepareForLaunchForReal() {
   const ok = ui.prompt("Prepare for launch: run for real", launchReport_(plan, true) + "\n\nType LAUNCH to go ahead.", ui.ButtonSet.OK_CANCEL)
   if (ok.getSelectedButton() !== ui.Button.OK || ok.getResponseText().trim() !== "LAUNCH") return ui.alert("Nothing changed.")
   let backups
-  try { backups = [backupSpreadsheet_(SpreadsheetApp.getActive().getId(), "Site-Data"), backupSpreadsheet_(prop_("PLANNER_ID"), "Planner")] }
+  try { backups = [backupSpreadsheet_(ss_().getId(), "Site-Data"), backupSpreadsheet_(prop_("PLANNER_ID"), "Planner")] }
   catch (err) { return ui.alert("Stopped before changing anything: a backup failed (" + err + ").") }
   const lock = LockService.getScriptLock()
   if (!lock.tryLock(30000)) return ui.alert("Busy (a reply is saving). Try again in a minute. Backups made: " + backups.join(", "))
@@ -374,7 +374,7 @@ function weeklyFiles_(folder) {
 function weeklyBackup() {
   const folder = backupFolder_(true)
   const name = WEEKLY_PREFIX + Utilities.formatDate(new Date(), "Asia/Tokyo", "yyyy-MM-dd")
-  DriveApp.getFileById(SpreadsheetApp.getActive().getId()).makeCopy(name, folder)
+  DriveApp.getFileById(ss_().getId()).makeCopy(name, folder)
   // The bin keeps them 30 days, so a backup binned by mistake can still be restored
   backupsToTrash_(weeklyFiles_(folder), WEEKLY_PREFIX, WEEKLY_KEEP).forEach((f) => f.file.setTrashed(true))
   PropertiesService.getScriptProperties().setProperty("last_weekly_backup", name)
@@ -929,6 +929,18 @@ function queueKinds_() {
 
 /** Every minute: write queued visits, send queued confirmation emails, keep warm in invite week. */
 function flushQueue() {
+  const props = PropertiesService.getScriptProperties()
+  try {
+    flushQueue_()
+    if (props.getProperty("flush_fails")) props.deleteProperty("flush_fails")
+  } catch (err) {
+    const n = Number(props.getProperty("flush_fails") || 0) + 1
+    props.setProperty("flush_fails", String(n))
+    if (n === 3) alert_("queue_failing", "The email queue has failed 3 times in a row: " + err)
+    throw err
+  }
+}
+function flushQueue_() {
   const lock = LockService.getScriptLock()
   if (!lock.tryLock(20000)) return
   CacheService.getScriptCache().put("last_flush", new Date().toISOString(), 21600)
@@ -937,8 +949,12 @@ function flushQueue() {
   // Replies and visits are written whoever runs this (so no reply ever sits unsaved); emails only go from the
   // wedding account. From any other account they stay queued and the reason is logged.
   const mailOk = isWeddingAccount_()
-  if (mailOk) props.setProperty("queue_account", "wedding")
-  else wrongAccount_("The email queue")
+  if (mailOk) {
+    props.setProperty("queue_account", "wedding")
+    CacheService.getScriptCache().remove("queue_err") // a run from the right account clears an older run's error
+    // The 15-minute health watch (run 20), turned on once by the wedding account's own queue
+    if (props.getProperty("watch_on") !== "1") safely_(() => { ensureWatch_(); props.setProperty("watch_on", "1") })
+  } else wrongAccount_("The email queue")
   let mails = []
   try {
     const all = props.getProperties()
@@ -1063,7 +1079,7 @@ function ensureVisitColumns_(s) {
 
 /** Explains the visit columns at the bottom of the How to update tab, once. */
 function addVisitNotes_() {
-  const s = SpreadsheetApp.getActive().getSheetByName("How to update")
+  const s = ss_().getSheetByName("How to update")
   if (!s) return
   const text = s.getDataRange().getValues().map((r) => r.join(" ")).join(" ")
   if (text.indexOf("First opened") >= 0) return
@@ -1299,7 +1315,7 @@ function fortunes_() {
   const hit = cache.get("fortunes")
   if (hit) return JSON.parse(hit)
   const out = FORTUNES.slice()
-  const tab = SpreadsheetApp.getActive().getSheetByName("Content")
+  const tab = ss_().getSheetByName("Content")
   if (tab) rows_("Content").forEach((r) => {
     const m = /^fortune_(\d+)$/.exec(String(r.Key || "").trim())
     if (m && Number(m[1]) >= 1 && Number(m[1]) <= 12 && String(r.Text || "").trim()) out[Number(m[1]) - 1] = String(r.Text).trim()
@@ -1309,7 +1325,7 @@ function fortunes_() {
 }
 
 function setupContentTab() {
-  const ss = SpreadsheetApp.getActive()
+  const ss = ss_()
   if (ss.getSheetByName("Content")) return SpreadsheetApp.getUi().alert("The Content tab is already there.")
   const s = ss.insertSheet("Content")
   const rows = [["Key", "Text", "Notes"]].concat(FORTUNES.map((f, i) => ["fortune_" + (i + 1), f, i === 0 ? "Fortunes after RSVP. All great blessings, one per household. Edit the Text column only." : ""]))
@@ -1330,7 +1346,7 @@ function content_() {
   const hit = cache.get("content")
   if (hit) return JSON.parse(hit)
   const out = { ok: true, story: [], mode: "invite" }
-  if (SpreadsheetApp.getActive().getSheetByName("Content")) {
+  if (ss_().getSheetByName("Content")) {
     const kv = {}
     rows_("Content").forEach((r) => { const k = String(r.Key || "").trim(); if (k) kv[k] = String(r.Text || "").trim() })
     for (let n = 1; n <= 6; n++) {
@@ -1356,7 +1372,7 @@ function crew_(token) {
   const cache = CacheService.getScriptCache()
   const hit = cache.get("crew:" + token)
   if (hit) return hit === "-" ? { ok: false } : { ok: true, name: hit }
-  const tab = SpreadsheetApp.getActive().getSheetByName("Crew")
+  const tab = ss_().getSheetByName("Crew")
   const row = tab ? rows_("Crew").find((r) => String(r.Token || "").trim() === token) : null
   cache.put("crew:" + token, row ? String(row.Name) : "-", 600)
   return row ? { ok: true, name: String(row.Name) } : { ok: false }
@@ -1370,7 +1386,7 @@ function makeCrewLinks() {
 
 /** The Crew tab and its links, without the alert. `first` presets the first row's token. */
 function makeCrewLinks_(first) {
-  const ss = SpreadsheetApp.getActive()
+  const ss = ss_()
   let s = ss.getSheetByName("Crew")
   if (!s) {
     s = ss.insertSheet("Crew")
@@ -1551,7 +1567,7 @@ function flushOut_() {
 const QUESTION_HEAD = ["Time", "Household", "Token", "Email", "Question", "Status", "Answer", "Answer (ja)", "Publish", "Sent", "Seen"]
 /** The Questions tab, made the first time (status new / answered / published; Publish is a tickbox). */
 function questionsSheet_() {
-  const ss = SpreadsheetApp.getActive()
+  const ss = ss_()
   let s = ss.getSheetByName(TABS.questions)
   if (!s) {
     s = ss.insertSheet(TABS.questions)
@@ -1604,7 +1620,7 @@ function ask_(body) {
 function publishedQuestions_() {
   const cache = CacheService.getScriptCache(), hit = cache.get("questions")
   if (hit) return JSON.parse(hit)
-  const s = SpreadsheetApp.getActive().getSheetByName(TABS.questions)
+  const s = ss_().getSheetByName(TABS.questions)
   const out = { ok: true, questions: [] }
   if (s) rows_(TABS.questions).forEach((r) => { if (r.Publish === true && String(r.Answer || "").trim()) out.questions.push({ q: String(r.Question).replace(/^'/, ""), a: String(r.Answer).replace(/^'/, ""), a_ja: String(r["Answer (ja)"] || "").replace(/^'/, "") }) })
   cache.put("questions", JSON.stringify(out), 600)
@@ -1613,7 +1629,7 @@ function publishedQuestions_() {
 
 /** Each newly published answer goes to the household by email (once), and the row says published. */
 function sendAnswers_() {
-  const s = SpreadsheetApp.getActive().getSheetByName(TABS.questions)
+  const s = ss_().getSheetByName(TABS.questions)
   if (!s) return
   const data = s.getDataRange().getValues(), head = data[0].map((h) => String(h).trim()), col = (n) => head.indexOf(n)
   for (let i = 1; i < data.length; i++) {
@@ -2002,7 +2018,7 @@ function setupEmailsTab() {
 }
 
 function ensureEmailsTab_() {
-  const ss = SpreadsheetApp.getActive()
+  const ss = ss_()
   if (ss.getSheetByName(TABS.emails)) return false
   const s = ss.insertSheet(TABS.emails)
   const rows = [["Key", "Text", "Notes"]].concat(
@@ -2020,7 +2036,7 @@ function ensureEmailsTab_() {
 
 function emailCopy_() {
   const copy = Object.assign({}, COPY)
-  if (!SpreadsheetApp.getActive().getSheetByName(TABS.emails)) return copy
+  if (!ss_().getSheetByName(TABS.emails)) return copy
   rows_(TABS.emails).forEach((r) => {
     if (r.Key in copy && String(r.Text || "").trim()) copy[r.Key] = String(r.Text)
   })
@@ -2151,7 +2167,7 @@ function setupQueue() {
   ScriptApp.getProjectTriggers().filter((t) => t.getHandlerFunction() === "flushQueue").forEach((t) => ScriptApp.deleteTrigger(t))
   props.deleteProperty("flush_trigger")
   const ok = flushTriggerReady_()
-  if (ok) props.setProperty("queue_account", "wedding")
+  if (ok) { props.setProperty("queue_account", "wedding"); safely_(ensureWatch_) }
   ui.alert(ok ? "The email queue is on, sending from " + wedding + ". If you ever turned it on from another account, delete that trigger there (Extensions → Apps Script → Triggers)." : "Couldn't turn it on: " + (CacheService.getScriptCache().get("trigger_err") || "unknown error"))
 }
 
@@ -2398,12 +2414,12 @@ function colLetter_(n) {
 }
 
 function numberedRows_(name) {
-  return SpreadsheetApp.getActive().getSheetByName(name) ? rows_(name).map((r, i) => Object.assign(r, { _row: i + 2 })) : []
+  return ss_().getSheetByName(name) ? rows_(name).map((r, i) => Object.assign(r, { _row: i + 2 })) : []
 }
 
 /** Writes (or, with make, first adds) the To look at box at the top of Summary. Refreshed on open once it's there. */
 function refreshLookAt_(make) {
-  const ss = SpreadsheetApp.getActive()
+  const ss = ss_()
   let s = ss.getSheetByName("Summary")
   if (!s) { if (!make) return; s = ss.insertSheet("Summary", 0) }
   if (String(s.getRange(1, 1).getValue()).indexOf(LOOK_TITLE) !== 0) { if (!make) return; s.insertRowsBefore(1, LOOK_ROWS) }
@@ -2450,7 +2466,7 @@ const WEEKLY_ROUTINE = [
 
 /** What the tidy would do, as steps: the words for the report and the change itself, read again when it runs. */
 function tidyPlan_() {
-  const ss = SpreadsheetApp.getActive()
+  const ss = ss_()
   const steps = [], left = []
   const step = (text, run) => steps.push({ text: text, run: run })
   const fmt = (t) => Utilities.formatDate(new Date(t), ss.getSpreadsheetTimeZone(), "d MMM yyyy, h:mm a")
@@ -2564,7 +2580,7 @@ function formatTab_(s, tab) {
 
 /** The Archive tab, made at the end the first time. */
 function archiveSheet_() {
-  const ss = SpreadsheetApp.getActive()
+  const ss = ss_()
   return ss.getSheetByName(ARCHIVE) || ss.insertSheet(ARCHIVE, ss.getSheets().length)
 }
 
@@ -2572,7 +2588,7 @@ function archiveSheet_() {
 function archiveBlock_(title, ranges) {
   const a = archiveSheet_()
   let row = a.getLastRow() + (a.getLastRow() ? 2 : 1)
-  a.getRange(row, 1).setValue(title + ", moved " + Utilities.formatDate(new Date(), SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "d MMM yyyy, h:mm a")).setFontWeight("bold")
+  a.getRange(row, 1).setValue(title + ", moved " + Utilities.formatDate(new Date(), ss_().getSpreadsheetTimeZone(), "d MMM yyyy, h:mm a")).setFontWeight("bold")
   row++
   ranges.forEach((r) => {
     if (a.getMaxColumns() < r.getNumColumns()) a.insertColumnsAfter(a.getMaxColumns(), r.getNumColumns() - a.getMaxColumns())
@@ -2638,8 +2654,22 @@ function isLocked_() {
   return d ? new Date() > new Date(d + "T23:59:59+09:00") : false
 }
 
+/**
+ * The Site-Data sheet, opened by its ID (SHEET_ID in Script Properties, never in the repo) so the web app and the
+ * triggers don't depend on which document is "active". Falls back to the bound sheet if SHEET_ID isn't set or won't
+ * open. 19 Oct 2026: a push added scopes the wedding account hadn't approved and getActive() threw for hours, so the
+ * scopes are declared in appsscript.json and checked (scripts/scopes-check.mjs, docs/deploy.md).
+ */
+let ss__ = null
+function ss_() {
+  if (ss__) return ss__
+  const id = prop_("SHEET_ID")
+  if (id) try { ss__ = SpreadsheetApp.openById(id) } catch (err) { console.error("SHEET_ID wouldn't open: " + err) }
+  return (ss__ = ss__ || SpreadsheetApp.getActive())
+}
+
 function sheet_(name) {
-  const s = SpreadsheetApp.getActive().getSheetByName(name)
+  const s = ss_().getSheetByName(name)
   if (!s) throw new Error("Missing tab: " + name)
   return s
 }
@@ -2713,7 +2743,7 @@ function safely_(fn) {
  */
 function health_() {
   const out = { ok: true, service: "nadia-griffin-wedding", at: new Date().toISOString(), sheet: true, queueMoving: true, pending: 0, emailQuota: null }
-  try { sheet_(TABS.guests).getLastRow() } catch (err) { out.sheet = false }
+  try { sheet_(TABS.guests).getLastRow() } catch (err) { out.sheet = false; Object.defineProperty(out, "sheetError", { value: String(err).slice(0, 200) }) } // for watchHealth, never in the answer
   try {
     const props = PropertiesService.getScriptProperties()
     out.pending = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0).length
@@ -2724,6 +2754,20 @@ function health_() {
   try { out.emailQuota = MailApp.getRemainingDailyQuota() } catch (err) { /* not authorised yet: left null */ }
   out.ok = out.sheet && out.queueMoving
   return out
+}
+
+/**
+ * Every 15 minutes (run 20, after the 19 Oct outage): checks health_ and alerts at once when the sheet won't open or
+ * the queue has stopped. A trigger can't run at all if its scopes aren't approved, so UptimeRobot watches
+ * ?action=health from outside too (docs/monitoring.md).
+ */
+function watchHealth() {
+  const h = health_()
+  if (!h.sheet) alert_("sheet_unreadable", "The Site-Data sheet won't open (guests see \"We're having a little trouble\"). " + (h.sheetError || ""))
+  else if (!h.queueMoving) alert_("queue_stuck", h.pending + " items waiting and nothing sent for 15 minutes.")
+}
+function ensureWatch_() {
+  if (!ScriptApp.getProjectTriggers().some((t) => t.getHandlerFunction() === "watchHealth")) ScriptApp.newTrigger("watchHealth").timeBased().everyMinutes(15).create()
 }
 
 /**

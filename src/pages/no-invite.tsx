@@ -12,11 +12,11 @@ import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff } from "@/components/letter/letter"
 
 /** What people see without a working invite: no link, a link we don't know, or no connection. */
-export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "error" | "paused" }) {
+export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "error" | "paused" | "trouble" }) {
   const { t } = useLang()
   const { retry } = useHousehold()
   const { theme } = useTheme()
-  const copy = reason === "paused" ? t.paused : reason === "error" ? t.offline : reason === "unknown" ? t.unknown : t.notFound
+  const copy = reason === "paused" ? t.paused : reason === "trouble" ? t.trouble : reason === "error" ? t.offline : reason === "unknown" ? t.unknown : t.notFound
   return (
     <>
       <Scene source={sceneFor(theme)} />
@@ -28,7 +28,7 @@ export function NoInvitePage({ reason }: { reason: "missing" | "unknown" | "erro
             <p className="label-caps text-muted-foreground">{t.home.label}</p>
             <h1 className="heading">{copy.title}</h1>
             <p>{copy.body}</p>
-            {reason === "error" || reason === "paused" ? <Button size="md" className="self-start" onClick={retry}>{reason === "paused" ? t.paused.retry : t.offline.retry}</Button> : <ResendForm />}
+            {reason === "error" || reason === "paused" || reason === "trouble" ? <Button size="md" className="self-start" onClick={retry}>{reason === "paused" ? t.paused.retry : reason === "trouble" ? t.trouble.retry : t.offline.retry}</Button> : <ResendForm />}
           </div>
           <SignOff />
           </div>

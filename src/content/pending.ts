@@ -168,6 +168,8 @@ export const PENDING = {
  * When one has been read (and corrected in ja.ts), delete it here.
  */
 export const JA_TO_READ: { key: string; ja: string }[] = [
+  { key: "trouble.title", ja: "ただいま少し不具合が起きています" },
+  { key: "trouble.body", ja: "数分おいて、もう一度お試しください。" },
   { key: "notFound.sent", ja: "そのアドレスがリストにあれば、リンクをお送りしました。迷惑メールもご確認ください。" },
   { key: "home.todo.food", ja: "お食事" },
   { key: "home.todo.song", ja: "一曲" },

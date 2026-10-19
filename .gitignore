@@ -49,3 +49,6 @@ playwright-report/
 test-results/
 cf-out/
 .*-tmp.mjs
+
+# Agent worktrees
+.claude/

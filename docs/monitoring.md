@@ -33,6 +33,14 @@ Don't add a `?h=` household link to a monitor: that would count visits on a real
 
 `?action=ping` stays as the fuller queue report for setting up the email queue.
 
+## The 15-minute health watch (run 20)
+
+Since the 19 Oct 2026 outage the back end also checks itself: `watchHealth` runs every 15 minutes and alerts at once
+(`ALERT_EMAIL`, and Discord if set) when the sheet won't open (`sheet_unreadable`) or the queue has stopped
+(`queue_stuck`). The email queue also alerts when it fails 3 runs in a row (`queue_failing`). The wedding account's
+own queue turns the watch on the first time it runs, so there's nothing to set up. It can't help if Google stops the
+script running at all (unapproved scopes), which is what UptimeRobot is for.
+
 ## Error alerts (email and Discord)
 
 When the web app fails a request (a save, a read, the song search) or the minute trigger can't be set up, the back

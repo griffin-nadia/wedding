@@ -13,25 +13,28 @@ function readToken(): string {
 }
 
 function forgetToken() {
-  try { localStorage.removeItem(KEY); localStorage.removeItem(CACHE) } catch { /* private mode */ }
+  try { localStorage.removeItem(KEY); localStorage.removeItem(CACHE); localStorage.removeItem(CACHE_AT) } catch { /* private mode */ }
 }
 
-// The last copy of this household, kept on the guest's own device so return visits show at once.
-const CACHE = "ng-household"
+// The last copy of this household, kept on the guest's own device so return visits show at once. If the back end is
+// down (19 Oct 2026), a copy from the last 24 hours still shows the invite; an older one waits for the back end.
+const CACHE = "ng-household", CACHE_AT = "ng-household-at", DAY = 24 * 60 * 60 * 1000
 function readCached(token: string): Household | null {
   try {
     const h = JSON.parse(localStorage.getItem(CACHE) ?? "null") as Household | null
     return h && h.token === token ? h : null
   } catch { return null }
 }
+const freshCache = () => { try { return Date.now() - Number(localStorage.getItem(CACHE_AT) ?? 0) < DAY } catch { return false } }
 function writeCached(h: Household) {
-  try { localStorage.setItem(CACHE, JSON.stringify(h)) } catch { /* private mode */ }
+  try { localStorage.setItem(CACHE, JSON.stringify(h)); localStorage.setItem(CACHE_AT, String(Date.now())) } catch { /* private mode */ }
 }
 
 type State = {
   household: Household | null
-  // missing: no link at all · unknown: a link we don't recognise · error: couldn't reach the back end
-  status: "loading" | "ready" | "missing" | "unknown" | "error" | "paused"
+  // missing: no link at all · unknown: a link we don't recognise · error: couldn't reach the back end · trouble: the
+  // back end answered with an error of its own
+  status: "loading" | "ready" | "missing" | "unknown" | "error" | "paused" | "trouble"
   setHousehold: (h: Household) => void
   retry: () => void
 }
@@ -70,7 +73,8 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === "not_found") return setStatus("unknown")
-        if (!cached) setStatus(err instanceof ApiError && err.code === "paused" ? "paused" : "error") // with a saved copy, stay on it and try again next visit
+        // With a saved copy from the last day, stay on it (read only, as replies need the back end) and try again next visit
+        if (!cached || !freshCache()) setStatus(!(err instanceof ApiError) ? "error" : err.code === "paused" ? "paused" : err.code === "server" ? "trouble" : "error")
       })
   }, [setHousehold])
 

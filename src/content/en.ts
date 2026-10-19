@@ -397,6 +397,8 @@ export const en = {
   },
   // The back end is locked or suspended by Google (a calm note, not an error): docs/if-google-locks-it.md
   paused: { title: "Replies are paused for a moment", body: "Try again later.", retry: "Try again", line: "Replies are paused for a moment, try again later." },
+  // The back end itself is having trouble (19 Oct 2026): never "that link doesn't look right" for our outage
+  trouble: { title: "We're having a little trouble", body: "Try again in a few minutes.", retry: "Try again" },
   offline: {
     title: "We couldn't open your invite",
     body: "It might be your connection. Try again in a moment.",

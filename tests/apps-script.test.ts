@@ -77,8 +77,8 @@ function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: st
     SpreadsheetApp: { getActive: () => ({ getSheetByName: () => (opts.sheet === false ? null : { getLastRow: () => 40 }) }) },
   }
   vm.createContext(g)
-  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_ }", g)
-  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void } }
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_, watchHealth, flushQueue }", g)
+  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void; watchHealth: () => void; flushQueue: () => void } }
 }
 test("?action=health: ok only when the sheet opens and the queue is moving; counts, no guest data", () => {
   assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "service", "sheet"])
@@ -112,4 +112,24 @@ test("outbox emails carry their household's token (so test ones can be cleared) 
 
 test("two songs at most (run 19): the back end keeps the first two, like the form", () => {
   assert.equal(vm.runInContext("MAX.songs", ctx), 2)
+})
+
+// Run 20 (the 19 Oct 2026 outage): the sheet not opening, or the queue failing 3 runs in a row, alerts at once
+test("the health watch alerts when the sheet won't open, and says nothing when it's fine", () => {
+  const props = () => ({ ALERT_EMAIL: "alerts@example.com", REPLY_TO: "wedding@example.com" })
+  const down = backEnd(props(), { sheet: false, me: "wedding@example.com" })
+  down.__f.watchHealth()
+  assert.equal(down.__sent.length, 1)
+  assert.match(String((down.__sent[0] as { subject: string }).subject), /sheet_unreadable/)
+  const up = backEnd(props(), { me: "wedding@example.com" })
+  up.__f.watchHealth()
+  assert.equal(up.__sent.length, 0)
+  assert.doesNotMatch(JSON.stringify(down.__f.health_()), /sheetError/) // the reason is for the alert, never the public answer
+})
+test("the queue failing 3 runs in a row alerts once; a run that works resets the count", () => {
+  const props: Record<string, string> = { ALERT_EMAIL: "alerts@example.com", REPLY_TO: "wedding@example.com" }
+  const b = backEnd(props, { me: "wedding@example.com" }) // no LockService here, so every run fails
+  for (let i = 0; i < 4; i++) assert.throws(() => b.__f.flushQueue())
+  assert.equal(b.__sent.length, 1)
+  assert.equal(props.flush_fails, "4")
 })
