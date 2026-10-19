@@ -55,6 +55,18 @@ const fill = async (page) => {
 const spill = (page) => page.evaluate(() => document.scrollingElement.scrollWidth > innerWidth + 1 || [...document.querySelectorAll("[role=dialog] *, #letter *")].some((e) => { const r = e.getBoundingClientRect(), box = (e.closest("[role=dialog]") ?? document.getElementById("letter")).getBoundingClientRect(); return r.width && (r.right > box.right + 1 || r.left < box.left - 1) && !e.closest(".jump-links ul, .story-track") }))
 
 try {
+  // Run 20 (the 19 Oct 2026 outage): the back end answering with an error is our trouble, never "that link doesn't
+  // look right", and a copy of the invite from the last 24 hours still shows; an older copy waits for the back end
+  { const down = (req, body) => ({ ok: false, code: "read_failed", error: "We couldn't load that." })
+    for (const [name, saved, line] of [["no saved copy", null, "We're having a little trouble"], ["a copy from an hour ago", 3600e3, "Dear "], ["a copy from two days ago", 48 * 3600e3, "We're having a little trouble"]]) {
+      const { b, c, page } = await open({ answer: down })
+      if (saved) await c.addInitScript(([h, at]) => { localStorage.setItem("ng-invite", h.token); localStorage.setItem("ng-household", JSON.stringify(h)); localStorage.setItem("ng-household-at", String(Date.now() - at)) }, [SIX, saved])
+      await page.goto(`${URL0}?h=test6`); await page.waitForLoadState("networkidle"); await page.waitForTimeout(500)
+      const shown = await page.getByText(line, { exact: false }).first().isVisible(), wrong = await page.getByText("That link doesn't look right").count()
+      check(`the back end down, ${name}: ${line === "Dear " ? "the invite" : "\"a little trouble\""}`, shown && !wrong)
+      await b.close()
+    }
+  }
   // A household of six with long names, at 320
   { const { b, page } = await open({ answer: household(), size: { width: 320, height: 568 } })
     await page.goto(`${URL0}?h=test6`); await page.waitForLoadState("networkidle")
@@ -134,7 +146,7 @@ try {
   ]) {
     const { b, page, log } = await open({ answer })
     await page.goto(`${URL0}faqs?h=test6`); await page.waitForLoadState("networkidle")
-    await page.getByRole("button", { name: "Still wondering? Ask Griffin & Nadia" }).click()
+    await page.getByRole("button", { name: "Ask us", exact: true }).click()
     const d = page.getByRole("dialog")
     await d.getByLabel("Your question").fill("Is there a bus from the hotel to the venue?")
     await d.getByRole("button", { name: "Send" }).dblclick()
@@ -168,7 +180,7 @@ try {
       const next = page.getByRole("button", { name: /next chapter/i })
       while (await next.isEnabled()) { await next.click(); await page.waitForTimeout(150) }
       await page.waitForTimeout(1500)
-      const ok = mode === "flat" ? (await page.locator(".story-slide-map .journey-mini").isVisible()) : await page.locator(".journey-globe").isVisible()
+      const ok = mode === "flat" ? (await page.locator(".story-slide-map .journey-flat").isVisible()) : await page.locator(".journey-globe").isVisible()
       check(`journeys: 99 cities, ${mode === "flat" ? "the flat map" : "the globe"} at 320`, ok && !(await spill(page)))
       await b.close()
     }

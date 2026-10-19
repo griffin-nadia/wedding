@@ -51,6 +51,8 @@ const sample: Household = {
 export async function getHousehold(token: string): Promise<Household | null> {
   if (!config.apiUrl) return token ? { ...sample, token } : null
   const data = await call(`${config.apiUrl}?action=household&open=1&token=${encodeURIComponent(token)}`)
+  // An error answer (the sheet wouldn't open, as on 19 Oct 2026) is our trouble, never "we don't know this link"
+  if (!data.ok) throw new ApiError(data.code === "not_found" ? "not_found" : "server", data.error)
   return data.household ?? null
 }
 
