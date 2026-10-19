@@ -84,7 +84,7 @@ export default defineConfig(({ command, mode }) => ({
   ...(mode === "lab" ? {
     publicDir: false,
     build: { outDir: `dist/${LAB_PATH}`, emptyOutDir: false, rollupOptions: { input: { lab: path.resolve(__dirname, "lab.html"), "lab-play": path.resolve(__dirname, "lab-play.html") } } },
-  } : {}),
+  } : { build: { sourcemap: false } }), // run 20: never source maps on the guest site (scripts/leak-check.mjs checks the rest)
   define: {
     ...(mode === "lab" ? {
       // Public files are the site's own; lab pages link to each other under LAB_PATH; no back end at all
