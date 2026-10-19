@@ -71,7 +71,7 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
         return { side: "right", words, arrow }
       }
       const tries = () => wide ? [left(), right(), above()] : [above(), below(), left(), right()]
-      const keepOut = [grow(e, 6), ...(label ? [grow(label, 4)] : []), ...(face ? [face] : [])]
+      const keepOut = [grow(e, 6), ...(label ? [grow(label, 4)] : []), ...(face ? [grow(face, 6)] : [])]
       const clear = (p: Place) => [p.words, p.arrow].every((b) =>
         b.x >= 8 && b.y >= bar && b.x + b.w <= innerWidth - 8 && b.y + b.h <= innerHeight - 8 && keepOut.every((k) => !hits(b, k)))
       let found = tries().find(clear)

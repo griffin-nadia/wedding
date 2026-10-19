@@ -233,6 +233,8 @@ html { scrollbar-gutter: stable; }
   :root .arrival .envelope { width: min(240px, calc(28svh * 1.3948)); height: auto; }
 }
 @media (min-width: 768px) and (max-width: 1023.98px) and (orientation: portrait) { :root .arrival .envelope { width: min(410px, calc(28svh * 1.3948)); } }
+/* Short phones (under 700 tall): a smaller envelope, so their faces and the note both have room */
+@media (max-width: 767.98px) and (max-height: 699.98px) and (orientation: portrait) { :root .arrival .envelope { width: calc(23svh * 1.3948); } }
 @media (max-width: 1023.98px) and (orientation: landscape) {
   /* The envelope, its note and Open in the left part, clear of the photo */
   .arrival { justify-items: center; padding-right: 62vw; padding-bottom: 12px; }
