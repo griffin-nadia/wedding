@@ -413,6 +413,9 @@ function doGet(e) {
   const p = (e && e.parameter) || {}
   const action = String(p.action || "").toLowerCase()
   try {
+    // Run 20: a household's own link can't be hammered; anything else wrong with a token answers as "not found"
+    const token = String(p.token || "").trim()
+    if (token && ["household", "started", "check", "crew"].indexOf(action) >= 0 && over_(action + ":" + token, action === "household" ? 120 : 30)) return fail_("busy")
     if (action === "household") {
       const h = cachedHousehold_(p.token)
       if (h && p.open === "1") safely_(() => enqueue_("open", h.token))
@@ -425,8 +428,11 @@ function doGet(e) {
     if (action === "stay") return json_(stayPicks_())
     if (action === "content") return json_(content_())
     if (action === "crew") return json_(crew_(p.token))
+    // Run 20: anyone gets only { ok }; the detail needs ?key= (HEALTH_KEY in Script Properties, docs/monitoring.md)
+    if (action === "ping" && !keyOk_(p.key)) return json_({ ok: true })
+    if (action === "health" && !keyOk_(p.key)) return json_({ ok: health_().ok })
     if (action === "ping") {
-      // Health check: is the minute trigger set up? (No guest data here.)
+      // The queue's detail, for setting it up (keyed). No guest data here.
       const props = PropertiesService.getScriptProperties()
       const pending = Object.keys(props.getProperties()).filter((k) => k.indexOf("q:") === 0).length
       let trigger = null
@@ -457,6 +463,7 @@ function doPost(e) {
   }
   if (body && body.action === "resend") return json_(resendLink_(body.email))
   if (body && body.action === "ask") return json_(ask_(body))
+  if (body && (body.action === "flying" || body.action === "stamps" || body.action === "rsvp") && over_("post:" + String(body.token || "").slice(0, 40), 30)) return fail_("busy")
   if (body && body.action === "flying") return json_(setFlying_(body.token, body.city))
   if (body && body.action === "stamps") return json_(setStamps_(body.token, body.stamps))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
@@ -733,12 +740,16 @@ function cacheKey_(token) {
 
 function cachedHousehold_(token) {
   token = String(token || "").trim()
-  if (!token) return null
+  if (!TOKEN_SHAPE.test(token)) return null
   const c = CacheService.getScriptCache()
   const key = cacheKey_(token)
   const hit = c.get(key)
   if (hit) return JSON.parse(hit)
+  // Run 20: after 200 unknown links in 10 minutes, unknown links stop being looked up at all (the same "not found"),
+  // so guessing tokens gets nowhere and can't load the sheet
+  if (Number(c.get(window_("miss", 600)) || 0) >= 200) return null
   let h = getHousehold_(token)
+  if (!h) safely_(() => over_("miss", 1e9))
   if (h) pendingSaves_(token).forEach((p) => (h = applyInput_(h, p.data.input)))
   if (h) c.put(key, JSON.stringify(h), CACHE_SECONDS)
   return h
@@ -1663,9 +1674,25 @@ function journeys_() {
     cities[k] = cities[k] || { name: c.name, country: c.country, lat: Math.round(c.lat * 100) / 100, lon: Math.round(c.lon * 100) / 100, n: 0 }
     cities[k].n++
   })
-  const out = { ok: true, cities: Object.keys(cities).map((k) => cities[k]) }
+  const out = { ok: true, cities: foldSmall_(Object.keys(cities).map((k) => cities[k]), Number(prop_("JOURNEY_MIN") || 2)) }
   cache.put("journeys", JSON.stringify(out), 600)
   return out
+}
+
+/**
+ * Run 20: a city with fewer than min households would point at that household, so it's folded into its country: one
+ * point at the middle of those cities, named by the country code, rounded to a whole degree. JOURNEY_MIN in Script
+ * Properties sets min (1 shows every city, if Griffin and Nadia are fine with that).
+ */
+function foldSmall_(cities, min) {
+  const keep = cities.filter((c) => c.n >= min), byCountry = {}
+  cities.filter((c) => c.n < min).forEach((c) => (byCountry[c.country] = byCountry[c.country] || []).push(c))
+  Object.keys(byCountry).forEach((cc) => {
+    const list = byCountry[cc], n = list.reduce((a, c) => a + c.n, 0)
+    if (n < min) return // still one household on its own: left off the map
+    keep.push({ name: cc, country: cc, lat: Math.round(list.reduce((a, c) => a + c.lat, 0) / list.length), lon: Math.round(list.reduce((a, c) => a + c.lon, 0) / list.length), n: n })
+  })
+  return keep
 }
 
 // ---------- "Can't find your invite?" ----------
@@ -2791,6 +2818,24 @@ function alert_(code, err) {
 
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON)
+}
+
+/** Household tokens: letters, digits, - and _ (the menu makes 10 from a-z and 2-9). Anything else is "not found". */
+const TOKEN_SHAPE = /^[A-Za-z0-9_-]{4,40}$/
+
+/** The detail in ping and health is only for whoever has HEALTH_KEY (Script Properties). No key set: nobody. */
+function keyOk_(key) {
+  const want = prop_("HEALTH_KEY")
+  return Boolean(want) && String(key || "") === want
+}
+
+/** Counts one more for key in a fixed 10-minute window; true once it's over max. Apps Script can't see IPs, so the
+ * limits are per token, per address (Ask us, resend) and overall. */
+function window_(key, secs) { return "rl:" + key + ":" + Math.floor(Date.now() / (secs * 1000)) }
+function over_(key, max) {
+  const c = CacheService.getScriptCache(), k = window_(key, 600), n = Number(c.get(k) || 0) + 1
+  c.put(k, String(n), 660)
+  return n > max
 }
 
 function fail_(code, err) {
