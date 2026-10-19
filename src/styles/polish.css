@@ -86,23 +86,12 @@ html { scrollbar-gutter: stable; }
 }
 @keyframes envelope-float { 0%, 100% { translate: 0 6px; rotate: -1deg; } 50% { translate: 0 -6px; rotate: 1deg; } }
 @keyframes envelope-float-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 0.86; opacity: 0.6; } }
-@keyframes arrival-open-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.68; } }
 @media (prefers-reduced-motion: no-preference) {
   .envelope-float { animation: envelope-float 4s ease-in-out infinite; }
   .envelope-float::after { animation: envelope-float-shadow 4s ease-in-out infinite; }
-  .arrival-open { animation: arrival-open-breathe 4s ease-in-out infinite; }
   :is(.is-opening, .is-sealing) .envelope-float, :is(.is-opening, .is-sealing) .envelope-float::after, .arrival.is-pulling .envelope-float, .arrival.is-pulling .envelope-float::after { animation-play-state: paused; }
   .arrival .envelope:active { transform: translateY(-4px) scale(var(--press-scale)); }
 }
-.arrival-open {
-  min-height: 44px; padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); outline: 2px solid transparent; outline-offset: 2px;
-  font-family: var(--font-display); font-size: var(--type-body-size); line-height: 1.2; color: #fff; text-shadow: 0 1px 6px rgb(0 0 0 / 0.45);
-  transition: opacity var(--duration-fast) var(--ease-paper);
-}
-.arrival-open:focus-visible { outline-color: var(--input-focus); }
-.is-opening .arrival-open, .is-sealing .arrival-open, .arrival.is-pulling .arrival-open { opacity: 0; animation: none; }
-/* 1024 to 1279: the envelope sits on warm paper, not the photo, so the label is ink there */
-@media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-open { color: var(--ink-soft); text-shadow: none; } }
 /* The music toggle, on but waiting for the first tap to be allowed to play: a slow ring, none under reduced motion */
 @keyframes music-waiting { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--action) 40%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--action) 0%, transparent); } }
 @media (prefers-reduced-motion: no-preference) { [data-music-toggle][data-waiting] { animation: music-waiting 2.4s var(--ease-paper-in-out) infinite; } }
@@ -226,6 +215,7 @@ html { scrollbar-gutter: stable; }
 .arrival-note[data-side="right"] .arrival-note-words { rotate: 3deg; }
 .arrival-note-arrow { overflow: visible; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .arrival-note[data-side="right"] .arrival-note-arrow { scale: -1 1; }
+.arrival-note[data-side="below"] .arrival-note-arrow { scale: 1 -1; }
 .arrival-note-arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: note-draw 950ms cubic-bezier(0.45, 0.05, 0.25, 1) 1100ms forwards; }
 .arrival-note-arrow path.head { animation-duration: 240ms; animation-delay: 2050ms; animation-timing-function: var(--ease-paper); }
 @keyframes note-write { to { clip-path: inset(0 0 0 0); } }
@@ -234,28 +224,16 @@ html { scrollbar-gutter: stable; }
 @media (min-width: 1024px) and (max-width: 1279.98px) { .arrival-note { color: var(--ink-soft); filter: none; } }
 @media (prefers-reduced-motion: reduce) { .arrival-note-words { animation: none; clip-path: none; } .arrival-note-arrow path { animation: none; stroke-dashoffset: 0; } }
 
-/* Phones and tablets, sealed: their photo in its own box so their faces sit clear of the envelope and its note (in the
-   top 45% of the screen standing up, on the right lying down), fading into the card's paper where the envelope
-   floats (no blurred copy of the photo behind the envelope, 20 Oct, as on laptops). The photo fills the screen's height exactly when standing, so object-position alone had nothing to move:
-   the box gives it room. Once open it glides back to filling the screen, behind the card. Laptops keep their framing. */
-@property --photo-fade { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-@media (max-width: 1023.98px) {
-  [data-sealed] .scene-fill { background-image: none !important; background-color: var(--letter-bg); filter: none; transform: none; }
-  /* On the paper, so in ink (as on laptops' paper panel, 1024 to 1279) */
-  .arrival-open { color: var(--ink-soft); text-shadow: none; }
-  .arrival-note { color: var(--ink-soft); filter: none; }
-  .scene-photo { --photo-fade: 0%; transition: bottom var(--duration-slow) var(--ease-paper), left var(--duration-slow) var(--ease-paper), --photo-fade var(--duration-slow) var(--ease-paper); }
-  .scene-photo img { transition: object-position var(--duration-slow) var(--ease-paper); }
-}
+/* Phones and tablets (Jehan, 20 Oct): one framing on every screen, sealed or open, so the photo never jumps, and it's
+   framed on their faces (the scene's face box: --face-x and the zoom --face-k from scene.tsx) so they get the most room. The
+   envelope floats over the photo: no box, no fade and no blurred copy behind it. */
+@media (max-width: 1023.98px) { .scene-photo img { object-position: var(--face-x, 50%) 50%; } }
+@media (max-width: 1023.98px) and (orientation: portrait) { .scene-photo img { transform: scale(var(--face-k, 1)); transform-origin: var(--face-x, 50%) 100%; } }
 @media (max-width: 1023.98px) and (orientation: portrait) {
-  [data-sealed] .scene-photo { bottom: 40%; --photo-fade: 24%; mask-image: linear-gradient(to bottom, #000 calc(100% - var(--photo-fade)), transparent); }
-  [data-sealed] .scene-photo img { object-position: 50% 70%; }
   :root .arrival .envelope { width: min(240px, calc(28svh * 1.3948)); height: auto; }
 }
 @media (min-width: 768px) and (max-width: 1023.98px) and (orientation: portrait) { :root .arrival .envelope { width: min(410px, calc(28svh * 1.3948)); } }
 @media (max-width: 1023.98px) and (orientation: landscape) {
-  [data-sealed] .scene-photo { left: 38%; --photo-fade: 18%; mask-image: linear-gradient(to right, transparent, #000 var(--photo-fade)); }
-  [data-sealed] .scene-photo img { object-position: 50% 55%; }
   /* The envelope, its note and Open in the left part, clear of the photo */
   .arrival { justify-items: center; padding-right: 62vw; padding-bottom: 12px; }
   :root .arrival .envelope { width: min(34vw, calc((100svh - 210px) * 1.3948)); height: auto; }

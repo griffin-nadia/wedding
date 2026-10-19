@@ -29,7 +29,6 @@ export const ja: DeepPartial<Content> = {
     signOff: "愛をこめて、G & N",
     credit: "サイト制作：Jehan Baguley",
     skip: "本文へ移動",
-    open: "ひらく",
     note: "招待状をひらいてね",
     openLabel: (name: string) => `招待状をひらく${name ? `（${name}さん）` : ""}`,
     phoneTitle: "スマホでひらく",

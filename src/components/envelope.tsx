@@ -216,8 +216,6 @@ export function Arrival({ enabled, onOpened, children, reseal = 0 }: { enabled: 
           <DrawnEnvelope which="open" /><DrawnEnvelope which="openFront" /><DrawnEnvelope which="closed" /><PressSeal />
         </button>
         </div>
-        {/* The plain action under it: the note says the words, this says Open (the envelope is the tab stop) */}
-        <button type="button" tabIndex={-1} onClick={open} className="arrival-open">{t.letter.open}</button>
         </div>
         {phase === "sealed" && <Suspense><ArrivalNote envelope={button} /></Suspense>}
         {/* The card on its way into or out of the envelope's letter: the same paper, one sheet */}

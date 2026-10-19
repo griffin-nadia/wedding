@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test"
 import fs from "node:fs"
 
 test.use({ reducedMotion: "no-preference" })
-const open = (page: Page) => page.getByRole("button", { name: "Open", exact: true })
+const open = (page: Page) => page.getByRole("button", { name: /^Open your invitation/ })
 
 // 18e: a calm Open button under a floating envelope, which never offers its picture on a long press
 test("the arrival: a real Open button, no long-press save, and the float pauses where it is on opening", async ({ page }) => {
@@ -19,10 +19,10 @@ test("the arrival: a real Open button, no long-press save, and the float pauses 
     }
   })
   expect(env).toEqual({ inLink: false, draggable: true, callout: "none", select: "none", floating: "envelope-float" })
-  // The envelope sits below the middle of the screen, the label under it
-  const [e, l, h] = await page.evaluate(() => [document.querySelector(".envelope")!.getBoundingClientRect().top, document.querySelector(".arrival-open")!.getBoundingClientRect().top, innerHeight])
+  // The envelope sits below the middle of the screen, with no word under it (Jehan, 20 Oct): the note says it
+  const [e, h] = await page.evaluate(() => [document.querySelector(".envelope")!.getBoundingClientRect().top, innerHeight])
   expect(e).toBeGreaterThan(h * 0.3)
-  expect(l).toBeGreaterThan(e)
+  await expect(page.locator(".arrival-open")).toHaveCount(0)
   await open(page).click()
   await expect(page.locator(".envelope-float")).toHaveCSS("animation-play-state", "paused")
   await expect(page.locator("#letter")).toBeFocused({ timeout: 3000 })
@@ -163,14 +163,14 @@ for (const theme of ["autumn", "lantern"] as const) test(`nothing covers their f
     await expect(page.locator(".arrival-note-words"), `${w}×${h}: the note is there`).toBeVisible()
     const r = await page.evaluate((scenes) => {
       const layer = document.querySelector<HTMLElement>("[data-photo].opacity-100")!, img = layer.querySelector("img")!
-      const s = scenes[layer.dataset.photo!], meta = matchMedia("(min-width: 1280px)").matches && s.wide ? s.wide : s
+      const s = scenes[layer.dataset.photo!], meta = matchMedia("(min-width: 1280px), (orientation: landscape) and (max-width: 1023.98px)").matches && s.wide ? s.wide : s
       const b = img.getBoundingClientRect(), k = Math.max(b.width / meta.w, b.height / meta.h)
       const [px, py] = getComputedStyle(img).objectPosition.split(" ").map((v) => parseFloat(v) / 100)
       const ox = b.left + (b.width - meta.w * k) * px, oy = b.top + (b.height - meta.h * k) * py, [x0, y0, x1, y1] = meta.face!
       const face = new DOMRect(ox + x0 * meta.w * k, oy + y0 * meta.h * k, (x1 - x0) * meta.w * k, (y1 - y0) * meta.h * k)
-      const boxes = { face, words: document.querySelector(".arrival-note-words")!.getBoundingClientRect(), arrow: document.querySelector(".arrival-note-arrow")!.getBoundingClientRect(), envelope: document.querySelector(".envelope")!.getBoundingClientRect(), open: document.querySelector(".arrival-open")!.getBoundingClientRect() }
+      const boxes = { face, words: document.querySelector(".arrival-note-words")!.getBoundingClientRect(), arrow: document.querySelector(".arrival-note-arrow")!.getBoundingClientRect(), envelope: document.querySelector(".envelope")!.getBoundingClientRect() }
       document.querySelectorAll(".face-box").forEach((e) => e.remove())
-      const colour = { face: "red", words: "blue", arrow: "blue", envelope: "lime", open: "yellow" }
+      const colour = { face: "red", words: "blue", arrow: "blue", envelope: "lime" }
       for (const [k, v] of Object.entries(boxes)) { const d = document.createElement("div"); d.className = "face-box"; Object.assign(d.style, { position: "fixed", zIndex: "99", left: `${v.x}px`, top: `${v.y}px`, width: `${v.width}px`, height: `${v.height}px`, outline: `2px solid ${colour[k as keyof typeof colour]}`, pointerEvents: "none" }); document.body.append(d) }
       const hit = (a: DOMRect, b: DOMRect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top
       const names = Object.keys(boxes) as (keyof typeof boxes)[], overlaps: string[] = []

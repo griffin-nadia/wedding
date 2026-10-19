@@ -1,4 +1,8 @@
 import meta from "@/content/scenes.json"
+
+/** When the wide (16:9) photo shows: laptops from 1280, and phones lying down (20 Oct), where it puts their faces on
+ * the right and leaves the left for the envelope. */
+export const WIDE = "(min-width: 1280px), (orientation: landscape) and (max-width: 1023.98px)"
 import type { Theme } from "@/lib/theme"
 
 /**

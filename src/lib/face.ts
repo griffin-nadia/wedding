@@ -1,11 +1,11 @@
-import { SCENES } from "@/lib/scenes"
+import { SCENES, WIDE } from "@/lib/scenes"
 
 /** Where the shown photo's face-safe rect (fractions of the image, in scenes.json) lands on screen, given object-fit: cover. */
 export function faceRect(): DOMRect | null {
   const box = document.querySelector<HTMLElement>("[data-photo].opacity-100")
   const img = box?.querySelector("img"), name = box?.dataset.photo as keyof typeof SCENES | undefined
   // From 1280 the picture shows the wide photo, which has its own size and face rect
-  const meta = name && (matchMedia("(min-width: 1280px)").matches && SCENES[name].wide ? SCENES[name].wide : SCENES[name])
+  const meta = name && (matchMedia(WIDE).matches && SCENES[name].wide ? SCENES[name].wide : SCENES[name])
   if (!img || !meta?.face) return null
   const r = img.getBoundingClientRect(), s = Math.max(r.width / meta.w, r.height / meta.h)
   const [px, py] = getComputedStyle(img).objectPosition.split(" ").map((v) => parseFloat(v) / 100)
