@@ -75,10 +75,12 @@ function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: st
     UrlFetchApp: { fetch: (_u: string, o: { payload: string }) => posted.push(o.payload) },
     Session: { getEffectiveUser: () => ({ getEmail: () => opts.me ?? "griffinandnadia@gmail.com" }) },
     SpreadsheetApp: { getActive: () => ({ getSheetByName: () => (opts.sheet === false ? null : { getLastRow: () => 40 }) }) },
+    ContentService: { MimeType: { JSON: "json" }, createTextOutput: (t: string) => ({ setMimeType: () => ({ getContent: () => t }) }) },
+    ScriptApp: { getProjectTriggers: () => [] },
   }
   vm.createContext(g)
-  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_, watchHealth, flushQueue }", g)
-  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void; watchHealth: () => void; flushQueue: () => void } }
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_, watchHealth, flushQueue, doGet, foldSmall_ }", g)
+  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void; watchHealth: () => void; flushQueue: () => void; doGet: (e: object) => { getContent: () => string }; foldSmall_: (c: object[], min: number) => { name: string; n: number }[] } }
 }
 test("?action=health: ok only when the sheet opens and the queue is moving; counts, no guest data", () => {
   assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "service", "sheet"])
@@ -132,4 +134,28 @@ test("the queue failing 3 runs in a row alerts once; a run that works resets the
   for (let i = 0; i < 4; i++) assert.throws(() => b.__f.flushQueue())
   assert.equal(b.__sent.length, 1)
   assert.equal(props.flush_fails, "4")
+})
+
+// Run 20: anyone gets only { ok } from ping and health; the detail needs HEALTH_KEY
+test("ping and health: only ok without the key, the detail with it", () => {
+  const get = (b: ReturnType<typeof backEnd>, q: Record<string, string>) => JSON.parse(b.__f.doGet({ parameter: q }).getContent())
+  const b = backEnd({ HEALTH_KEY: "k-123", "q:mail:x": "{}", last_flush_at: String(Date.now()) })
+  assert.deepEqual(get(b, { action: "ping" }), { ok: true })
+  assert.deepEqual(get(b, { action: "health" }), { ok: true })
+  assert.deepEqual(get(b, { action: "health", key: "wrong" }), { ok: true })
+  assert.equal(get(b, { action: "health", key: "k-123" }).pending, 1)
+  assert.deepEqual(get(backEnd({}, { sheet: false }), { action: "health" }), { ok: false })
+  assert.deepEqual(get(backEnd({}), { action: "health", key: "" }), { ok: true }) // no HEALTH_KEY set: nobody gets the detail
+})
+test("journeys: a city with one household folds into its country, and a country with one is left off", () => {
+  const out = backEnd({}).__f.foldSmall_([
+    { name: "Melbourne", country: "AU", lat: -37.81, lon: 144.96, n: 3 },
+    { name: "Ballarat", country: "AU", lat: -37.56, lon: 143.85, n: 1 },
+    { name: "Bendigo", country: "AU", lat: -36.76, lon: 144.28, n: 1 },
+    { name: "Suva", country: "FJ", lat: -18.14, lon: 178.44, n: 1 },
+  ], 2)
+  assert.deepEqual(JSON.parse(JSON.stringify(out)), [
+    { name: "Melbourne", country: "AU", lat: -37.81, lon: 144.96, n: 3 },
+    { name: "AU", country: "AU", lat: -37, lon: 144, n: 2 },
+  ])
 })
