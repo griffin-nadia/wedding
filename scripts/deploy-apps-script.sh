@@ -25,7 +25,11 @@ npx clasp update-deployment "$dep" -d "$msg" | grep -oE "@[0-9]+" | sed 's/^/dep
 url=${VITE_API_URL:-$(GH_TOKEN=$(gh auth token --user JehanBaguley) gh variable get VITE_API_URL -R griffin-nadia/wedding)}
 for i in 1 2 3 4 5 6; do
   out=$(node -e 'fetch(process.argv[1]+"?action=health"+(process.env.HEALTH_KEY?"&key="+process.env.HEALTH_KEY:"")).then(r=>r.json()).then(j=>console.log(j.ok===true&&j.sheet!==false?"ok":"bad "+JSON.stringify({ok:j.ok,sheet:j.sheet}))).catch(e=>console.log("bad "+e.message))' "$url")
-  [ "$out" = ok ] && { echo "✓ health ok"; echo "$now" > $seen; exit 0; }
+  if [ "$out" = ok ]; then
+    echo "✓ health ok"; echo "$now" > $seen
+    node scripts/privacy-live.mjs "$url" || { echo "✖ a public answer says more than it should (above)"; exit 3; }
+    exit 0
+  fi
   sleep 10
 done
 echo "✖✖ HEALTH FAILED after deploying: $out"

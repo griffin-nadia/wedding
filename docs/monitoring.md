@@ -21,17 +21,21 @@ Don't add a `?h=` household link to a monitor: that would count visits on a real
 
 ### What health checks
 
-`GET ?action=health` returns `{ ok, sheet, queueMoving, pending, emailQuota, at }`, with no names, emails or tokens.
+Anyone calling `?action=health` (or `?action=ping`) gets only `{"ok":true}` or `{"ok":false}` (run 20). That's all
+UptimeRobot needs. `ok` is true when the Site-Data sheet opens and the email queue is moving.
 
-- `sheet`: the Site-Data sheet opens and the Guests tab is there.
-- `queueMoving`: nothing is waiting in the email queue, or the queue has sent within the last 15 minutes. If it's
-  false, the minute trigger has stopped: run **Wedding site → Check the email queue…** from the wedding account
-  ([email-queue.md](email-queue.md)).
-- `emailQuota`: about how many more emails Gmail allows today (around 100 a day on this account). Doesn't change `ok`;
-  it's there to read before a big send.
-- `ok` is `sheet && queueMoving`.
+The detail needs a key. Set `HEALTH_KEY` once in Extensions → Apps Script → Project Settings → Script properties (any
+long random string, kept in a password manager, never in the repo or a monitor's URL), then add `&key=<it>` to the
+address:
 
-`?action=ping` stays as the fuller queue report for setting up the email queue.
+- `?action=health&key=…`: `{ ok, sheet, queueMoving, pending, emailQuota, at }`, counts only.
+  - `sheet`: the Site-Data sheet opens and the Guests tab is there.
+  - `queueMoving`: nothing is waiting, or the queue has sent in the last 15 minutes. If false, run **Wedding site →
+    Check the email queue…** from the wedding account.
+  - `emailQuota`: about how many more emails Gmail allows today. Read it before a big send.
+- `?action=ping&key=…`: the queue's own report, for setting the email queue up.
+
+Without `HEALTH_KEY` set, nobody gets the detail.
 
 ## The 15-minute health watch (run 20)
 
