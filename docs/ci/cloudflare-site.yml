@@ -1,0 +1,42 @@
+# The guest site on Cloudflare Pages (run 20, option A in .brief/docs/privacy-audit.md): for a private repo, where
+# GitHub Pages needs a paid plan. Ready, not on: move it to .github/workflows/cloudflare-site.yml (from an account
+# with the workflow scope) once the repo is private and the two secrets exist, then delete deploy.yml.
+# Same build as deploy.yml: the back end's address, the photos, and the site's own address as one value.
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-site
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # npm run build ends with the leak check
+      - run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+          PUBLIC_PHOTOS: "1"
+      # The site under /wedding, the root going there, noindex on every response, deep links served as the app
+      - run: node scripts/preview-check.mjs site
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy cf-out --project-name=gn-wedding --branch=main
