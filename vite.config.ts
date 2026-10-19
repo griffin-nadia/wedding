@@ -77,6 +77,11 @@ function noPrivateInBuild(lab = false): Plugin {
   }
 }
 
+// The site's own address, for the link preview's image (index.html): one value, the build variable VITE_SITE_URL, so a
+// move to Cloudflare Pages or a custom domain (run 20) is a variable, not an edit. The back end's emails and QR cards
+// use SITE_URL in Script Properties.
+process.env.VITE_SITE_URL ||= "https://griffin-nadia.github.io/wedding"
+
 // Hosted at griffin-nadia.github.io/wedding (a project site), so base is the repo name.
 export default defineConfig(({ command, mode }) => ({
   base: mode === "lab" ? `/wedding/${LAB_PATH}/` : "/wedding/",
