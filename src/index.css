@@ -1627,11 +1627,14 @@ svg.lucide { stroke-width: 1.5; }
 .vmap-pin[data-chip="left"] .vmap-chip { left: auto; right: 36px; text-align: right; align-items: flex-end; }
 .vmap-pin[data-chip="low"] .vmap-chip { translate: 0 8px; } /* right of the dot but starting below it: The Sodoh's own lettering is just above */
 .vmap-pin[data-chip="above"] .vmap-chip { top: auto; bottom: 36px; left: 50%; translate: -50% 0; align-items: center; text-align: center; }
-/* Phones: a smaller ring (the map is small; the 44px target stays), and no chip, as on the old map: the card under
-   the map names the chosen place, and a chip there would cover her labels */
+/* Phones: a smaller ring (the map is small; the 44px target stays) and a smaller chip, on the side away from her label */
 @media (max-width: 599px) {
   .vmap-pin.is-on .vmap-dot { box-shadow: 0 0 0 5px rgb(164 49 8 / 0.2), 0 1px 2px rgb(0 0 0 / 0.25); }
-  .vmap-chip { display: none; }
+  /* Run 25: the chosen place's chip shows on phones too, smaller and closer to the smaller ring */
+  .vmap-chip { left: 26px; padding: 2px 6px; font-size: 10px; white-space: normal; width: max-content; max-width: 8.5rem; }
+  .vmap-chip .font-ja { font-size: 11px; }
+  .vmap-pin[data-chip="left"] .vmap-chip { right: 26px; }
+  .vmap-pin[data-chip="above"] .vmap-chip { bottom: 26px; }
 }
 /* The key under the map: the two routes */
 .vmap-key { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: var(--type-small-size); color: var(--ink-soft); }
