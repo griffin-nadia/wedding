@@ -55,4 +55,18 @@ export const ART = {
    * (src/lib/paint-globe.ts). Put the file in public/art/map/ and set its path here (e.g. "art/map/globe.webp").
    */
   globeLand: "",
+  /**
+   * Nadia's hand lettering for the page headings and the G&N mark (run 21, slots only). One word per file, a
+   * transparent PNG in any single colour (it's used as a mask and filled with the ink colour), exported by
+   * scripts/art-export.mjs to public/art/lettering/<name>.png. Set src (e.g. "art/lettering/the-day.png") and ratio
+   * (width ÷ height) when hers arrive; until then each one shows in the site's font. Spec: .brief/docs/art.md.
+   */
+  lettering: {
+    theDay: { src: "", ratio: 0 },
+    travel: { src: "", ratio: 0 },
+    ourStory: { src: "", ratio: 0 },
+    faqs: { src: "", ratio: 0 },
+    mark: { src: "", ratio: 0 },
+  } as Record<"theDay" | "travel" | "ourStory" | "faqs" | "mark", { src: string; ratio: number }>,
 }
+export type LetteringKey = keyof typeof ART.lettering

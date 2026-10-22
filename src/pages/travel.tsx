@@ -323,7 +323,7 @@ export function TravelPage() {
   }
   return (
     <>
-      <PageHeader title={t.nav.travel} />
+      <PageHeader title={t.nav.travel} lettering="travel" />
       {/* Under the header, not in it: they stick to the card's top edge once scrolled past (18e), so their box is the page */}
       <JumpLinks order={order} labels={{ "to-kyoto": g.toKyotoTitle, stay: t.stay.title, before: g.beforeTitle, "on-the-day": g.onTheDayTitle }} />
 

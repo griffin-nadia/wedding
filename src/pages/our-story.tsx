@@ -32,7 +32,7 @@ export function StoryPage() {
   const chapters = ready && story.length ? story : STORY_PLAN.map((c) => (c.body.length ? c : { ...c, body: [pending("story.chapterBody", lang)] }))
   return (
     <>
-      <PageHeader title={t.story.title} />
+      <PageHeader title={t.story.title} lettering="ourStory" />
       <StoryJourney chapters={chapters} opener={<Opener />} />
     </>
   )

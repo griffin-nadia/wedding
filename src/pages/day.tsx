@@ -100,7 +100,7 @@ export function DayPage() {
   )
   return (
     <>
-      <PageHeader title={t.day.title}><p className="font-medium text-foreground">{t.day.dateLong}</p></PageHeader>
+      <PageHeader title={t.day.title} lettering="theDay"><p className="font-medium text-foreground">{t.day.dateLong}</p></PageHeader>
       <Details />
       {timeline}
       <div className="no-print flex flex-col gap-4">
