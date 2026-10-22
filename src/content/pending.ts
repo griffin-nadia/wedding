@@ -195,6 +195,10 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "story.keepReading", ja: "続きを読む" },
   { key: "photos.kid-griffin-1998.alt", ja: "1998年の学校写真の幼いグリフィン。赤いTシャツでほほえんでいる" },
   { key: "photos.kid-nadia-home.alt", ja: "家でにっこり笑う幼いナディア。髪をクリップで留めた二つ結びに、クリスマスツリーのTシャツ" },
+  { key: "journey.victoria", ja: "ビクトリア" },
+  { key: "journey.zoomIn", ja: "拡大" },
+  { key: "journey.zoomOut", ja: "縮小" },
+  { key: "journey.households", ja: "世帯" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]
 

@@ -16,12 +16,17 @@ test("the globe, then the flat map, remembered", async ({ page }) => {
   await toEnd(page)
   test.skip(!(await page.evaluate(() => Boolean(document.createElement("canvas").getContext("webgl2")))), "no WebGL here")
   await expect(page.locator(".journey-globe canvas")).toHaveCount(1, { timeout: 30_000 })
-  // Run 19: Kyoto pinned with its date; the Globe / Flat control sits inside the map's bottom corner
+  // Kyoto pinned with its date. Run 24: Brisbane and Victoria always named; the Globe / Flat control centred above the
+  // map (and in the same spot on the flat map, below); the key under both; + and − to zoom
   await expect(page.locator(".globe-pin")).toContainText("Kyoto, 15 Oct 2027")
   await expect(page.locator(".globe-pin")).toHaveAttribute("data-side", /left|right/)
+  await expect(page.locator(".globe-place")).toHaveText(["Brisbane", "Victoria"])
   const map = (await page.locator(".journey-globe").boundingBox())!, mode = (await page.locator(".journey-mode").boundingBox())!
-  expect(mode.x + mode.width).toBeLessThanOrEqual(map.x + map.width + 1); expect(mode.y + mode.height).toBeLessThanOrEqual(map.y + map.height + 1)
-  expect(mode.y).toBeGreaterThan(map.y + map.height / 2)
+  expect(mode.y + mode.height).toBeLessThanOrEqual(map.y + 1)
+  expect(Math.abs(mode.x + mode.width / 2 - (map.x + map.width / 2))).toBeLessThan(2)
+  await expect(page.locator(".story-slide-map .journey-legend")).toBeVisible()
+  await expect(page.getByRole("button", { name: "Zoom in" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Zoom out" })).toBeVisible()
   // Dragging sideways turns the globe, never the story
   const art = (await page.locator(".journey-globe-art").boundingBox())!
   await page.mouse.move(art.x + art.width * 0.7, art.y + art.height / 2); await page.mouse.down()
@@ -31,7 +36,11 @@ test("the globe, then the flat map, remembered", async ({ page }) => {
   await expect(page.locator(".story-slide-map")).not.toHaveAttribute("inert")
   await page.getByRole("radio", { name: "Flat map" }).click()
   await expect(page.locator(".story-slide-map .journey-flat")).toBeVisible()
-  await expect(page.locator(".journey-flat .journey-guest")).toHaveCount(8) // the sample household always shows the sample lines
+  expect(await page.locator(".journey-mode").boundingBox()).toEqual(mode) // the switch didn't move
+  await expect(page.locator(".story-slide-map .journey-legend")).toBeVisible()
+  // The sample's 8 cities: Australia's 4 are one bundle, so 5 lines
+  await expect(page.locator(".journey-flat .journey-guest")).toHaveCount(5)
+  await expect(page.locator(".journey-flat .journey-guest-bundle")).toHaveCount(1)
   await expect(page.locator(".journey-globe canvas")).toHaveCount(0)
   await toEnd(page)
   await expect(page.getByRole("radio", { name: "Flat map" })).toBeChecked()

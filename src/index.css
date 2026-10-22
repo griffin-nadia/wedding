@@ -1331,9 +1331,9 @@ svg.lucide { stroke-width: 1.5; }
 .story-slide-map .story-media { width: 100%; max-width: 360px; }
 /* The map fits the same box: the Globe / Flat switch (about 56px with its gap) and the map under it */
 .story-slide-map .journey-mini { max-height: calc(var(--stop-h) - 56px); }
-.story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 56px)); }
+.story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 84px)); } /* room for the switch above and the key under */
 /* The flat map in the same box (run 19 globe: its height token) */
-.story-slide-map { --flat-h: calc(var(--stop-h) - 56px); }
+.story-slide-map { --flat-h: calc(var(--stop-h) - 84px); }
 /* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */
 .letter[data-page="story"] .letter-body { flex: 1 0 auto; }
 .letter[data-page="story"] .story { flex: 1 0 auto; justify-content: center; }
@@ -1529,7 +1529,22 @@ svg.lucide { stroke-width: 1.5; }
 .globe-pin[data-back="true"] .globe-pin-body { opacity: 0.5; }
 @media (prefers-reduced-motion: reduce) { .globe-pin-body { transition: none; } }
 /* The map and its Globe / Flat control in the bottom corner, over the map's empty corner, never on top of it */
-.segmented.journey-mode { position: absolute; right: var(--space-1); bottom: var(--space-1); display: inline-flex; margin: 0; gap: 0; padding: 2px; background: color-mix(in oklab, var(--surface-raised) 90%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+/* Run 24: Globe / Flat centred above the map, the same place in both views */
+.journey-mode-bar { display: flex; justify-content: center; width: 100%; min-height: 34px; }
+.segmented.journey-mode { position: relative; display: inline-flex; margin: 0; gap: 0; padding: 2px; background: color-mix(in oklab, var(--surface-raised) 90%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+/* The globe's always-on names (Brisbane, Victoria), a guest city's name on hover or tap, and + and − */
+.globe-place, .globe-tip { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; white-space: nowrap; font: 500 11px / 1.2 var(--font-label); color: var(--ink); text-shadow: 0 0 3px var(--letter-bg), 0 0 6px var(--letter-bg); translate: 6px -50%; transition: opacity var(--duration-fast) linear; }
+.globe-place[data-back="true"] { opacity: 0.25; }
+.globe-tip { padding: 2px var(--space-2); border-radius: var(--radius-control); background: var(--letter-bg); box-shadow: 0 1px 3px rgb(var(--tint-shadow) / 0.25); text-shadow: none; translate: -50% calc(-100% - 8px); }
+.globe-zoom { position: absolute; right: -44px; bottom: 0; z-index: 3; display: flex; flex-direction: column; gap: 2px; }
+.globe-zoom .utility-btn { width: 32px; height: 32px; font: 500 18px / 1 var(--font-label); background: color-mix(in oklab, var(--surface-raised) 88%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+.globe-zoom .utility-btn::after { content: ""; position: absolute; inset: -6px; } /* a 44px target */
+.globe-zoom .utility-btn { position: relative; }
+/* A bundle of one country's lines: one, a little thicker */
+.journey-guest-bundle { stroke-width: 2.4; opacity: 0.75; }
+.journey-flat-hit { cursor: default; }
+.journey-flat-dot { fill: var(--ink-soft); opacity: 0.6; }
+.journey-flat-tip { paint-order: stroke; stroke: var(--letter-bg); stroke-width: 3px; }
 .journey-mode .segmented-mark { top: 2px; bottom: 2px; }
 .segmented.journey-mode .segmented-item { min-height: 28px; padding-inline: var(--space-2); gap: 0; font-size: 12px; }
 .journey-mode .segmented-item::after, .journey-mode .segmented-tick { display: none; }
