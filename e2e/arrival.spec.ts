@@ -187,7 +187,8 @@ for (const theme of ["autumn", "lantern"] as const) test(`nothing covers their f
     expect(r.overlaps, `${w}×${h}: nothing overlaps`).toEqual([])
     expect(r.onScreen, `${w}×${h}: the note is on screen`).toBe(true)
     if (!r.wide && r.portrait && !small) expect(r.side, `${w}×${h}: the note above or below the envelope`).toMatch(/^(above|below)$/)
-    if (r.wide) expect(r.side, `${w}×${h}: beside the envelope`).not.toBe("above")
+    // Run 24: on laptops too the note sits just above the envelope (beside or below only if their faces are in the way)
+    if (r.wide) expect(r.side, `${w}×${h}: anchored to the envelope`).toMatch(/^(above|below|left|right)$/)
     if (w === 390 || w === 1440) await expect(page).toHaveScreenshot(`arrival-faces-${theme}-${w}.png`)
     else await info.attach(`faces-${w}x${h}`, { body: await page.screenshot(), contentType: "image/png" })
   }

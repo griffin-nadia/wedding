@@ -31,8 +31,12 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
     const fit = () => {
       const float = envelope.current?.parentElement
       if (!float) return
-      // The float wrapper's own box: offsetLeft/Top ignore its bob and tilt (it sits in the fixed .arrival)
-      const e = new DOMRect(float.offsetLeft, float.offsetTop, float.offsetWidth, float.offsetHeight)
+      // The float wrapper's own box on screen, ignoring its bob and tilt (and the lean towards the pointer): offsets
+      // summed up to the fixed .arrival, as one offsetLeft is only from the nearest positioned box (run 24: on wide
+      // screens that box starts further in, so the note landed in the top left, its arrow pointing at nothing)
+      let x = 0, y = 0
+      for (let el: HTMLElement | null = float; el; el = el.offsetParent as HTMLElement | null) { x += el.offsetLeft; y += el.offsetTop }
+      const e = new DOMRect(x, y, float.offsetWidth, float.offsetHeight)
       const label = document.querySelector(".arrival-open")?.getBoundingClientRect()
       const face = faceRect()
       const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--bar-h")) || 56
@@ -70,7 +74,9 @@ export default function ArrivalNote({ envelope }: { envelope: React.RefObject<HT
         const words = { x: Math.max(arrow.x + 78 - ww * 0.55, e.right + 12), y: arrow.y - wh + 2, w: ww, h: wh }
         return { side: "right", words, arrow }
       }
-      const tries = () => wide ? [left(), right(), above()] : [above(), below(), left(), right()]
+      // Run 24: just above the envelope at every width, its arrow landing on the flap; beside or below only when their
+      // faces or the bar are in the way
+      const tries = () => [above(), below(), left(), right()]
       const keepOut = [grow(e, 6), ...(label ? [grow(label, 4)] : []), ...(face ? [grow(face, 6)] : [])]
       const clear = (p: Place) => [p.words, p.arrow].every((b) =>
         b.x >= 8 && b.y >= bar && b.x + b.w <= innerWidth - 8 && b.y + b.h <= innerHeight - 8 && keepOut.every((k) => !hits(b, k)))
