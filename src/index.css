@@ -568,6 +568,13 @@
 .site-bar { position: fixed; z-index: 40; top: 0; inset-inline: 0; height: var(--bar-h); display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); padding: env(safe-area-inset-top) max(var(--space-2), env(safe-area-inset-right)) 0 max(var(--space-4), env(safe-area-inset-left)); }
 /* 18e: the bar, the dock and the card are one paper (the card's colour token), with no glass and no change on scroll */
 .site-bar::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--letter-bg); }
+/* Run 25: the bar and the dock get the card's edge where they meet the page (its 1px line at 60% and the 1px light
+   inset), so bar, card and dock read as the same paper */
+.site-bar::before { border-bottom: 1px solid color-mix(in oklab, var(--line-hairline) 60%, transparent); box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.6); }
+.site-nav { border-top-color: color-mix(in oklab, var(--line-hairline) 60%, transparent) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6); }
+/* Lantern: the inverse, a darker edge (Jehan, run 25): a light glint reads as a bright line on the walnut bar */
+[data-theme="lantern"] .site-bar::before { border-bottom-color: rgb(0 0 0 / 0.45); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.35); }
+[data-theme="lantern"] .site-nav { border-top-color: rgb(0 0 0 / 0.45) !important; box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.35); }
 .site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
@@ -1123,10 +1130,19 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-glyph { fill: var(--brand-kogecha); font-family: var(--font-ja); font-size: 13px; }
 .omikuji-stick { fill: var(--brand-hachimitsu); translate: 0 14px; transition: translate var(--duration-base) var(--ease-paper) 700ms; }
 .omikuji-tin.is-drawing .omikuji-stick { translate: 0 0; }
+/* The omikuji's washi (run 25): fixed colours, the same in light and Lantern */
+.omikuji-slip, .omikuji-back {
+  --washi: rgb(248 241 226 / 0.96);
+  --washi-back: rgb(241 232 213 / 0.95);
+  --washi-band-top: linear-gradient(to right, rgb(168 79 50 / 0.82), rgb(168 79 50 / 0.92) 12%, rgb(168 79 50 / 0.88) 88%, rgb(168 79 50 / 0.78));
+  --washi-band-bottom: var(--washi-band-top);
+  /* Fibres: sparse short strands (a lightly stretched noise, high threshold) and a fine even grain, both faint */
+  --washi-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.11' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.5 0 0 0 0 0.36 0 0 0 2.4 -1.45'/%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.42 0 0 0 0 0.3 0 0 0 0.35 -0.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.18'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E");
+}
 .omikuji-slip {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: 100%; max-width: 320px; margin-inline: auto;
-  padding: var(--space-6) var(--space-5); text-align: center; background: var(--brand-paper-bright); color: var(--brand-kogecha);
-  border-block: 6px solid var(--brand-sabi); border-radius: var(--radius-control); box-shadow: var(--elevation-paper);
+  padding: calc(var(--space-6) + 6px) var(--space-5); text-align: center; background-color: var(--washi); color: var(--brand-kogecha);
+  border-radius: var(--radius-control); box-shadow: var(--elevation-paper);
   outline: 2px solid transparent; outline-offset: 4px;
   animation: toast-in var(--duration-base) var(--ease-paper) both; /* a slip opened before: it simply arrives */
 }
@@ -1150,9 +1166,9 @@ svg.lucide { stroke-width: 1.5; }
 @keyframes omikuji-leaf-2 { 0% { transform: rotateX(-178deg); } 48% { transform: rotateX(3deg); } 60%, 100% { transform: rotateX(0deg); } }
 @keyframes omikuji-leaf-3 { 0%, 24% { transform: rotateX(178deg); } 82% { transform: rotateX(-4deg); } 92% { transform: rotateX(1deg); } 100% { transform: rotateX(0deg); } }
 /* The back of each third: plain paper, seen while it swings past edge-on */
-.omikuji-back { position: absolute; inset-inline: 0; width: 100%; max-width: 320px; margin-inline: auto; background: color-mix(in oklab, var(--brand-paper-bright) 88%, var(--brand-kinari)); transform: rotateX(180deg); backface-visibility: hidden; }
+.omikuji-back { position: absolute; inset-inline: 0; width: 100%; max-width: 320px; margin-inline: auto; background-color: var(--washi-back); transform: rotateX(180deg); backface-visibility: hidden; }
 .omikuji-back-2 { top: 33.333%; height: 33.334%; }
-.omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); border-bottom: 6px solid var(--brand-sabi); }
+.omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); background-image: var(--washi-band-bottom), var(--washi-fibre); background-repeat: no-repeat, repeat; background-size: calc(100% - 20px) 6px, 220px 220px; background-position: center bottom 8px, 0 0; }
 /* A third's shade lifts as it flattens */
 .omikuji-shade { position: absolute; inset: 0; z-index: 31; pointer-events: none; background: rgb(var(--tint-shadow) / 0.3); }
 .omikuji-part-2 .omikuji-shade { animation: omikuji-shade 1100ms var(--ease-paper) both; }
@@ -1480,13 +1496,25 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* The slip: bright paper in both modes, folded in three before it was drawn, so two faint creases cross it (a
    shadowed side, a lit side) */
+/* Run 25: washi. One tone in both themes, a touch see-through (the card shows faintly behind), long fibres and a fine
+   grain (an inline SVG noise, no download), the two creases of the three-fold clearly there (a shadowed side and a lit
+   side), and the red bands printed on: inset from the paper's edges, broken up by the fibres over them, not border bars */
 .omikuji-slip.paper-feel {
   --tint-shadow: 66 26 5;
   background-image:
-    linear-gradient(to bottom, transparent calc(33.33% - 3px), rgb(var(--tint-shadow) / 0.05) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 3px)),
-    linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px));
-  background-size: 100% 100%, 100% 100%;
+    var(--washi-fibre),
+    linear-gradient(to bottom, transparent calc(33.33% - 4px), rgb(var(--tint-shadow) / 0.08) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 4px)),
+    linear-gradient(to bottom, transparent calc(66.66% - 4px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.08) calc(66.66% + 0.5px), transparent calc(66.66% + 4px));
+  background-size: 220px 220px, 100% 100%, 100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat;
 }
+/* The printed parts are inked like the 寿 stamp (the hanko utility's ink): the red bands, 第七番 and the tier, with the
+   ink's soft bleed and dry specks, sinking into the paper. Their line stays crisp to read. */
+.omikuji-slip { position: relative; }
+.omikuji-slip::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
+  background: var(--washi-band-top) center top 8px / calc(100% - 20px) 6px no-repeat, var(--washi-band-bottom) center bottom 8px / calc(100% - 20px) 6px no-repeat; }
+.omikuji-slip::before, .omikuji-slip .omikuji-no, .omikuji-slip .omikuji-kichi {
+  filter: url(#ink-bleed); -webkit-mask: var(--texture-ink) 0 0 / 96px; mask: var(--texture-ink) 0 0 / 96px; mix-blend-mode: multiply; }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
 /* Ask us (final run): "Is this it?" rows, and the field only a bot fills in */
