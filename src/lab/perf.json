@@ -1,5 +1,5 @@
 {
- "measured": "2026-10-19",
+ "measured": "2026-10-22",
  "profile": "Pixel 7, CPU 4x slower, 1.6 Mbps / 150 ms",
  "entries": {
   "confirm-stamp": {
@@ -407,6 +407,134 @@
      "longestMs": 0,
      "loadLongTasks": 2,
      "kb": 10
+    }
+   }
+  },
+  "kid-picker": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 22,
+   "takes": {
+    "-": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    }
+   }
+  },
+  "art-seal": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 17,
+   "takes": {
+    "polaroid": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 17
+    },
+    "done": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 17
+    },
+    "favicon": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 17
+    }
+   }
+  },
+  "art-leaves": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 19,
+   "takes": {
+    "stickers": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 19
+    },
+    "fortune": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 19
+    },
+    "done": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 19
+    }
+   }
+  },
+  "art-garden": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 17,
+   "takes": {
+    "print": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 17
+    },
+    "ink": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 17
+    }
+   }
+  },
+  "art-names": {
+   "fps": 60,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 66,
+   "takes": {
+    "og": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 66
+    },
+    "email": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 66
     }
    }
   }
