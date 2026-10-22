@@ -142,14 +142,15 @@ export function SlipWords({ i, of, fortune, copy = false }: { i: number; of: num
   const { t } = useLang()
   return (
     <>
-      <p lang="ja" className="omikuji-no font-ja" aria-hidden>第{kanjiNumber(i + 1)}番</p>
+      <p lang="ja" className="omikuji-no font-ja" aria-hidden>第{kanjiNumber(fortune.no || i + 1)}番</p>
       <p id={copy ? undefined : "fortune-head"} className="flex flex-col items-center gap-1">
         <span lang="ja" className="omikuji-kichi font-ja">{fortune.tierJa}</span>
         <span lang="en" className="label-caps">{fortune.tier}</span>
       </p>
       {fortune.category && <p lang="en" className="label-caps omikuji-category">{fortune.category}</p>}
       <p lang="en" className="omikuji-text">{fortune.text}</p>
-      <p className="label-caps omikuji-count">{t.fortune.number(i + 1, of)}</p>
+      {/* The fortune's own number from the Fortunes tab (the slip's place in the list only for the drafts) */}
+      <p className="label-caps omikuji-count">{t.fortune.number(fortune.no || i + 1, of)}</p>
       {/* The same hand-cut 寿 seal as the confirmation's head, small, as if stamped on the slip */}
       <Hanko size="sm" className="omikuji-seal" />
     </>
