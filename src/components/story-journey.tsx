@@ -85,11 +85,13 @@ function JourneyMap({ active }: { active: boolean }) {
   const toggle = <Segmented label={pending("journey.mapMode", lang)} size="sm" className="journey-mode" value={mode} onChange={pick} items={[{ value: "globe", label: pending("journey.globe", lang) }, { value: "flat", label: pending("journey.flat", lang) }]} />
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      {/* Globe / Flat map: a small segmented control in the map's own bottom corner (run 19), remembered on this device */}
+      {/* Run 24: Globe / Flat centred above the map, in a spot that never moves when you switch, remembered on this
+          device; the same key under both views */}
+      <div className="journey-mode-bar">{toggle}</div>
       {mode === "globe" && active
-        ? <Suspense fallback={<div className="journey-globe">{toggle}</div>}><JourneyGlobe you={you} cities={journeys} label={label}>{toggle}</JourneyGlobe></Suspense>
-        : mode === "globe" ? <div className="journey-globe">{toggle}</div> : <JourneyFlat you={you} cities={journeys} label={label}>{toggle}</JourneyFlat>}
-      {mode === "flat" && <JourneyLegend you={Boolean(you && you.id !== "jp")} />}
+        ? <Suspense fallback={<div className="journey-globe" />}><JourneyGlobe you={you} cities={journeys} label={label} /></Suspense>
+        : mode === "globe" ? <div className="journey-globe" /> : <JourneyFlat you={you} cities={journeys} label={label} />}
+      <JourneyLegend you={Boolean(you && you.id !== "jp")} />
       {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )

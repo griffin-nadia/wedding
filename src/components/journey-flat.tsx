@@ -1,8 +1,9 @@
-import { useEffect, useId, useRef, type ReactNode } from "react"
+import { useEffect, useId, useRef, useState, type ReactNode } from "react"
 import { arc } from "@/lib/journey"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import type { City } from "@/lib/city-search"
+import { bundle, type Place } from "@/lib/journey-names"
 
 /**
  * The flat map beside the globe (run 19): the globe's own painting (src/lib/paint-globe.ts: every country a soft
@@ -13,7 +14,7 @@ import type { City } from "@/lib/city-search"
  * Reduced motion: every line already drawn (the site's journey CSS). The legend sits under it (Our story's last stop).
  */
 const FRAME = { west: 90, east: 260, north: 72, south: -64 } // 170° by 136°: the 400 × 320 viewBox, 5:4
-const KYOTO: [number, number] = [35.01, 135.77], BRISBANE: [number, number] = [-27.47, 153.03], EDMONTON: [number, number] = [53.55, -113.49]
+const KYOTO: [number, number] = [35.01, 135.77], BRISBANE: [number, number] = [-27.47, 153.03], VICTORIA: [number, number] = [48.43, -123.37]
 const SPAN = FRAME.east - FRAME.west, TALL = FRAME.north - FRAME.south
 
 /** A place on the flat map (viewBox 400 × 320); outside the frame, on the nearer edge */
@@ -25,8 +26,9 @@ function flatPoint([lat, lon]: [number, number]): [number, number] {
   return [Math.max(4, Math.min(396, x)), Math.max(4, Math.min(316, y))]
 }
 
-export function JourneyFlat({ you, cities, label, children }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string }[]; label: string; children?: ReactNode }) {
-  const { t } = useLang()
+export function JourneyFlat({ you, cities, label, children }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string; name?: string }[]; label: string; children?: ReactNode }) {
+  const { t, lang } = useLang()
+  const [tipAt, setTipAt] = useState<number | null>(null)
   const { theme } = useTheme()
   const id = useId().replace(/:/g, "")
   const art = useRef<HTMLCanvasElement>(null)
@@ -58,7 +60,9 @@ export function JourneyFlat({ you, cities, label, children }: { you: City | null
     return () => { alive = false; seen.disconnect(); shown.disconnect() }
   }, [cities, you, theme])
   const kyoto = flatPoint(KYOTO)
-  const others = cities.filter((c) => c.n > 0).map((c) => flatPoint([c.lat, c.lon]))
+  // The same naming and bundling as the globe (lib/journey-names.ts)
+  const guests = bundle(cities.filter((c) => c.n > 0).map((c) => ({ name: c.name ?? "", country: c.country ?? "", lat: c.lat, lon: c.lon, n: c.n }) as Place), lang, t.journey.households)
+  const others = guests.map((c) => flatPoint([c.lat, c.lon]))
   // Their own line, unless they're in Kyoto already (no line to draw)
   const mine = you && you.id !== "jp" && you.lat != null && you.lon != null && Math.hypot(you.lat - KYOTO[0], you.lon - KYOTO[1]) > 0.5 ? flatPoint([you.lat, you.lon]) : null
   const youDelay = 900 + others.length * 120
@@ -68,15 +72,30 @@ export function JourneyFlat({ you, cities, label, children }: { you: City | null
         <canvas ref={art} aria-hidden className="journey-flat-art" />
         <svg viewBox="0 0 400 320" role="img" aria-label={label} className="journey is-in journey-hifi journey-flat-lines">
           <defs>
-            {[flatPoint(BRISBANE), flatPoint(EDMONTON), ...others].map((p, i) => (
+            {[flatPoint(BRISBANE), flatPoint(VICTORIA), ...others].map((p, i) => (
               <mask key={i} id={`${id}-m${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="320">
                 <path d={line(p, i < 2 ? 0.25 : 0.15)} className={i === 0 ? "journey-reveal" : i === 1 ? "journey-reveal journey-reveal-2" : "journey-reveal journey-reveal-guest"} style={i > 1 ? { animationDelay: `${900 + (i - 2) * 120}ms` } : undefined} pathLength={1} />
               </mask>
             ))}
           </defs>
           <path d={line(flatPoint(BRISBANE), 0.25)} className="journey-route journey-route-nadia" pathLength={1} mask={`url(#${id}-m0)`} />
-          <path d={line(flatPoint(EDMONTON), 0.25)} className="journey-route journey-route-griffin" pathLength={1} mask={`url(#${id}-m1)`} />
-          {others.map((p, i) => <path key={i} d={line(p, 0.15)} className="journey-guest" mask={`url(#${id}-m${i + 2})`} />)}
+          <path d={line(flatPoint(VICTORIA), 0.25)} className="journey-route journey-route-griffin" pathLength={1} mask={`url(#${id}-m1)`} />
+          {others.map((p, i) => <path key={i} d={line(p, 0.15)} className={guests[i].bundled ? "journey-guest journey-guest-bundle" : "journey-guest"} mask={`url(#${id}-m${i + 2})`} />)}
+          {/* Brisbane and Victoria always named (run 24) */}
+          <g aria-hidden className="journey-flat-names">
+            <text x={flatPoint(BRISBANE)[0] - 6} y={flatPoint(BRISBANE)[1] + 4} textAnchor="end" className="journey-place">{t.journey.brisbane}</text>
+            <text x={flatPoint(VICTORIA)[0] - 6} y={flatPoint(VICTORIA)[1] + 4} textAnchor="end" className="journey-place">{t.journey.victoria}</text>
+          </g>
+          {/* Each guest line's start: its name on hover or tap (a city only with 2+ households, else the country) */}
+          {others.map((p, i) => (
+            <g key={`t${i}`} className="journey-flat-hit" onPointerEnter={() => setTipAt(i)} onPointerLeave={() => setTipAt((x) => (x === i ? null : x))} onClick={() => setTipAt(i)}>
+              <circle cx={p[0]} cy={p[1]} r="11" fill="transparent" />
+              <circle cx={p[0]} cy={p[1]} r="2.2" className="journey-flat-dot" />
+            </g>
+          ))}
+          {tipAt !== null && others[tipAt] && (
+            <text aria-hidden x={others[tipAt][0]} y={others[tipAt][1] - 9} textAnchor="middle" className="journey-place journey-flat-tip">{guests[tipAt].label}</text>
+          )}
           {mine && <path key={String(you!.id)} d={line(mine, 0.25)} className="journey-you journey-you-edge" pathLength={1} style={{ animationDelay: `${youDelay}ms` }} />}
           {mine && <path key={`${you!.id}-line`} d={line(mine, 0.25)} className="journey-you" pathLength={1} style={{ animationDelay: `${youDelay}ms` }} />}
           {mine && <circle cx={mine[0]} cy={mine[1]} r="4" className="journey-you-dot" />}
