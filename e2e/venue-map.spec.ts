@@ -18,15 +18,15 @@ test("the venue map is off by default and complete with ?preview", async ({ page
   await expect(page.locator(".kmap-card")).toContainText("Hachijo exit")
   await expect(page.locator(".vmap-key")).toContainText("Taxi from the station")
   await expect(page.locator(".vmap-key")).toContainText("Walk from Gion-Shijo")
-  await expect(page.getByRole("link", { name: /View the full map/ })).toHaveAttribute("href", /venue-map-full\.webp$/)
+  await expect(page.getByRole("button", { name: "Open the map" })).toBeVisible()
   await page.locator(".vmap-list summary").click()
   await expect(page.locator(".vmap-list [lang=ja]", { hasText: "清水寺" })).toBeVisible()
 })
 
-// Run 24b: every ring sits on its own dot in Nadia's art (the place's % of the image), at three widths
+// Run 24b: every ring sits on its own dot in Nadia's art (the place's % of the image), at three widths (run 25: and 2560)
 test("every place's ring is centred on its spot in the art", async ({ page }) => {
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
-  for (const [w, h] of [[390, 844], [1024, 768], [1440, 900]]) {
+  for (const [w, h] of [[390, 844], [1024, 768], [1440, 900], [2560, 1440]]) {
     await page.setViewportSize({ width: w, height: h })
     await page.goto("travel?h=sample&preview#around")
     const map = page.locator(".vmap"); await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(300)
@@ -41,4 +41,30 @@ test("every place's ring is centred on its spot in the art", async ({ page }) =>
     expect(off.length, `${w}`).toBe(11)
     for (const o of off) expect(o, `${w}: a ring off its spot`).toBeLessThanOrEqual(2)
   }
+})
+
+// Run 25: "Open the map" shows the same map full screen, from Travel and from The day (which has no map inline); Escape
+// closes it and focus goes back to the link; the rings sit on their spots there too
+for (const path of ["travel?h=sample&preview#around", "the-day?h=sample&preview"]) test(`Open the map, full screen (${path.split("?")[0]})`, async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto(path)
+  if (path.startsWith("the-day")) await expect(page.locator("#letter .vmap")).toHaveCount(0) // the link, not a second map
+  const open = page.getByRole("button", { name: "Open the map" })
+  await open.click()
+  const dialog = page.getByRole("dialog", { name: "Around the venue" })
+  await expect(dialog.locator(".vmap-pin")).toHaveCount(11)
+  await expect(dialog.getByRole("button", { name: "Open the map" })).toHaveCount(0)
+  await dialog.getByRole("button", { name: /Yasaka Pagoda/ }).click()
+  await expect(dialog.locator(".kmap-card")).toContainText("Yasaka Pagoda")
+  const off = await dialog.locator(".vmap").evaluate((m) => {
+    const img = m.querySelector("img")!.getBoundingClientRect()
+    return [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((pin) => {
+      const d = pin.querySelector(".vmap-dot")!.getBoundingClientRect()
+      return Math.round(Math.hypot(d.left + d.width / 2 - (img.left + (parseFloat(pin.style.left) / 100) * img.width), d.top + d.height / 2 - (img.top + (parseFloat(pin.style.top) / 100) * img.height)))
+    })
+  })
+  for (const o of off) expect(o).toBeLessThanOrEqual(2)
+  await page.keyboard.press("Escape")
+  await expect(dialog).toHaveCount(0)
+  await expect(open).toBeFocused()
 })

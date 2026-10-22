@@ -5,7 +5,7 @@ import { directionsUrl } from "@/lib/calendar"
 import { DATES } from "@/lib/wedding-dates"
 import { useLang } from "@/lib/lang"
 import { pending } from "@/content/pending"
-import { VenueMap, venueMapOn } from "@/components/venue-map"
+import { VenueMapOpen, venueMapOn } from "@/components/venue-map"
 import { VenueMark } from "@/components/venue-mark"
 import { jstLabel, kyotoNow } from "@/lib/time"
 import { PageHeader } from "@/components/ui/page-header"
@@ -62,7 +62,7 @@ function Timeline({ now }: { now: Date }) {
   )
 }
 
-/** Details: the venue and its address, and How to get there, which opens Google Maps directions (v3 S; B goes to Travel).
+/** Details: the venue and its address, How to get there (Google Maps directions, v3 S) and, with Nadia's map on, Open the map.
  * The venue's story moved under the timeline (run 19), so the first screen is when and where. */
 function Details() {
   const { t } = useLang()
@@ -72,9 +72,12 @@ function Details() {
         <VenueMark className="mb-3" />
         {t.day.addressLines.map((l) => <p key={l}>{l}</p>)}
       </div>
-      <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{t.day.howToGetThere}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
-      {/* Nadia's map under How to get there once it's switched on (run 22, config.venueMap) */}
-      {venueMapOn() && <VenueMap />}
+      {/* How to get there (Google Maps directions) and, once Nadia's map is switched on, Open the map beside it: the same
+          full-screen map as Travel's (run 25; the map itself is inline on Travel only) */}
+      <div className="flex flex-wrap items-center gap-x-6">
+        <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center">{t.day.howToGetThere}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
+        {venueMapOn() && <VenueMapOpen />}
+      </div>
     </div>
   )
 }

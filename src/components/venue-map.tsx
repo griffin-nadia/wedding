@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Maximize2, MapPin } from "lucide-react"
+import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useLang } from "@/lib/lang"
 import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
@@ -25,7 +26,7 @@ export function venueMapOn() {
  * card's own cream. Lantern: the same art as a framed print (her dark ink doesn't read on walnut; no filters).
  * Phones: pinch to zoom from 1x to 2.5x and drag to look around. Reduced motion: the route still, no glide.
  */
-export function VenueMap() {
+export function VenueMap({ inModal = false }: { inModal?: boolean }) {
   const { t } = useLang()
   const m = t.venueMap, k = t.kyotoMap
   const [on, setOn] = useState("venue")
@@ -73,7 +74,7 @@ export function VenueMap() {
         <span className="text-small text-muted-foreground">{k.notToScale}</span>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-4">
-        <a href={`${base}art/map/venue-map-full.webp`} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center gap-2"><Maximize2 className="size-4" aria-hidden />{m.full}<span className="sr-only">, {m.fullOpens}</span></a>
+        {inModal ? <span /> : <VenueMapOpen />}
         <span className="text-small text-muted-foreground vmap-hint">{m.zoomHint}</span>
       </div>
       <div key={place.id} className="kmap-card" aria-live="polite">
@@ -88,6 +89,25 @@ export function VenueMap() {
         </ul>
       </details>
     </section>
+  )
+}
+
+/**
+ * Run 25: "Open the map": the same map, places, card and routes full screen, from Travel (under the map) and The day
+ * (beside How to get there, where there's no map inline). A dialog: focus stays in it, Escape and the close button
+ * close it and focus goes back to the link. One component, so both pages show the same thing.
+ */
+export function VenueMapOpen({ className }: { className?: string }) {
+  const { t } = useLang()
+  const m = t.venueMap
+  return (
+    <Sheet>
+      <SheetTrigger asChild><button type="button" className={cn("btn-text inline-flex min-h-11 items-center gap-2 self-start", className)}><Maximize2 className="size-4" aria-hidden />{m.open}</button></SheetTrigger>
+      <SheetContent className="venue-modal" closeLabel={m.close} aria-describedby={undefined}>
+        <SheetHead><SheetTitle className="heading">{m.title}</SheetTitle></SheetHead>
+        <SheetBody><VenueMap inModal /></SheetBody>
+      </SheetContent>
+    </Sheet>
   )
 }
 
