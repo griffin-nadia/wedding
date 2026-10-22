@@ -12,6 +12,10 @@ const ROUTES = {
   walk: "M1006 330 L1156 330 L1156 690 L1254 668",
 } as const
 
+/** Run 25: which of her dots each ring sits on (her red place dots, the green Keihan station rings, Kyoto Station's
+ *  orange ring), so each ring is her dot's own size */
+const DOT: Record<string, "station" | "jr"> = { station: "jr", gojo: "station", gion: "station", sanjo: "station", shichijo: "station", tofukuji: "station" }
+
 /** Nadia's map shows when config.venueMap is on, or with ?preview in the address (to try it before it's switched on) */
 export function venueMapOn() {
   return config.venueMap || (typeof location !== "undefined" && new URLSearchParams(location.search).has("preview"))
@@ -58,7 +62,7 @@ export function VenueMap() {
               over English) on the side away from her own painted label, so it never covers it */}
           {m.places.map((p) => (
             <button key={p.id} type="button" aria-pressed={on === p.id} aria-label={`${p.name}, ${p.ja}`} onClick={() => setOn(p.id)}
-              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={p.chip} style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%` }}>
+              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={p.chip} data-kind={DOT[p.id] ?? "place"} style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%` }}>
               <span aria-hidden className="vmap-dot" />
               {on === p.id && <span aria-hidden className="vmap-chip"><span lang="ja" className="font-ja">{p.ja}</span><span>{p.name}</span></span>}
             </button>
