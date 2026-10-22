@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { cn } from "@/lib/utils"
+import { Lettering } from "@/components/lettering"
+import type { LetteringKey } from "@/lib/art"
 
 /**
  * True once the content has scrolled under a sticky header. A zero-height sentinel sits where the header starts;
@@ -27,10 +29,11 @@ export function useUnder(root?: React.RefObject<HTMLElement | null>) {
  * that belongs with it (Travel's jump links). It scrolls away with the page (18e: the top bar is the only thing that
  * stays put; Travel's jump links stay as one slim row at the top of the card).
  */
-export function PageHeader({ title, children, className, as: H = "h1" }: { title: ReactNode; children?: ReactNode; className?: string; as?: "h1" | "h2" }) {
+export function PageHeader({ title, lettering, children, className, as: H = "h1" }: { title: ReactNode; lettering?: LetteringKey; children?: ReactNode; className?: string; as?: "h1" | "h2" }) {
   return (
     <header className={cn("page-header", className)}>
-      <H className="heading">{title}</H>
+      {/* Nadia's lettering for the title when she's drawn it (run 21), the words otherwise */}
+      <H className="heading">{lettering && typeof title === "string" ? <Lettering word={lettering}>{title}</Lettering> : title}</H>
       {children}
     </header>
   )

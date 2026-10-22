@@ -21,7 +21,7 @@ export function FaqsPage() {
   useEffect(() => { void getQuestions().then(setAsked) }, [])
   return (
     <>
-      <PageHeader title={t.qa.title} />
+      <PageHeader title={t.qa.title} lettering="faqs" />
       <Disclosure label={t.qa.title} value={open} onValueChange={setOpen}>
         {t.qa.items.map((item, i) => (
           <AccordionItem key={item.q} value={`q${i}`} id={`q${i}`}>

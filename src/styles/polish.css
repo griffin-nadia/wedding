@@ -266,3 +266,7 @@ html { scrollbar-gutter: stable; }
   :root .arrival .envelope { width: 340px; height: auto; }
 }
 @media (prefers-reduced-motion: reduce) { .scene-photo, .scene-photo img { transition: none !important; } }
+
+/* Nadia's hand lettering in a heading or the mark (run 21): her word as a mask filled with the ink, the height of the
+   line it replaces, as wide as her ratio says */
+.lettering { display: inline-block; height: 1.15em; aspect-ratio: var(--lettering-ratio); vertical-align: -0.2em; background: currentColor; -webkit-mask: var(--lettering-art) left center / contain no-repeat; mask: var(--lettering-art) left center / contain no-repeat; }
