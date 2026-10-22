@@ -9,10 +9,6 @@ export const PENDING = {
     en: "We're still writing this part in our own words. Check back closer to the day.",
     ja: "この章は、わたしたちの言葉でまだ書いているところです。もう少しお待ちください。",
   },
-  "story.kidGriffin": {
-    en: "A photo of Griffin as a kid, on its way",
-    ja: "グリフィンの子どもの頃の写真（準備中）",
-  },
   "photo.toCome": {
     en: "A photo to come",
     ja: "写真は準備中です",
@@ -181,6 +177,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "home.pills.replied", ja: "お返事ありがとうございます" },
   { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },
   { key: "preview.feedbackLabel", ja: "読みにくいところ、気になるところは？" },
+  { key: "photos.kid-griffin.alt", ja: "小学校の初日、玄関の前に立つ幼い頃のグリフィン" },
   // Their final wording (22 Oct), translated by us
   { key: "changeBy", ja: "2027年4月30日まで、お返事はいつでも変更できます。航空券を予約したら、旅の日程も追加してください。" },
   { key: "home.intro.0", ja: "ふたりの愛を祝い、物語の次の章を始めるために、すべてが始まった場所に友人と家族を招きます。" },
