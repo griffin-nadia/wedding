@@ -1,5 +1,5 @@
 {
- "measured": "2026-10-19",
+ "measured": "2026-10-23",
  "profile": "Pixel 7, CPU 4x slower, 1.6 Mbps / 150 ms",
  "entries": {
   "confirm-stamp": {
@@ -409,6 +409,70 @@
      "kb": 10
     }
    }
+  },
+  "globe-watercolour": {
+   "fps": 56,
+   "longTasks": 2,
+   "longestMs": 124,
+   "kb": 242,
+   "takes": {
+    "-": {
+     "fps": 56,
+     "p95": 17,
+     "longTasks": 2,
+     "longestMs": 124,
+     "loadLongTasks": 2,
+     "kb": 242
+    }
+   }
+  },
+  "globe-sashiko": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 239,
+   "takes": {
+    "-": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 239
+    }
+   }
+  },
+  "globe-woodblock": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 239,
+   "takes": {
+    "-": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 239
+    }
+   }
+  },
+  "globe-antique": {
+   "fps": 58,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 240,
+   "takes": {
+    "-": {
+     "fps": 58,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 240
+    }
+   }
   }
  },
  "baselines": {
@@ -426,29 +490,5 @@
    "longestMs": 361,
    "loadLongTasks": 1
   }
- },
- "loading": {
-  "profile": "Pixel 7, CPU 4x slower, 1.6 Mbps / 150 ms",
-  "globeKB": 201,
-  "rows": [
-   {
-    "label": "today",
-    "envelopeMs": 2955,
-    "globeStallMs": 2299,
-    "repeatVisitMs": 245
-   },
-   {
-    "label": "preload the arrival art",
-    "envelopeMs": 2740,
-    "globeStallMs": 2305,
-    "repeatVisitMs": 244
-   },
-   {
-    "label": "preload and idle warm",
-    "envelopeMs": 2735,
-    "globeStallMs": 15,
-    "repeatVisitMs": 248
-   }
-  ]
  }
 }
