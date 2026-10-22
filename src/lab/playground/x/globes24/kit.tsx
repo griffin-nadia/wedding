@@ -26,7 +26,7 @@ import { breathe, cssHex } from "./kit-paint"
  *    (Optional also: back, the colour behind the key's swatches when a line colour wouldn't show on the page.)
  * 2. Optional: seeThrough (the far side through the paper), shade (darker towards the rim), rim (an ink outline), glsl
  *    (a few lines of fragment shader acting on `col`, with vUv, vK = 0 flat .. 1 globe, vZ = how much a point faces
- *    you), segments (a low count for a faceted look), inks (line colours), farLines, decor (an overlay inside the
+ *    you, and the view's uLon and uTilt: a point's longitude from the view's centre is vUv.x * 2π - π - uLon), segments (a low count for a faceted look), tilt (the latitude it faces at first), inks (line colours), farLines, decor (an overlay inside the
  *    map's box, e.g. a compass rose or a glass dome) and css (its own styles, classes prefixed x-<id>-).
  * 3. In index.ts add an entry with `knobs: globeKnobs("<its default line>")` and Component: lazy(() => import(...)).
  * The look never touches Three.js, the lines or the labels: kit-three.ts bends the paper (one plane mesh, a vertex
@@ -56,8 +56,10 @@ export type Look = {
   farLines?: number
   /** An ink outline round the globe, in CSS pixels (fades in as it curls) */
   rim?: number
-  /** Fragment shader lines acting on vec4 col (vUv, vK, vZ available) */
+  /** Fragment shader lines acting on vec4 col (vUv, vK, vZ, uLon, uTilt available) */
   glsl?: string
+  /** The latitude the globe faces at first, in degrees (default: just south of Kyoto, 23) */
+  tilt?: number
   /** The mesh's detail, [across, down] (default 128 × 64) */
   segments?: [number, number]
   /** The colour behind the key's swatches (the look's sea), when a line colour wouldn't show on the page's paper */
@@ -167,7 +169,7 @@ export function GlobeLab({ look }: { look: Look }) {
   const [focusAt, setFocusAt] = useState(0)
   const reduce = still()
   // Everything the frame loop reads, kept in one place so a knob or the toggle never rebuilds the globe
-  const st = useRef({ lon: mode === "flat" ? FLAT_LON : FACE.lon, tilt: FACE.tilt, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
+  const st = useRef({ lon: mode === "flat" ? FLAT_LON : FACE.lon, tilt: look.tilt == null ? FACE.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
   const live = useRef({ arcs, style, open, inks })
   live.current = { arcs, style, open, inks }
   // A new line style or crowd draws the lines again from the start
