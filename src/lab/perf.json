@@ -537,6 +537,302 @@
      "kb": 66
     }
    }
+  },
+  "open24-come": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 22,
+   "takes": {
+    "flip": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "tilt": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "loupe": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "develop": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "table": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "hold": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "sound": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    }
+   }
+  },
+  "open24-held": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 22,
+   "takes": {
+    "tape": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "sleeve": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "fan": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "string": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 22
+    }
+   }
+  },
+  "story-kamishibai": {
+   "fps": 60,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 20,
+   "takes": {
+    "pull": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 20
+    },
+    "half": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 20
+    }
+   }
+  },
+  "story-scrapbook": {
+   "fps": 60,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 21,
+   "takes": {
+    "kraft": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 21
+    },
+    "black": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 21
+    }
+   }
+  },
+  "story-red-thread": {
+   "fps": 51,
+   "longTasks": 2,
+   "longestMs": 257,
+   "kb": 257,
+   "takes": {
+    "-": {
+     "fps": 51,
+     "p95": 17,
+     "longTasks": 2,
+     "longestMs": 257,
+     "loadLongTasks": 2,
+     "kb": 257
+    }
+   }
+  },
+  "story-lantern-table": {
+   "fps": 60,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 20,
+   "takes": {
+    "-": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 20
+    }
+   }
+  },
+  "story-instant-camera": {
+   "fps": 60,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 20,
+   "takes": {
+    "-": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 20
+    }
+   }
+  },
+  "story-passport": {
+   "fps": 58,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 27,
+   "takes": {
+    "stamped": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 27
+    },
+    "stickers": {
+     "fps": 58,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 27
+    }
+   }
+  },
+  "story-emaki": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 26,
+   "takes": {
+    "sumi": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 4,
+     "kb": 26
+    },
+    "landmarks": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 4,
+     "kb": 26
+    }
+   }
+  },
+  "story-lantern-lane": {
+   "fps": 60,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 22,
+   "takes": {
+    "-": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 22
+    }
+   }
+  },
+  "story-strip": {
+   "fps": 58,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 34,
+   "takes": {
+    "story": {
+     "fps": 58,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 34
+    },
+    "home": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 34
+    },
+    "keepsake": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 34
+    }
+   }
   }
  },
  "baselines": {

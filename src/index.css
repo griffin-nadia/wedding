@@ -1444,12 +1444,33 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-slip .hanko { --hanko-paper: var(--brand-paper-bright); }
 .omikuji-seal { position: absolute; right: var(--space-3); bottom: var(--space-3); opacity: 0.9; transform: rotate(6deg); }
 
-/* Our story's prints, soft (final run): a thin white border, a layered shadow (a contact line, a short soft one, a long
-   faint one), the seeded tilt, a faint grain on the print, and a strip of washi tape across the top in one of three
-   colours, its ends torn; each print its own tape length, place and angle and its own edge width, about one in four
-   with no tape (print-frame.ts). Calm: low contrast, nothing that moves. The lab has tape, photo corners and plain. */
-.story-print { position: relative; padding: var(--edge, 6px) var(--edge, 6px) calc(var(--edge, 6px) + 4px); box-shadow: 0 0 0 0.5px rgb(var(--tint-shadow) / 0.16), 0 1px 2px rgb(var(--tint-shadow) / 0.14), 0 10px 22px -12px rgb(var(--tint-shadow) / 0.4), 0 28px 44px -30px rgb(var(--tint-shadow) / 0.34); }
-.story-print::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0.06; background-image: radial-gradient(rgb(var(--tint-shadow)) 0.5px, transparent 0.6px); background-size: 3px 3px; }
+/* Our story's prints as instant prints (run 24, after the Framer "Polaroid Footer" look; our own build). A 4:5 photo
+   (print-frame.ts) on a border like a real instant print: about 5% at the top and sides and 18% at the bottom (padding
+   % is of the width), the card's paper slightly warmed with a faint grain, 2px corners. The photo is printed on, not
+   pasted: a hairline inner shadow and a very faint gloss on the photo only. A few words on the bottom border
+   (.print-note). The hand-placed tilt, a tight contact shadow and a soft lifted one (warmer in Lantern), and washi tape
+   on some prints, never all. Hover on laptops lifts it 18px and straightens it a little on a soft spring; a tap on a
+   phone lifts it briefly; reduced motion brightens it a touch instead. */
+.story-print { --print-paper: color-mix(in oklab, var(--brand-paper-bright) 88%, var(--brand-kinari)); position: relative; display: flex; flex-direction: column; align-items: stretch;
+  /* --pw: the photo's width (a 4:5 photo --print-h tall); the border from it: about 5% of the print at the top and
+     sides, 18% at the bottom */
+  --pw: calc(var(--print-h, 260px) * 0.8); padding: calc(var(--pw) * 0.056) calc(var(--pw) * 0.056) calc(var(--pw) * 0.22); border-radius: 2px; background: var(--print-paper);
+  transform: rotate(var(--tilt, -3deg)); transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1), filter var(--duration-fast) var(--ease-paper);
+  box-shadow: 0 0.5px 1px rgb(var(--tint-shadow) / 0.22), 0 1px 2px rgb(var(--tint-shadow) / 0.12), 0 14px 26px -14px rgb(var(--tint-shadow) / 0.42); }
+[data-theme="lantern"] .story-print { box-shadow: 0 0.5px 1px rgb(20 8 2 / 0.5), 0 1px 3px rgb(60 24 6 / 0.35), 0 16px 30px -14px rgb(90 40 10 / 0.55); }
+.story-print > div { border-radius: 1px; overflow: hidden; position: relative; }
+/* Printed on: a hairline inner shadow round the photo and a faint gloss across it (the photo only, never the border) */
+.story-print > div::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08), inset 0 1px 3px rgb(0 0 0 / 0.14);
+  background: linear-gradient(155deg, rgb(255 255 255 / 0.1), transparent 38%); }
+/* The paper's grain, on the border */
+.story-print::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0.07; background-image: radial-gradient(rgb(var(--tint-shadow)) 0.5px, transparent 0.6px); background-size: 3px 3px; }
+.print-note { position: absolute; left: 7%; right: 7%; bottom: calc(var(--pw) * 0.06); font: 400 clamp(0.75rem, calc(var(--pw) * 0.075), 1.05rem) / 1.2 var(--font-display); letter-spacing: 0.02em; color: color-mix(in oklab, var(--brand-ink-deep) 72%, transparent); transform: rotate(-0.8deg) skewX(-6deg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .story-print:hover { transform: translateY(-18px) scale(1.04) rotate(calc(var(--tilt, -3deg) * 0.6)); transition-duration: 350ms; transition-timing-function: cubic-bezier(0.34, 1.35, 0.64, 1);
+    box-shadow: 0 0.5px 1px rgb(var(--tint-shadow) / 0.18), 0 6px 10px -4px rgb(var(--tint-shadow) / 0.16), 0 34px 44px -20px rgb(var(--tint-shadow) / 0.4); }
+}
+@media (pointer: coarse) and (prefers-reduced-motion: no-preference) { .story-print:active { transform: translateY(-8px) scale(1.02) rotate(calc(var(--tilt, -3deg) * 0.8)); transition-duration: 200ms; } }
+@media (prefers-reduced-motion: reduce) { .story-print { transition: filter var(--duration-fast) linear; } .story-print:hover { filter: brightness(1.04); } }
 .story-print[data-tape]::before { content: ""; position: absolute; z-index: 2; top: -9px; left: var(--tape-x, 50%); width: var(--tape-w, 38%); height: 20px; translate: -50% 0; rotate: var(--tape-turn, calc(var(--lean, 1) * 3deg)); opacity: 0.82;
   background: var(--tape, color-mix(in oklab, var(--brand-sage) 70%, white)); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
   -webkit-mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent), repeating-linear-gradient(0deg, #000 0 2px, rgb(0 0 0 / 0.6) 2px 3px);
