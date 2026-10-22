@@ -115,6 +115,15 @@ export const en = {
     short: { months: "months", days: "days", hours: "hrs", mins: "mins", secs: "secs", years: "years" },
   },
   theme: { label: "Evening mode" },
+  // Review links (run 21): a made-up household for a Japanese reader and for designer friends; nothing is saved
+  preview: {
+    banner: "Preview: replies aren't saved",
+    feedback: "Leave feedback",
+    feedbackTitle: "Feedback",
+    feedbackLabel: "What reads oddly or looks off?",
+    feedbackHelp: "Up to 1,000 characters. The page, theme, screen size and language go with it.",
+    feedbackSent: "Thanks, noted.",
+  },
   home: {
     pills: { replied: "Replied, thank you" },
     rsvpClosed: `Replies are closed now. If something's changed, message ${A} or ${B}.`,

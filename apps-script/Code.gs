@@ -135,6 +135,7 @@ function onOpen() {
     .addSeparator()
     .addItem("Set up the Emails tab", "setupEmailsTab")
     .addItem("Set up the Content tab (fortunes)", "setupContentTab")
+    .addItem("Make two review links (Preview tab)", "makeReviewLinks")
     .addItem("Check song search", "checkSongSearch")
     .addItem("Turn on the fast email queue", "setupQueue")
     .addItem("Check the email queue…", "checkQueue")
@@ -423,7 +424,8 @@ function doGet(e) {
     if (action === "household") {
       const h = cachedHousehold_(p.token)
       if (h && p.open === "1") safely_(() => enqueue_("open", h.token))
-      return json_({ ok: true, household: h })
+      // Run 21: a review link (the Preview tab) opens a made-up household; nothing about it is logged or counted
+      return json_({ ok: true, household: h || previewHousehold_(p.token) })
     }
     if (action === "flying") return json_(flyingCounts_())
     if (action === "questions") return json_(publishedQuestions_())
@@ -467,6 +469,17 @@ function doPost(e) {
   }
   if (body && body.action === "resend") return json_(resendLink_(body.email))
   if (body && body.action === "ask") return json_(ask_(body))
+  // Run 21: review links. Feedback goes to the Feedback tab; a reply, a city or stamps from a preview are answered as
+  // saved but go nowhere (no row, no email, no count, no journey line)
+  if (body && body.action === "feedback") return json_(feedback_(body))
+  const preview = body && typeof body === "object" ? previewHousehold_(body.token) : null
+  if (preview) {
+    if (body.action === "flying" || body.action === "stamps") return json_({ ok: true })
+    if (body.action !== "rsvp") return fail_("bad_request")
+    const input = validate_(preview, body)
+    if (input.error) return fail_(input.error)
+    return json_({ ok: true, updated: false, changes: [], household: applyInput_(preview, input) })
+  }
   if (body && (body.action === "flying" || body.action === "stamps" || body.action === "rsvp") && over_("post:" + String(body.token || "").slice(0, 40), 30)) return fail_("busy")
   if (body && body.action === "flying") return json_(setFlying_(body.token, body.city))
   if (body && body.action === "stamps") return json_(setStamps_(body.token, body.stamps))
@@ -2233,6 +2246,77 @@ function makeTokensAndLinks() {
     }
     s.getRange(i + 1, head.Link + 1).setValue(linkFor_(token))
   }
+}
+
+// ---------- review links (run 21) ----------
+//
+// The Preview tab: Token, Name, Language (en or ja), Notes. Each row is a review link (?h=<token>) that opens a
+// made-up household with everything visible and the reply usable, but nothing saved. Preview tokens are never in
+// Guests, so they're in no count, the Summary, the journeys or any email. Feedback from them goes to the Feedback tab.
+
+const PREVIEW_TAB = "Preview"
+const FEEDBACK_TAB = "Feedback"
+
+/** The review link's language ("en" or "ja") for a token in the Preview tab, or null. Cached for 10 minutes. */
+function previewLang_(token) {
+  token = String(token || "").trim()
+  if (!/^[a-z2-9]{10}$/.test(token)) return null
+  const cache = CacheService.getScriptCache(), hit = cache.get("preview:" + token)
+  if (hit) return hit === "-" ? null : hit
+  const tab = ss_().getSheetByName(PREVIEW_TAB)
+  const row = tab ? rows_(PREVIEW_TAB).find((r) => String(r.Token || "").trim() === token) : null
+  const lang = row ? (String(row.Language || "").trim() === "ja" ? "ja" : "en") : null
+  cache.put("preview:" + token, lang || "-", 600)
+  return lang
+}
+
+/** The made-up household a review link opens: the same shape as getHousehold_, plus preview (its language). */
+function previewHousehold_(token) {
+  const lang = previewLang_(token)
+  if (!lang) return null
+  return {
+    token: String(token).trim(), displayName: "Sam & Alex", preview: lang,
+    guests: [
+      { id: "p1", firstName: "Sam", attending: null, dietary: "None", plusOne: false },
+      { id: "p2", firstName: "Alex", attending: null, dietary: "None", plusOne: false },
+      { id: "p3", firstName: "Guest", attending: null, dietary: "None", plusOne: true },
+    ],
+    hasEmail: false, songs: [], arrival: "", departure: "", message: "", respondedAt: null, photos: null,
+  }
+}
+
+/** A note from a review link, with where it was left: the page, theme, screen size and language. Up to 1000 characters. */
+function feedback_(body) {
+  const token = String(body.token || "").trim()
+  if (!previewLang_(token)) return { ok: false, code: "not_found", error: ERRORS.not_found }
+  const note = String(body.note || "").trim()
+  if (!note || note.length > 1000) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
+  if (over_("feedback:" + token, 30)) return { ok: false, code: "busy", error: ERRORS.busy }
+  const clip = (v, n) => String(v || "").replace(/[^\w\s/:.x×-]/g, "").slice(0, n)
+  const row = rows_(PREVIEW_TAB).find((r) => String(r.Token || "").trim() === token) || {}
+  let tab = ss_().getSheetByName(FEEDBACK_TAB)
+  if (!tab) {
+    tab = ss_().insertSheet(FEEDBACK_TAB)
+    tab.appendRow(["At", "From", "Page", "Theme", "Viewport", "Language", "Note"])
+    tab.setFrozenRows(1)
+  }
+  tab.appendRow([new Date(), "'" + String(row.Name || "Preview"), "'" + clip(body.page, 60), "'" + clip(body.theme, 20), "'" + clip(body.viewport, 20), "'" + clip(body.lang, 5), "'" + note])
+  return { ok: true }
+}
+
+/** Menu: adds two review links to the Preview tab (one Japanese, one English), with their addresses in Notes. */
+function makeReviewLinks() {
+  let tab = ss_().getSheetByName(PREVIEW_TAB)
+  if (!tab) {
+    tab = ss_().insertSheet(PREVIEW_TAB)
+    tab.appendRow(["Token", "Name", "Language", "Notes"])
+    tab.setFrozenRows(1)
+  }
+  ;[["Japanese review", "ja"], ["Design review", "en"]].forEach(([name, lang]) => {
+    const token = makeToken_()
+    tab.appendRow([token, name, lang, linkFor_(token)])
+  })
+  SpreadsheetApp.getUi().alert("Two review links are in the Preview tab. Replies from them aren't saved; their feedback goes to the Feedback tab.")
 }
 
 function makeToken_() {

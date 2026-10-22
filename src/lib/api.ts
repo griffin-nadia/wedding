@@ -24,6 +24,7 @@ export type Household = {
   message: string
   respondedAt: string | null
   photos?: boolean | null // happy to be in photos shared with guests
+  preview?: "en" | "ja" // a review link (run 21): a made-up household, replies not saved; the language it opens in
 }
 
 export type RsvpPayload = Pick<Household, "guests" | "songs" | "arrival" | "departure" | "message" | "photos">
@@ -49,7 +50,8 @@ const sample: Household = {
 }
 
 export async function getHousehold(token: string): Promise<Household | null> {
-  if (!config.apiUrl) return token ? { ...sample, token } : null
+  // Without a back end, ?h=preview-en and ?h=preview-ja stand in for the two review links (run 21)
+  if (!config.apiUrl) return token ? { ...sample, token, ...(token === "preview-en" || token === "preview-ja" ? { preview: token.slice(8) as "en" | "ja" } : {}) } : null
   const data = await call(`${config.apiUrl}?action=household&open=1&token=${encodeURIComponent(token)}`)
   // An error answer (the sheet wouldn't open, as on 19 Oct 2026) is our trouble, never "we don't know this link"
   if (!data.ok) throw new ApiError(data.code === "not_found" ? "not_found" : "server", data.error)
@@ -156,6 +158,12 @@ export function warmUp() {
 export async function askUs(q: { question: string; token?: string; name?: string; email?: string; website?: string }): Promise<void> {
   if (!config.apiUrl) { await new Promise((r) => setTimeout(r, 400)); return }
   const data = await call(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "ask", ...q }) })
+  if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
+}
+/** Feedback from a review link (run 21), with where it was left. Into the Feedback tab. */
+export async function sendFeedback(f: { token: string; note: string; page: string; theme: string; viewport: string; lang: string }): Promise<void> {
+  if (!config.apiUrl) { await new Promise((r) => setTimeout(r, 400)); return }
+  const data = await call(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "feedback", ...f }) })
   if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
 }
 /** The questions Griffin and Nadia have answered and published, for the FAQs' "You asked" (no names) */

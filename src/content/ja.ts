@@ -98,6 +98,14 @@ export const ja: DeepPartial<Content> = {
     andCounting: "カウントダウン中", localTitle: (t: string) => `お住まいの地域では${t}`,
     short: { months: "か月", days: "日", hours: "時間", mins: "分", secs: "秒", years: "年" },
   },
+  preview: {
+    banner: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。",
+    feedback: "フィードバックを送る",
+    feedbackTitle: "フィードバック",
+    feedbackLabel: "読みにくいところ、気になるところは？",
+    feedbackHelp: "1,000文字まで。ページ、テーマ、画面サイズ、言語も一緒に記録します。",
+    feedbackSent: "ありがとうございます。記録しました。",
+  },
   theme: { label: "夜のモード" },
   home: {
     pills: { replied: "お返事ありがとうございます" },
