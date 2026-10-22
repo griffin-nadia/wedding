@@ -1094,6 +1094,10 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* In a tick row the whole row tints, not just its question */
 :root .check-acc [data-slot="accordion-trigger"]::before { content: none; }
+/* Run 24: the focus ring is that same rounded shape (2px inside the row's height, 12px out to the sides), in the
+   focus colour, so it never cuts into the line below an open row the way a square outline 2px outside did */
+:root [data-slot="accordion-trigger"]:focus-visible { outline-color: transparent; }
+:root [data-slot="accordion-trigger"]:focus-visible::before { content: ""; opacity: 1 !important; /* over polish.css hiding an open row's tint */ background: none; box-shadow: inset 0 0 0 2px var(--input-focus); }
 @media (hover: hover) {
   :root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):hover::before { opacity: 1; }
   /* The tint is the hover now: drop the underline these rows used to show */
@@ -1572,15 +1576,40 @@ svg.lucide { stroke-width: 1.5; }
 .vmap-art { position: absolute; inset: 0; transform-origin: 0 0; }
 .vmap-art img { display: block; width: 100%; height: 100%; }
 .vmap-route { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.vmap-route path { fill: none; stroke: #a43108; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 18 18; opacity: 0.6; animation: vmap-march 1.4s linear infinite; }
+.vmap-route path { fill: none; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: 0.7; }
+.vmap-taxi { stroke: #a43108; stroke-dasharray: 18 18; animation: vmap-march 1.4s linear infinite; }
+.vmap-walk { stroke: #5f6b2e; stroke-dasharray: 2 16; }
 @keyframes vmap-march { to { stroke-dashoffset: -36; } }
-/* Each place: a round button over her dot. 28px, as several dots sit close together; the list under the map has every
-   place as a full-size button too */
-.vmap-spot { position: absolute; width: 28px; height: 28px; translate: -50% -50%; border-radius: 50%; outline: 2px solid transparent; outline-offset: 2px; }
-.vmap-spot:focus-visible { outline-color: var(--input-focus); }
-.vmap-spot.is-on::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; box-shadow: 0 0 0 2.5px rgb(164 49 8 / 0.75), 0 0 0 9px rgb(164 49 8 / 0.16); animation: vmap-ring 1.8s var(--ease-paper) infinite alternate; }
-@keyframes vmap-ring { from { scale: 0.92; } to { scale: 1.08; } }
-@media (prefers-reduced-motion: reduce) { .vmap-route path, .vmap-spot.is-on::after { animation: none; } }
+/* Run 24b: the old map's pins on her art. A 44px button centred on each of her dots, a ring round the dot (her red dot
+   shows through), filled rust with a soft ring when chosen. One gentle pulse when the map first comes into view. The
+   chosen place's chip (Japanese over English) sits on the side away from her painted label (data-chip) */
+.vmap-pin { position: absolute; width: 44px; height: 44px; translate: -50% -50%; display: grid; place-items: center; border-radius: 50%; outline: 2px solid transparent; outline-offset: -4px; -webkit-tap-highlight-color: transparent; }
+.vmap-pin:focus-visible { outline-color: var(--input-focus); }
+.vmap-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #4a2a16; box-shadow: 0 0 0 1.5px rgb(255 252 244 / 0.85), 0 1px 2px rgb(0 0 0 / 0.2); transition: transform var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper); }
+.vmap-pin.is-on .vmap-dot { background: #a43108; border-color: #fff8ee; transform: scale(1.15); box-shadow: 0 0 0 7px rgb(164 49 8 / 0.18), 0 1px 3px rgb(0 0 0 / 0.25); }
+@media (hover: hover) { .vmap-pin:hover .vmap-dot { transform: scale(1.12); } }
+@keyframes vmap-pulse { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.35); } }
+@media (prefers-reduced-motion: no-preference) { .vmap[data-seen] .vmap-pin:not(.is-on) .vmap-dot { animation: vmap-pulse 900ms var(--ease-paper) 200ms 1; } }
+.vmap-chip { position: absolute; top: 50%; left: 36px; translate: 0 -50%; pointer-events: none; display: flex; flex-direction: column; padding: 3px var(--space-2); border-radius: var(--radius-control); background: #fffaf0; box-shadow: inset 0 0 0 1.5px #a43108, 0 1px 3px rgb(0 0 0 / 0.18); font: 500 11px / 1.25 var(--font-label); color: #3a1f0f; white-space: nowrap; text-align: left; }
+.vmap-chip .font-ja { font-size: 12px; color: #6b4a33; }
+.vmap-pin[data-chip="left"] .vmap-chip { left: auto; right: 36px; text-align: right; align-items: flex-end; }
+.vmap-pin[data-chip="low"] .vmap-chip { translate: 0 8px; } /* right of the dot but starting below it: The Sodoh's own lettering is just above */
+.vmap-pin[data-chip="above"] .vmap-chip { top: auto; bottom: 36px; left: 50%; translate: -50% 0; align-items: center; text-align: center; }
+/* Phones: a smaller ring (the map is small; the 44px target stays), and no chip, as on the old map: the card under
+   the map names the chosen place, and a chip there would cover her labels */
+@media (max-width: 599px) {
+  .vmap-dot { width: 14px; height: 14px; border-width: 1.5px; }
+  .vmap-pin.is-on .vmap-dot { box-shadow: 0 0 0 5px rgb(164 49 8 / 0.2), 0 1px 2px rgb(0 0 0 / 0.25); }
+  .vmap-chip { display: none; }
+}
+/* The key under the map: the two routes */
+.vmap-key { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: var(--type-small-size); color: var(--ink-soft); }
+.vmap-key li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.vmap-swatch { width: 28px; height: 0; border-top: 3px dashed #a43108; }
+.vmap-swatch-walk { border-top: 3px dotted #5f6b2e; }
+[data-theme="lantern"] .vmap-swatch-taxi { border-top-color: var(--brand-sabi); }
+[data-theme="lantern"] .vmap-swatch-walk { border-top-color: var(--brand-sage); }
+@media (prefers-reduced-motion: reduce) { .vmap-taxi { animation: none; } }
 @media (hover: hover) and (pointer: fine) { .vmap-hint { display: none; } }
 .vmap-list summary { cursor: pointer; list-style: none; }
 .vmap-list summary::-webkit-details-marker { display: none; }

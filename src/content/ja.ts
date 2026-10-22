@@ -281,7 +281,7 @@ export const ja: DeepPartial<Content> = {
       { q: "ご祝儀やプレゼントは？", a: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
       { q: "ビザは必要ですか？", a: pending("faqs.visa.a", "ja") },
       { q: "個人情報はどうなりますか？", a: pending("faqs.details.a", "ja") },
-      { q: "このサイトはどなたが作ったのですか？", a: `${pending("faqs.whoMade.a", "ja")}${pending("faqs.whoMade.song", "ja").replace("{song}", ART.music.credit.ja)}` },
+      { q: "このサイトはどなたが作ったのですか？", a: `${pending("faqs.whoMade.a", "ja")}${pending("faqs.whoMade.song", "ja").replace("{song}", ART.music.credit.ja).replace("{artist}", ART.music.artist)}` },
     ],
     onTheDay: "当日の連絡先：",
     contact: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！",
