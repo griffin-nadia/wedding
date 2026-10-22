@@ -1598,6 +1598,11 @@ svg.lucide { stroke-width: 1.5; }
 /* Nadia's venue map (run 22). Her art at its own ratio; the route, the ring and the buttons over it in % so they scale
    with it. Light: on the card's cream, no frame (the art is flattened onto that cream). Lantern: a cream print framed
    with a soft shadow and rounded corners (her dark ink can't sit on walnut, and no filters on her art). */
+/* Run 25: the map full screen (VenueMapOpen): the whole screen on phones, a wide sheet on laptops; the map as large as
+   fits above its key and card */
+.sheet.venue-modal { top: 0; left: 0; right: 0; bottom: 0; translate: none; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border-radius: 0; }
+@media (min-width: 768px) { .sheet.venue-modal { top: 50%; left: 50%; translate: -50% -50%; width: min(1100px, calc(100vw - 48px)); height: calc(100dvh - 48px); border-radius: var(--letter-radius); } }
+.venue-modal .vmap { width: min(100%, calc((100dvh - 260px) * 1.2)); margin-inline: auto; }
 .vmap { position: relative; overflow: hidden; aspect-ratio: 1800 / 1500; border-radius: var(--radius-control); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .vmap[data-zoomed] { touch-action: none; }
 [data-theme="lantern"] .vmap { border: 10px solid var(--brand-shiro-kinari); border-radius: 14px; box-shadow: var(--elevation-paper); }
