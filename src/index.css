@@ -1130,7 +1130,7 @@ svg.lucide { stroke-width: 1.5; }
   --washi-band-top: linear-gradient(to right, rgb(168 79 50 / 0.82), rgb(168 79 50 / 0.92) 12%, rgb(168 79 50 / 0.88) 88%, rgb(168 79 50 / 0.78));
   --washi-band-bottom: var(--washi-band-top);
   /* Fibres: sparse short strands (a lightly stretched noise, high threshold) and a fine even grain, both faint */
-  --washi-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.11' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.5 0 0 0 0 0.36 0 0 0 2.4 -1.45'/%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.42 0 0 0 0 0.3 0 0 0 0.35 -0.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.28'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.3'/%3E%3C/svg%3E");
+  --washi-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.11' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.5 0 0 0 0 0.36 0 0 0 2.4 -1.45'/%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.42 0 0 0 0 0.3 0 0 0 0.35 -0.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.18'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E");
 }
 .omikuji-slip {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: 100%; max-width: 320px; margin-inline: auto;
@@ -1475,12 +1475,17 @@ svg.lucide { stroke-width: 1.5; }
   background-image:
     var(--washi-fibre),
     linear-gradient(to bottom, transparent calc(33.33% - 4px), rgb(var(--tint-shadow) / 0.08) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 4px)),
-    linear-gradient(to bottom, transparent calc(66.66% - 4px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.08) calc(66.66% + 0.5px), transparent calc(66.66% + 4px)),
-    var(--washi-band-top), var(--washi-band-bottom);
-  background-size: 220px 220px, 100% 100%, 100% 100%, calc(100% - 20px) 6px, calc(100% - 20px) 6px;
-  background-position: 0 0, 0 0, 0 0, center top 8px, center bottom 8px;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    linear-gradient(to bottom, transparent calc(66.66% - 4px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.08) calc(66.66% + 0.5px), transparent calc(66.66% + 4px));
+  background-size: 220px 220px, 100% 100%, 100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat;
 }
+/* The printed parts are inked like the 寿 stamp (the hanko utility's ink): the red bands, 第七番 and the tier, with the
+   ink's soft bleed and dry specks, sinking into the paper. Their line stays crisp to read. */
+.omikuji-slip { position: relative; }
+.omikuji-slip::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
+  background: var(--washi-band-top) center top 8px / calc(100% - 20px) 6px no-repeat, var(--washi-band-bottom) center bottom 8px / calc(100% - 20px) 6px no-repeat; }
+.omikuji-slip::before, .omikuji-slip .omikuji-no, .omikuji-slip .omikuji-kichi {
+  filter: url(#ink-bleed); -webkit-mask: var(--texture-ink) 0 0 / 96px; mask: var(--texture-ink) 0 0 / 96px; mix-blend-mode: multiply; }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
 /* Ask us (final run): "Is this it?" rows, and the field only a bot fills in */
