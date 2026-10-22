@@ -1509,3 +1509,5 @@ svg.lucide { stroke-width: 1.5; }
 @media (hover: hover) and (pointer: fine) { .vmap-hint { display: none; } }
 .vmap-list summary { cursor: pointer; list-style: none; }
 .vmap-list summary::-webkit-details-marker { display: none; }
+/* The Sodoh in Nadia's lettering (run 22): her mark at about the address block's width, filled with the ink */
+.venue-mark { display: block; width: min(240px, 100%); aspect-ratio: 2.751; background: var(--ink); -webkit-mask: var(--venue-mark) left center / contain no-repeat; mask: var(--venue-mark) left center / contain no-repeat; }

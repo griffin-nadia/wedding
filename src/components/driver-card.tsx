@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/toast"
 import { copyText } from "@/lib/copy"
 import { Button } from "@/components/ui/button"
 import { MapPin } from "lucide-react"
+import { VenueMark } from "@/components/venue-mark"
 import { directionsUrl } from "@/lib/calendar"
 
 /**
@@ -33,7 +34,7 @@ export function DriverCard() {
       <Sheet open={full} onOpenChange={setFull}>
       <section aria-labelledby="driver" className="flex flex-col gap-3 rounded-md bg-section-alt p-4 md:p-6">
         <h2 id="driver" className="label-caps text-muted-foreground">{t.driver.label}</h2>
-        <p className="flex flex-col"><span className="font-medium text-foreground">{VENUE.name}</span><span lang="ja" className="font-ja">{VENUE.nameJa}</span></p>
+        <div className="flex flex-col gap-2"><VenueMark /><span lang="ja" className="font-ja">{VENUE.nameJa}</span></div>
         <p>{t.driver.fare}</p>
         <div className="flex flex-col gap-3">
             <Button asChild size="md" className="w-full sm:w-auto sm:self-start">
