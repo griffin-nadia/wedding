@@ -93,6 +93,7 @@ export const en = {
     slide: (n: number, of: number) => `${n} of ${of}`,
     kyoto: "Kyoto", brisbane: "Brisbane", canada: "Canada",
     seeList: "See as a list", seeMap: "See the map", next: "Next", done: "Done",
+    keepReading: "Keep reading", keepReadingLabel: (title: string) => `Keep reading: ${title}`,
   },
   flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", endTitle: "Where are you flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (key: string, city: string) => (key === "Already in Japan" ? "You're already in Japan" : `From ${/^(Somewhere|Elsewhere)/.test(key) ? city.toLowerCase() : city}`), change: "Change", placeholder: "Type to find your city", noMatch: "Nothing matches. Try Somewhere else." },
   music: { on: "Play music", off: "Pause music" },

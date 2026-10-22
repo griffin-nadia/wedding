@@ -56,7 +56,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   // its creases easing out; null: a slip opened before, or reduced motion
   const [fold, setFold] = useState<"folding" | "settling" | null>(null)
   const shaky = useRef(canShake())
-  useEffect(() => { getFortunes().then((f) => f && f.length && setTips(f)) }, [])
+  useEffect(() => { getFortunes(token).then((f) => f && f.length && setTips(f)) }, [token])
   const i = fortuneIndex(token, tips.length)
   const fortune = tips[i]
 

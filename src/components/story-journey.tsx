@@ -13,6 +13,40 @@ import { JourneyLegend, usePlaceName } from "@/components/journey-mini"
 import { JourneyFlat } from "@/components/journey-flat"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
+import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Lettering } from "@/components/lettering"
+
+/** Their sign-off at the end of the last chapter ("Lots of love,", then "G + N") */
+const SIGNOFF = /^lots of love,?\s*\n\s*(g \+ n)\s*$/i
+
+/** A chapter's paragraphs, kept whole, with their sign-off as a signature. Their words stay English on the Japanese
+ *  site too, marked lang="en" so a screen reader switches. */
+function Paragraphs({ body }: { body: string[] }) {
+  return <>{body.map((p, k) => {
+    const sign = SIGNOFF.exec(p)
+    return sign
+      ? <p key={k} lang="en" className="story-signoff">Lots of love,<span className="voice"><Lettering word="mark">{sign[1].toUpperCase()}</Lettering></span></p>
+      : <p key={k} lang="en">{p}</p>
+  })}</>
+}
+
+/**
+ * Run 23: their chapters run to several paragraphs, more than a stop on the spread can hold. The spread shows the
+ * first paragraph (a few lines) and Keep reading opens the whole chapter as a sheet, at a calm reading measure, so
+ * nothing is cut and the spread keeps one height (nothing below it moves between stops).
+ */
+function ReadOn({ c, meta }: { c: Chapter; meta: string }) {
+  const { t } = useLang()
+  return (
+    <Sheet>
+      <SheetTrigger asChild><button type="button" className="btn-text min-h-11 self-center" aria-label={t.story.keepReadingLabel(c.title)}>{t.story.keepReading}</button></SheetTrigger>
+      <SheetContent aria-describedby={undefined}>
+        <SheetHead><p className="text-small text-muted-foreground">{meta}</p><SheetTitle lang="en" className="heading">{c.title}</SheetTitle></SheetHead>
+        <SheetBody><div className="story-read"><Paragraphs body={c.body} /></div></SheetBody>
+      </SheetContent>
+    </Sheet>
+  )
+}
 
 const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
 // The settle: stiffness and damping per unit mass, a touch under critical, so a print lands a hair past straight and
@@ -205,7 +239,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         {chapters.map((ch) => (
           <li key={ch.key} className="flex items-start gap-3">
             {ch.photo ? <Photo name={ch.photo} treatment="split" sizes="96px" alt="" className="story-thumb" /> : <span aria-hidden className="story-thumb" />}
-            <div className="flex min-w-0 flex-col gap-1"><p className="text-small text-muted-foreground">{ch.year}</p><p className="font-medium text-foreground">{ch.title}</p>{ch.body.map((p, k) => <p key={k}>{p}</p>)}</div>
+            <div className="story-read flex min-w-0 flex-col gap-2"><p className="text-small text-muted-foreground">{ch.year}{ch.place ? ` · ${ch.place}` : ""}</p><p lang="en" className="font-medium text-foreground">{ch.title}</p><Paragraphs body={ch.body} /></div>
           </li>
         ))}
       </ol>
@@ -217,11 +251,18 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
       {words && <div className="story-words">{words}</div>}
     </section>
   )
-  const words = (c: Chapter, n: number | null) => <>
-    <p className="text-small text-muted-foreground">{n === null ? c.year : `${t.story.page(n, chapters.length)}, ${c.year}`}{c.place ? ` · ${c.place}` : ""}</p>
-    <h2 className="font-display text-heading text-foreground">{c.title}</h2>
-    {c.body.map((p, k) => <p key={k}>{p}</p>)}
-  </>
+  // Chapters are counted without the photo-only stops between them (run 23)
+  const told = chapters.filter((c) => c.body.length)
+  const words = (c: Chapter) => {
+    const n = told.indexOf(c), meta = `${n < 0 ? c.year : `${t.story.page(n + 1, told.length)}, ${c.year}`}${c.place ? ` · ${c.place}` : ""}`
+    const more = c.body.length > 1 || (c.body[0]?.length ?? 0) > 220
+    return <>
+      <p className="text-small text-muted-foreground">{meta}</p>
+      <h2 lang="en" className="font-display text-heading text-foreground">{c.title}</h2>
+      {c.body.length > 0 && <p lang="en" className={cn(more && "story-lead")}>{c.body[0]}</p>}
+      {more && <ReadOn c={c} meta={meta} />}
+    </>
+  }
   return (
     <div className="story">
       <div ref={track} className="story-track" data-own-swipe role="region" aria-roledescription="carousel" aria-label={t.story.title} tabIndex={0}
@@ -229,8 +270,8 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         {opener && slide(0, opener, null, "opener", "story-slide-opener")}
         {stops.map((c, i) => slide(i + lead, c.photo
           ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" />
-          : <span aria-hidden className="story-print-blank" />, words(c, i + 1), c.key))}
-        {slide(total - 1, <JourneyMap active={at === total - 1} />, ends ? words(ends, chapters.length) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
+          : <span aria-hidden className="story-print-blank" />, words(c), c.key))}
+        {slide(total - 1, <JourneyMap active={at === total - 1} />, ends ? words(ends) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
       </div>
 
       <div className="story-controls">

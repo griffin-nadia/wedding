@@ -1277,6 +1277,13 @@ svg.lucide { stroke-width: 1.5; }
 .story-slide { --print-h: min(26svh, 260px); --caption-h: 2.75rem; --stop-h: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: var(--space-4); overflow: hidden; padding-block: var(--space-1); text-align: center; }
 .story-media { flex: none; display: grid; place-items: center; max-width: 100%; height: var(--stop-h); }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
+/* Run 23: a chapter's first paragraph on the spread, a few lines with a soft end, then Keep reading for the rest */
+.story-lead { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: pretty; }
+/* The whole chapter (the Keep reading sheet and the list): a calm reading measure, paragraphs whole, their sign-off
+   as a signature */
+.story-read { display: flex; flex-direction: column; gap: var(--space-4); max-width: 65ch; text-wrap: pretty; }
+.story-signoff { display: flex; flex-direction: column; gap: var(--space-1); margin-top: var(--space-2); }
+.story-signoff .voice { font-size: 1.5em; color: var(--foreground); }
 /* Every photo stop's print sits on the same line in the same-sized box, so its caption lands in the same spot on
    every stop, right under the photo (18f): a landscape print is shorter, so it sits low in the box, not centred */
 .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { place-items: end center; }

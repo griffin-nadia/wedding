@@ -192,6 +192,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.gifts.a", ja: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
   { key: "qa.contact", ja: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！" },
   { key: "day.arrival", ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします" },
+  { key: "story.keepReading", ja: "続きを読む" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]
 

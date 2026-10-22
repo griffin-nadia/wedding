@@ -3,7 +3,8 @@ import { ApiError, getHousehold, type Household } from "./api"
 
 const KEY = "ng-invite"
 
-function readToken(): string {
+/** This device's invite link token: from ?h= (remembered), or the one remembered from before */
+export function readToken(): string {
   const fromUrl = new URLSearchParams(window.location.search).get("h")?.trim()
   if (fromUrl) {
     try { localStorage.setItem(KEY, fromUrl) } catch { /* private mode */ }
