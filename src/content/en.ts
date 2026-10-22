@@ -8,9 +8,10 @@ import { ART } from "@/lib/art"
 import { pending } from "./pending"
 
 const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
-const LOCK = fmtDay(DATES.changesLock)
-// The one change-by line (v3 Q7): Home under the Replied pill, the success screen and the confirmation email
-const CHANGE_BY = `You can change your reply until ${LOCK}.`
+const LOCK_LONG = new Date(`${DATES.changesLock}T00:00:00Z`).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }) // "30 April 2027"
+// The one change-by line (v3 Q7): Home under the Replied pill, the success screen and the confirmation email.
+// Their final wording (Inv details, column E, 22 Oct)
+const CHANGE_BY = `You can change your answers any time until ${LOCK_LONG}, and add your travel dates once flights are booked.`
 // After the changes lock, in the same places (their wording, planner 7 to 11 Oct)
 const CHANGE_AFTER = "We know that life happens, so if you need to make any changes after the 30th of April please contact us directly."
 
@@ -126,7 +127,11 @@ export const en = {
     rsvpButton: `RSVP by ${fmtDay(DATES.rsvpBy)}`,
     yourReply: "Your reply",
     todo: { who: "Who's coming", food: "Food", song: "A song", dates: "Travel dates", datesLater: "once you've booked", done: "done", toDo: "not yet" },
-    greetingLine: "we're getting married in Kyoto, where it all started, and we'd love you there. Everything you need is right here.",
+    // Their Intro (Inv details, column E, 22 Oct), under "Dear …," as its own paragraphs
+    intro: [
+      "To celebrate our love and start the next chapter of our story, we're bringing our friends and family together in the place where it all started.",
+      "We know Kyoto is a little further than the venue down the road, so we want to make the trip fun, easy and memorable for you. Below is everything you'll need to plan, and we'll keep adding to it.",
+    ],
     daysToGo: (n: number) => `${n} days to go`,
     kyotoLine: (time: string) => `it's ${time} in Kyoto`,
     moreLabel: "More about the day",
@@ -185,13 +190,14 @@ export const en = {
     tickHint: "Tick things off as you go. Your ticks stay on this device.",
     ticked: "Done",
     items: [
-      { title: "Passport", body: "Check your passport has at least 6 months left after the date you fly home. If you need to renew it, do it soon. It can take a while. Aussies don't need a visa for a short trip to Japan. We'll tell you if the entry rules change before the trip." },
-      { title: "Flights", body: "Book flights as early as you can. The date's locked in, so there's no chance of missing it. Stay a few days either side if you can: we'll share ideas for things to do before and after the wedding." },
-      { title: "Where to stay", body: "Book somewhere once your flights are sorted. Japanese hotel rooms are small and simple, so plan for that." },
-      { title: "SIM or pocket wifi", body: "Sort out a SIM, eSIM or pocket wifi before you go. Here are a few we've heard good things about.", links: [
+      // Their final wording (Inv details, column E, 22 Oct): Before you fly, Flights, Accommodation, SIM / wifi
+      { title: "Passport", body: "Check your travel information is all up to date! Please ensure your passport is valid for at least 6 months past your return date. If you need to renew your passport, please do so soon!" },
+      { title: "Flights", body: "Please book flights as early as you are reasonably able to. The date of the wedding is locked in, so there's no chance of it moving! If you can, please take the opportunity to enjoy Japan while you are here. We will have suggestions for activities for several days leading up to the wedding, and encourage you to stick around for a few days after if you are able." },
+      { title: "Where to stay", body: "Once you have your flights booked, you'll need to book somewhere to stay! We will collect some recommendations for hotels and Air BnBs near the venue. Please keep in mind Japanese hotels tend to be quite small and perfunctory, so factor that into your decision-making. If you would like to coordinate with other guests and share accommodation, please do so! If you feel stuck, reach out to us!" },
+      { title: "SIM or pocket wifi", body: "Grab an eSIM or pocket wifi before you go. A few we like:", links: [
         { label: "Sakura Mobile", href: "https://www.sakuramobile.jp/" },
         { label: "Ninja WiFi", href: "https://ninjawifi.com/en/plan/sim" },
-        { label: "Travelkon eSIM", href: "https://www.travelkon.com.au/product-category/esim/esim-asia/japan-esim/" },
+        { label: "TravelKon eSIM", href: "https://www.travelkon.com.au/product-category/esim/esim-asia/japan-esim/" },
       ] },
     ],
   },
@@ -257,7 +263,9 @@ export const en = {
   },
   stay: {
     title: "Where to stay",
-    intro: "Book early: mid October is busy in Kyoto. Hotels here are small and tidy, and Kyoto adds a small accommodation tax per person per night. Sharing with other guests? Go for it. If you feel stuck, reach out to us!",
+    // The first sentence is the summary line at the top of Travel. The rest is their Accommodation wording (column E,
+    // 22 Oct), with the accommodation tax kept in
+    intro: "Book early: mid October is busy in Kyoto. Please keep in mind Japanese hotels tend to be quite small and perfunctory, so factor that into your decision-making. Kyoto adds a small accommodation tax per person per night. If you would like to coordinate with other guests and share accommodation, please do so! If you feel stuck, reach out to us!",
     mapLink: "See the three areas on a map",
     mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
     // Their picks (planner, 7 to 11 Oct): rough prices per night
@@ -299,15 +307,17 @@ export const en = {
     items: [
       { q: "Can I bring someone?", a: pending("faqs.bring.a", "en") },
       { q: "Is it a traditional Japanese wedding?", a: pending("faqs.style.a", "en") },
-      { q: "What should I wear?", a: pending("faqs.wear.a", "en") },
-      { q: "What about food?", a: pending("faqs.food.a", "en") },
-      { q: "Gifts?", a: pending("faqs.gifts.a", "en") },
+      // Their Dress code, Dietary and Gifts (column E, 22 Oct; "foorwear" fixed to "footwear")
+      { q: "What should I wear?", a: "No dress code. Wear whatever makes you feel like your best self. Please keep in mind that the area around the venue has cobble stone streets so please bring appropriate footwear." },
+      { q: "What about food?", a: "Please provide your dietary requirements! The wedding lunch will be catered and the menu will be determined several months before the wedding." },
+      { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "Do I need a visa?", a: pending("faqs.visa.a", "en") },
       { q: "What happens to my details?", a: pending("faqs.details.a", "en") },
       { q: "Who made this site?", a: `${pending("faqs.whoMade.a", "en")} ${pending("faqs.whoMade.song", "en").replace("{song}", ART.music.credit.en)}` },
     ],
     onTheDay: "On the day, contact",
-    contact: "Any questions at all, message either of us. We're always happy to help.",
+    // Their Questions (column E, 22 Oct): the line above Ask us at the end of FAQs
+    contact: "If you have ANY questions at all please feel free to reach out to either of us at any time - we are always happy to assist whenever we can!",
   },
   rsvp: {
     step: (n: number, of = 3) => `Step ${n} of ${of}`,

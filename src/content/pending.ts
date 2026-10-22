@@ -29,10 +29,6 @@ export const PENDING = {
   },
   // Ask us (final run): the sheet that replaces every "email Griffin & Nadia"
   // The end of FAQs (run 19): a line in their voice, then the button
-  "ask.intro": {
-    en: "Can't see your question here? Ask us and we'll get back to you.",
-    ja: "知りたいことが見つからないときは、お気軽に聞いてください。お返事します。",
-  },
   "ask.button": {
     en: "Ask us",
     ja: "質問する",
@@ -122,18 +118,6 @@ export const PENDING = {
     en: "Not really. It's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are.",
     ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。",
   },
-  "faqs.wear.a": {
-    en: "Whatever you feel great in. There's no dress code, but the streets around the venue are cobblestone, so bring shoes you can walk in.",
-    ja: "ドレスコードはありません。お好きな服装でどうぞ。ただ、会場のまわりは石畳なので、歩きやすい靴がおすすめです。",
-  },
-  "faqs.food.a": {
-    en: "Lunch is catered, and we'll set the menu a few months before. Tell us any dietary needs in your reply.",
-    ja: "昼食をご用意します。メニューは数か月前に決めますので、食事の制限やアレルギーはお返事でお知らせください。",
-  },
-  "faqs.gifts.a": {
-    en: "No gifts, truly. Getting to Kyoto is a big ask already, so you being there is the present.",
-    ja: "本当に不要です。京都まで来てくださることが、何よりの贈り物です。",
-  },
   "faqs.visa.a": {
     en: "Not for Aussies on a short trip. Just check your passport has 6 months left after you fly home. Travel has the rest.",
     ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。",
@@ -150,6 +134,11 @@ export const PENDING = {
   "faqs.whoMade.song": {
     en: "The song is {song}, played on piano.",
     ja: "曲は{song}のピアノ版です。",
+  },
+  // Their Time (Inv details, column E, 22 Oct): the planner still has to confirm it
+  "day.arrival": {
+    en: "Arrival time: to be confirmed by the wedding planner",
+    ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします",
   },
   "faqs.contactDay": {
     en: "On the day, call Jehan or Noya. We'll add their numbers closer to the time.",
@@ -176,13 +165,9 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "rsvp.listResults", ja: "件の候補" },
   { key: "flying.placeholder", ja: "都市名を入力して探す" },
   { key: "flying.noMatch", ja: "見つかりません。「その他」を選んでください。" },
-  { key: "ask.intro", ja: "知りたいことが見つからないときは、お気軽に聞いてください。お返事します。" },
   { key: "ask.button", ja: "質問する" },
   { key: "faqs.bring.a", ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下からお気軽にどうぞ。" },
   { key: "faqs.style.a", ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。" },
-  { key: "faqs.wear.a", ja: "ドレスコードはありません。お好きな服装でどうぞ。ただ、会場のまわりは石畳なので、歩きやすい靴がおすすめです。" },
-  { key: "faqs.food.a", ja: "昼食をご用意します。メニューは数か月前に決めますので、食事の制限やアレルギーはお返事でお知らせください。" },
-  { key: "faqs.gifts.a", ja: "本当に不要です。京都まで来てくださることが、何よりの贈り物です。" },
   { key: "faqs.visa.q", ja: "ビザは必要ですか？" },
   { key: "faqs.visa.a", ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。" },
   { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
@@ -190,6 +175,20 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.whoMade.song", ja: "曲は{song}のピアノ版です。" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "photos.kid-griffin.alt", ja: "小学校の初日、玄関の前に立つ幼い頃のグリフィン" },
+  // Their final wording (22 Oct), translated by us
+  { key: "changeBy", ja: "2027年4月30日まで、お返事はいつでも変更できます。航空券を予約したら、旅の日程も追加してください。" },
+  { key: "home.intro.0", ja: "ふたりの愛を祝い、物語の次の章を始めるために、すべてが始まった場所に友人と家族を招きます。" },
+  { key: "home.intro.1", ja: "京都は近所の会場よりも少し遠いので、旅が楽しく、楽で、思い出に残るものになるようにしたいと思っています。計画に必要なことはこの下にすべてあり、これからも追加していきます。" },
+  { key: "travel.items.passport", ja: "旅の情報が最新か確認してください！パスポートは、帰国日から6か月以上の有効期限が必要です。更新が必要な方は、お早めにどうぞ！" },
+  { key: "travel.items.flights", ja: "航空券は、できる範囲でなるべく早めに予約してください。結婚式の日程は確定しているので、変わる心配はありません！せっかくなので、日本を楽しんでいってください。結婚式の前の数日に楽しめることをご紹介しますし、できれば式のあとも数日ゆっくりしていってください。" },
+  { key: "travel.items.stay", ja: "航空券を予約したら、次は宿の予約です！会場の近くのホテルやAirbnbのおすすめをまとめます。日本のホテルは小さく必要最低限なことが多いので、選ぶときの参考にしてください。ほかのゲストと相談して一緒に泊まるのも大歓迎です！迷ったら、気軽にご相談ください！" },
+  { key: "travel.items.sim", ja: "出発前に、eSIMかポケットWi-Fiを用意しておきましょう。おすすめはこちら：" },
+  { key: "stay.intro", ja: "早めの予約を。10月中旬の京都は混み合います。日本のホテルは小さく必要最低限なことが多いので、選ぶときの参考にしてください。京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと相談して一緒に泊まるのも大歓迎です！迷ったら、気軽にご相談ください！" },
+  { key: "faqs.wear.a", ja: "ドレスコードはありません。いちばん自分らしくいられる服装でどうぞ。会場のまわりは石畳の道なので、歩きやすい靴でお越しください。" },
+  { key: "faqs.food.a", ja: "食事の制限やアレルギーを教えてください！結婚式の昼食はケータリングで、メニューは式の数か月前に決まります。" },
+  { key: "faqs.gifts.a", ja: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
+  { key: "qa.contact", ja: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！" },
+  { key: "day.arrival", ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]
 
