@@ -186,6 +186,17 @@ html { scrollbar-gutter: stable; }
   transform: translateY(1px); box-shadow: inset 0 1px 0 transparent, 0 0 0 transparent;
 }
 .btn-primary:disabled, [data-slot="button"][data-variant="secondary"]:disabled { box-shadow: none; }
+/* Lantern (run 21): on walnut a dark drop shadow and a white top line don't read, so the logic flips. The face is a
+   little lighter than its fill (a faint light wash, over whatever fill the state has), with a soft shadow along its
+   inside bottom edge and a faint lit top edge, so it still looks raised and pressable. Pressed, the bottom shadow goes
+   and the top edge darkens: pushed in. The words' contrast is the same or better (the face only gets lighter). */
+[data-theme="lantern"] :is(.btn-primary, [data-slot="button"][data-variant="secondary"]):not(:disabled) {
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.03));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -2px 0 rgb(0 0 0 / 0.28), 0 1px 0 rgb(0 0 0 / 0.35);
+}
+[data-theme="lantern"] :is(.btn-primary, [data-slot="button"][data-variant="secondary"]):is(:active, [data-force="pressed"]):not(:disabled) {
+  background-image: none; box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.3);
+}
 
 /* ─── Run 19 · the arrival ─────────────────────────────────────────────────────────────────────────────────────
    Open, the card's wrapper has no box of its own, so every page lays out as it always has. */

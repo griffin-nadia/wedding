@@ -12,7 +12,7 @@ import { directionsUrl } from "@/lib/calendar"
 import { COUPLE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { isLocked } from "@/lib/time"
-import { Pill } from "@/components/pill"
+import { ReplyStatus } from "@/components/reply-status"
 import { Skeleton } from "@/components/skeleton"
 import type { Household } from "@/lib/api"
 import { pending } from "@/content/pending"
@@ -153,19 +153,18 @@ export function HomePage() {
         // After the changes lock: a reply stays marked, with their "life happens" line where the change-by line was
         done ? (
           <div className="flex flex-col gap-2">
-            <Pill tone="good" className="self-start">{t.home.pills.replied}</Pill>
+            <ReplyStatus tone="success">{t.home.pills.replied}</ReplyStatus>
             <p className="text-small text-muted-foreground">{t.home.changeAfter}</p>
           </div>
         ) : <div className="flex flex-col gap-2"><p>{t.home.rsvpClosed}</p><AskUs><button type="button" className="btn-text inline-flex min-h-11 items-center self-start">{pending("ask.open", lang)}</button></AskUs></div>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              {done && <Pill tone="good">{t.home.pills.replied}</Pill>}
-              <Suspense fallback={rsvpButton}>
-                <RsvpSheet openOnLoad={tapped} request={request}>{rsvpButton}</RsvpSheet>
-              </Suspense>
-            </div>
+            {/* Replied (run 21): a status line with a check, and Change my reply beside it as the clear action. The sheet
+                stays in one place either way, so sending doesn't remount it (its done screen stays up) */}
+            <ReplyStatus tone="success" action={<Suspense fallback={rsvpButton}><RsvpSheet openOnLoad={tapped} request={request}>{rsvpButton}</RsvpSheet></Suspense>}>
+              {done ? t.home.pills.replied : null}
+            </ReplyStatus>
             {done && <p className="text-small text-muted-foreground">{t.home.changeBy}</p>}
           </div>
           {done && <YourReply h={household} open={openAt} />}

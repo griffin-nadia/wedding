@@ -221,6 +221,10 @@
   --countdown-line: var(--line-hairline);
   /* Status pill: one tint per tone (component layer, so the pill never invents an alpha) */
   --pill-good-bg: color-mix(in oklab, var(--ink-moss) 15%, transparent);
+  /* A reply's status line (run 21): replied, not yet, and closed after the changes lock */
+  --status-success: var(--ink-success);
+  --status-pending: var(--ink-link);
+  --status-closed: var(--ink-muted);
   --pill-warn-bg: color-mix(in oklab, var(--fill-highlight) 25%, transparent);
   --pill-accent-bg: color-mix(in oklab, var(--action) 12%, transparent);
   /* Top bar (from 768): the current page sits on a sage tint with a sage hairline; hover is the same tint, lighter */

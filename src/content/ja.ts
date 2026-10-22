@@ -100,7 +100,7 @@ export const ja: DeepPartial<Content> = {
   },
   theme: { label: "夜のモード" },
   home: {
-    pills: { replied: "返信済み" },
+    pills: { replied: "お返事ありがとうございます" },
     rsvpClosed: `お返事の受付は終了しました。変更がある場合は、${A}か${B}までご連絡ください。`,
     dear: (name: string) => `${name}へ`,
     dearNames: (names: string[]) => names.map((n) => (n === "お連れの方" ? n : `${n}さん`)).join("、"),
