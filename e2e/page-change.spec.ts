@@ -8,8 +8,31 @@ const go = async (page: Page, path: string, theme = "autumn") => {
   await page.waitForLoadState("networkidle")
 }
 
-// Home's card is only as tall as what's on it (18e), so its bottom is left out; its top is the same as the others'
-test("the card's top and visible bottom don't move between pages", async ({ page }) => {
+// Phones: Home's card is only as tall as what's on it (18e), so its bottom is left out; its top is the same as the
+// others'. Laptops (run 21): every card is as tall as what's on it, so a card shorter than the frame sits centred in it
+// (the same space above and below), and one as tall as the frame starts at the standard top gap.
+test("laptops: a short card is centred in the frame, a tall one starts at the standard gap", async ({ page }, info) => {
+  test.skip(info.project.name === "phone", "laptops")
+  await go(page, "")
+  const at: Record<number, { top: number; above: number; below: number; fills: boolean }> = {}
+  for (const i of [1, 2, 3, 4, 0]) {
+    await page.locator(".site-nav a").nth(i).click()
+    await page.waitForTimeout(700)
+    const m = await page.evaluate(() => {
+      // The frame: the wrap inside its padding (the standard gaps)
+      const l = document.getElementById("letter")!.getBoundingClientRect(), w = document.querySelector(".letter-wrap")!, r = w.getBoundingClientRect(), cs = getComputedStyle(w)
+      const top = r.top + parseFloat(cs.paddingTop), bottom = r.bottom - parseFloat(cs.paddingBottom)
+      return { top: Math.round(l.top), above: Math.round(l.top - top), below: Math.round(bottom - l.bottom), fills: l.height >= bottom - top - 1 }
+    })
+    at[i] = m
+  }
+  const tall = Object.values(at).filter((m) => m.fills), short = Object.values(at).filter((m) => !m.fills)
+  expect(new Set(tall.map((m) => m.top)).size).toBeLessThanOrEqual(1)
+  for (const m of short) expect(Math.abs(m.above - m.below)).toBeLessThanOrEqual(1)
+})
+
+test("the card's top and visible bottom don't move between pages", async ({ page }, info) => {
+  test.skip(info.project.name !== "phone", "phones (laptops centre a short card, above)")
   await go(page, "")
   const edges = [], tops = []
   for (const i of [1, 2, 3, 4, 0]) {
