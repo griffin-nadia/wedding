@@ -1,6 +1,7 @@
 import type { Entry } from "./types"
 import { entries as opening } from "./x/opening"
 import { entries as story } from "./x/story"
+import { entries as story24 } from "./x/story24"
 import { entries as journey } from "./x/journey"
 import { entries as confirmation } from "./x/confirmation"
 import { entries as paper } from "./x/paper"
@@ -11,6 +12,7 @@ import { entries as loading } from "./x/loading"
 import { entries as sheets } from "./x/sheets"
 import { entries as map } from "./x/map"
 import { entries as open24 } from "./x/open24"
+import { entries as story24b } from "./x/story24b"
 
 /**
  * What the lab keeps (lab run 19): the choices still open and the parked ideas, by area in the order guests meet
@@ -21,6 +23,8 @@ export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "opening", title: "Opening", entries: opening },
   { id: "arrival", title: "Arrival framing", entries: arrival },
   { id: "story", title: "Our story", entries: story },
+  { id: "story24", title: "Our story, nine ways (run 24, A to E)", entries: story24 },
+  { id: "story24b", title: "Our story, nine ways (run 24, F to I)", entries: story24b },
   { id: "journey", title: "Journey", entries: journey },
   { id: "map", title: "Venue map", entries: map },
   { id: "confirmation", title: "Confirmation", entries: confirmation },
