@@ -20,6 +20,6 @@ test("the questions come in the order guests ask them", async ({ page }) => {
 test("the end of FAQs has a way to ask Griffin and Nadia", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("ng-opened", "1"))
   await page.goto("faqs?h=sample")
-  await expect(page.locator("#letter")).toContainText("Can't see your question here? Ask us and we'll get back to you.")
+  await expect(page.locator("#letter")).toContainText("If you have ANY questions at all please feel free to reach out to either of us") // their Questions line (22 Oct)
   await expect(page.locator("#letter").getByRole("button", { name: "Ask us", exact: true })).toBeVisible()
 })

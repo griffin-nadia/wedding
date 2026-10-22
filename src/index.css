@@ -504,9 +504,11 @@
    card, and up to the frame, where it scrolls inside. Shorter than the frame, it sits centred between the bar and
    the bottom margin; as tall, it fills it from the standard top gap. */
 @media (min-width: 1024px) {
-  .letter-wrap { justify-content: center; }
   :root .letter:not(.sheet), :root .letter-sealed { flex: 0 1 auto; min-height: min(var(--letter-min, 440px), 100%); }
+  /* Centred by a translate the layout measures (--card-centre, layout.tsx): a glide as it grows, no layout shift */
+  :root #letter { translate: 0 var(--card-centre, 0px); transition: translate var(--duration-base) var(--ease-paper); }
 }
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) { :root #letter { transition: none; } }
 /* Our story fills the frame like the other pages (run 19: its spread fits now, so the frame is no longer tall round a
    small print), and the spread is centred in it, so the card's bottom edge never moves between pages */
 .letter-scroll {

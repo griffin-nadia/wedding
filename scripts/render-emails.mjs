@@ -15,10 +15,10 @@ const ctx = {
   CacheService: { getScriptCache: () => ({ get: () => null, put() {} }) },
   Session: { getEffectiveUser: () => ({ getEmail: () => "griffinandnadia@gmail.com" }) },
   MailApp: { sendEmail: (m) => sent.push(m) },
-  // Apps Script's formatDate for the two patterns the emails use ("EEE d MMM yyyy", "d MMM"), in Kyoto time
+  // Apps Script's formatDate for the patterns the emails use ("EEE d MMM yyyy", "d MMMM yyyy", "d MMM"), in Kyoto time
   Utilities: { formatDate: (d, tz, f) => {
     const part = (o) => new Intl.DateTimeFormat("en-AU", { timeZone: "Asia/Tokyo", ...o }).format(d)
-    return f.replace("EEE", part({ weekday: "short" })).replace("yyyy", part({ year: "numeric" })).replace("MMM", part({ month: "short" })).replace(/\bd\b/, part({ day: "numeric" }))
+    return f.replace("EEE", part({ weekday: "short" })).replace("yyyy", part({ year: "numeric" })).replace("MMMM", part({ month: "long" })).replace(/M{3}(?!M)/, (x) => part({ month: "short" })).replace(/\bd\b/, part({ day: "numeric" }))
   } },
 }
 vm.createContext(ctx)
@@ -46,8 +46,8 @@ const report = files.map(([f, subject, html, text, from, replyTo]) => ({
   from: from ?? "Griffin & Nadia (name)", replyTo: replyTo ?? "griffinandnadia@gmail.com",
   links: [...new Set([...String(html).matchAll(/href="([^"]+)"/g)].map((x) => x[1]))],
   nadiaFirst: /Nadia\s*(&|and)\s*Griffin/.test(subject + html + text),
-  rsvpBy: /Mon 15 Feb 2027/.test(text) ? "Mon 15 Feb 2027" : /Feb/.test(text) ? "other" : "-",
-  changeBy: /Fri 30 Apr 2027/.test(text) ? "Fri 30 Apr 2027" : /Apr/.test(text) ? "other" : "-",
+  rsvpBy: (/Mon 15 Feb 2027|15 February 2027/.exec(text) ?? [/Feb/.test(text) ? "other" : "-"])[0],
+  changeBy: (/Fri 30 Apr 2027|30 April 2027/.exec(text) ?? [/Apr/.test(text) ? "other" : "-"])[0],
 }))
 fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 2))
 console.log(JSON.stringify(report, null, 1))
