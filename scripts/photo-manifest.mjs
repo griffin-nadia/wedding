@@ -12,7 +12,7 @@ for (const f of files) {
   const m = /^(.+?)-(lqip|wide-\d+|\d+)\.(avif|webp|jpg)$/.exec(f)
   if (!m) continue
   const [, name, size, ext] = m
-  if (PRIVATE.has(name)) continue
+  if (PRIVATE.has(name) || name.startsWith("griffin-kid-")) continue // Griffin's other childhood prints: lab only (run 23)
   const p = (out[name] ??= { formats: {}, wide: {}, lqip: "" })
   if (size === "lqip") { p.lqip = f; continue }
   const isWide = size.startsWith("wide-")
