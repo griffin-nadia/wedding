@@ -123,17 +123,18 @@ export const PENDING = {
     ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。",
   },
   "faqs.details.a": {
-    en: "Your reply comes straight to us and no one else sees it. We'll delete it a few months after the wedding.",
+    en: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding.",
     ja: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。",
   },
+  // Run 25: warmer, in Griffin's voice (Jehan asked for it to read like him)
   "faqs.whoMade.a": {
-    en: "Nadia's brother Jehan designed and built it, and Nadia drew everything you see.",
-    ja: "ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。",
+    en: "A proper family effort! Griffin wrote the words, Nadia drew every little thing you see, and Nadia's brother Jehan designed and built the whole thing.",
+    ja: "家族みんなで作りました！文はグリフィン、絵はぜんぶナディア、デザインと制作はナディアの兄のジェハンです。",
   },
-  // {song} is the music credit (src/lib/art.ts), said here only
+  // {song} is the music credit (src/lib/art.ts) and {artist} who plays it, said here only
   "faqs.whoMade.song": {
-    en: "The song is {song}, played on piano.",
-    ja: "曲は{song}のピアノ版です。",
+    en: "And the music? That's {song}, played on piano by {artist}.",
+    ja: "流れている曲は{song}、ピアノ演奏は{artist}です。",
   },
   // Their Time (Inv details, column E, 22 Oct): the planner still has to confirm it
   "day.arrival": {
@@ -171,8 +172,8 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.visa.q", ja: "ビザは必要ですか？" },
   { key: "faqs.visa.a", ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。" },
   { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
-  { key: "faqs.whoMade.a", ja: "ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。" },
-  { key: "faqs.whoMade.song", ja: "曲は{song}のピアノ版です。" },
+  { key: "faqs.whoMade.a", ja: "家族みんなで作りました！文はグリフィン、絵はぜんぶナディア、デザインと制作はナディアの兄のジェハンです。" },
+  { key: "faqs.whoMade.song", ja: "流れている曲は{song}、ピアノ演奏は{artist}です。" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "home.pills.replied", ja: "お返事ありがとうございます" },
   { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },
