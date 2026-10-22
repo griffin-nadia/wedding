@@ -40,3 +40,27 @@ test("the QR card is laptop only, outside the letter, clear of their faces and t
     expect(await box(), path).toEqual(home)
   }
 })
+
+// Run 21: the softer QR (rounded modules and eyes, a hand-drawn frame) still scans. The code is screenshotted at the
+// size it's shown, with the card's paper behind it, and decoded with jsQR, in both themes (Lantern is light ink on
+// dark paper, so the decoder tries the inverted image too, as phone cameras do).
+test("the QR scans at the size it's shown, in both themes", async ({ page }, info) => {
+  test.skip(info.project.name === "phone", "laptops")
+  for (const theme of ["autumn", "lantern"]) {
+    await page.addInitScript((t) => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t) }, theme)
+    await page.goto("?h=sample"); await page.waitForLoadState("networkidle")
+    const code = page.locator(".phone-qr svg")
+    await expect(code.locator("path").first()).toBeAttached()
+    const png = (await code.screenshot()).toString("base64")
+    await page.addScriptTag({ path: "node_modules/jsqr/dist/jsQR.js" })
+    const text = await page.evaluate(async (b64) => {
+      const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode()
+      const c = document.createElement("canvas"); c.width = img.width; c.height = img.height
+      const g = c.getContext("2d")!; g.drawImage(img, 0, 0)
+      const px = g.getImageData(0, 0, c.width, c.height)
+      const jsQR = (window as unknown as { jsQR: (d: Uint8ClampedArray, w: number, h: number, o: object) => { data: string } | null }).jsQR
+      return jsQR(px.data, px.width, px.height, { inversionAttempts: "attemptBoth" })?.data ?? null
+    }, png)
+    expect(text, theme).toMatch(/\/wedding\/\?h=sample$/)
+  }
+})

@@ -533,13 +533,13 @@
    way of a tap. Until it's made (or without WebGL) the paper is plain. */
 /* Every surface lays the sheet at the screen's size (it's made at the screen's size), so the grain is the same scale on
    the card, the envelope's letter, the bar and the dock (final run P), not stretched to each box. */
-.letter::after, .sheet-bright::after, .paper-feel::after, .envelope-paper::after, .arrival-sheet::after {
+.letter::after, .sheet-bright::after, .paper-feel::after, .envelope-paper::after, .arrival-sheet::after, .phone-qr::after {
   content: ""; position: absolute; inset: 0; z-index: 30; border-radius: inherit; pointer-events: none;
   background: var(--paper-live, none) center / 100vw 100vh no-repeat;
   mix-blend-mode: var(--paper-blend); opacity: 0;
 }
 /* Once it's made (src/lib/paper-live.ts), it fades in over 400 ms at the strength that keeps text AA (--paper-on) */
-[data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper, .arrival-sheet)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity var(--duration-slow) var(--ease-paper); }
+[data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper, .arrival-sheet, .phone-qr)::after { opacity: var(--paper-on, var(--paper-strength)); transition: opacity var(--duration-slow) var(--ease-paper); }
 /* The driver card stays bright paper in Lantern, where the sheet made is the night one: plain there */
 [data-theme="lantern"] .sheet-bright::after { display: none; }
 .letter .paper-feel::after, .sheet .paper-feel::after { display: none; }
@@ -609,7 +609,9 @@
 @media (hover: hover) and (pointer: fine) { .utility-btn { transition: color var(--duration-fast), background-color var(--duration-fast) var(--ease-paper); } .utility-btn:hover { background: var(--nav-hover-bg); } }
 
 /* From 1024: "Open on your phone" as its own small paper card, bottom right of the scene, below the faces */
-.phone-qr { position: fixed; z-index: 20; right: var(--space-5); bottom: var(--space-5); display: flex; align-items: center; gap: var(--space-3); max-width: 280px; padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3); border-radius: var(--radius-section); background: var(--letter-bg); color: var(--letter-ink); box-shadow: var(--elevation-paper); }
+/* Run 21: the card's paper too (the same sheet made in the browser as the letter), and its own stacking so the grain
+   sits on the card, not the page */
+.phone-qr { isolation: isolate; position: fixed; z-index: 20; right: var(--space-5); bottom: var(--space-5); display: flex; align-items: center; gap: var(--space-3); max-width: 280px; padding: var(--space-3) var(--space-4) var(--space-3) var(--space-3); border-radius: var(--radius-section); background: var(--letter-bg); color: var(--letter-ink); box-shadow: var(--elevation-paper); }
 /* Under 1280 the letter takes most of the width, so the card is just the code */
 @media (max-width: 1279px) { .phone-qr { padding: var(--space-3); } .phone-qr > div { display: none; } }
 
@@ -620,7 +622,12 @@
 /* The sheet covers the letter fully (v3 A): an opaque paper backdrop, nothing shows underneath */
 /* v3 Q9: the sheet opens over the paper scene dimmed to 40%; the letter, countdown and chrome step aside so nothing reads underneath */
 .sheet-overlay { position: fixed; inset: 0; z-index: 50; background: color-mix(in oklab, var(--brand-ink-deep) 60%, transparent); }
-[data-sheet] .letter-wrap > *, [data-sheet] .site-bar, [data-sheet] .site-nav, [data-sheet] .phone-qr, [data-sheet] .credit-mark { visibility: hidden; }
+@media (max-width: 767px) { [data-sheet] .letter-wrap > *, [data-sheet] .site-bar, [data-sheet] .site-nav, [data-sheet] .phone-qr, [data-sheet] .credit-mark { visibility: hidden; } }
+/* Laptops (run 21): every sheet is a centred dialog over the page, which stays there softly dimmed and blurred so it
+   still reads behind. Phones keep the sheet that covers the page. */
+@media (min-width: 768px) {
+  .sheet-overlay { background: color-mix(in oklab, var(--brand-ink-deep) 28%, transparent); -webkit-backdrop-filter: blur(6px) saturate(0.9); backdrop-filter: blur(6px) saturate(0.9); }
+}
 /* The RSVP sheet is the letter: fixed header and footer, only the content scrolls. Height follows the content. */
 .sheet {
   --sheet-pad: var(--space-5);
@@ -640,7 +647,6 @@
   /* Laptops: the same margin above and below, so the sheet sits evenly between the bar and the bottom edge */
   .sheet { --sheet-pad: var(--space-6); --sheet-gap: 48px; top: calc(64px + (100dvh - 64px) / 2); left: 50%; right: auto; translate: -50% -50%; width: min(var(--letter-width), calc(100vw - 48px)); max-height: calc(100dvh - 64px - 2 * var(--sheet-gap)); height: min(640px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
 }
-@media (min-width: 1024px) { .sheet { left: var(--letter-left); translate: 0 -50%; } }
 .sheet-head { flex: none; padding: var(--sheet-pad) calc(var(--sheet-pad) + 44px) var(--space-4) var(--sheet-pad); }
 .sheet-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: var(--space-2) var(--sheet-pad) var(--space-7); scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 /* The sent letter (18f): the hanko and heading in the head, then one column, every block the same distance apart */
@@ -721,7 +727,7 @@
 .combo-tag-x::after { content: ""; position: absolute; inset: -10px; }
 .combo-tag-x:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .combo-tag-x:hover { color: var(--ink); } }
-.combo-list { position: absolute; z-index: 20; left: 0; right: 0; top: 100%; margin-top: var(--space-1); max-height: 320px; overflow-y: auto; padding: var(--space-1); border: 1px solid var(--line-hairline); border-radius: var(--radius-card); background: var(--surface-raised); box-shadow: var(--shadow-paper); }
+.combo-list { position: absolute; z-index: 20; left: 0; right: 0; top: 100%; margin-top: var(--space-1); max-height: 320px; overflow-y: auto; padding: var(--space-1); border: 1px solid var(--line-hairline); border-radius: var(--radius-card); background: var(--letter-bg); box-shadow: var(--shadow-paper); } /* the sheet's own paper (run 21) */
 .combo-option { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: var(--space-1) var(--space-2); border-radius: var(--radius-chip); cursor: pointer; font-family: var(--font-label); font-size: var(--type-ui-size); color: var(--ink); }
 .combo-option[data-active] { background: var(--input-selected-bg); }
 [aria-multiselectable] .combo-option[aria-selected="true"] { font-weight: 500; }
