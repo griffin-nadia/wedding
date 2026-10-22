@@ -13,6 +13,7 @@ import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
 import { letterScroll } from "@/lib/frame"
 import { Lettering } from "@/components/lettering"
+import { PreviewBanner } from "@/components/preview-banner"
 // Loaded after the first screen: the credit and the phone QR
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
 const PhoneQr = lazy(() => import("@/components/phone-qr").then((m) => ({ default: m.PhoneQr })))
@@ -138,6 +139,7 @@ export function Layout() {
       <Suspense><CreditMark /></Suspense>
       {/* The same small card in the same corner on every page (run 19), not just Home: the link is theirs on any page */}
       {!sealed && <Suspense><PhoneQr /></Suspense>}
+      <PreviewBanner />
     </>
   )
 }

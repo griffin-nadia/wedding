@@ -194,6 +194,8 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.whoMade.song", ja: "曲は{song}のピアノ版です。" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "home.pills.replied", ja: "お返事ありがとうございます" },
+  { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },
+  { key: "preview.feedbackLabel", ja: "読みにくいところ、気になるところは？" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]
 
