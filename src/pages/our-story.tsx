@@ -8,18 +8,15 @@ import { STORY_PLAN } from "@/content/story-plan"
 import { pending } from "@/content/pending"
 
 /**
- * The opener (Figma 3b): one kid photo each, Griffin then Nadia, as the first slide. A photo that isn't here yet is a
- * plain paper print of the same size (no badge), described for screen readers from pending.ts.
+ * The opener (Figma 3b): one kid photo each, Griffin then Nadia, as the first slide. Little Griffin is his pick, his
+ * first day of school (run 23).
  */
 function Opener() {
-  const { lang } = useLang()
   const has = (name: string) => name in photos
-  if (!has("kid-nadia")) return null
+  if (!has("kid-nadia") || !has("kid-griffin")) return null
   return (
     <div className="story-kids">
-      {has("kid-griffin")
-        ? <Photo name="kid-griffin" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
-        : <div className="story-kid-slot" role="img" aria-label={pending("story.kidGriffin", lang)} />}
+      <Photo name="kid-griffin" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
       <Photo name="kid-nadia" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
     </div>
   )
