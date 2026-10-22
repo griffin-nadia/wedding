@@ -30,7 +30,7 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(mix(fp, sp, k), 1.0);
 }`
 const frag = (glsl: string) => /* glsl */ `
-uniform sampler2D map; uniform float uShade, uAlpha;
+uniform sampler2D map; uniform float uShade, uAlpha, uLon, uTilt;
 varying vec2 vUv; varying float vK, vZ;
 void main() {
   vec4 col = texture2D(map, vUv);

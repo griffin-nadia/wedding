@@ -537,6 +537,54 @@
      "kb": 239
     }
    }
+  },
+  "globe-origami": {
+   "fps": 59,
+   "longTasks": 1,
+   "longestMs": 55,
+   "kb": 240,
+   "takes": {
+    "-": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 1,
+     "longestMs": 55,
+     "loadLongTasks": 3,
+     "kb": 240
+    }
+   }
+  },
+  "globe-snow": {
+   "fps": 58,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 241,
+   "takes": {
+    "-": {
+     "fps": 58,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 241
+    }
+   }
+  },
+  "globe-nadia": {
+   "fps": 57,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 240,
+   "takes": {
+    "-": {
+     "fps": 57,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 240
+    }
+   }
   }
  },
  "baselines": {
