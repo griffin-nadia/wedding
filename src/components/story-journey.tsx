@@ -39,7 +39,7 @@ function ReadOn({ c, meta }: { c: Chapter; meta: string }) {
   const { t } = useLang()
   return (
     <Sheet>
-      <SheetTrigger asChild><button type="button" className="btn-text min-h-11 self-center" aria-label={t.story.keepReadingLabel(c.title)}>{t.story.keepReading}</button></SheetTrigger>
+      <SheetTrigger asChild><button type="button" className="btn-text -my-2 min-h-11 self-center" aria-label={t.story.keepReadingLabel(c.title)}>{t.story.keepReading}</button></SheetTrigger>
       <SheetContent aria-describedby={undefined}>
         <SheetHead><p className="text-small text-muted-foreground">{meta}</p><SheetTitle lang="en" className="heading">{c.title}</SheetTitle></SheetHead>
         <SheetBody><div className="story-read"><Paragraphs body={c.body} /></div></SheetBody>
