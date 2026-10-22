@@ -12,13 +12,33 @@ test("the venue map is off by default and complete with ?preview", async ({ page
   await page.goto("travel?h=sample&preview#around")
   const map = page.locator(".vmap")
   await expect(map).toBeVisible()
-  await expect(map.locator(".vmap-spot")).toHaveCount(11)
+  await expect(map.locator(".vmap-pin")).toHaveCount(11)
   await expect(map.getByRole("img")).toHaveAttribute("alt", /Nadia's painted map of Higashiyama/)
   await map.getByRole("button", { name: /Kyoto Station/ }).click()
   await expect(page.locator(".kmap-card")).toContainText("Hachijo exit")
-  await page.getByRole("radio", { name: /By train/ }).click()
-  await expect(page.getByText(/Keihan line north to Kiyomizu Gojo/)).toBeVisible()
+  await expect(page.locator(".vmap-key")).toContainText("Taxi from the station")
+  await expect(page.locator(".vmap-key")).toContainText("Walk from Gion-Shijo")
   await expect(page.getByRole("link", { name: /View the full map/ })).toHaveAttribute("href", /venue-map-full\.webp$/)
   await page.locator(".vmap-list summary").click()
   await expect(page.locator(".vmap-list [lang=ja]", { hasText: "清水寺" })).toBeVisible()
+})
+
+// Run 24b: every ring sits on its own dot in Nadia's art (the place's % of the image), at three widths
+test("every place's ring is centred on its spot in the art", async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  for (const [w, h] of [[390, 844], [1024, 768], [1440, 900]]) {
+    await page.setViewportSize({ width: w, height: h })
+    await page.goto("travel?h=sample&preview#around")
+    const map = page.locator(".vmap"); await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(300)
+    const off = await map.evaluate((m) => {
+      const img = m.querySelector("img")!.getBoundingClientRect()
+      return [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((pin) => {
+        const d = pin.querySelector(".vmap-dot")!.getBoundingClientRect()
+        const x = img.left + (parseFloat(pin.style.left) / 100) * img.width, y = img.top + (parseFloat(pin.style.top) / 100) * img.height
+        return Math.round(Math.hypot(d.left + d.width / 2 - x, d.top + d.height / 2 - y))
+      })
+    })
+    expect(off.length, `${w}`).toBe(11)
+    for (const o of off) expect(o, `${w}: a ring off its spot`).toBeLessThanOrEqual(2)
+  }
 })
