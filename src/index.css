@@ -1225,7 +1225,6 @@ svg.lucide { stroke-width: 1.5; }
 
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
 .story-kids { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: var(--space-4); align-items: start; padding: var(--space-2); } /* room for the tilted corners */
-.story-kid-slot { position: relative; aspect-ratio: 2 / 3; border: var(--space-2) solid var(--brand-paper-bright); border-bottom-width: var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); box-shadow: var(--elevation-paper); transform: rotate(2deg); } /* a plain print, the same size as the photo beside it */
 
 /* Their picks: compact rows, the whole row is the link */
 .stay-pick { min-height: 48px; padding-block: var(--space-2); }
@@ -1279,7 +1278,7 @@ svg.lucide { stroke-width: 1.5; }
 .story-print > div { height: var(--print-h); width: auto; }
 .story-print[data-frame="landscape"] > div { width: var(--print-h); height: auto; }
 .story-print-blank { display: block; width: calc(var(--print-h) * 0.75); height: var(--print-h); margin: var(--space-2); border: var(--space-2) solid var(--brand-paper-bright); border-bottom-width: var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); box-shadow: var(--elevation-paper); transform: rotate(-1deg); }
-.story-slide .story-kids .photo-print > div, .story-slide .story-kid-slot { height: calc(var(--print-h) * 1.1); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
+.story-slide .story-kids .photo-print > div { height: calc(var(--print-h) * 1.1); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
 /* The journey map, once, as the last stop */
 /* Its lines wait until the stop is showing (no drawing off screen, and they draw in as you arrive) */
 .story-slide[inert] .journey, .story-slide[inert] .journey * { animation-play-state: paused !important; }
