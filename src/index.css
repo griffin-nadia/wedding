@@ -1250,14 +1250,16 @@ svg.lucide { stroke-width: 1.5; }
 /* Phones: the pile staggers down the stop's full height (his top left, hers lower right over his corner, taped there,
    his first day tucked under his, peeking out at the bottom left), so both faces stay clear and there's no empty band */
 @media (max-width: 767px) {
-  .story-slide-opener .story-media { height: calc(var(--stop-h) * 1.45); }
+  /* The pile takes all the height the story's track gives the stop (at least 1.45 stops), and the prints size from the
+     pile's own height (cqh), never wider than its width allows (cqw), so it fills down to the arrows at every phone */
+  .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.45); container-type: size; }
   .story-kids { height: 100%; }
-  .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.66); }
-  .story-kid-behind .story-print { --print-h: calc(var(--stop-h) * 0.52); }
-  .story-kid-him { left: 6%; top: 0; }
-  .story-kid-her { right: 6%; top: 31%; }
-  .story-kid-behind { left: 0; top: 40%; z-index: 1; }
-  .story-kids-tape { left: 37%; top: 29%; width: 24%; rotate: -34deg; }
+  .story-kid .story-print { --print-h: min(44cqh, 70cqw); }
+  .story-kid-behind .story-print { --print-h: min(36cqh, 56cqw); }
+  .story-kid-him { left: 6%; top: 1%; }
+  .story-kid-her { right: 6%; top: 41%; }
+  .story-kid-behind { left: 0; top: 50%; z-index: 1; }
+  .story-kids-tape { left: 37%; top: 39%; width: 24%; rotate: -34deg; }
 }
 /* Tape across where hers overlaps his */
 .story-kids-tape { position: absolute; z-index: 4; left: 52%; top: 10%; width: 22%; height: 22px; rotate: 58deg; opacity: 0.82; background: color-mix(in oklab, var(--brand-sage) 70%, white); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
