@@ -1311,6 +1311,12 @@ svg.lucide { stroke-width: 1.5; }
 .story-lead { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: pretty; }
 /* Laptops under 960 tall: three lines, so the stop with their words still fits the frame (1440 × 900) */
 @media (min-width: 1024px) and (max-height: 960px) { .story-lead { -webkit-line-clamp: 3; line-clamp: 3; } }
+/* Phones up to 900 tall (run 25): the print, the title, the start of their words, the arrows and dots and See as a list
+   all fit at 390 × 844 without scrolling: three lines of lead and a slightly smaller print */
+@media (max-width: 767px) and (max-height: 900px) {
+  .story-lead { -webkit-line-clamp: 3; line-clamp: 3; }
+  .story-slide { --print-h: min(22svh, 260px); }
+}
 /* The whole chapter (the Keep reading sheet and the list): a calm reading measure, paragraphs whole, their sign-off
    as a signature */
 .story-read { display: flex; flex-direction: column; gap: var(--space-4); max-width: 65ch; text-wrap: pretty; }
@@ -1360,6 +1366,9 @@ svg.lucide { stroke-width: 1.5; }
 .photo-viewer-frame { width: min(94vw, calc((100dvh - 96px) * var(--r)), 1100px); }
 .photo-viewer-frame figcaption { display: none; }
 .photo-viewer-frame img { object-fit: contain; }
+/* Straight and borderless here: the print's tilt, border, tape and shadow are for the story, not the full view */
+.photo-viewer-frame figure { transform: none !important; rotate: none !important; padding: 0 !important; background: none !important; box-shadow: none !important; }
+.photo-viewer-frame figure::before, .photo-viewer-frame figure::after { display: none !important; }
 .story-controls { display: flex; align-items: center; justify-content: space-between; }
 .story-controls .utility-btn:disabled { opacity: 0.4; }
 /* Reduced motion: stops fade straight to the next (opacity only, never a move); the one exception to the site's
