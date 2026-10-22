@@ -1519,3 +1519,27 @@ svg.lucide { stroke-width: 1.5; }
 .vmap-list summary::-webkit-details-marker { display: none; }
 /* The Sodoh in Nadia's lettering (run 22): her mark at about the address block's width, filled with the ink */
 .venue-mark { display: block; width: min(240px, 100%); aspect-ratio: 2.751; background: var(--ink); -webkit-mask: var(--venue-mark) left center / contain no-repeat; mask: var(--venue-mark) left center / contain no-repeat; }
+
+/* Run 23: the bar and the dock after the envelope (layout.tsx, navIn / navOut). In: the bar's paper, the mark, the nav
+   and RSVP come down 6px as they fade in, together; the dock (phones) comes up 6px, 80 ms later. Out, the reverse,
+   faster, before the seal starts. The bar's switches stay put (they show over the photo while it's sealed). */
+@keyframes nav-from-top { from { opacity: 0; translate: 0 -6px; } }
+@keyframes nav-from-bottom { from { opacity: 0; translate: 0 6px; } }
+@keyframes nav-to-top { to { opacity: 0; translate: 0 -6px; } }
+@keyframes nav-to-bottom { to { opacity: 0; translate: 0 6px; } }
+@keyframes nav-fade-in { from { opacity: 0; } }
+@keyframes nav-fade-out { to { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-nav-in] :is(.site-mark, .site-rsvp), :root[data-nav-in] .site-bar::before, :root[data-nav-in] .site-bar::after { animation: nav-from-top 350ms var(--ease-paper) both; }
+  :root[data-nav-in] .site-nav { animation: nav-from-top 350ms var(--ease-paper) both; }
+  :root[data-nav-out] :is(.site-mark, .site-rsvp), :root[data-nav-out] .site-bar::before, :root[data-nav-out] .site-bar::after { animation: nav-to-top 200ms var(--ease-paper) both; }
+  :root[data-nav-out] .site-nav { animation: nav-to-top 200ms var(--ease-paper) both; }
+  @media (max-width: 767px) {
+    :root[data-nav-in] .site-nav { animation: nav-from-bottom 350ms var(--ease-paper) 80ms both; }
+    :root[data-nav-out] .site-nav { animation: nav-to-bottom 200ms var(--ease-paper) 80ms both; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-nav-in] :is(.site-mark, .site-rsvp, .site-nav), :root[data-nav-in] .site-bar::before, :root[data-nav-in] .site-bar::after { animation: nav-fade-in 150ms linear both; }
+  :root[data-nav-out] :is(.site-mark, .site-rsvp, .site-nav), :root[data-nav-out] .site-bar::before, :root[data-nav-out] .site-bar::after { animation: nav-fade-out 150ms linear both; }
+}
