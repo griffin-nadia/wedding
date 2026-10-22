@@ -4,6 +4,7 @@ import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import type { City } from "@/lib/city-search"
 import { bundle, type Place } from "@/lib/journey-names"
+import { cn } from "@/lib/utils"
 
 /**
  * The flat map beside the globe (run 19): the globe's own painting (src/lib/paint-globe.ts: every country a soft
@@ -26,7 +27,15 @@ function flatPoint([lat, lon]: [number, number]): [number, number] {
   return [Math.max(4, Math.min(396, x)), Math.max(4, Math.min(316, y))]
 }
 
-export function JourneyFlat({ you, cities, label, children }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string; name?: string }[]; label: string; children?: ReactNode }) {
+/** Run 25: where a tap on the map is (the viewBox's x and y back to latitude and longitude), for "Drop a pin instead" */
+function flatLatLon(x: number, y: number): [number, number] {
+  const u = FRAME.west + (x / 400) * SPAN, lat = FRAME.north - (y / 320) * TALL
+  return [Math.round(lat * 100) / 100, Math.round((u > 180 ? u - 360 : u) * 100) / 100]
+}
+
+export function JourneyFlat({ you, cities, label, children, onPick }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string; name?: string }[]; label: string; children?: ReactNode
+  /** Run 25: set while the guest is dropping a pin; a tap on the map gives its latitude and longitude */
+  onPick?: (lat: number, lon: number) => void }) {
   const { t, lang } = useLang()
   const [tipAt, setTipAt] = useState<number | null>(null)
   const { theme } = useTheme()
@@ -68,7 +77,10 @@ export function JourneyFlat({ you, cities, label, children }: { you: City | null
   const youDelay = 900 + others.length * 120
   const line = (from: [number, number], lift: number) => arc(from, kyoto, lift)
   return (
-    <div className="journey-flat">
+    <div className={cn("journey-flat", onPick && "is-picking")} onClick={onPick ? (e) => {
+      const r = e.currentTarget.querySelector("svg")!.getBoundingClientRect()
+      onPick(...flatLatLon(((e.clientX - r.left) / r.width) * 400, ((e.clientY - r.top) / r.height) * 320))
+    } : undefined}>
         <canvas ref={art} aria-hidden className="journey-flat-art" />
         <svg viewBox="0 0 400 320" role="img" aria-label={label} className="journey is-in journey-hifi journey-flat-lines">
           <defs>

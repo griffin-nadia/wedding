@@ -85,11 +85,6 @@ export const PENDING = {
     en: "You asked",
     ja: "いただいたご質問",
   },
-  // "Where are you flying from?": the field under the quick chips (final run)
-  "flying.orType": {
-    en: "Or type your city",
-    ja: "または都市名を入力",
-  },
   // The journey stop's toggle (final run)
   "journey.mapMode": {
     en: "Map",
@@ -164,8 +159,9 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "rsvp.useTyped", ja: "入力したとおりに使う" },
   { key: "rsvp.songResults", ja: "件見つかりました" },
   { key: "rsvp.listResults", ja: "件の候補" },
-  { key: "flying.placeholder", ja: "都市名を入力して探す" },
-  { key: "flying.noMatch", ja: "見つかりません。「その他」を選んでください。" },
+  { key: "flying.placeholder", ja: "都市名や町名を入力" },
+  { key: "flying.noMatch", ja: "見つかりませんでした。" },
+  { key: "flying.dropPin", ja: "見つからないときは、地図にピンを置いてください / 出発地を地図でタップしてください。 / やめる" },
   { key: "ask.button", ja: "質問する" },
   { key: "faqs.bring.a", ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下からお気軽にどうぞ。" },
   { key: "faqs.style.a", ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。" },
