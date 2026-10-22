@@ -5,6 +5,7 @@ import { directionsUrl } from "@/lib/calendar"
 import { DATES } from "@/lib/wedding-dates"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
+import { pending } from "@/content/pending"
 import { jstLabel, kyotoNow } from "@/lib/time"
 import { PageHeader } from "@/components/ui/page-header"
 
@@ -77,7 +78,7 @@ function Details() {
 
 /** The day: details, then the timeline. No tabs, no countdown (Home's row is the only one, v3 R). */
 export function DayPage() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [now, setNow] = useState(() => new Date())
   // The Kyoto clock rolls only when the minute changes, not when the page first shows (that read as a flicker)
   const firstMinute = useRef(kyotoNow(now))
@@ -88,6 +89,8 @@ export function DayPage() {
   }, [])
   const timeline = (
     <div className="flex flex-col gap-4">
+      {/* Still to come from the wedding planner (their Time, column E, 22 Oct) */}
+      <p className="text-small">{pending("day.arrival", lang)}</p>
       <Timeline now={now} />
       {/* The Kyoto minute rolls up into place when it ticks over; the key remounts it */}
       <p className="text-small text-muted-foreground">{t.day.japanTime} <span className={rolls ? "no-print clock-roll" : "no-print"} key={kyotoNow(now)}>{keepTimes(t.day.kyotoNow(kyotoNow(now)))}</span></p>

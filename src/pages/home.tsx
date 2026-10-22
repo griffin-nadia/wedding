@@ -126,9 +126,16 @@ export function HomePage() {
         <p className="date-badge">{mode === "keepsake" ? t.home.keepsake.badge : t.home.dateLine}</p>
       </header>
 
-      {household
-        ? <p className="max-w-[34em]"><span className="text-foreground">{t.home.dear(dear)}</span> {mode === "keepsake" ? t.home.keepsake.greeting : mode === "week-of" ? t.home.week.greeting : t.home.greetingLine}</p>
-        : <Skeleton className="h-21 w-full" />}
+      {mode === "invite"
+        // Their Intro (22 Oct) is two paragraphs, so "Dear …," gets its own line. Only that line waits for the
+        // household; the intro shows at once, so nothing below it moves when the names arrive
+        ? <div className="flex max-w-[34em] flex-col gap-2">
+            {household ? <p className="text-foreground">{t.home.dear(dear)}</p> : <Skeleton className="h-(--type-body-leading) w-48" />}
+            {t.home.intro.map((x) => <p key={x}>{x}</p>)}
+          </div>
+        : household
+          ? <p className="max-w-[34em]"><span className="text-foreground">{t.home.dear(dear)}</span> {mode === "keepsake" ? t.home.keepsake.greeting : t.home.week.greeting}</p>
+          : <Skeleton className="h-21 w-full" />}
 
       {/* Later modes (v3 S): the week of the wedding points at the day; the keepsake is a thank-you letter */}
       {household && mode === "week-of" && (
