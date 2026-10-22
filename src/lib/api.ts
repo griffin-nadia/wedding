@@ -244,10 +244,16 @@ export async function getJourneys(token?: string): Promise<Journey[]> {
   try { const d = await call(`${config.apiUrl}?action=journeys`); return d.ok && Array.isArray(d.cities) ? (d.cities as Journey[]) : [] } catch { return [] } // an older back end has no journeys: none, not a crash
 }
 
-/** The 12 fortunes from the sheet's Content tab (falls back to the built-in drafts). */
-export async function getFortunes(): Promise<string[] | null> {
+/** One omikuji (run 23): Nadia's tier in English and Japanese, its category and the words */
+export type Fortune = { no: number; tier: string; tierJa: string; category: string; text: string }
+/** The fortunes from the sheet's Fortunes tab (null: use the built-in drafts). An older back end answers plain strings. */
+export async function getFortunes(): Promise<Fortune[] | null> {
   if (!config.apiUrl) return null
-  try { const d = await call(`${config.apiUrl}?action=fortunes`); return d.ok && Array.isArray(d.fortunes) ? d.fortunes : null } catch { return null }
+  try {
+    const d = await call(`${config.apiUrl}?action=fortunes`)
+    if (!d.ok || !Array.isArray(d.fortunes)) return null
+    return (d.fortunes as (Fortune | string)[]).map((f, i) => (typeof f === "string" ? { no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text: f } : f))
+  } catch { return null }
 }
 
 /** Crew links (the tuning panel and /kit; the lab is local only since 18 Oct): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */

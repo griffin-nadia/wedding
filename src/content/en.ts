@@ -26,7 +26,7 @@ export const VENUE = {
   name: "The Sodoh Higashiyama",
 }
 
-// Fortunes after RSVP: all 大吉 (great blessing). The site data sheet's Content tab overrides these.
+// The first fortunes (travel tips, all 大吉): the fallback until the data sheet's Fortunes tab answers (run 23: Nadia's 25)
 export const FORTUNES = [
   "Higashiyama is all hills and stone steps. Pack shoes you can walk in.",
   "Mid October days are mild and evenings cool. Bring a light layer.",

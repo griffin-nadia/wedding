@@ -1338,16 +1338,23 @@ const FORTUNES = [
 ]
 
 /** The 12 fortunes: from the Content tab (Key fortune_1 to fortune_12) where filled in, else the drafts. */
+/**
+ * The omikuji (run 23): Nadia's set from the Fortunes tab (No, Tier, Tier (ja), Category, Text), in number order, as
+ * { no, tier, tierJa, category, text }. With no Fortunes tab or no rows in it, the first drafts (all 大吉). Cached for
+ * 10 minutes; an edit to the sheet clears it (onEdit).
+ */
 function fortunes_() {
   const cache = CacheService.getScriptCache()
   const hit = cache.get("fortunes")
   if (hit) return JSON.parse(hit)
-  const out = FORTUNES.slice()
-  const tab = ss_().getSheetByName("Content")
-  if (tab) rows_("Content").forEach((r) => {
-    const m = /^fortune_(\d+)$/.exec(String(r.Key || "").trim())
-    if (m && Number(m[1]) >= 1 && Number(m[1]) <= 12 && String(r.Text || "").trim()) out[Number(m[1]) - 1] = String(r.Text).trim()
-  })
+  let out = []
+  if (ss_().getSheetByName("Fortunes")) {
+    out = rows_("Fortunes")
+      .map((r) => ({ no: Number(r.No) || 0, tier: String(r.Tier || "").trim().slice(0, 40), tierJa: String(r["Tier (ja)"] || "").trim().slice(0, 10), category: String(r.Category || "").trim().slice(0, 20), text: String(r.Text || "").trim().slice(0, 400) }))
+      .filter((f) => f.no > 0 && f.text)
+      .sort((a, b) => a.no - b.no)
+  }
+  if (!out.length) out = FORTUNES.map((text, i) => ({ no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text: text }))
   cache.put("fortunes", JSON.stringify(out), 600)
   return out
 }

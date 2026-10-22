@@ -1167,7 +1167,8 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-slip .label-caps { color: var(--brand-kuri); }
 .omikuji-no { font-size: var(--type-small-size); letter-spacing: 0.2em; color: var(--brand-kuri); }
 .omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--brand-doro); }
-.omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 26ch; }
+.omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 34ch; } /* Nadia's fortunes run to three or four sentences (run 23) */
+.omikuji-category { color: var(--ink-muted); }
 .omikuji-count { opacity: 0.8; }
 .omikuji-save { min-height: 44px; color: var(--brand-doro); } /* the one link style (btn-text), in the slip's own ink: it's always bright paper */
 @media (prefers-reduced-motion: reduce) {
