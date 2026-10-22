@@ -1605,7 +1605,7 @@ svg.lucide { stroke-width: 1.5; }
 .segmented.journey-mode .segmented-item { min-height: 28px; padding-inline: var(--space-2); gap: 0; font-size: 12px; }
 .journey-mode .segmented-item::after, .journey-mode .segmented-tick { display: none; }
 /* The flat map: the globe's painting cut to the Pacific, the lines over it (5:4, the 400 × 320 viewBox) */
-.journey-flat { position: relative; width: min(100%, calc(var(--flat-h, 36svh) * 1.25)); aspect-ratio: 5 / 4; border-radius: var(--radius-section); overflow: hidden; box-shadow: 0 0 0 1px var(--line-hairline); } /* run 25: on the card's paper, like the globe */
+.journey-flat { position: relative; width: min(100%, calc(var(--flat-h, 36svh) * 1.25)); aspect-ratio: 5 / 4; border-radius: var(--radius-section); overflow: hidden; background: #2f3428; box-shadow: 0 0 0 1px var(--line-hairline); } /* run 25 (Jehan): the dark sage ground in both themes, the painting's own */
 .journey-flat-art, .journey-flat-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
 .journey-flat-lines.journey-map { background: none; }
 .journey-flat-seal { font-size: 13px; }

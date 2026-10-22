@@ -55,7 +55,7 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin }: 
     // The painting is heavy (the whole world at 2048): only once the map is on screen, so a story opened on its
     // first stop with the flat map remembered isn't held up by a map four stops away
     const paint = () => void import("@/lib/paint-globe").then(async ({ paintGlobe, GLOBE_LOOK }) => {
-      const src = await paintGlobe(theme === "lantern" ? GLOBE_LOOK.night : GLOBE_LOOK.day, 2048, countries)
+      const src = await paintGlobe(GLOBE_LOOK.map, 2048, countries)
       const c = art.current
       if (!alive || !c) return
       // The painting runs -180° to 180°; the frame crosses the date line, so it's drawn twice, a world apart
@@ -87,7 +87,7 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin }: 
   const youDelay = 900 + others.length * 120
   const line = (from: [number, number], lift: number) => arc(from, kyoto, lift)
   return (
-    <div ref={box} className="journey-flat">
+    <div ref={box} className="journey-flat" data-theme="lantern">
         <canvas ref={art} aria-hidden className="journey-flat-art" width={ART_W} height={ART_H} />
         <svg viewBox="0 0 400 320" role="img" aria-label={label} className="journey is-in journey-hifi journey-flat-lines" style={{ "--k": k } as CSSProperties}>
           <defs>

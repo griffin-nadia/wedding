@@ -140,7 +140,7 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
     void loadGlobe().then(() => idle(() => {
       if (!alive) return
       const countries = [...journeys.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
-      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(theme === "lantern" ? GLOBE_LOOK.night : GLOBE_LOOK.day, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries))
+      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(GLOBE_LOOK.map, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries))
     }))
     return () => { alive = false }
   }, [near, base, theme, journeys, you])

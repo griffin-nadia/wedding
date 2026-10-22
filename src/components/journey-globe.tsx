@@ -66,13 +66,12 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
           const [r, g, b] = x.getImageData(0, 0, 1, 1).data
           return `#${[r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("")}`
         }
-        const night = theme === "lantern"
         const countries = [...cities.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
         // Guest cities by the naming rule, a country with many lines bundled into one (lib/journey-names.ts)
         const guests = bundle(cities.map((c) => ({ name: c.name ?? "", country: c.country ?? "", lat: c.lat, lon: c.lon, n: c.n }) as Place), lang, t.journey.households)
         let tex: InstanceType<typeof THREE.Texture>
         if (ART.globeLand) tex = await new THREE.TextureLoader().loadAsync(`${import.meta.env.BASE_URL}${ART.globeLand}`)
-        else tex = new THREE.CanvasTexture(await paintGlobe(night ? GLOBE_LOOK.night : GLOBE_LOOK.day, phone ? 1024 : 2048, countries))
+        else tex = new THREE.CanvasTexture(await paintGlobe(GLOBE_LOOK.map, phone ? 1024 : 2048, countries))
         if (!alive) return
         tex.colorSpace = THREE.SRGBColorSpace
         let w = el.clientWidth, h = el.clientHeight
@@ -275,7 +274,7 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
   }, [you, cities, theme, lang, t.journey.households, pinKey])
   if (failed) return null
   return (
-    <div className="journey-globe" data-ready={ready || undefined}>
+    <div className="journey-globe" data-theme="lantern" data-ready={ready || undefined}>
       <div ref={box} className="journey-globe-art" role="img" aria-label={label}>
         <div ref={pin} className="globe-pin" aria-hidden><div className="globe-pin-body"><span className="globe-pin-seal">京</span><span className="globe-pin-text">{t.journey.kyotoPin}</span></div></div>
         <span ref={brisbane} className="globe-place" aria-hidden>{t.journey.brisbane}</span>
