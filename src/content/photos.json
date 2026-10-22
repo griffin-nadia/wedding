@@ -111,6 +111,22 @@
   "width": 1600,
   "height": 2133
  },
+ "kid-griffin-1998": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "kid-griffin-1998-lqip.webp",
+  "width": 800,
+  "height": 1000
+ },
  "kid-griffin": {
   "formats": {
    "avif": [
@@ -142,6 +158,22 @@
   "lqip": "kid-nadia-lqip.webp",
   "width": 800,
   "height": 1202
+ },
+ "kid-nadia-home": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "kid-nadia-home-lqip.webp",
+  "width": 800,
+  "height": 1000
  },
  "kyoto-night": {
   "formats": {

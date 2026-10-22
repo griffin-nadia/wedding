@@ -78,6 +78,25 @@ export function Nav() {
  * under it is a fixed frame whose content scrolls inside it.
  * No site footer: the letter ends with the sign-off.
  */
+/**
+ * Run 23 (Jehan, 22 Oct): once the letter has become the card, the top bar and the dock come in as one layer each
+ * (their paper, texture and icons together): a fade and a 6px slide from their edge, the dock 80 ms after the bar, on
+ * the site's ease-out. On "Seal it again" they go first. Reduced motion: a 150 ms crossfade, no slide. CSS: index.css,
+ * data-nav-in / data-nav-out. The attribute goes once its animation has ended.
+ */
+const NAV_IN_MS = 350 + 80, NAV_OUT_MS = 200 + 80
+const calm = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
+function navIn() {
+  const root = document.documentElement
+  root.removeAttribute("data-nav-out"); root.setAttribute("data-nav-in", "")
+  window.setTimeout(() => root.removeAttribute("data-nav-in"), calm() ? 150 : NAV_IN_MS)
+}
+function navOut(then: () => void) {
+  const root = document.documentElement
+  root.setAttribute("data-nav-out", "")
+  window.setTimeout(() => { then(); root.removeAttribute("data-nav-out") }, calm() ? 150 : NAV_OUT_MS)
+}
+
 export function Layout() {
   const { t } = useLang()
   const { theme } = useTheme()
@@ -97,7 +116,8 @@ export function Layout() {
   // "Seal it again" (Home): the card goes back into the envelope (the whole journey, envelope.tsx); tapping opens it as on the first visit
   const [resealed, setResealed] = useState(0)
   useEffect(() => {
-    const on = () => { resetArrival(); letterScroll()?.scrollTo(0, 0); setSealed(true); setResealed((n) => n + 1) }
+    // Run 23: the bar and the dock fade out first (200 ms, or a 150 ms crossfade under reduced motion), then the seal
+    const on = () => navOut(() => { resetArrival(); letterScroll()?.scrollTo(0, 0); setSealed(true); setResealed((n) => n + 1) })
     window.addEventListener("ng-reseal", on)
     return () => window.removeEventListener("ng-reseal", on)
   }, [])
@@ -132,7 +152,7 @@ export function Layout() {
       </header>
 
       <main className="letter-wrap">
-        <Arrival reseal={resealed} enabled={page === "home"} onOpened={() => setSealed(false)}>
+        <Arrival reseal={resealed} enabled={page === "home"} onOpened={() => { setSealed(false); navIn() }}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
             {/* The card is a fixed frame between the bar and the dock; what's on it scrolls in here (18e) */}
             <div className="letter-scroll">

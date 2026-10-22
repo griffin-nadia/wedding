@@ -3,6 +3,7 @@
 // - ?action=ping and ?action=health answer only { ok }
 // - a made-up token gets the same answer as any unknown link, and an odd-shaped one too
 // - journeys has no city with fewer than 2 households
+// - run 23: the story and the fortunes answer nothing without a real link
 const url = process.argv[2]
 const get = (q) => fetch(`${url}?${q}`).then((r) => r.json())
 const checks = [
@@ -13,6 +14,11 @@ const checks = [
     return JSON.stringify(a) === '{"ok":true,"household":null}' && JSON.stringify(b) === JSON.stringify(a)
   }],
   ["journeys: no city with fewer than 2 households", async () => { const j = await get("action=journeys"); return j.ok && Array.isArray(j.cities) && j.cities.every((c) => c.n >= 2) }],
+  ["the story and the fortunes need a real link", async () => {
+    const bad = "zz" + Math.random().toString(36).slice(2, 10)
+    const answers = await Promise.all(["action=content", "action=fortunes", `action=content&token=${bad}`, `action=fortunes&token=${bad}`].map(get))
+    return answers.every((a) => a.ok === false && a.code === "not_found" && !("story" in a) && !("fortunes" in a))
+  }],
   ["an error answer carries no internals", async () => { const j = await get("action=crew&token=x"); return !/Exception|at \w+ \(|Sheet|@|AKfy/.test(JSON.stringify(j)) }],
 ]
 let bad = 0

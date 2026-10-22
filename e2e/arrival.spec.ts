@@ -61,9 +61,12 @@ const hold = async (page: Page, start: () => Promise<unknown>) => {
   await start()
   // Only the journey's own animations, just made (the page's CSS ones, like the names drawing on, run as they would)
   return page.evaluate(async () => {
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))) // "Seal it again" starts on the next render
+    // "Seal it again" starts once the bar and dock have faded out (run 23, about 280 ms), so wait for its first frames
     const seen = (window as unknown as { __before: Set<Animation> }).__before
-    const all = document.getAnimations().filter((a) => !(a instanceof CSSAnimation) && !(a instanceof CSSTransition) && !seen.has(a))
+    const mine = () => document.getAnimations().filter((a) => !(a instanceof CSSAnimation) && !(a instanceof CSSTransition) && !seen.has(a))
+    for (let i = 0; i < 90 && !mine().length; i++) await new Promise((r) => requestAnimationFrame(r))
+    await new Promise((r) => requestAnimationFrame(r))
+    const all = mine()
     for (const a of all) a.pause()
     ;(window as unknown as { __seq: Animation[] }).__seq = all
     return all.length

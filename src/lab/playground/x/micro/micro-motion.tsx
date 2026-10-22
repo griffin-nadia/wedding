@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Play, Volume2, VolumeX, Check } from "lucide-react"
-import { FORTUNES } from "@/content/en"
-import { SlipWords, fortuneIndex } from "@/components/fortune-card"
+import { DRAFT_FORTUNES as FORTUNES, SlipWords, fortuneIndex } from "@/components/fortune-card"
 import { Segmented } from "@/components/segmented"
 import { Button } from "@/components/ui/button"
 import { useHousehold } from "@/lib/household"
@@ -178,7 +177,7 @@ function Fortune({ tick, f }: SideProps) {
     anim(top, [{ transform: "rotateX(-180deg)" }, { transform: "none" }], d, e)
     anim(bot, [{ transform: "rotateX(180deg)" }, { transform: "none" }], d, e, d * 0.6)
   }, [tick, f])
-  const slip = <div className="omikuji-slip paper-feel"><SlipWords i={i} of={FORTUNES.length} text={FORTUNES[i]} /></div>
+  const slip = <div className="omikuji-slip paper-feel"><SlipWords i={i} of={FORTUNES.length} fortune={FORTUNES[i]} /></div>
   return (
     <div ref={box} className={`${P}-slipbox ${P}-fold`} key={tick}>
       <div className="slip3">

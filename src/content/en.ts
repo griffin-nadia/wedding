@@ -26,7 +26,7 @@ export const VENUE = {
   name: "The Sodoh Higashiyama",
 }
 
-// Fortunes after RSVP: all 大吉 (great blessing). The site data sheet's Content tab overrides these.
+// The first fortunes (travel tips, all 大吉): the fallback until the data sheet's Fortunes tab answers (run 23: Nadia's 25)
 export const FORTUNES = [
   "Higashiyama is all hills and stone steps. Pack shoes you can walk in.",
   "Mid October days are mild and evenings cool. Bring a light layer.",
@@ -75,6 +75,8 @@ export const en = {
     "trio-mountain-town": { alt: `${A} and ${B} with family in a mountain town`, caption: "A trip with family" },
     "torii-mist": { alt: "A red torii gate in the mist", caption: "Misty torii on the way" },
     "griffin-cedar-forest": { alt: `${GRIFFIN} among tall cedar trees`, caption: `${GRIFFIN} in the cedars` },
+    "kid-griffin-1998": { alt: "Griffin as a little boy in his 1998 school photo, in a red T-shirt, smiling", caption: "" },
+    "kid-nadia-home": { alt: "Nadia as a little girl at home, her hair in bunches with clips, grinning in a Christmas tree T-shirt", caption: "" },
     "kid-griffin": { alt: "Griffin as a little boy on his first day of school, standing at the front door", caption: "" },
     "kid-nadia": { alt: "Nadia as a little girl in the back seat of a car, in a cap, smiling", caption: "" },
     "couple-osaka-castle": { alt: `${A} and ${B} in front of Osaka Castle`, caption: "If you fly into Osaka, the castle's worth a stop" },
@@ -93,6 +95,7 @@ export const en = {
     slide: (n: number, of: number) => `${n} of ${of}`,
     kyoto: "Kyoto", brisbane: "Brisbane", canada: "Canada",
     seeList: "See as a list", seeMap: "See the map", next: "Next", done: "Done",
+    keepReading: "Keep reading", keepReadingLabel: (title: string) => `Keep reading: ${title}`,
   },
   flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", endTitle: "Where are you flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (key: string, city: string) => (key === "Already in Japan" ? "You're already in Japan" : `From ${/^(Somewhere|Elsewhere)/.test(key) ? city.toLowerCase() : city}`), change: "Change", placeholder: "Type to find your city", noMatch: "Nothing matches. Try Somewhere else." },
   music: { on: "Play music", off: "Pause music" },
@@ -101,7 +104,8 @@ export const en = {
     map: (city: string | null, key?: string) => (key === "Already in Japan" ? "A small map of the way to Kyoto, and you're already in Japan" : city ? `A small map with your line from ${/^(Somewhere|Elsewhere)/.test(key ?? "") ? city.toLowerCase() : city} to Kyoto` : "A small map of the way to Kyoto"),
     review: "Flying from", notSaying: "Not saying",
     onMap: "Your line's on the map", pick: "Pick a city",
-    kyoto: "Kyoto · 15 Oct 2027", kyotoPin: "Kyoto, 15 Oct 2027", brisbane: "Brisbane", canada: "Canada",
+    kyoto: "Kyoto · 15 Oct 2027", kyotoPin: "Kyoto, 15 Oct 2027", brisbane: "Brisbane", canada: "Canada", victoria: "Victoria",
+    zoomIn: "Zoom in", zoomOut: "Zoom out", households: (n: number) => `${n} households`,
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "Guests", you: "Your line" },
     count: (n: number, of: number) => `${n} of ${of} lines drawn so far`,
     seeList: "See as a list", seeMap: "See the map",

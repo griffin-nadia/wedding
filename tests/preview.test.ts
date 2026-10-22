@@ -67,3 +67,14 @@ test("feedback from a review link goes to the Feedback tab with where it was lef
   assert.equal(b.post({ action: "feedback", token: "tttttttttt", note: "hi" }).code, "not_found")
   assert.equal(b.post({ action: "feedback", token: "pjapanese2", note: "" }).code, "bad_request")
 })
+
+test("run 23: the story and the fortunes only for a real link (a household's, a review link); anything else is not found", () => {
+  const b = backEnd()
+  for (const action of ["content", "fortunes"]) {
+    assert.equal(b.get({ action }).code, "not_found")
+    assert.equal(b.get({ action, token: "zzzzzzzzzz" }).code, "not_found")
+    assert.equal(b.get({ action, token: "<x>" }).code, "not_found")
+    assert.equal(b.get({ action, token: "tttttttttt" }).ok, true)
+    assert.equal(b.get({ action, token: "pjapanese2" }).ok, true)
+  }
+})

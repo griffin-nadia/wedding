@@ -2,22 +2,23 @@ import { Hanko } from "@/components/hanko"
 import { useEffect, useRef, useState } from "react"
 import { nextFrame } from "@/lib/frame"
 import { FORTUNES } from "@/content/en"
-import { getFortunes } from "@/lib/api"
+import { getFortunes, type Fortune } from "@/lib/api"
 import { useLang } from "@/lib/lang"
 import { canShake, drawnKey, saveFortune } from "@/lib/fortune"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { kanjiNumber } from "@/lib/kanji"
 
-/** The same fortune for a household on any device: picked from its token. */
-export function fortuneIndex(token: string, of = 12) {
+/** The drafts (all 大吉) as fortunes: what shows until the sheet's Fortunes tab answers, or if it's empty */
+export const DRAFT_FORTUNES: Fortune[] = FORTUNES.map((text, i) => ({ no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text }))
+
+/** The same fortune for a household on any device: picked from its token, over however many there are. */
+export function fortuneIndex(token: string, of: number) {
   let h = 0
   for (const c of token) h = (h * 31 + c.charCodeAt(0)) >>> 0
   return h % of
 }
 
-const KANJI = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"]
-/** 1 → 一, 12 → 十二: the slip's number, as on a real omikuji (第七番) */
-export const kanjiNumber = (n: number) => (n <= 10 ? KANJI[n] : `十${KANJI[n - 10]}`)
 
 /** The box: a hexagonal 御籤 tin in rust with a cream label; its stick rises as the fortune comes out. */
 export function Box({ drawing }: { drawing: boolean }) {
@@ -34,7 +35,8 @@ export function Box({ drawing }: { drawing: boolean }) {
 }
 
 /**
- * Omikuji after RSVP, all 大吉 (no branch, per Nadia). Closed: the tin, a line and "Draw one"; the tin itself is
+ * Omikuji after RSVP: Nadia's 25 (22 Oct), five tiers of five (大吉, 素晴吉, 良い吉, 特別吉, メガ吉), one per category
+ * (Food, Travel, Social, Shopping, Fun), from the sheet's Fortunes tab; the slip shows its own tier. No bad luck. Closed: the tin, a line and "Draw one"; the tin itself is
  * also the button. Drawing shakes the tin (900 ms) and raises its stick, then the slip, centred, folds open like a
  * real omikuji (run 19): it comes out folded in three, 大吉 on top; the middle third swings down from behind, then the
  * last, each a paper fold with its shade lifting as it flattens and a little give as it lands; then the creases ease
@@ -45,7 +47,7 @@ export function Box({ drawing }: { drawing: boolean }) {
 const FOLD_MS = 1100
 export function FortuneCard({ token, className }: { token: string; className?: string }) {
   const { t } = useLang()
-  const [tips, setTips] = useState(FORTUNES)
+  const [tips, setTips] = useState(DRAFT_FORTUNES)
   const [state, setState] = useState<"closed" | "drawing" | "open">(() => {
     try { return localStorage.getItem(drawnKey(token)) ? "open" : "closed" } catch { return "closed" }
   })
@@ -54,9 +56,9 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   // its creases easing out; null: a slip opened before, or reduced motion
   const [fold, setFold] = useState<"folding" | "settling" | null>(null)
   const shaky = useRef(canShake())
-  useEffect(() => { getFortunes().then((f) => f && f.length === 12 && setTips(f)) }, [])
+  useEffect(() => { getFortunes(token).then((f) => f && f.length && setTips(f)) }, [token])
   const i = fortuneIndex(token, tips.length)
-  const text = tips[i]
+  const fortune = tips[i]
 
   function draw() {
     if (state !== "closed") return
@@ -80,7 +82,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     window.addEventListener("devicemotion", on)
     return () => window.removeEventListener("devicemotion", on)
   })
-  const save = () => saveFortune(t, text)
+  const save = () => saveFortune(t, fortune)
 
   if (state !== "open") {
     return (
@@ -100,10 +102,10 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     <div className={cn("omikuji-stage", className)}>
       <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip paper-feel", fold === "folding" && "is-folded", fold === "settling" && "is-fresh")}>
         <span aria-hidden className="omikuji-creases" />
-        <SlipWords i={i} of={tips.length} text={text} />
+        <SlipWords i={i} of={tips.length} fortune={fortune} />
         <Button variant="link" onClick={save} className="omikuji-save">{t.fortune.save}</Button>
       </div>
-      {fold === "folding" && <Fold i={i} of={tips.length} text={text} />}
+      {fold === "folding" && <Fold i={i} of={tips.length} fortune={fortune} />}
     </div>
   )
 }
@@ -113,12 +115,12 @@ export function FortuneCard({ token, className }: { token: string; className?: s
  * first crease and the last from the second, so the last rides with the middle until it opens in turn. Looks only
  * (inert, hidden from screen readers): the real slip under it is the one that's read and focused.
  */
-function Fold({ i, of, text }: { i: number; of: number; text: string }) {
+function Fold({ i, of, fortune }: { i: number; of: number; fortune: Fortune }) {
   const { t } = useLang()
   const copy = (part: number) => (
     <div className={`omikuji-slip paper-feel omikuji-copy omikuji-part-${part}`}>
       <span className="omikuji-creases" />
-      <SlipWords i={i} of={of} text={text} copy />
+      <SlipWords i={i} of={of} fortune={fortune} copy />
       <Button variant="link" tabIndex={-1} className="omikuji-save">{t.fortune.save}</Button>
       {part > 1 && <span className="omikuji-shade" />}
     </div>
@@ -134,17 +136,19 @@ function Fold({ i, of, text }: { i: number; of: number; text: string }) {
   )
 }
 
-/** The words on the slip: 第七番, 大吉 / Great blessing, the line, No. 7 of 12. Shared by both reveals. */
-export function SlipWords({ i, of, text, copy = false }: { i: number; of: number; text: string; copy?: boolean }) {
+/** The words on the slip: 第七番, its tier (素晴吉 large, Grand Blessing in small caps), its category, the line, No. 7 of
+ *  25. Their words stay in English on the Japanese site too, marked lang="en". Shared by both reveals. */
+export function SlipWords({ i, of, fortune, copy = false }: { i: number; of: number; fortune: Fortune; copy?: boolean }) {
   const { t } = useLang()
   return (
     <>
       <p lang="ja" className="omikuji-no font-ja" aria-hidden>第{kanjiNumber(i + 1)}番</p>
       <p id={copy ? undefined : "fortune-head"} className="flex flex-col items-center gap-1">
-        <span lang="ja" className="omikuji-kichi font-ja">{t.fortune.blessing}</span>
-        <span className="label-caps">{t.fortune.blessingEn}</span>
+        <span lang="ja" className="omikuji-kichi font-ja">{fortune.tierJa}</span>
+        <span lang="en" className="label-caps">{fortune.tier}</span>
       </p>
-      <p className="omikuji-text">{text}</p>
+      {fortune.category && <p lang="en" className="label-caps omikuji-category">{fortune.category}</p>}
+      <p lang="en" className="omikuji-text">{fortune.text}</p>
       <p className="label-caps omikuji-count">{t.fortune.number(i + 1, of)}</p>
       {/* The same hand-cut 寿 seal as the confirmation's head, small, as if stamped on the slip */}
       <Hanko size="sm" className="omikuji-seal" />

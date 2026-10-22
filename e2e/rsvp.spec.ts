@@ -307,5 +307,5 @@ test("the fortune folds open, centred, then settles", async ({ page }) => {
   await expect(dialog.locator(".omikuji-fold")).toHaveCount(0, { timeout: 4000 })
   const slip = (await dialog.locator(".omikuji-slip").boundingBox())!, col = (await dialog.locator(".done-column").boundingBox())!
   expect(Math.abs(slip.x + slip.width / 2 - (col.x + col.width / 2))).toBeLessThan(2)
-  await expect(dialog.getByRole("group", { name: /Great blessing/ })).toHaveCount(1) // the copies are hidden from screen readers
+  await expect(dialog.getByRole("group", { name: /Great blessing/i })).toHaveCount(1) // the copies are hidden from screen readers
 })

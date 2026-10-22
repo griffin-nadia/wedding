@@ -430,6 +430,9 @@ function doGet(e) {
     if (action === "flying") return json_(flyingCounts_())
     if (action === "questions") return json_(publishedQuestions_())
     if (action === "journeys") return json_(journeys_())
+    // Run 23: the story (now their own words, with visas, cities and work in it) and the fortunes only for a real
+    // link (a household, a review link or a crew link). Anything else gets the same answer as an unknown link.
+    if ((action === "fortunes" || action === "content") && !knownLink_(p.token)) return fail_("not_found")
     if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_() })
     if (action === "stay") return json_(stayPicks_())
     if (action === "content") return json_(content_())
@@ -1338,16 +1341,23 @@ const FORTUNES = [
 ]
 
 /** The 12 fortunes: from the Content tab (Key fortune_1 to fortune_12) where filled in, else the drafts. */
+/**
+ * The omikuji (run 23): Nadia's set from the Fortunes tab (No, Tier, Tier (ja), Category, Text), in number order, as
+ * { no, tier, tierJa, category, text }. With no Fortunes tab or no rows in it, the first drafts (all 大吉). Cached for
+ * 10 minutes; an edit to the sheet clears it (onEdit).
+ */
 function fortunes_() {
   const cache = CacheService.getScriptCache()
   const hit = cache.get("fortunes")
   if (hit) return JSON.parse(hit)
-  const out = FORTUNES.slice()
-  const tab = ss_().getSheetByName("Content")
-  if (tab) rows_("Content").forEach((r) => {
-    const m = /^fortune_(\d+)$/.exec(String(r.Key || "").trim())
-    if (m && Number(m[1]) >= 1 && Number(m[1]) <= 12 && String(r.Text || "").trim()) out[Number(m[1]) - 1] = String(r.Text).trim()
-  })
+  let out = []
+  if (ss_().getSheetByName("Fortunes")) {
+    out = rows_("Fortunes")
+      .map((r) => ({ no: Number(r.No) || 0, tier: String(r.Tier || "").trim().slice(0, 40), tierJa: String(r["Tier (ja)"] || "").trim().slice(0, 10), category: String(r.Category || "").trim().slice(0, 20), text: String(r.Text || "").trim().slice(0, 400) }))
+      .filter((f) => f.no > 0 && f.text)
+      .sort((a, b) => a.no - b.no)
+  }
+  if (!out.length) out = FORTUNES.map((text, i) => ({ no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text: text }))
   cache.put("fortunes", JSON.stringify(out), 600)
   return out
 }
@@ -1377,10 +1387,15 @@ function content_() {
   if (ss_().getSheetByName("Content")) {
     const kv = {}
     rows_("Content").forEach((r) => { const k = String(r.Key || "").trim(); if (k) kv[k] = String(r.Text || "").trim() })
-    for (let n = 1; n <= 6; n++) {
+    // Run 23: up to 8 chapters of up to 8 paragraphs, each with its place and photo (story_N_place, story_N_photo)
+    for (let n = 1; n <= 8; n++) {
       const title = kv["story_" + n + "_title"], body = kv["story_" + n + "_body"]
       if (!title || !body) continue
-      out.story.push({ key: String(n), title: title.slice(0, 60), year: (kv["story_" + n + "_year"] || "").slice(0, 20), body: body.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean).slice(0, 6) })
+      out.story.push({
+        key: String(n), title: title.slice(0, 60), year: (kv["story_" + n + "_year"] || "").slice(0, 20),
+        place: (kv["story_" + n + "_place"] || "").slice(0, 60), photo: (kv["story_" + n + "_photo"] || "").replace(/[^a-z0-9-]/g, "").slice(0, 40),
+        body: body.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean).slice(0, 8),
+      })
     }
     if (["invite", "week-of", "keepsake"].indexOf(kv.mode) >= 0) out.mode = kv.mode
     if (kv.contact_day) out.contactDay = kv.contact_day.slice(0, 200)
@@ -2268,6 +2283,13 @@ function previewLang_(token) {
   const lang = row ? (String(row.Language || "").trim() === "ja" ? "ja" : "en") : null
   cache.put("preview:" + token, lang || "-", 600)
   return lang
+}
+
+/** A household's own link, a review link or a crew link: the ones that may read the story and the fortunes */
+function knownLink_(token) {
+  token = String(token || "").trim()
+  if (!token || !TOKEN_SHAPE.test(token)) return false
+  return Boolean(cachedHousehold_(token) || previewLang_(token) || crew_(token).ok)
 }
 
 /** The made-up household a review link opens: the same shape as getHousehold_, plus preview (its language). */
