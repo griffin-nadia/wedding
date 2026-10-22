@@ -18,7 +18,7 @@ export function PhoneQr() {
   const url = `${location.origin}${import.meta.env.BASE_URL}?h=${household.token}`
   return (
     <aside aria-label={t.letter.phoneTitle} className="phone-qr">
-      <Qr value={url} label={t.letter.phoneTitle} className="size-16 shrink-0 text-foreground" />
+      <Qr value={url} label={t.letter.phoneTitle} className="size-20 shrink-0 text-foreground" />
       <div className="flex flex-col gap-1">
         <p className="text-small font-medium text-foreground">{t.letter.phoneTitle}</p>
         <p className="text-small">{t.letter.phoneBody}</p>
