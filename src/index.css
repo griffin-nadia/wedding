@@ -1094,6 +1094,10 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* In a tick row the whole row tints, not just its question */
 :root .check-acc [data-slot="accordion-trigger"]::before { content: none; }
+/* Run 24: the focus ring is that same rounded shape (2px inside the row's height, 12px out to the sides), in the
+   focus colour, so it never cuts into the line below an open row the way a square outline 2px outside did */
+:root [data-slot="accordion-trigger"]:focus-visible { outline-color: transparent; }
+:root [data-slot="accordion-trigger"]:focus-visible::before { content: ""; opacity: 1 !important; /* over polish.css hiding an open row's tint */ background: none; box-shadow: inset 0 0 0 2px var(--input-focus); }
 @media (hover: hover) {
   :root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):hover::before { opacity: 1; }
   /* The tint is the hover now: drop the underline these rows used to show */
