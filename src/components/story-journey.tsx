@@ -2,6 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useSta
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
+import { ART } from "@/lib/art"
+import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { cn } from "@/lib/utils"
 import { readFlying } from "@/lib/journey"
@@ -13,6 +15,47 @@ import { JourneyLegend, usePlaceName } from "@/components/journey-mini"
 import { JourneyFlat } from "@/components/journey-flat"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
+import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Lettering } from "@/components/lettering"
+
+/** Run 24: what's written on a print's bottom border, lowercase and casual: the year and the place's own name
+ *  ("Kansai Gaidai, Hirakata" → "2017 · hirakata", "Australia (Brisbane)" → "2022 · brisbane") */
+export function printNote(c: Pick<Chapter, "year" | "place">) {
+  const place = c.place ? (/\(([^)]+)\)/.exec(c.place)?.[1] ?? c.place.split(",").pop()!).trim().toLowerCase() : ""
+  return [c.year, place].filter(Boolean).join(" · ")
+}
+
+/** Their sign-off at the end of the last chapter ("Lots of love,", then "G + N") */
+const SIGNOFF = /^lots of love,?\s*\n\s*(g \+ n)\s*$/i
+
+/** A chapter's paragraphs, kept whole, with their sign-off as a signature. Their words stay English on the Japanese
+ *  site too, marked lang="en" so a screen reader switches. */
+function Paragraphs({ body }: { body: string[] }) {
+  return <>{body.map((p, k) => {
+    const sign = SIGNOFF.exec(p)
+    return sign
+      ? <p key={k} lang="en" className="story-signoff">Lots of love,<span className="voice"><Lettering word="mark">{sign[1].toUpperCase()}</Lettering></span></p>
+      : <p key={k} lang="en">{p}</p>
+  })}</>
+}
+
+/**
+ * Run 23: their chapters run to several paragraphs, more than a stop on the spread can hold. The spread shows the
+ * first paragraph (a few lines) and Keep reading opens the whole chapter as a sheet, at a calm reading measure, so
+ * nothing is cut and the spread keeps one height (nothing below it moves between stops).
+ */
+function ReadOn({ c, meta }: { c: Chapter; meta: string }) {
+  const { t } = useLang()
+  return (
+    <Sheet>
+      <SheetTrigger asChild><button type="button" className="btn-text -my-2 min-h-11 self-center" aria-label={t.story.keepReadingLabel(c.title)}>{t.story.keepReading}</button></SheetTrigger>
+      <SheetContent aria-describedby={undefined}>
+        <SheetHead><p className="text-small text-muted-foreground">{meta}</p><SheetTitle lang="en" className="heading">{c.title}</SheetTitle></SheetHead>
+        <SheetBody><div className="story-read"><Paragraphs body={c.body} /></div></SheetBody>
+      </SheetContent>
+    </Sheet>
+  )
+}
 
 const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
 // The settle: stiffness and damping per unit mass, a touch under critical, so a print lands a hair past straight and
@@ -20,7 +63,7 @@ const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matche
 const SPRING = { k: 170, c: 20 }
 
 // Three.js and the painted globe load only when the journey stop is showing
-const JourneyGlobe = lazy(() => import("@/components/journey-globe").then((m) => ({ default: m.JourneyGlobe })))
+const JourneyGlobe = lazy(() => loadGlobe().then((m) => ({ default: m.JourneyGlobe })))
 const MODE = "ng-map"
 
 /**
@@ -28,7 +71,10 @@ const MODE = "ng-map"
  * remembered on this device; no WebGL or a low-end phone starts flat). Nadia's and Griffin's lines, then the guests'
  * (one per city, never who), then this household's own when they've said. The globe only runs while this stop shows.
  */
-function JourneyMap({ active }: { active: boolean }) {
+/** Run 24: the globe's code warms one stop early, and the globe itself starts once the spring has settled on its stop,
+ *  so building it (Three.js, painting the land) never lands mid-slide. Before and after: .brief/docs/runs/2026-10-24.md */
+const loadGlobe = () => import("@/components/journey-globe")
+function JourneyMap({ active, near }: { active: boolean; near: boolean }) {
   const { t, lang } = useLang()
   const { household } = useHousehold()
   const you = readFlying(household?.token)
@@ -37,6 +83,27 @@ function JourneyMap({ active }: { active: boolean }) {
   useEffect(() => { void getFlying().then(setFlying); void getJourneys(household?.token).then(setJourneys) }, [household?.token])
   const [mode, setMode] = useState<"globe" | "flat">(() => { try { const m = localStorage.getItem(MODE); if (m === "globe" || m === "flat") return m } catch { /* fine */ } return startsFlat() ? "flat" : "globe" })
   const pick = (m: "globe" | "flat") => { setMode(m); try { localStorage.setItem(MODE, m) } catch { /* private mode */ } }
+  // One stop early, while they read: the globe's code, then its land painted in idle time (paintGlobe keeps it, so the
+  // globe mounts on a ready painting; the same look, size and countries as journey-globe.tsx asks for)
+  const { theme } = useTheme()
+  useEffect(() => {
+    if (!near || mode !== "globe" || ART.globeLand) return
+    let alive = true
+    // After this stop's own slide has settled (about 550 ms), then when the phone is idle, never mid-spring
+    const idle = (f: () => void) => window.setTimeout(() => (typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(f) : f()), still() ? 0 : 700)
+    void loadGlobe().then(() => idle(() => {
+      if (!alive) return
+      const countries = [...journeys.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
+      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(theme === "lantern" ? GLOBE_LOOK.night : GLOBE_LOOK.day, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries))
+    }))
+    return () => { alive = false }
+  }, [near, mode, theme, journeys, you])
+  const [settled, setSettled] = useState(false)
+  useEffect(() => {
+    if (!active) return setSettled(false)
+    const id = window.setTimeout(() => setSettled(true), still() ? 0 : 550)
+    return () => window.clearTimeout(id)
+  }, [active])
   const nameOf = usePlaceName()
   const name = you ? nameOf(you.name) : null
   const label = t.journey.map(name, you?.id === "jp" || you?.country === "JP" ? "Already in Japan" : undefined)
@@ -44,11 +111,13 @@ function JourneyMap({ active }: { active: boolean }) {
   const toggle = <Segmented label={pending("journey.mapMode", lang)} size="sm" className="journey-mode" value={mode} onChange={pick} items={[{ value: "globe", label: pending("journey.globe", lang) }, { value: "flat", label: pending("journey.flat", lang) }]} />
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      {/* Globe / Flat map: a small segmented control in the map's own bottom corner (run 19), remembered on this device */}
-      {mode === "globe" && active
-        ? <Suspense fallback={<div className="journey-globe">{toggle}</div>}><JourneyGlobe you={you} cities={journeys} label={label}>{toggle}</JourneyGlobe></Suspense>
-        : mode === "globe" ? <div className="journey-globe">{toggle}</div> : <JourneyFlat you={you} cities={journeys} label={label}>{toggle}</JourneyFlat>}
-      {mode === "flat" && <JourneyLegend you={Boolean(you && you.id !== "jp")} />}
+      {/* Run 24: Globe / Flat centred above the map, in a spot that never moves when you switch, remembered on this
+          device; the same key under both views */}
+      <div className="journey-mode-bar">{toggle}</div>
+      {mode === "globe" && active && settled
+        ? <Suspense fallback={<div className="journey-globe" />}><JourneyGlobe you={you} cities={journeys} label={label} /></Suspense>
+        : mode === "globe" ? <div className="journey-globe" /> : <JourneyFlat you={you} cities={journeys} label={label} />}
+      <JourneyLegend you={Boolean(you && you.id !== "jp")} />
       {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )
@@ -205,7 +274,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         {chapters.map((ch) => (
           <li key={ch.key} className="flex items-start gap-3">
             {ch.photo ? <Photo name={ch.photo} treatment="split" sizes="96px" alt="" className="story-thumb" /> : <span aria-hidden className="story-thumb" />}
-            <div className="flex min-w-0 flex-col gap-1"><p className="text-small text-muted-foreground">{ch.year}</p><p className="font-medium text-foreground">{ch.title}</p>{ch.body.map((p, k) => <p key={k}>{p}</p>)}</div>
+            <div className="story-read flex min-w-0 flex-col gap-2"><p className="text-small text-muted-foreground">{ch.year}{ch.place ? ` · ${ch.place}` : ""}</p><p lang="en" className="font-medium text-foreground">{ch.title}</p><Paragraphs body={ch.body} /></div>
           </li>
         ))}
       </ol>
@@ -217,20 +286,27 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
       {words && <div className="story-words">{words}</div>}
     </section>
   )
-  const words = (c: Chapter, n: number | null) => <>
-    <p className="text-small text-muted-foreground">{n === null ? c.year : `${t.story.page(n, chapters.length)}, ${c.year}`}{c.place ? ` · ${c.place}` : ""}</p>
-    <h2 className="font-display text-heading text-foreground">{c.title}</h2>
-    {c.body.map((p, k) => <p key={k}>{p}</p>)}
-  </>
+  // Chapters are counted without the photo-only stops between them (run 23)
+  const told = chapters.filter((c) => c.body.length)
+  const words = (c: Chapter) => {
+    const n = told.indexOf(c), meta = `${n < 0 ? c.year : `${t.story.page(n + 1, told.length)}, ${c.year}`}${c.place ? ` · ${c.place}` : ""}`
+    const more = c.body.length > 1 || (c.body[0]?.length ?? 0) > 220
+    return <>
+      <p className="text-small text-muted-foreground">{meta}</p>
+      <h2 lang="en" className="font-display text-heading text-foreground">{c.title}</h2>
+      {c.body.length > 0 && <p lang="en" className={cn(more && "story-lead")}>{c.body[0]}</p>}
+      {more && <ReadOn c={c} meta={meta} />}
+    </>
+  }
   return (
     <div className="story">
       <div ref={track} className="story-track" data-own-swipe role="region" aria-roledescription="carousel" aria-label={t.story.title} tabIndex={0}
         onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(target.current + 1) } if (e.key === "ArrowLeft") { e.preventDefault(); go(target.current - 1) } }}>
         {opener && slide(0, opener, null, "opener", "story-slide-opener")}
         {stops.map((c, i) => slide(i + lead, c.photo
-          ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" />
-          : <span aria-hidden className="story-print-blank" />, words(c, i + 1), c.key))}
-        {slide(total - 1, <JourneyMap active={at === total - 1} />, ends ? words(ends, chapters.length) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
+          ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" note={printNote(c)} />
+          : <span aria-hidden className="story-print-blank" />, words(c), c.key))}
+        {slide(total - 1, <JourneyMap active={at === total - 1} near={at >= total - 2} />, ends ? words(ends) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
       </div>
 
       <div className="story-controls">

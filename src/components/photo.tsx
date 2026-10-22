@@ -17,8 +17,10 @@ export type Treatment = "full" | "print" | "split"
  * Until Nadia says photos can be public (PUBLIC_PHOTOS), the same frame shows a paper placeholder with
  * the caption, so nothing jumps when real photos arrive.
  */
-export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, vary = false, className, children, alt }: {
+export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, vary = false, className, children, alt, note }: {
   name: string; treatment: Treatment; alt?: string; sizes?: string; priority?: boolean; wide?: boolean; vary?: boolean; className?: string; children?: ReactNode
+  /** Run 24: a few words written on a print's bottom border ("2017 · hirakata"); decorative, the alt says the rest */
+  note?: string
 }) {
   const { t, lang } = useLang()
   const p = PHOTOS[name]
@@ -76,7 +78,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
     return (
       <figure className={cn("photo-print", className)} style={varied ? ({ "--tilt": varied.tilt, "--lean": varied.lean, "--tape-w": varied.tapeWidth, "--tape-x": varied.tapeAt, "--tape-turn": varied.tapeTurn, "--edge": varied.edge } as React.CSSProperties) : undefined} data-frame={varied ? (varied.ratio === "4 / 3" ? "landscape" : "portrait") : undefined} data-tape={varied?.tape ?? undefined}>
         {frame}
-        {words.caption && <figcaption className="mt-2 text-small text-muted-foreground">{words.caption}</figcaption>}
+        {note ? <span aria-hidden className="print-note">{note}</span> : words.caption && <figcaption className="mt-2 text-small text-muted-foreground">{words.caption}</figcaption>}
       </figure>
     )
   }

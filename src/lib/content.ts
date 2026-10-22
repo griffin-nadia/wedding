@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { config } from "@/lib/config"
+import { readToken } from "@/lib/household"
 
 /** A story stop. place, photo and at (a spot on the map's 400 × 320 viewBox) come from the planner for the crew preview. */
 export type Chapter = { key: string; title: string; year: string; body: string[]; place?: string; photo?: string; at?: [number, number] }
@@ -17,7 +18,8 @@ export async function getContent(): Promise<SiteContent> {
   const empty: SiteContent = { story: [], mode: "invite" }
   if (!config.apiUrl) return empty
   try {
-    const res = await fetch(`${config.apiUrl}?action=content`)
+    // Run 23: the story is only for a real link, so the request carries this device's link
+    const res = await fetch(`${config.apiUrl}?action=content&token=${encodeURIComponent(readToken())}`)
     const d = await res.json()
     if (!d.ok) return empty
     cached = { story: Array.isArray(d.story) ? d.story : [], mode: ["invite", "week-of", "keepsake"].includes(d.mode) ? d.mode : "invite", contactDay: typeof d.contactDay === "string" ? d.contactDay : undefined }

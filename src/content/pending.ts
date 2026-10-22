@@ -192,6 +192,13 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.gifts.a", ja: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
   { key: "qa.contact", ja: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！" },
   { key: "day.arrival", ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします" },
+  { key: "story.keepReading", ja: "続きを読む" },
+  { key: "photos.kid-griffin-1998.alt", ja: "1998年の学校写真の幼いグリフィン。赤いTシャツでほほえんでいる" },
+  { key: "photos.kid-nadia-home.alt", ja: "家でにっこり笑う幼いナディア。髪をクリップで留めた二つ結びに、クリスマスツリーのTシャツ" },
+  { key: "journey.victoria", ja: "ビクトリア" },
+  { key: "journey.zoomIn", ja: "拡大" },
+  { key: "journey.zoomOut", ja: "縮小" },
+  { key: "journey.households", ja: "世帯" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]
 

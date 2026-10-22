@@ -1094,6 +1094,10 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* In a tick row the whole row tints, not just its question */
 :root .check-acc [data-slot="accordion-trigger"]::before { content: none; }
+/* Run 24: the focus ring is that same rounded shape (2px inside the row's height, 12px out to the sides), in the
+   focus colour, so it never cuts into the line below an open row the way a square outline 2px outside did */
+:root [data-slot="accordion-trigger"]:focus-visible { outline-color: transparent; }
+:root [data-slot="accordion-trigger"]:focus-visible::before { content: ""; opacity: 1 !important; /* over polish.css hiding an open row's tint */ background: none; box-shadow: inset 0 0 0 2px var(--input-focus); }
 @media (hover: hover) {
   :root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):hover::before { opacity: 1; }
   /* The tint is the hover now: drop the underline these rows used to show */
@@ -1234,7 +1238,34 @@ svg.lucide { stroke-width: 1.5; }
 
 
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
-.story-kids { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: var(--space-4); align-items: start; padding: var(--space-2); } /* room for the tilted corners */
+/* The kid opener (run 24): three instant prints in a small pile that fills the spread's media box. Each print is the
+   story's instant print (4:5) at about 1.05 × --print-h tall; positions in % of the pile so it scales */
+.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 1.9)); height: calc(var(--stop-h) - var(--space-2)); }
+.story-slide-opener .story-media { width: 100%; } /* the pile's prints are placed in it, so it can't size to them */
+.story-kid { position: absolute; }
+.story-kid .story-print { --print-h: calc(var(--stop-h) * 0.72); }
+.story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
+.story-kid-behind { left: 0; top: 14%; z-index: 1; }
+.story-kid-behind .story-print { --tilt: -7deg; --print-h: calc(var(--stop-h) * 0.6); }
+.story-kid-him { left: 16%; top: 2%; z-index: 2; }
+.story-kid-him .story-print { --tilt: 4deg; }
+.story-kid-her { right: 0; top: 9%; z-index: 3; }
+.story-kid-her .story-print { --tilt: -5deg; }
+/* Phones: the pile staggers down the stop's full height (his top left, hers lower right over his corner, taped there,
+   his first day tucked under his, peeking out at the bottom left), so both faces stay clear and there's no empty band */
+@media (max-width: 767px) {
+  .story-slide-opener .story-media { height: calc(var(--stop-h) * 1.45); }
+  .story-kids { height: 100%; }
+  .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.66); }
+  .story-kid-behind .story-print { --print-h: calc(var(--stop-h) * 0.52); }
+  .story-kid-him { left: 6%; top: 0; }
+  .story-kid-her { right: 6%; top: 31%; }
+  .story-kid-behind { left: 0; top: 40%; z-index: 1; }
+  .story-kids-tape { left: 37%; top: 29%; width: 24%; rotate: -34deg; }
+}
+/* Tape across where hers overlaps his */
+.story-kids-tape { position: absolute; z-index: 4; left: 52%; top: 10%; width: 22%; height: 22px; rotate: 58deg; opacity: 0.82; background: color-mix(in oklab, var(--brand-sage) 70%, white); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent); mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent); }
 
 /* Their picks: compact rows, the whole row is the link */
 .stay-pick { min-height: 48px; padding-block: var(--space-2); }
@@ -1277,6 +1308,15 @@ svg.lucide { stroke-width: 1.5; }
 .story-slide { --print-h: min(26svh, 260px); --caption-h: 2.75rem; --stop-h: calc(var(--print-h) + var(--caption-h) + 2 * var(--space-2)); grid-area: 1 / 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: var(--space-4); overflow: hidden; padding-block: var(--space-1); text-align: center; }
 .story-media { flex: none; display: grid; place-items: center; max-width: 100%; height: var(--stop-h); }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
+/* Run 23: a chapter's first paragraph on the spread, a few lines with a soft end, then Keep reading for the rest */
+.story-lead { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: pretty; }
+/* Laptops under 960 tall: three lines, so the stop with their words still fits the frame (1440 × 900) */
+@media (min-width: 1024px) and (max-height: 960px) { .story-lead { -webkit-line-clamp: 3; line-clamp: 3; } }
+/* The whole chapter (the Keep reading sheet and the list): a calm reading measure, paragraphs whole, their sign-off
+   as a signature */
+.story-read { display: flex; flex-direction: column; gap: var(--space-4); max-width: 65ch; text-wrap: pretty; }
+.story-signoff { display: flex; flex-direction: column; gap: var(--space-1); margin-top: var(--space-2); }
+.story-signoff .voice { font-size: 1.5em; color: var(--foreground); }
 /* Every photo stop's print sits on the same line in the same-sized box, so its caption lands in the same spot on
    every stop, right under the photo (18f): a landscape print is shorter, so it sits low in the box, not centred */
 .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { place-items: end center; }
@@ -1288,16 +1328,16 @@ svg.lucide { stroke-width: 1.5; }
 .story-print > div { height: var(--print-h); width: auto; }
 .story-print[data-frame="landscape"] > div { width: var(--print-h); height: auto; }
 .story-print-blank { display: block; width: calc(var(--print-h) * 0.75); height: var(--print-h); margin: var(--space-2); border: var(--space-2) solid var(--brand-paper-bright); border-bottom-width: var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); box-shadow: var(--elevation-paper); transform: rotate(-1deg); }
-.story-slide .story-kids .photo-print > div { height: calc(var(--print-h) * 1.1); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
+
 /* The journey map, once, as the last stop */
 /* Its lines wait until the stop is showing (no drawing off screen, and they draw in as you arrive) */
 .story-slide[inert] .journey, .story-slide[inert] .journey * { animation-play-state: paused !important; }
 .story-slide-map .story-media { width: 100%; max-width: 360px; }
 /* The map fits the same box: the Globe / Flat switch (about 56px with its gap) and the map under it */
 .story-slide-map .journey-mini { max-height: calc(var(--stop-h) - 56px); }
-.story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 56px)); }
+.story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 84px)); } /* room for the switch above and the key under */
 /* The flat map in the same box (run 19 globe: its height token) */
-.story-slide-map { --flat-h: calc(var(--stop-h) - 56px); }
+.story-slide-map { --flat-h: calc(var(--stop-h) - 84px); }
 /* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */
 .letter[data-page="story"] .letter-body { flex: 1 0 auto; }
 .letter[data-page="story"] .story { flex: 1 0 auto; justify-content: center; }
@@ -1435,12 +1475,33 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-slip .hanko { --hanko-paper: var(--brand-paper-bright); }
 .omikuji-seal { position: absolute; right: var(--space-3); bottom: var(--space-3); opacity: 0.9; transform: rotate(6deg); }
 
-/* Our story's prints, soft (final run): a thin white border, a layered shadow (a contact line, a short soft one, a long
-   faint one), the seeded tilt, a faint grain on the print, and a strip of washi tape across the top in one of three
-   colours, its ends torn; each print its own tape length, place and angle and its own edge width, about one in four
-   with no tape (print-frame.ts). Calm: low contrast, nothing that moves. The lab has tape, photo corners and plain. */
-.story-print { position: relative; padding: var(--edge, 6px) var(--edge, 6px) calc(var(--edge, 6px) + 4px); box-shadow: 0 0 0 0.5px rgb(var(--tint-shadow) / 0.16), 0 1px 2px rgb(var(--tint-shadow) / 0.14), 0 10px 22px -12px rgb(var(--tint-shadow) / 0.4), 0 28px 44px -30px rgb(var(--tint-shadow) / 0.34); }
-.story-print::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0.06; background-image: radial-gradient(rgb(var(--tint-shadow)) 0.5px, transparent 0.6px); background-size: 3px 3px; }
+/* Our story's prints as instant prints (run 24, after the Framer "Polaroid Footer" look; our own build). A 4:5 photo
+   (print-frame.ts) on a border like a real instant print: about 5% at the top and sides and 18% at the bottom (padding
+   % is of the width), the card's paper slightly warmed with a faint grain, 2px corners. The photo is printed on, not
+   pasted: a hairline inner shadow and a very faint gloss on the photo only. A few words on the bottom border
+   (.print-note). The hand-placed tilt, a tight contact shadow and a soft lifted one (warmer in Lantern), and washi tape
+   on some prints, never all. Hover on laptops lifts it 18px and straightens it a little on a soft spring; a tap on a
+   phone lifts it briefly; reduced motion brightens it a touch instead. */
+.story-print { --print-paper: color-mix(in oklab, var(--brand-paper-bright) 88%, var(--brand-kinari)); position: relative; display: flex; flex-direction: column; align-items: stretch;
+  /* --pw: the photo's width (a 4:5 photo --print-h tall); the border from it: about 5% of the print at the top and
+     sides, 18% at the bottom */
+  --pw: calc(var(--print-h, 260px) * 0.8); padding: calc(var(--pw) * 0.056) calc(var(--pw) * 0.056) calc(var(--pw) * 0.22); border-radius: 2px; background: var(--print-paper);
+  transform: rotate(var(--tilt, -3deg)); transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1), filter var(--duration-fast) var(--ease-paper);
+  box-shadow: 0 0.5px 1px rgb(var(--tint-shadow) / 0.22), 0 1px 2px rgb(var(--tint-shadow) / 0.12), 0 14px 26px -14px rgb(var(--tint-shadow) / 0.42); }
+[data-theme="lantern"] .story-print { box-shadow: 0 0.5px 1px rgb(20 8 2 / 0.5), 0 1px 3px rgb(60 24 6 / 0.35), 0 16px 30px -14px rgb(90 40 10 / 0.55); }
+.story-print > div { border-radius: 1px; overflow: hidden; position: relative; }
+/* Printed on: a hairline inner shadow round the photo and a faint gloss across it (the photo only, never the border) */
+.story-print > div::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08), inset 0 1px 3px rgb(0 0 0 / 0.14);
+  background: linear-gradient(155deg, rgb(255 255 255 / 0.1), transparent 38%); }
+/* The paper's grain, on the border */
+.story-print::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0.07; background-image: radial-gradient(rgb(var(--tint-shadow)) 0.5px, transparent 0.6px); background-size: 3px 3px; }
+.print-note { position: absolute; left: 7%; right: 7%; bottom: calc(var(--pw) * 0.06); font: 400 clamp(0.75rem, calc(var(--pw) * 0.075), 1.05rem) / 1.2 var(--font-display); letter-spacing: 0.02em; color: color-mix(in oklab, var(--brand-ink-deep) 72%, transparent); transform: rotate(-0.8deg) skewX(-6deg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .story-print:hover { transform: translateY(-18px) scale(1.04) rotate(calc(var(--tilt, -3deg) * 0.6)); transition-duration: 350ms; transition-timing-function: cubic-bezier(0.34, 1.35, 0.64, 1);
+    box-shadow: 0 0.5px 1px rgb(var(--tint-shadow) / 0.18), 0 6px 10px -4px rgb(var(--tint-shadow) / 0.16), 0 34px 44px -20px rgb(var(--tint-shadow) / 0.4); }
+}
+@media (pointer: coarse) and (prefers-reduced-motion: no-preference) { .story-print:active { transform: translateY(-8px) scale(1.02) rotate(calc(var(--tilt, -3deg) * 0.8)); transition-duration: 200ms; } }
+@media (prefers-reduced-motion: reduce) { .story-print { transition: filter var(--duration-fast) linear; } .story-print:hover { filter: brightness(1.04); } }
 .story-print[data-tape]::before { content: ""; position: absolute; z-index: 2; top: -9px; left: var(--tape-x, 50%); width: var(--tape-w, 38%); height: 20px; translate: -50% 0; rotate: var(--tape-turn, calc(var(--lean, 1) * 3deg)); opacity: 0.82;
   background: var(--tape, color-mix(in oklab, var(--brand-sage) 70%, white)); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
   -webkit-mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent), repeating-linear-gradient(0deg, #000 0 2px, rgb(0 0 0 / 0.6) 2px 3px);
@@ -1472,7 +1533,22 @@ svg.lucide { stroke-width: 1.5; }
 .globe-pin[data-back="true"] .globe-pin-body { opacity: 0.5; }
 @media (prefers-reduced-motion: reduce) { .globe-pin-body { transition: none; } }
 /* The map and its Globe / Flat control in the bottom corner, over the map's empty corner, never on top of it */
-.segmented.journey-mode { position: absolute; right: var(--space-1); bottom: var(--space-1); display: inline-flex; margin: 0; gap: 0; padding: 2px; background: color-mix(in oklab, var(--surface-raised) 90%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+/* Run 24: Globe / Flat centred above the map, the same place in both views */
+.journey-mode-bar { display: flex; justify-content: center; width: 100%; min-height: 34px; }
+.segmented.journey-mode { position: relative; display: inline-flex; margin: 0; gap: 0; padding: 2px; background: color-mix(in oklab, var(--surface-raised) 90%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+/* The globe's always-on names (Brisbane, Victoria), a guest city's name on hover or tap, and + and − */
+.globe-place, .globe-tip { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; white-space: nowrap; font: 500 11px / 1.2 var(--font-label); color: var(--ink); text-shadow: 0 0 3px var(--letter-bg), 0 0 6px var(--letter-bg); translate: 6px -50%; transition: opacity var(--duration-fast) linear; }
+.globe-place[data-back="true"] { opacity: 0.25; }
+.globe-tip { padding: 2px var(--space-2); border-radius: var(--radius-control); background: var(--letter-bg); box-shadow: 0 1px 3px rgb(var(--tint-shadow) / 0.25); text-shadow: none; translate: -50% calc(-100% - 8px); }
+.globe-zoom { position: absolute; right: -44px; bottom: 0; z-index: 3; display: flex; flex-direction: column; gap: 2px; }
+.globe-zoom .utility-btn { width: 32px; height: 32px; font: 500 18px / 1 var(--font-label); background: color-mix(in oklab, var(--surface-raised) 88%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+.globe-zoom .utility-btn::after { content: ""; position: absolute; inset: -6px; } /* a 44px target */
+.globe-zoom .utility-btn { position: relative; }
+/* A bundle of one country's lines: one, a little thicker */
+.journey-guest-bundle { stroke-width: 2.4; opacity: 0.75; }
+.journey-flat-hit { cursor: default; }
+.journey-flat-dot { fill: var(--ink-soft); opacity: 0.6; }
+.journey-flat-tip { paint-order: stroke; stroke: var(--letter-bg); stroke-width: 3px; }
 .journey-mode .segmented-mark { top: 2px; bottom: 2px; }
 .segmented.journey-mode .segmented-item { min-height: 28px; padding-inline: var(--space-2); gap: 0; font-size: 12px; }
 .journey-mode .segmented-item::after, .journey-mode .segmented-tick { display: none; }
@@ -1537,3 +1613,27 @@ svg.lucide { stroke-width: 1.5; }
 .vmap-list summary::-webkit-details-marker { display: none; }
 /* The Sodoh in Nadia's lettering (run 22): her mark at about the address block's width, filled with the ink */
 .venue-mark { display: block; width: min(240px, 100%); aspect-ratio: 2.751; background: var(--ink); -webkit-mask: var(--venue-mark) left center / contain no-repeat; mask: var(--venue-mark) left center / contain no-repeat; }
+
+/* Run 23: the bar and the dock after the envelope (layout.tsx, navIn / navOut). In: the bar's paper, the mark, the nav
+   and RSVP come down 6px as they fade in, together; the dock (phones) comes up 6px, 80 ms later. Out, the reverse,
+   faster, before the seal starts. The bar's switches stay put (they show over the photo while it's sealed). */
+@keyframes nav-from-top { from { opacity: 0; translate: 0 -6px; } }
+@keyframes nav-from-bottom { from { opacity: 0; translate: 0 6px; } }
+@keyframes nav-to-top { to { opacity: 0; translate: 0 -6px; } }
+@keyframes nav-to-bottom { to { opacity: 0; translate: 0 6px; } }
+@keyframes nav-fade-in { from { opacity: 0; } }
+@keyframes nav-fade-out { to { opacity: 0; } }
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-nav-in] :is(.site-mark, .site-rsvp), :root[data-nav-in] .site-bar::before, :root[data-nav-in] .site-bar::after { animation: nav-from-top 350ms var(--ease-paper) both; }
+  :root[data-nav-in] .site-nav { animation: nav-from-top 350ms var(--ease-paper) both; }
+  :root[data-nav-out] :is(.site-mark, .site-rsvp), :root[data-nav-out] .site-bar::before, :root[data-nav-out] .site-bar::after { animation: nav-to-top 200ms var(--ease-paper) both; }
+  :root[data-nav-out] .site-nav { animation: nav-to-top 200ms var(--ease-paper) both; }
+  @media (max-width: 767px) {
+    :root[data-nav-in] .site-nav { animation: nav-from-bottom 350ms var(--ease-paper) 80ms both; }
+    :root[data-nav-out] .site-nav { animation: nav-to-bottom 200ms var(--ease-paper) 80ms both; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-nav-in] :is(.site-mark, .site-rsvp, .site-nav), :root[data-nav-in] .site-bar::before, :root[data-nav-in] .site-bar::after { animation: nav-fade-in 150ms linear both; }
+  :root[data-nav-out] :is(.site-mark, .site-rsvp, .site-nav), :root[data-nav-out] .site-bar::before, :root[data-nav-out] .site-bar::after { animation: nav-fade-out 150ms linear both; }
+}
