@@ -1488,3 +1488,24 @@ svg.lucide { stroke-width: 1.5; }
 .preview-banner p { margin: 0; }
 /* Phones: full width just above the dock, wrapping onto two lines if it needs to */
 @media (max-width: 767px) { .preview-banner { top: auto; bottom: calc(72px + env(safe-area-inset-bottom)); left: 12px; right: 12px; translate: none; flex-wrap: wrap; column-gap: var(--space-3); row-gap: 0; padding: var(--space-2) var(--space-3) 0; border-radius: var(--radius-control); } }
+/* Nadia's venue map (run 22). Her art at its own ratio; the route, the ring and the buttons over it in % so they scale
+   with it. Light: on the card's cream, no frame (the art is flattened onto that cream). Lantern: a cream print framed
+   with a soft shadow and rounded corners (her dark ink can't sit on walnut, and no filters on her art). */
+.vmap { position: relative; overflow: hidden; aspect-ratio: 1800 / 1500; border-radius: var(--radius-control); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.vmap[data-zoomed] { touch-action: none; }
+[data-theme="lantern"] .vmap { border: 10px solid var(--brand-shiro-kinari); border-radius: 14px; box-shadow: var(--elevation-paper); }
+.vmap-art { position: absolute; inset: 0; transform-origin: 0 0; }
+.vmap-art img { display: block; width: 100%; height: 100%; }
+.vmap-route { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.vmap-route path { fill: none; stroke: #a43108; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 18 18; opacity: 0.6; animation: vmap-march 1.4s linear infinite; }
+@keyframes vmap-march { to { stroke-dashoffset: -36; } }
+/* Each place: a round button over her dot. 28px, as several dots sit close together; the list under the map has every
+   place as a full-size button too */
+.vmap-spot { position: absolute; width: 28px; height: 28px; translate: -50% -50%; border-radius: 50%; outline: 2px solid transparent; outline-offset: 2px; }
+.vmap-spot:focus-visible { outline-color: var(--input-focus); }
+.vmap-spot.is-on::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; box-shadow: 0 0 0 2.5px rgb(164 49 8 / 0.75), 0 0 0 9px rgb(164 49 8 / 0.16); animation: vmap-ring 1.8s var(--ease-paper) infinite alternate; }
+@keyframes vmap-ring { from { scale: 0.92; } to { scale: 1.08; } }
+@media (prefers-reduced-motion: reduce) { .vmap-route path, .vmap-spot.is-on::after { animation: none; } }
+@media (hover: hover) and (pointer: fine) { .vmap-hint { display: none; } }
+.vmap-list summary { cursor: pointer; list-style: none; }
+.vmap-list summary::-webkit-details-marker { display: none; }

@@ -232,6 +232,37 @@ export const en = {
       { id: "venue", name: "The Sodoh", ja: "ザ・ソウドウ", body: "The venue: 366 Yasaka Kamimachi, Higashiyama. Ceremony in the garden at 11:00 am.", maps: "https://www.google.com/maps/dir/?api=1&destination=The+Sodoh+Higashiyama+Kyoto" },
     ],
   },
+  // Nadia's painted map (run 22, behind config.venueMap). Each place's dot on her art, as % of its width and height
+  // (measured on venue-map-v2, .brief/tools/r22-hotspots.mjs), and a short note. The labels on her map are English
+  // only, so the list under it carries the Japanese too.
+  venueMap: {
+    title: "Around the venue",
+    intro: "Tap a place to see where it is and how to get there.",
+    alt: "Nadia's painted map of Higashiyama, Kyoto. Kyoto Station is at the bottom left on the JR line. The Kamo River and the Keihan line run north past Tofukuji, Shichijo, Kiyomizu Gojo, Gion Shijo and Sanjo stations, with Kawaramachi Shopping Street to the west. To the east are Yasaka Shrine, the Yasaka Pagoda, The Sodoh and, up the hill, Kiyomizu-dera.",
+    listTitle: "The places on the map",
+    full: "View the full map",
+    fullOpens: "opens the map on its own",
+    routes: { label: "From Kyoto Station", taxi: "By taxi, about 15 minutes", train: "By train, then a walk" },
+    routeNotes: {
+      taxi: "From the Hachijo exit taxi rank: free in an MK Taxi with a ticket from the venue.",
+      train: "JR Nara line one stop to Tofukuji, the Keihan line north to Kiyomizu Gojo, then about 20 minutes on foot, uphill.",
+    },
+    zoomHint: "Pinch to zoom",
+    directions: "Directions in Google Maps",
+    places: [
+      { id: "venue", name: "The Sodoh", ja: "ザ・ソウドウ", at: [69.7, 44.6], body: "The venue: 366 Yasaka Kamimachi, Higashiyama. Ceremony in the garden at 11:00 am.", maps: "https://www.google.com/maps/dir/?api=1&destination=The+Sodoh+Higashiyama+Kyoto" },
+      { id: "station", name: "Kyoto Station", ja: "京都駅", at: [27.1, 77.4], body: "Where the train from the airport gets in. Taxis wait at the Hachijo exit: about 15 minutes to the venue, free in an MK Taxi with a ticket from the venue.", maps: "https://www.google.com/maps/dir/?api=1&origin=Kyoto+Station&destination=The+Sodoh+Higashiyama+Kyoto" },
+      { id: "gojo", name: "Kiyomizu Gojo Station", ja: "清水五条駅", at: [48.1, 46.3], body: "On the Keihan line. The venue is about 20 minutes on foot from here, uphill.", maps: "https://www.google.com/maps/dir/?api=1&origin=Kiyomizu-Gojo+Station&destination=The+Sodoh+Higashiyama+Kyoto&travelmode=walking" },
+      { id: "gion", name: "Gion Shijo Station", ja: "祇園四条駅", at: [55.8, 20.7], body: "On the Keihan line, at the bottom of Shijo-dori. About 10 minutes on foot to the venue along old stone lanes, with a few steps.", maps: "https://www.google.com/maps/dir/?api=1&origin=Gion-Shijo+Station&destination=The+Sodoh+Higashiyama+Kyoto&travelmode=walking" },
+      { id: "sanjo", name: "Sanjo Station", ja: "三条駅", at: [55.8, 6.9], body: "On the Keihan line, the top of the map: close to Kawaramachi's shops and restaurants.", maps: "https://www.google.com/maps/search/?api=1&query=Sanjo+Station+Kyoto" },
+      { id: "shichijo", name: "Shichijo Station", ja: "七条駅", at: [48.1, 64.2], body: "On the Keihan line, one stop south of Kiyomizu Gojo.", maps: "https://www.google.com/maps/search/?api=1&query=Shichijo+Station+Kyoto" },
+      { id: "tofukuji", name: "Tofukuji Station", ja: "東福寺駅", at: [50.8, 90.3], body: "Where the JR Nara line from Kyoto Station meets the Keihan line. Tofuku-ji temple, known for its autumn maples, is a short walk away.", maps: "https://www.google.com/maps/search/?api=1&query=Tofukuji+Station+Kyoto" },
+      { id: "kawaramachi", name: "Kawaramachi Shopping Street", ja: "河原町", at: [50, 13.1], body: "Kyoto's main shopping street, with covered arcades running off it. Good for food and a wander.", maps: "https://www.google.com/maps/search/?api=1&query=Kawaramachi+Kyoto" },
+      { id: "shrine", name: "Yasaka Shrine", ja: "八坂神社", at: [68, 25.2], body: "At the top of Shijo-dori, open day and night. About 10 minutes on foot from the venue.", maps: "https://www.google.com/maps/search/?api=1&query=Yasaka+Shrine+Kyoto" },
+      { id: "pagoda", name: "Yasaka Pagoda", ja: "八坂の塔", at: [66.9, 49.9], body: "The five-storey pagoda on the lane by the venue. If you can see it, you're nearly there.", maps: "https://www.google.com/maps/search/?api=1&query=Yasaka+Pagoda+Kyoto" },
+      { id: "kiyomizu", name: "Kiyomizu-dera", ja: "清水寺", at: [85.7, 64.7], body: "The temple on the hill above the venue, with its big wooden stage over the trees.", maps: "https://www.google.com/maps/search/?api=1&query=Kiyomizu-dera+Kyoto" },
+    ] as { id: string; name: string; ja: string; at: [number, number]; body: string; maps: string }[],
+  },
   getting: {
     title: "Getting there",
     ticked: (n: number, of: number) => `${n} of ${of} ticked off`,

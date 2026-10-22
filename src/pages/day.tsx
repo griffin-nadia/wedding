@@ -6,6 +6,7 @@ import { DATES } from "@/lib/wedding-dates"
 import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { pending } from "@/content/pending"
+import { VenueMap, venueMapOn } from "@/components/venue-map"
 import { jstLabel, kyotoNow } from "@/lib/time"
 import { PageHeader } from "@/components/ui/page-header"
 
@@ -72,6 +73,8 @@ function Details() {
         {t.day.addressLines.map((l) => <p key={l}>{l}</p>)}
       </div>
       <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{t.day.howToGetThere}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
+      {/* Nadia's map under How to get there once it's switched on (run 22, config.venueMap) */}
+      {venueMapOn() && <VenueMap />}
     </div>
   )
 }
