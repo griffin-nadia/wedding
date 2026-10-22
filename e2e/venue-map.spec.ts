@@ -42,3 +42,20 @@ test("every place's ring is centred on its spot in the art", async ({ page }) =>
     for (const o of off) expect(o, `${w}: a ring off its spot`).toBeLessThanOrEqual(2)
   }
 })
+
+// Run 25: the chosen place's chip shows on phones too, and no chip runs off the map at 390 or 430
+test("the chosen place's chip shows on phones and stays on the map", async ({ page }, info) => {
+  test.skip(info.project.name !== "phone", "phones")
+  for (const w of [390, 430]) {
+    await page.setViewportSize({ width: w, height: 900 })
+    await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+    await page.goto("travel?h=sample&preview")
+    await page.getByRole("button", { name: /Around the venue/ }).first().click()
+    const pins = page.locator(".vmap-pin")
+    for (let i = 0; i < await pins.count(); i++) {
+      await pins.nth(i).click({ force: true })
+      const r = await page.evaluate(() => { const c = document.querySelector(".vmap-chip")!.getBoundingClientRect(), m = document.querySelector(".vmap")!.getBoundingClientRect(); return { shown: c.width > 0, inside: c.left >= m.left && c.right <= m.right && c.top >= m.top && c.bottom <= m.bottom } })
+      expect(r, `${w}: place ${i}`).toEqual({ shown: true, inside: true })
+    }
+  }
+})
