@@ -32,8 +32,8 @@ export const ART = {
     widths: [410, 820], ratio: 1.3948,
   },
   /**
-   * Background music (the speaker beside the sun): the file and its credit together. The credit is said in the colophon
-   * (end of FAQs and the laptop seal, run 25); artist is what a phone's Now Playing shows under "Griffin & Nadia". To swap the
+   * Background music (the speaker beside the sun): the file and its credit together. The credit is said once, in the
+   * last FAQ ("Who made this site?"); artist is what a phone's Now Playing shows under "Griffin & Nadia". To swap the
    * song: replace public/audio/song.mp3 and this entry. See README → Music.
    */
   music: {

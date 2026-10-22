@@ -11,7 +11,7 @@ export const config = {
   rsvpDue: DATES.rsvpBy,
   // Changes lock (before final numbers)
   changesLock: DATES.changesLock,
-  // The colophon's two links (run 25). Empty shows the words without a link. Jehan's is to be his LinkedIn
-  // (https://au.linkedin.com/in/jehanbaguley) once he confirms; music is the song's page (Spotify), once he sends it.
-  links: { jehan: "", music: "" },
+  // Credit links (run 25): the laptop seal's "Site by Jehan Baguley" goes to Jehan's LinkedIn. music is for the song's
+  // page (Spotify) once Jehan sends it; nothing uses it until then.
+  links: { jehan: "https://au.linkedin.com/in/jehanbaguley", music: "" },
 }

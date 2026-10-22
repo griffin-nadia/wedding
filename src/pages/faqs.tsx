@@ -6,11 +6,10 @@ import { useContent } from "@/lib/content"
 import { useEffect, useState } from "react"
 import { useLocation } from "react-router-dom"
 import { AskUs } from "@/components/ask-us"
-import { Colophon } from "@/components/colophon"
 import { getQuestions, type Asked } from "@/lib/api"
 
 /** FAQs: one numbered accordion (numbers help guests point to a question when they message). Answers are body.
- * Who to contact on the day appears once Griffin and Nadia fill contact_day in the Content tab. The colophon ends the page. */
+ * Who to contact on the day appears once Griffin and Nadia fill contact_day in the Content tab. */
 export function FaqsPage() {
   const { t, lang } = useLang()
   const { contactDay } = useContent()
@@ -53,8 +52,6 @@ export function FaqsPage() {
         <AskUs><button type="button" className="btn-text inline-flex min-h-11 items-center self-start">{pending("ask.button", lang)}</button></AskUs>
       </div>
       <p className="text-small">{contactDay ? `${t.qa.onTheDay} ${contactDay}` : pending("faqs.contactDay", lang)}</p>
-      {/* Who made the site (run 25, replacing the "Who made this site?" FAQ) */}
-      <Colophon />
     </>
   )
 }
