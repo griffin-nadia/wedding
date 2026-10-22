@@ -568,6 +568,10 @@
 .site-bar { position: fixed; z-index: 40; top: 0; inset-inline: 0; height: var(--bar-h); display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); padding: env(safe-area-inset-top) max(var(--space-2), env(safe-area-inset-right)) 0 max(var(--space-4), env(safe-area-inset-left)); }
 /* 18e: the bar, the dock and the card are one paper (the card's colour token), with no glass and no change on scroll */
 .site-bar::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--letter-bg); }
+/* Run 25: the bar and the dock get the card's edge where they meet the page (its 1px line at 60% and the 1px light
+   inset), so bar, card and dock read as the same paper */
+.site-bar::before { border-bottom: 1px solid color-mix(in oklab, var(--line-hairline) 60%, transparent); box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.6); }
+.site-nav { border-top-color: color-mix(in oklab, var(--line-hairline) 60%, transparent) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6); }
 .site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
