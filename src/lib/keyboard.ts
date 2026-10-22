@@ -60,6 +60,9 @@ export function useKeyboardAvoid() {
         const card = document.querySelector<HTMLElement>(".letter:not(.sheet)")
         if (card) card.style.height = typing ? `${card.offsetHeight}px` : ""
         root.toggleAttribute("data-typing", typing)
+        // Run 25: the reply sheet changes size as typing starts or stops (it fits its content otherwise), so the lift
+        // is measured again once that has laid out
+        requestAnimationFrame(apply)
       }
       reveal()
     }
