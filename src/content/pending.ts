@@ -90,19 +90,6 @@ export const PENDING = {
     en: "Or type your city",
     ja: "または都市名を入力",
   },
-  // The journey stop's toggle (final run)
-  "journey.mapMode": {
-    en: "Map",
-    ja: "地図",
-  },
-  "journey.globe": {
-    en: "Globe",
-    ja: "地球儀",
-  },
-  "journey.flat": {
-    en: "Flat map",
-    ja: "平面の地図",
-  },
   // A way to actually message them where the copy says to (18e journey map): the wedding address already used on the
   // no-invite page
   "contact.emailUs": {
@@ -200,6 +187,12 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "journey.zoomIn", ja: "拡大" },
   { key: "journey.zoomOut", ja: "縮小" },
   { key: "journey.households", ja: "世帯" },
+  { key: "journey.open", ja: "全画面" },
+  { key: "journey.openLabel", ja: "地図を全画面で開く" },
+  { key: "journey.close", ja: "地図を閉じる" },
+  { key: "journey.view", ja: "地球儀か地図" },
+  { key: "journey.pin", ja: "章：" },
+  { key: "journey.pinGo", ja: "この章へ移動" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]
 

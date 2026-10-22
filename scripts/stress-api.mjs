@@ -170,17 +170,18 @@ try {
   }
 
   // Journeys at full size (final run): 99 made-up cities (under 100 guests in all) on Our story's last stop, flat map
-  // and globe: each shows and fits at 320
+  // (full screen since run 25) and globe: each shows and fits at 320
   { const cities = Array.from({ length: 99 }, (_, i) => ({ name: `Test city ${i + 1}`, country: "AU", lat: -40 + (i % 30), lon: 110 + i * 0.4, n: 1 }))
     const answer = (r, body) => (new URL(r.url()).searchParams.get("action") === "journeys" ? { ok: true, cities } : household()(r, body))
     for (const mode of ["flat", "globe"]) {
       const { b, c, page } = await open({ answer, size: { width: 320, height: 640 } })
-      await c.addInitScript((m) => localStorage.setItem("ng-map", m), mode)
       await page.goto(`${URL0}our-story?h=test6`); await page.waitForLoadState("networkidle")
       const next = page.getByRole("button", { name: /next chapter/i })
       while (await next.isEnabled()) { await next.click(); await page.waitForTimeout(150) }
       await page.waitForTimeout(1500)
-      const ok = mode === "flat" ? (await page.locator(".story-slide-map .journey-flat").isVisible()) : await page.locator(".journey-globe").isVisible()
+      // Run 25: the stop shows the globe; the flat map is in the full-screen view (Globe / Map)
+      if (mode === "flat") { await page.getByRole("button", { name: "Open the map full screen" }).click(); await page.getByRole("radio", { name: "Map", exact: true }).click(); await page.waitForTimeout(800) }
+      const ok = mode === "flat" ? (await page.getByRole("dialog").locator(".journey-flat").isVisible()) : await page.locator(".journey-globe").isVisible()
       check(`journeys: 99 cities, ${mode === "flat" ? "the flat map" : "the globe"} at 320`, ok && !(await spill(page)))
       await b.close()
     }

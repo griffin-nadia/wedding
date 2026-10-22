@@ -41,7 +41,8 @@ async function paint(colours: Colours, width: number, guestCountries: string[]):
   // Sea: a pale wash at half strength, a touch deeper towards the poles
   const sea = g.createLinearGradient(0, 0, 0, H)
   sea.addColorStop(0, colours.seaDeep); sea.addColorStop(0.5, colours.sea); sea.addColorStop(1, colours.seaDeep)
-  g.globalAlpha = 0.5; g.fillStyle = sea; g.fillRect(0, 0, W, H); g.globalAlpha = 1
+  // Run 25: a little more see-through (0.5 to 0.42, land 0.62 to 0.48), so the card's paper shows through both views
+  g.globalAlpha = 0.42; g.fillStyle = sea; g.fillRect(0, 0, W, H); g.globalAlpha = 1
   // Each country as a path, its rings broken where they cross the date line
   const X = (lon: number) => ((lon + 180) / 360) * W, Y = (lat: number) => ((90 - lat) / 180) * H
   const trace = (path: Path2D, geo: Geometry) => {
@@ -66,7 +67,7 @@ async function paint(colours: Colours, width: number, guestCountries: string[]):
   }
   // Every country a soft wash; the ones with guests (and the home four) a touch stronger
   g.fillStyle = colours.land
-  g.globalAlpha = 0.62; g.fill(all)
+  g.globalAlpha = 0.48; g.fill(all)
   g.globalAlpha = 0.2; g.fill(edges); g.fill(strong)
   // Blooms: soft, uneven patches of a slightly different wash, on the land only
   g.save(); g.clip(all)
