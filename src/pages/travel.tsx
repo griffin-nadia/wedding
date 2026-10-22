@@ -9,6 +9,7 @@ import { Chip } from "@/components/ui/checkbox-group"
 import { DriverCard } from "@/components/driver-card"
 import { Trail } from "@/components/trail"
 import { KyotoMap } from "@/components/kyoto-map"
+import { VenueMap, venueMapOn } from "@/components/venue-map"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
 import { getStayPicks } from "@/lib/api"
@@ -316,7 +317,7 @@ export function TravelPage() {
           <Disclosure label={g.onTheDayTitle} {...one}>
             <Plain value="trail" title={t.trail.label}><Trail /><p>{g.shuttleBody}</p></Plain>
             <Plain value="walk" title={g.walkingTitle}><p>{g.walkingBody}</p><Ext href={g.links.walk.href}>{g.links.walk.label}</Ext></Plain>
-            <Plain value="around" title={t.kyotoMap.title}><KyotoMap /></Plain>
+            <Plain value="around" title={t.kyotoMap.title}>{venueMapOn() ? <VenueMap /> : <KyotoMap />}</Plain>
           </Disclosure>
         </section>
     ),
