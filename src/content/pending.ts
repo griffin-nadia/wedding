@@ -200,7 +200,6 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
  * needed, and where it goes once it arrives. `npm run check:pending` lists these too. Delete a line when it lands.
  */
 export const WAITING: { key: string; what: string }[] = [
-  { key: "fortunes.confirm", what: "The 12 fortunes (src/content/en.ts FORTUNES, or the Content tab): confirmed by Griffin and Nadia, especially the six travel tips" },
   { key: "art.mapleLeaf", what: "Nadia's maple leaf on its own (it's only on the closed envelope so far), for wherever a leaf shows alone" },
   { key: "day.arrivalTime", what: "What time guests should arrive on the day (The day and the invite email; nothing says it yet)" },
   { key: "contact.dayDetails", what: "Jehan's and Noya's numbers for the day (the Content tab's contact_day replaces the FAQs line)" },
