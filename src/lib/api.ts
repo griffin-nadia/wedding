@@ -247,10 +247,10 @@ export async function getJourneys(token?: string): Promise<Journey[]> {
 /** One omikuji (run 23): Nadia's tier in English and Japanese, its category and the words */
 export type Fortune = { no: number; tier: string; tierJa: string; category: string; text: string }
 /** The fortunes from the sheet's Fortunes tab (null: use the built-in drafts). An older back end answers plain strings. */
-export async function getFortunes(): Promise<Fortune[] | null> {
+export async function getFortunes(token: string): Promise<Fortune[] | null> {
   if (!config.apiUrl) return null
   try {
-    const d = await call(`${config.apiUrl}?action=fortunes`)
+    const d = await call(`${config.apiUrl}?action=fortunes&token=${encodeURIComponent(token)}`) // only for a real link (run 23)
     if (!d.ok || !Array.isArray(d.fortunes)) return null
     return (d.fortunes as (Fortune | string)[]).map((f, i) => (typeof f === "string" ? { no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text: f } : f))
   } catch { return null }

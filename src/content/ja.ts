@@ -77,6 +77,7 @@ export const ja: DeepPartial<Content> = {
     slide: (n: number, of: number) => `${of}枚中${n}枚目`,
     kyoto: "京都", brisbane: "ブリスベン", canada: "カナダ",
     seeList: "リストで見る", seeMap: "地図で見る", next: "次へ", done: "閉じる",
+    keepReading: "続きを読む", keepReadingLabel: (title: string) => `続きを読む：${title}`,
   },
   music: { on: "音楽を流す", off: "音楽を止める" },
   journey: {
