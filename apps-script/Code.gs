@@ -95,17 +95,21 @@ const ERRORS = {
 function changeLine_() {
   return isLocked_()
     ? "We know that life happens, so if you need to make any changes after the 30th of April please contact us directly."
-    : "You can change your reply until " + longDate_(prop_("CHANGES_LOCK")) + "."
+    : "You can change your answers any time until " + fullDate_(prop_("CHANGES_LOCK")) + ", and add your travel dates once flights are booked."
 }
 
 // Invite and reminder wording. The Emails tab overrides these, so Nadia can edit without code.
-// {household}, {rsvp_by}, {lock}, {date} and {venue} are filled in when sending.
+// {household}, {rsvp_by}, {rsvp_by_full} ("15 February 2027"), {lock}, {date} and {venue} are filled in when sending.
+// The invite is their final wording (planner, Inv details, column E, 22 Oct): the body, then their link (the button),
+// then invite_after, signed "Lots of love,". Kept in the site's name order (Griffin & Nadia).
 const COPY = {
-  invite_subject: "You're invited: " + COUPLE + ", Kyoto, Fri 15 Oct 2027",
+  invite_subject: "You're invited to Kyoto, " + COUPLE + ", 15 October 2027",
   invite_heading: "You're invited",
   invite_body:
-    "Hi {household},\n\nWe're getting married in Kyoto and we'd love you to be there.\n\nYour invite page has everything: the day, travel tips and your RSVP. Please RSVP by {rsvp_by}.",
+    "Hi {household},\n\nWe're getting married in Kyoto on Friday 15 October 2027, and we'd love for you to be there.\n\nEverything's on our bespoke site with your own access link so you don't need to log in or type your details:",
   invite_button: "Open your invite",
+  invite_after: "Please let us know by {rsvp_by_full}. If your plans change, you can adjust your answers at any time.\n\nWe can't wait to see you there!",
+  invite_signoff: "Lots of love,",
   reminder_subject: "A quick reminder to RSVP: " + COUPLE,
   reminder_heading: "Can you make it?",
   reminder_body:
@@ -1942,6 +1946,7 @@ function inviteEmail_(kind, h, testNote) {
     String(s)
       .replace(/\{household\}/g, h.name)
       .replace(/\{rsvp_by\}/g, longDate_(prop_("RSVP_BY")))
+      .replace(/\{rsvp_by_full\}/g, fullDate_(prop_("RSVP_BY")))
       .replace(/\{lock\}/g, longDate_(prop_("CHANGES_LOCK")))
       .replace(/\{date\}/g, WEDDING.date)
       .replace(/\{venue\}/g, WEDDING.venue)
@@ -1951,7 +1956,9 @@ function inviteEmail_(kind, h, testNote) {
     paragraphs: fill(copy[kind + "_body"]).split(/\n\s*\n/),
     rows: [["When", WEDDING.date], ["Where", WEDDING.venue]],
     button: { label: fill(copy[kind + "_button"]), url: h.link },
+    after: copy[kind + "_after"] ? fill(copy[kind + "_after"]).split(/\n\s*\n/) : [],
     notes: ["This link is just for your household, so please don't share it."],
+    signoff: copy[kind + "_signoff"] || "",
   })
   mail.subject = fill(copy[kind + "_subject"])
   return mail
@@ -2258,18 +2265,26 @@ function buildEmail_(m) {
     html += p(m.list.title, 16, c.ink) + '<ul style="margin:0 0 18px;padding-left:20px;font:16px/1.55 ' + font + ";color:" + c.body + '">' + m.list.items.map((i) => "<li>" + esc_(i) + "</li>").join("") + "</ul>"
     text += m.list.title + ":\n" + m.list.items.map((i) => "- " + i).join("\n") + "\n\n"
   }
-  if (m.rows && m.rows.length) {
-    html += '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 20px;border-top:1px solid ' + c.line + '">' +
-      m.rows.map((r) => '<tr><td style="padding:8px 12px 8px 0;border-bottom:1px solid ' + c.line + ";font:500 16px/1.4 " + font + ";color:" + c.ink + ';vertical-align:top">' + esc_(r[0]) + '</td><td style="padding:8px 0;border-bottom:1px solid ' + c.line + ";font:16px/1.4 " + font + ";color:" + c.body + '">' + esc_(r[1]) + "</td></tr>").join("") +
-      "</table>"
-    text += m.rows.map((r) => r[0] + ": " + r[1]).join("\n") + "\n\n"
+  // With words after the button (the invite), the When and Where rows come after them, so a colon leads to the link
+  const after = (m.after || []).length > 0
+  const rows = () => {
+    if (m.rows && m.rows.length) {
+      html += '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 20px;border-top:1px solid ' + c.line + '">' +
+        m.rows.map((r) => '<tr><td style="padding:8px 12px 8px 0;border-bottom:1px solid ' + c.line + ";font:500 16px/1.4 " + font + ";color:" + c.ink + ';vertical-align:top">' + esc_(r[0]) + '</td><td style="padding:8px 0;border-bottom:1px solid ' + c.line + ";font:16px/1.4 " + font + ";color:" + c.body + '">' + esc_(r[1]) + "</td></tr>").join("") +
+        "</table>"
+      text += m.rows.map((r) => r[0] + ": " + r[1]).join("\n") + "\n\n"
+    }
   }
+  if (!after) rows()
   if (m.button) {
     html += '<p style="margin:4px 0 22px"><a href="' + esc_(m.button.url) + '" style="display:inline-block;background:' + c.button + ";color:" + c.onButton + ";text-decoration:none;font:500 16px/1 " + font + ';padding:14px 24px;border-radius:8px">' + esc_(m.button.label) + "</a></p>"
     text += m.button.label + ":\n" + m.button.url + "\n\n"
   }
+  ;(m.after || []).forEach((x) => { html += p(x); text += x + "\n\n" })
+  if (after) rows()
   ;(m.notes || []).forEach((n) => { html += p(n, 14, c.muted); text += n + "\n" })
-  html += p(COUPLE, 18, c.ink).replace("margin:0 0 14px", "margin:20px 0 0") + "</div>"
+  if (m.signoff) { html += p(m.signoff).replace("margin:0 0 14px", "margin:20px 0 0"); text += "\n" + m.signoff }
+  html += p(COUPLE, 18, c.ink).replace("margin:0 0 14px", m.signoff ? "margin:4px 0 0" : "margin:20px 0 0") + "</div>"
   text += "\n" + COUPLE
   return { html: html, text: text }
 }
@@ -2750,6 +2765,11 @@ function shortDate_(ymd) {
 
 function longDate_(ymd) {
   return ymd ? Utilities.formatDate(new Date(ymd + "T12:00:00+09:00"), "Asia/Tokyo", "EEE d MMM yyyy") : ""
+}
+
+/** "2027-02-15" → "15 February 2027" (their wording's dates) */
+function fullDate_(ymd) {
+  return ymd ? Utilities.formatDate(new Date(ymd + "T12:00:00+09:00"), "Asia/Tokyo", "d MMMM yyyy") : ""
 }
 
 function esc_(s) {
