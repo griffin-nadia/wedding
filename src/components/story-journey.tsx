@@ -16,6 +16,13 @@ import { loop } from "@/lib/frame"
 import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Lettering } from "@/components/lettering"
 
+/** Run 24: what's written on a print's bottom border, lowercase and casual: the year and the place's own name
+ *  ("Kansai Gaidai, Hirakata" → "2017 · hirakata", "Australia (Brisbane)" → "2022 · brisbane") */
+export function printNote(c: Pick<Chapter, "year" | "place">) {
+  const place = c.place ? (/\(([^)]+)\)/.exec(c.place)?.[1] ?? c.place.split(",").pop()!).trim().toLowerCase() : ""
+  return [c.year, place].filter(Boolean).join(" · ")
+}
+
 /** Their sign-off at the end of the last chapter ("Lots of love,", then "G + N") */
 const SIGNOFF = /^lots of love,?\s*\n\s*(g \+ n)\s*$/i
 
@@ -269,7 +276,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(target.current + 1) } if (e.key === "ArrowLeft") { e.preventDefault(); go(target.current - 1) } }}>
         {opener && slide(0, opener, null, "opener", "story-slide-opener")}
         {stops.map((c, i) => slide(i + lead, c.photo
-          ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" />
+          ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" note={printNote(c)} />
           : <span aria-hidden className="story-print-blank" />, words(c), c.key))}
         {slide(total - 1, <JourneyMap active={at === total - 1} />, ends ? words(ends) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
       </div>
