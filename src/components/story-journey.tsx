@@ -2,6 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useSta
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
+import { ART } from "@/lib/art"
+import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { cn } from "@/lib/utils"
 import { readFlying } from "@/lib/journey"
@@ -61,7 +63,7 @@ const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matche
 const SPRING = { k: 170, c: 20 }
 
 // Three.js and the painted globe load only when the journey stop is showing
-const JourneyGlobe = lazy(() => import("@/components/journey-globe").then((m) => ({ default: m.JourneyGlobe })))
+const JourneyGlobe = lazy(() => loadGlobe().then((m) => ({ default: m.JourneyGlobe })))
 const MODE = "ng-map"
 
 /**
@@ -69,7 +71,10 @@ const MODE = "ng-map"
  * remembered on this device; no WebGL or a low-end phone starts flat). Nadia's and Griffin's lines, then the guests'
  * (one per city, never who), then this household's own when they've said. The globe only runs while this stop shows.
  */
-function JourneyMap({ active }: { active: boolean }) {
+/** Run 24: the globe's code warms one stop early, and the globe itself starts once the spring has settled on its stop,
+ *  so building it (Three.js, painting the land) never lands mid-slide. Before and after: .brief/docs/runs/2026-10-24.md */
+const loadGlobe = () => import("@/components/journey-globe")
+function JourneyMap({ active, near }: { active: boolean; near: boolean }) {
   const { t, lang } = useLang()
   const { household } = useHousehold()
   const you = readFlying(household?.token)
@@ -78,6 +83,27 @@ function JourneyMap({ active }: { active: boolean }) {
   useEffect(() => { void getFlying().then(setFlying); void getJourneys(household?.token).then(setJourneys) }, [household?.token])
   const [mode, setMode] = useState<"globe" | "flat">(() => { try { const m = localStorage.getItem(MODE); if (m === "globe" || m === "flat") return m } catch { /* fine */ } return startsFlat() ? "flat" : "globe" })
   const pick = (m: "globe" | "flat") => { setMode(m); try { localStorage.setItem(MODE, m) } catch { /* private mode */ } }
+  // One stop early, while they read: the globe's code, then its land painted in idle time (paintGlobe keeps it, so the
+  // globe mounts on a ready painting; the same look, size and countries as journey-globe.tsx asks for)
+  const { theme } = useTheme()
+  useEffect(() => {
+    if (!near || mode !== "globe" || ART.globeLand) return
+    let alive = true
+    // After this stop's own slide has settled (about 550 ms), then when the phone is idle, never mid-spring
+    const idle = (f: () => void) => window.setTimeout(() => (typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(f) : f()), still() ? 0 : 700)
+    void loadGlobe().then(() => idle(() => {
+      if (!alive) return
+      const countries = [...journeys.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
+      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(theme === "lantern" ? GLOBE_LOOK.night : GLOBE_LOOK.day, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries))
+    }))
+    return () => { alive = false }
+  }, [near, mode, theme, journeys, you])
+  const [settled, setSettled] = useState(false)
+  useEffect(() => {
+    if (!active) return setSettled(false)
+    const id = window.setTimeout(() => setSettled(true), still() ? 0 : 550)
+    return () => window.clearTimeout(id)
+  }, [active])
   const nameOf = usePlaceName()
   const name = you ? nameOf(you.name) : null
   const label = t.journey.map(name, you?.id === "jp" || you?.country === "JP" ? "Already in Japan" : undefined)
@@ -88,7 +114,7 @@ function JourneyMap({ active }: { active: boolean }) {
       {/* Run 24: Globe / Flat centred above the map, in a spot that never moves when you switch, remembered on this
           device; the same key under both views */}
       <div className="journey-mode-bar">{toggle}</div>
-      {mode === "globe" && active
+      {mode === "globe" && active && settled
         ? <Suspense fallback={<div className="journey-globe" />}><JourneyGlobe you={you} cities={journeys} label={label} /></Suspense>
         : mode === "globe" ? <div className="journey-globe" /> : <JourneyFlat you={you} cities={journeys} label={label} />}
       <JourneyLegend you={Boolean(you && you.id !== "jp")} />
@@ -280,7 +306,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         {stops.map((c, i) => slide(i + lead, c.photo
           ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" note={printNote(c)} />
           : <span aria-hidden className="story-print-blank" />, words(c), c.key))}
-        {slide(total - 1, <JourneyMap active={at === total - 1} />, ends ? words(ends) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
+        {slide(total - 1, <JourneyMap active={at === total - 1} near={at >= total - 2} />, ends ? words(ends) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
       </div>
 
       <div className="story-controls">
