@@ -1,3 +1,4 @@
+import { Info } from "lucide-react"
 import { DATES } from "@/lib/wedding-dates"
 import { nextFrame } from "@/lib/frame"
 import { useEffect, useRef, useState, type ReactNode } from "react"
@@ -237,6 +238,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   }
 
   const actions = <>
+    {at === "check" && <p className="rsvp-privacy"><Info className="size-4 shrink-0" aria-hidden />{t.rsvp.privacy}</p>}
     {step > 1 && <Button variant="secondary" size="md" onClick={() => goTo(step - 1)}>{t.rsvp.back}</Button>}
     {step < total
       ? <Button size="md" className="flex-1 shrink!" onClick={next}>{t.rsvp.next}</Button>
@@ -365,7 +367,6 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
               : <div className="flex flex-col gap-2"><p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>
                   <AskUs><button type="button" className="btn-text inline-flex min-h-11 items-center self-start">{pending("ask.open", lang)}</button></AskUs></div>)}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
-            {at === "check" && <p className="text-small text-muted-foreground">{t.rsvp.privacy}</p>}
           </div>
           </SheetBody>
 

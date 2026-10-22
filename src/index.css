@@ -639,9 +639,11 @@
   position: fixed; z-index: 50;
   /* Phones: the visible area (src/lib/keyboard.ts), so with the keyboard up Back / Next sit right on top of it.
      One height for every step, so Back / Next never move between steps (v3 S). */
-  top: calc(var(--vv-top, 0px) + 12px); left: 12px; right: 12px;
+  /* Run 25: as tall as what's on it (no empty band above Next), from the bottom; while typing it's the full
+     keyboard-down height from the top, as before (18g), so the keyboard's extra room never resizes it */
+  top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
   max-height: calc(100svh - 24px - env(safe-area-inset-bottom));
-  height: calc(100svh - 24px - env(safe-area-inset-bottom)); /* the keyboard-down size, always (18g) */
+  height: auto;
   /* width auto: the letter's width: 100% (run 19) would make a fixed sheet the full screen from 12px in, so it ran
      12px off the right edge and cut the X (run 19 UX test). left and right set it here; laptops set a width below */
   width: auto; max-width: none; margin: 0; padding: 0; gap: 0;
@@ -650,7 +652,7 @@
 }
 @media (min-width: 768px) {
   /* Laptops: the same margin above and below, so the sheet sits evenly between the bar and the bottom edge */
-  .sheet { --sheet-pad: var(--space-6); --sheet-gap: 48px; top: calc(64px + (100dvh - 64px) / 2); left: 50%; right: auto; translate: -50% -50%; width: min(var(--letter-width), calc(100vw - 48px)); max-height: calc(100dvh - 64px - 2 * var(--sheet-gap)); height: min(640px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
+  .sheet { --sheet-pad: var(--space-6); --sheet-gap: 48px; top: calc(64px + (100dvh - 64px) / 2); bottom: auto; left: 50%; right: auto; translate: -50% -50%; width: min(var(--letter-width), calc(100vw - 48px)); max-height: calc(100dvh - 64px - 2 * var(--sheet-gap)); height: min(640px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
 }
 .sheet-head { flex: none; padding: var(--sheet-pad) calc(var(--sheet-pad) + 44px) var(--space-4) var(--sheet-pad); }
 .sheet-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: var(--space-2) var(--sheet-pad) var(--space-7); scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
@@ -687,8 +689,15 @@
 .sheet-close { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid transparent; border-radius: var(--radius-pill); color: var(--ink); outline: 2px solid transparent; outline-offset: 2px; }
 .sheet-close:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .sheet-close:hover { border-color: var(--line-strong); } }
-.rsvp-actions { flex: none; display: flex; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--line-hairline); }
+.rsvp-actions { flex: none; display: flex; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--line-hairline); }
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
+/* "All good?": who sees the reply, a small note just above Back and Send (run 25) */
+.rsvp-actions > .rsvp-privacy { flex: 1 0 100% !important; display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-small); line-height: var(--text-small--line-height); color: var(--muted-foreground); }
+/* "All good?" rows: the label, the answer, and Edit in one column on the right for every row, the message too (run 25) */
+.review-row { display: grid; grid-template-columns: minmax(5.5rem, 32%) minmax(0, 1fr); column-gap: var(--space-3); align-items: start; padding: var(--space-3) var(--space-4); }
+.review-row > dd { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-2); align-items: start; }
+.review-row > dt, .review-row > dd > span { padding-top: 2px; }
+.review-row[data-block] { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-1); }
 /* Steps slide the way you're going (300 ms); a fade only under reduced motion */
 .step-fwd { animation: step-fwd var(--duration-base) var(--ease-paper) both; }
 .step-back { animation: step-back var(--duration-base) var(--ease-paper) both; }
@@ -1278,6 +1287,7 @@ svg.lucide { stroke-width: 1.5; }
 /* Typing on a phone (18g, src/lib/keyboard.ts): nothing changes size. The keyboard overlays the page; the sheet's
    Back / Next lift just above it (a transform), and the scrolling card and the sheet's body get the keyboard's height
    as extra room at the bottom, so the field can scroll above it */
+@media (max-width: 767px) { [data-typing] .sheet:not(.sheet-fit) { top: calc(var(--vv-top, 0px) + 12px); bottom: auto; height: calc(100svh - 24px - env(safe-area-inset-bottom)); } }
 [data-typing] .rsvp-actions { transform: translateY(calc(-1 * var(--kb-lift, 0px))); position: relative; z-index: 3; }
 [data-typing] .sheet-body { padding-bottom: calc(var(--space-7) + var(--kb, 0px)); }
 [data-typing] .letter-scroll { padding-bottom: calc(var(--letter-pad) + var(--kb, 0px)); }
@@ -1401,9 +1411,8 @@ svg.lucide { stroke-width: 1.5; }
 .radio-group { display: flex; flex-direction: column; gap: var(--space-2); padding-block: var(--space-2); outline: none; }
 .radio-group-label { font-family: var(--font-label); font-weight: 500; color: var(--ink); }
 .radio-group-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-@media (max-width: 359px) { .radio-group-options { grid-template-columns: 1fr; } }
 .radio-option {
-  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding-inline: var(--space-6); white-space: nowrap;
+  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: var(--space-2) var(--space-3) var(--space-2) var(--space-6); text-wrap: balance; /* side by side at every width (run 25): a long label wraps */
   border: 1px solid var(--line-strong); border-radius: var(--input-radius); background: var(--input-bg); color: var(--ink-soft); /* line-strong: 3:1 or more on the paper in both modes */
   font-family: var(--font-label); font-size: var(--type-ui-size); font-weight: 500; text-align: center; cursor: pointer;
   outline: 2px solid transparent; outline-offset: 2px; -webkit-tap-highlight-color: transparent; user-select: none;

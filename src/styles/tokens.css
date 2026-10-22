@@ -183,7 +183,7 @@
   --input-line-hover: var(--line-strong);
   --input-focus: var(--line-focus);
   --input-caret: var(--action);
-  --input-selected-bg: var(--surface-fill);
+  --input-selected-bg: color-mix(in oklab, var(--ink-moss) 18%, var(--input-bg)); /* run 25: a moss tint, not straw */
   --input-selected-line: var(--action);
   --input-pressed-bg: var(--surface-fill);
   --input-disabled-bg: var(--surface-paper);

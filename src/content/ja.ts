@@ -312,6 +312,7 @@ export const ja: DeepPartial<Content> = {
     songsFull: (n: number) => `${n}曲追加済みです。変更するには1曲削除してください。`,
     songsAdded: "選んだ曲",
     edit: (what: string) => `${what}を編集`,
+    editShort: "編集",
     noMessage: "メッセージなし",
     songPlaceholder: "曲を検索",
     arrival: "到着日",
