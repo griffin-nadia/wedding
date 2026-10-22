@@ -352,7 +352,7 @@ export const en = {
       { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "Do I need a visa?", a: pending("faqs.visa.a", "en") },
       { q: "What happens to my details?", a: pending("faqs.details.a", "en") },
-      { q: "Who made this site?", a: `${pending("faqs.whoMade.a", "en")} ${pending("faqs.whoMade.song", "en").replace("{song}", ART.music.credit.en)}` },
+      { q: "Who made this site?", a: `${pending("faqs.whoMade.a", "en")} ${pending("faqs.whoMade.song", "en").replace("{song}", ART.music.credit.en).replace("{artist}", ART.music.artist)}` },
     ],
     onTheDay: "On the day, contact",
     // Their Questions (column E, 22 Oct): the line above Ask us at the end of FAQs
