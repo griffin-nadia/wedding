@@ -3,10 +3,10 @@ import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { directionsUrl } from "@/lib/calendar"
 import { DATES } from "@/lib/wedding-dates"
-import { VENUE } from "@/content/en"
 import { useLang } from "@/lib/lang"
 import { pending } from "@/content/pending"
 import { VenueMap, venueMapOn } from "@/components/venue-map"
+import { VenueMark } from "@/components/venue-mark"
 import { jstLabel, kyotoNow } from "@/lib/time"
 import { PageHeader } from "@/components/ui/page-header"
 
@@ -69,7 +69,7 @@ function Details() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col">
-        <p className="font-medium text-foreground">{VENUE.name}</p>
+        <VenueMark className="mb-3" />
         {t.day.addressLines.map((l) => <p key={l}>{l}</p>)}
       </div>
       <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center self-start">{t.day.howToGetThere}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
