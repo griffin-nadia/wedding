@@ -786,19 +786,24 @@
 @media (min-width: 1024px) { .arrival { align-content: end; padding-bottom: 14svh; } }
 /* Icons: Lucide everywhere at 1.5 stroke (v3 A) */
 svg.lucide { stroke-width: 1.5; }
-/* The credit (run 19): laptops only. Nadia's seal at the very bottom left, faint (decorative at rest: the link's name
-   is always the words); hover or focus brings the seal to full and reveals "Site by Jehan Baguley" beside it in full
-   ink on a small chip of the letter's paper, so it reads (AA) over any photo. The link box is the 24px seal; the words
-   hang off it and only take the pointer once shown. No credit on phones: the FAQs answer "Who made this site?". */
+/* The credit (run 19; the colophon since run 25): laptops only. Nadia's seal at the very bottom left, faint (the
+   button's name is "Credits"); hover or focus brings the seal to full and shows the colophon above it in full ink on a
+   small card of the letter's paper, so it reads (AA) over any photo; a click keeps it open. The button is the 24px
+   seal; the card only takes the pointer once shown. Phones have the colophon at the end of FAQs. */
 .credit-mark { display: none; }
 @media (min-width: 1024px) {
-  .credit-mark { display: inline-flex; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-2); align-items: center; border-radius: var(--radius-pill); outline: 2px solid transparent; outline-offset: 2px; }
-  .credit-mark:focus-visible { outline-color: var(--input-focus); }
+  .credit-mark { display: block; position: fixed; z-index: 20; left: var(--space-3); bottom: var(--space-2); }
+  .credit-button { display: grid; place-items: center; min-width: 24px; min-height: 24px; border-radius: var(--radius-pill); outline: 2px solid transparent; outline-offset: 2px; }
+  .credit-button:focus-visible { outline-color: var(--input-focus); }
   .credit-seal { width: 24px; height: 24px; opacity: 0.4; transition: opacity var(--duration-fast); }
-  .credit-text { position: absolute; left: calc(100% + var(--space-2)); padding: 2px var(--space-2); border-radius: var(--radius-chip); background: var(--letter-bg); white-space: nowrap; font-size: 12px; line-height: 16px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; opacity: 0; pointer-events: none; transition: opacity var(--duration-fast); }
-  .credit-mark:hover .credit-seal, .credit-mark:focus-visible .credit-seal { opacity: 1; }
-  .credit-mark:hover .credit-text, .credit-mark:focus-visible .credit-text { opacity: 1; pointer-events: auto; }
+  .credit-text { position: absolute; left: 0; bottom: calc(100% + var(--space-2)); padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); background: var(--letter-bg); box-shadow: var(--elevation-paper); white-space: nowrap; font-size: 12px; line-height: 18px; color: var(--ink); opacity: 0; pointer-events: none; transition: opacity var(--duration-fast); }
+  .credit-text a { text-decoration: underline; text-underline-offset: 3px; }
+  .credit-mark:hover .credit-seal, .credit-mark:focus-within .credit-seal, .credit-mark[data-open] .credit-seal { opacity: 1; }
+  .credit-mark:hover .credit-text, .credit-mark:focus-within .credit-text, .credit-mark[data-open] .credit-text { opacity: 1; pointer-events: auto; }
 }
+/* The colophon at the end of FAQs (run 25): small and quiet, a hairline above, one line each */
+.colophon { display: flex; flex-direction: column; gap: 2px; padding-top: var(--space-4); border-top: 1px solid var(--border); font-size: var(--text-small); line-height: var(--text-small--line-height); color: var(--muted-foreground); }
+.colophon a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 /* Names reveal once, letter by letter, the first time the letter opens (v3 L). Nothing else animates text. */
 .names-reveal .name-char { display: inline-block; animation: name-in var(--duration-slow) var(--ease-paper) both; }
 @keyframes name-in { from { opacity: 0; transform: translateY(0.12em); } to { opacity: 1; transform: none; } }

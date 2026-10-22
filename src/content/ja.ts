@@ -27,7 +27,6 @@ export const ja: DeepPartial<Content> = {
   nav: { home: "ホーム", day: "当日", travel: "アクセス", faqs: "よくある質問", story: "ふたりのこと", rsvp: "出欠のお返事" },
   letter: {
     signOff: "愛をこめて、G & N",
-    credit: "サイト制作：Jehan Baguley",
     skip: "本文へ移動",
     note: "招待状をひらいてね",
     openLabel: (name: string) => `招待状をひらく${name ? `（${name}さん）` : ""}`,
@@ -281,9 +280,18 @@ export const ja: DeepPartial<Content> = {
       { q: "ご祝儀やプレゼントは？", a: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
       { q: "ビザは必要ですか？", a: pending("faqs.visa.a", "ja") },
       { q: "個人情報はどうなりますか？", a: pending("faqs.details.a", "ja") },
-      { q: "このサイトはどなたが作ったのですか？", a: `${pending("faqs.whoMade.a", "ja")}${pending("faqs.whoMade.song", "ja").replace("{song}", ART.music.credit.ja)}` },
     ],
     onTheDay: "当日の連絡先：",
+    // The colophon (run 25), for Mitsumi to check (.brief/ja-review.md)
+    colophon: {
+      label: "クレジット",
+      lines: [
+        { before: "文：グリフィン" },
+        { before: "絵：ナディア" },
+        { before: "デザイン・制作：", link: "jehan", text: "ジェハン" },
+        { before: "音楽：", link: "music", text: ART.music.credit.ja, after: `、演奏：${ART.music.artist}` },
+      ],
+    },
     contact: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！",
   },
   rsvp: {

@@ -30,16 +30,16 @@ test("the song is small and loops with under a second of silence", async ({ page
   expect(r.seamMs).toBeLessThan(1000)
 })
 
-test("the music credit is only in FAQs, in the last answer", async ({ page }) => {
+// Run 25: the colophon at the end of FAQs replaces the "Who made this site?" FAQ
+test("the music credit is in the colophon at the end of FAQs", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("ng-opened", "1"))
-  await page.goto("?h=sample")
-  await page.waitForLoadState("networkidle")
-  await expect(page.locator("body")).not.toContainText("Joe Hisaishi")
   await page.goto("faqs?h=sample")
-  const last = page.locator("#letter [data-slot=accordion-item]").last()
-  await last.locator("[data-slot=accordion-trigger]").click()
-  await expect(last).toContainText("Who made this site?")
-  await expect(last).toContainText("The song is “A Town With an Ocean View” (Joe Hisaishi), played on piano.")
+  await expect(page.locator("#letter")).not.toContainText("Who made this site?")
+  const colophon = page.getByRole("list", { name: "Credits" }).last()
+  await expect(colophon).toContainText("Words by Griffin")
+  await expect(colophon).toContainText("Drawings by Nadia")
+  await expect(colophon).toContainText("Designed and built by Jehan")
+  await expect(colophon).toContainText("Music: “A Town With an Ocean View” (Joe Hisaishi), played by Piano ZeroL")
 })
 
 // Coming back to the tab: it carries on from where it stopped and is back at 20% within a second, not a slow restart.

@@ -182,18 +182,19 @@ test("the dock's pill follows a swipe", async ({ page, context }, info) => {
   expect(Math.abs(await pillX() - (before + slot))).toBeLessThan(2) // settled on Travel
 })
 
-// Run 19: the laptop credit is Nadia's seal, faint; focus (or hover) reveals the words, AA on the paper halo, and the
-// link is a 24px target with a visible ring. Phones have no credit at all (the FAQs say who made the site).
-test("the credit: a faint seal that reveals the words on focus, laptops only", async ({ page }, info) => {
+// Run 19: the laptop credit is Nadia's seal, faint; focus (or hover) reveals the colophon (run 25), AA on the paper,
+// and the button is a 24px target with a visible ring. Phones have the colophon at the end of FAQs instead.
+test("the credit: a faint seal that reveals the colophon on focus, laptops only", async ({ page }, info) => {
   await go(page, "")
-  const credit = page.getByRole("link", { name: "Site by Jehan Baguley" })
-  if (info.project.name === "phone") { await expect(credit).toHaveCount(0); return }
+  const credit = page.getByRole("button", { name: "Credits" })
+  if (info.project.name === "phone") { await expect(credit).toBeHidden(); return }
   await expect(credit).toBeVisible()
+  await expect(credit).toHaveAttribute("aria-expanded", "false")
   const read = () => credit.evaluate((el) => {
     const c = document.createElement("canvas").getContext("2d")!
     const rgb = (v: string) => { c.fillStyle = "#000"; c.fillStyle = v; c.fillRect(0, 0, 1, 1); return [...c.getImageData(0, 0, 1, 1).data].slice(0, 3) }
     const lum = (v: string) => { const [r, g, b] = rgb(v).map((n) => { const s = n / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4 }); return 0.2126 * r + 0.7152 * g + 0.0722 * b }
-    const text = el.querySelector(".credit-text")!, ts = getComputedStyle(text), paper = getComputedStyle(document.documentElement).getPropertyValue("--letter-bg").trim()
+    const text = el.parentElement!.querySelector(".credit-text")!, ts = getComputedStyle(text), paper = getComputedStyle(document.documentElement).getPropertyValue("--letter-bg").trim()
     const [a, b] = [lum(ts.color), lum(paper)].sort((x, y) => y - x), box = el.getBoundingClientRect()
     return { text: Number(ts.opacity), seal: Number(getComputedStyle(el.querySelector("img")!).opacity), ratio: (a + 0.05) / (b + 0.05), w: box.width, h: box.height, ring: getComputedStyle(el).outlineColor }
   })
@@ -208,4 +209,10 @@ test("the credit: a faint seal that reveals the words on focus, laptops only", a
   expect(shown.seal).toBe(1)
   expect(shown.ratio).toBeGreaterThanOrEqual(4.5)
   expect(shown.ring).not.toBe(rest.ring)
+  // A click keeps it open, Escape closes it and focus stays on the seal
+  await credit.click()
+  await expect(credit).toHaveAttribute("aria-expanded", "true")
+  await page.keyboard.press("Escape")
+  await expect(credit).toHaveAttribute("aria-expanded", "false")
+  await expect(credit).toBeFocused()
 })

@@ -58,7 +58,6 @@ export const en = {
   nav: { home: "Home", day: "The day", travel: "Travel", faqs: "FAQs", story: "Our story", rsvp: "RSVP" },
   letter: {
     signOff: "With love, G & N",
-    credit: "Site by Jehan Baguley",
     skip: "Skip to the letter",
     note: "Open your invite",
     openLabel: (name: string) => `Open your invitation${name ? `, ${name}` : ""}`,
@@ -347,7 +346,7 @@ export const en = {
   qa: {
     title: "FAQs",
     // In the order guests wonder (run 19): the invite, the day, the trip, then the site. Answers are pending.ts, for
-    // Griffin and Nadia to tweak. The music credit is said here only.
+    // Griffin and Nadia to tweak. Who made the site is the colophon under them (run 25).
     items: [
       { q: "Can I bring someone?", a: pending("faqs.bring.a", "en") },
       { q: "Is it a traditional Japanese wedding?", a: pending("faqs.style.a", "en") },
@@ -357,9 +356,18 @@ export const en = {
       { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "Do I need a visa?", a: pending("faqs.visa.a", "en") },
       { q: "What happens to my details?", a: pending("faqs.details.a", "en") },
-      { q: "Who made this site?", a: `${pending("faqs.whoMade.a", "en")} ${pending("faqs.whoMade.song", "en").replace("{song}", ART.music.credit.en)}` },
     ],
     onTheDay: "On the day, contact",
+    // The colophon at the end of FAQs and in the laptop seal (run 25). Each line is before + the linked part + after
+    colophon: {
+      label: "Credits",
+      lines: [
+        { before: "Words by Griffin" },
+        { before: "Drawings by Nadia" },
+        { before: "Designed and built by ", link: "jehan", text: "Jehan" },
+        { before: "Music: ", link: "music", text: ART.music.credit.en, after: `, played by ${ART.music.artist}` },
+      ],
+    },
     // Their Questions (column E, 22 Oct): the line above Ask us at the end of FAQs
     contact: "If you have ANY questions at all please feel free to reach out to either of us at any time - we are always happy to assist whenever we can!",
   },

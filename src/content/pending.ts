@@ -126,15 +126,6 @@ export const PENDING = {
     en: "Your reply comes straight to us and no one else sees it. We'll delete it a few months after the wedding.",
     ja: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。",
   },
-  "faqs.whoMade.a": {
-    en: "Nadia's brother Jehan designed and built it, and Nadia drew everything you see.",
-    ja: "ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。",
-  },
-  // {song} is the music credit (src/lib/art.ts), said here only
-  "faqs.whoMade.song": {
-    en: "The song is {song}, played on piano.",
-    ja: "曲は{song}のピアノ版です。",
-  },
   // Their Time (Inv details, column E, 22 Oct): the planner still has to confirm it
   "day.arrival": {
     en: "Arrival time: to be confirmed by the wedding planner",
@@ -170,9 +161,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.style.a", ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。" },
   { key: "faqs.visa.q", ja: "ビザは必要ですか？" },
   { key: "faqs.visa.a", ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。" },
-  { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
-  { key: "faqs.whoMade.a", ja: "ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。" },
-  { key: "faqs.whoMade.song", ja: "曲は{song}のピアノ版です。" },
+  { key: "faqs.colophon", ja: "文：グリフィン / 絵：ナディア / デザイン・制作：ジェハン / 音楽：「A Town With an Ocean View」（久石譲）、演奏：Piano ZeroL" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "home.pills.replied", ja: "お返事ありがとうございます" },
   { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },
