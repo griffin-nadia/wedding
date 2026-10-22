@@ -1279,6 +1279,8 @@ svg.lucide { stroke-width: 1.5; }
 .story-words { display: flex; flex-direction: column; gap: var(--space-2); max-width: 34em; }
 /* Run 23: a chapter's first paragraph on the spread, a few lines with a soft end, then Keep reading for the rest */
 .story-lead { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: pretty; }
+/* Laptops under 960 tall: three lines, so the stop with their words still fits the frame (1440 × 900) */
+@media (min-width: 1024px) and (max-height: 960px) { .story-lead { -webkit-line-clamp: 3; line-clamp: 3; } }
 /* The whole chapter (the Keep reading sheet and the list): a calm reading measure, paragraphs whole, their sign-off
    as a signature */
 .story-read { display: flex; flex-direction: column; gap: var(--space-4); max-width: 65ch; text-wrap: pretty; }
