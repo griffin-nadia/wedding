@@ -1,5 +1,5 @@
 {
- "measured": "2026-10-19",
+ "measured": "2026-10-22",
  "profile": "Pixel 7, CPU 4x slower, 1.6 Mbps / 150 ms",
  "entries": {
   "confirm-stamp": {
@@ -409,6 +409,110 @@
      "kb": 10
     }
    }
+  },
+  "open24-come": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 22,
+   "takes": {
+    "flip": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "tilt": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "loupe": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "develop": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "table": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "hold": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "sound": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    }
+   }
+  },
+  "open24-held": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 22,
+   "takes": {
+    "tape": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "sleeve": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "fan": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 22
+    },
+    "string": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 22
+    }
+   }
   }
  },
  "baselines": {
@@ -426,29 +530,5 @@
    "longestMs": 361,
    "loadLongTasks": 1
   }
- },
- "loading": {
-  "profile": "Pixel 7, CPU 4x slower, 1.6 Mbps / 150 ms",
-  "globeKB": 201,
-  "rows": [
-   {
-    "label": "today",
-    "envelopeMs": 2955,
-    "globeStallMs": 2299,
-    "repeatVisitMs": 245
-   },
-   {
-    "label": "preload the arrival art",
-    "envelopeMs": 2740,
-    "globeStallMs": 2305,
-    "repeatVisitMs": 244
-   },
-   {
-    "label": "preload and idle warm",
-    "envelopeMs": 2735,
-    "globeStallMs": 15,
-    "repeatVisitMs": 248
-   }
-  ]
  }
 }

@@ -10,6 +10,7 @@ import { entries as arrival } from "./x/arrival"
 import { entries as loading } from "./x/loading"
 import { entries as sheets } from "./x/sheets"
 import { entries as map } from "./x/map"
+import { entries as open24 } from "./x/open24"
 
 /**
  * What the lab keeps (lab run 19): the choices still open and the parked ideas, by area in the order guests meet
@@ -27,6 +28,7 @@ export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "paper", title: "Paper and light", entries: paper },
   { id: "micro", title: "Micro-interactions", entries: micro },
   { id: "logo", title: "Logo", entries: logo },
+  { id: "open24", title: "Opening a photo (run 24)", entries: open24 },
 ]
 export const ALL = AREAS.flatMap((a) => a.entries.map((e) => ({ ...e, area: a.id, areaTitle: a.title })))
 export const byId = (id: string) => ALL.find((e) => e.id === id)
