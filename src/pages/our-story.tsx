@@ -11,16 +11,20 @@ import { onMap } from "@/lib/map-land"
 import { pending } from "@/content/pending"
 
 /**
- * The opener (Figma 3b): one kid photo each, Griffin then Nadia, as the first slide. Little Griffin is his pick, his
- * first day of school (run 23).
+ * The opener (run 24): a little pile of instant prints. In front, Griffin's 1998 school portrait and Nadia's home
+ * photo, tilted opposite ways, hers leaning into his, a strip of tape across where they overlap; tucked half under his,
+ * his first day of school (his own pick, run 23). Sized to fill the spread.
  */
 function Opener() {
   const has = (name: string) => name in photos
-  if (!has("kid-nadia") || !has("kid-griffin")) return null
+  if (!has("kid-griffin-1998") || !has("kid-nadia-home")) return null
+  const sizes = "(min-width: 1024px) 240px, 46vw"
   return (
     <div className="story-kids">
-      <Photo name="kid-griffin" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
-      <Photo name="kid-nadia" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
+      {has("kid-griffin") && <div className="story-kid story-kid-behind"><Photo name="kid-griffin" treatment="print" sizes={sizes} className="story-print" /></div>}
+      <div className="story-kid story-kid-him"><Photo name="kid-griffin-1998" treatment="print" sizes={sizes} className="story-print" /></div>
+      <div className="story-kid story-kid-her"><Photo name="kid-nadia-home" treatment="print" sizes={sizes} className="story-print" /></div>
+      <span aria-hidden className="story-kids-tape" />
     </div>
   )
 }

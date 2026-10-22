@@ -1234,7 +1234,34 @@ svg.lucide { stroke-width: 1.5; }
 
 
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
-.story-kids { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: var(--space-4); align-items: start; padding: var(--space-2); } /* room for the tilted corners */
+/* The kid opener (run 24): three instant prints in a small pile that fills the spread's media box. Each print is the
+   story's instant print (4:5) at about 1.05 × --print-h tall; positions in % of the pile so it scales */
+.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 1.9)); height: calc(var(--stop-h) - var(--space-2)); }
+.story-slide-opener .story-media { width: 100%; } /* the pile's prints are placed in it, so it can't size to them */
+.story-kid { position: absolute; }
+.story-kid .story-print { --print-h: calc(var(--stop-h) * 0.72); }
+.story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
+.story-kid-behind { left: 0; top: 14%; z-index: 1; }
+.story-kid-behind .story-print { --tilt: -7deg; --print-h: calc(var(--stop-h) * 0.6); }
+.story-kid-him { left: 16%; top: 2%; z-index: 2; }
+.story-kid-him .story-print { --tilt: 4deg; }
+.story-kid-her { right: 0; top: 9%; z-index: 3; }
+.story-kid-her .story-print { --tilt: -5deg; }
+/* Phones: the pile staggers down the stop's full height (his top left, hers lower right over his corner, taped there,
+   his first day tucked under his, peeking out at the bottom left), so both faces stay clear and there's no empty band */
+@media (max-width: 767px) {
+  .story-slide-opener .story-media { height: calc(var(--stop-h) * 1.45); }
+  .story-kids { height: 100%; }
+  .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.66); }
+  .story-kid-behind .story-print { --print-h: calc(var(--stop-h) * 0.52); }
+  .story-kid-him { left: 6%; top: 0; }
+  .story-kid-her { right: 6%; top: 31%; }
+  .story-kid-behind { left: 0; top: 40%; z-index: 1; }
+  .story-kids-tape { left: 37%; top: 29%; width: 24%; rotate: -34deg; }
+}
+/* Tape across where hers overlaps his */
+.story-kids-tape { position: absolute; z-index: 4; left: 52%; top: 10%; width: 22%; height: 22px; rotate: 58deg; opacity: 0.82; background: color-mix(in oklab, var(--brand-sage) 70%, white); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent); mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent); }
 
 /* Their picks: compact rows, the whole row is the link */
 .stay-pick { min-height: 48px; padding-block: var(--space-2); }
@@ -1297,7 +1324,7 @@ svg.lucide { stroke-width: 1.5; }
 .story-print > div { height: var(--print-h); width: auto; }
 .story-print[data-frame="landscape"] > div { width: var(--print-h); height: auto; }
 .story-print-blank { display: block; width: calc(var(--print-h) * 0.75); height: var(--print-h); margin: var(--space-2); border: var(--space-2) solid var(--brand-paper-bright); border-bottom-width: var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); box-shadow: var(--elevation-paper); transform: rotate(-1deg); }
-.story-slide .story-kids .photo-print > div { height: calc(var(--print-h) * 1.1); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
+
 /* The journey map, once, as the last stop */
 /* Its lines wait until the stop is showing (no drawing off screen, and they draw in as you arrive) */
 .story-slide[inert] .journey, .story-slide[inert] .journey * { animation-play-state: paused !important; }
