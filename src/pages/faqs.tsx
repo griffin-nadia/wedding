@@ -48,7 +48,7 @@ export function FaqsPage() {
         </Disclosure>
       </section>}
       <div className="flex flex-col gap-1">
-        <p>{pending("ask.intro", lang)}</p>
+        <p>{t.qa.contact}</p>
         <AskUs><button type="button" className="btn-text inline-flex min-h-11 items-center self-start">{pending("ask.button", lang)}</button></AskUs>
       </div>
       <p className="text-small">{contactDay ? `${t.qa.onTheDay} ${contactDay}` : pending("faqs.contactDay", lang)}</p>

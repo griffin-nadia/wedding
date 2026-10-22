@@ -10,10 +10,10 @@ type DeepPartial<T> = { [K in keyof T]?: T[K] extends (...a: never[]) => unknown
 
 const DAY = "2027年10月15日（金）"
 const RSVP_BY = "2027年2月15日（月）"
-const LOCK = "2027年4月30日（金）"
 const TRAVEL_FROM = "2027年9月1日（水）"
 const TRAVEL_TO = "2027年11月30日（火）"
-const CHANGE_BY = `${LOCK}まで、お返事は変更できます。`
+// Their final wording (22 Oct): until the lock, and add travel dates once booked
+const CHANGE_BY = "2027年4月30日まで、お返事はいつでも変更できます。航空券を予約したら、旅の日程も追加してください。"
 const CHANGE_AFTER = "予定が変わることもありますよね。4月30日以降に変更が必要になったら、直接ご連絡ください。"
 const A = "グリフィン"
 const B = "ナディア"
@@ -109,7 +109,10 @@ export const ja: DeepPartial<Content> = {
     rsvpButton: `${RSVP_BY}までにお返事を`,
     yourReply: "お返事",
     todo: { who: "出席される方", food: "お食事", song: "一曲", dates: "旅の日程", datesLater: "予約が済んでから", done: "済み", toDo: "まだ" },
-    greetingLine: "ふたりが出会った京都で、結婚式を挙げます。ぜひお越しください。必要なことは、すべてここにあります。",
+    intro: [
+      "ふたりの愛を祝い、物語の次の章を始めるために、すべてが始まった場所に友人と家族を招きます。",
+      "京都は近所の会場よりも少し遠いので、旅が楽しく、楽で、思い出に残るものになるようにしたいと思っています。計画に必要なことはこの下にすべてあり、これからも追加していきます。",
+    ],
     daysToGo: (n: number) => `あと${n}日`,
     kyotoLine: (time: string) => `京都は今${time}`,
     moreLabel: "当日について",
@@ -168,13 +171,13 @@ export const ja: DeepPartial<Content> = {
     tickHint: "済んだものにチェックを。チェックはこの端末にだけ保存されます。",
     ticked: "済み",
     items: [
-      { title: "パスポート", body: "帰国日から6か月以上の有効期限があるか確認してください。更新が必要なら、早めに。時間がかかることがあります。オーストラリア国籍の方は、短期の日本滞在にビザは不要です。入国のルールが変わった場合は、旅行の前にお知らせします。" },
-      { title: "航空券", body: "できるだけ早めに予約を。日程は決まっているので、乗り遅れる心配はありません。できれば前後に数日滞在してください。結婚式の前後に楽しめることをご紹介します。" },
-      { title: "宿泊先", body: "航空券が取れたら、宿を予約してください。日本のホテルの部屋は小さくシンプルなので、そのつもりで。" },
-      { title: "SIMまたはポケットWi-Fi", body: "出発前に、SIM、eSIM、ポケットWi-Fiのいずれかを用意してください。評判の良いものをいくつか。", links: [
+      { title: "パスポート", body: "旅の情報が最新か確認してください！パスポートは、帰国日から6か月以上の有効期限が必要です。更新が必要な方は、お早めにどうぞ！" },
+      { title: "航空券", body: "航空券は、できる範囲でなるべく早めに予約してください。結婚式の日程は確定しているので、変わる心配はありません！せっかくなので、日本を楽しんでいってください。結婚式の前の数日に楽しめることをご紹介しますし、できれば式のあとも数日ゆっくりしていってください。" },
+      { title: "宿泊先", body: "航空券を予約したら、次は宿の予約です！会場の近くのホテルやAirbnbのおすすめをまとめます。日本のホテルは小さく必要最低限なことが多いので、選ぶときの参考にしてください。ほかのゲストと相談して一緒に泊まるのも大歓迎です！迷ったら、気軽にご相談ください！" },
+      { title: "SIMまたはポケットWi-Fi", body: "出発前に、eSIMかポケットWi-Fiを用意しておきましょう。おすすめはこちら：", links: [
         { label: "Sakura Mobile", href: "https://www.sakuramobile.jp/" },
         { label: "Ninja WiFi", href: "https://ninjawifi.com/en/plan/sim" },
-        { label: "Travelkon eSIM", href: "https://www.travelkon.com.au/product-category/esim/esim-asia/japan-esim/" },
+        { label: "TravelKon eSIM", href: "https://www.travelkon.com.au/product-category/esim/esim-asia/japan-esim/" },
       ] },
     ],
   },
@@ -224,7 +227,7 @@ export const ja: DeepPartial<Content> = {
   },
   stay: {
     title: "宿泊について",
-    intro: "早めの予約を。10月中旬の京都は混み合います。ホテルは小さく整っていて、京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと一緒に泊まるのも大歓迎です。迷ったら、気軽にご相談ください！",
+    intro: "早めの予約を。10月中旬の京都は混み合います。日本のホテルは小さく必要最低限なことが多いので、選ぶときの参考にしてください。京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと相談して一緒に泊まるのも大歓迎です！迷ったら、気軽にご相談ください！",
     mapLink: "3つのエリアを地図で見る",
     mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
     picks: {
@@ -261,15 +264,15 @@ export const ja: DeepPartial<Content> = {
     items: [
       { q: "同伴者を連れていけますか？", a: pending("faqs.bring.a", "ja") },
       { q: "日本の伝統的な結婚式ですか？", a: pending("faqs.style.a", "ja") },
-      { q: "服装は？", a: pending("faqs.wear.a", "ja") },
-      { q: "お食事は？", a: pending("faqs.food.a", "ja") },
-      { q: "ご祝儀やプレゼントは？", a: pending("faqs.gifts.a", "ja") },
+      { q: "服装は？", a: "ドレスコードはありません。いちばん自分らしくいられる服装でどうぞ。会場のまわりは石畳の道なので、歩きやすい靴でお越しください。" },
+      { q: "お食事は？", a: "食事の制限やアレルギーを教えてください！結婚式の昼食はケータリングで、メニューは式の数か月前に決まります。" },
+      { q: "ご祝儀やプレゼントは？", a: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
       { q: "ビザは必要ですか？", a: pending("faqs.visa.a", "ja") },
       { q: "個人情報はどうなりますか？", a: pending("faqs.details.a", "ja") },
       { q: "このサイトはどなたが作ったのですか？", a: `${pending("faqs.whoMade.a", "ja")}${pending("faqs.whoMade.song", "ja").replace("{song}", ART.music.credit.ja)}` },
     ],
     onTheDay: "当日の連絡先：",
-    contact: "ご不明な点があれば、どちらにでもお気軽にご連絡ください。",
+    contact: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！",
   },
   rsvp: {
     step: (n: number, of = 3) => `ステップ ${n}/${of}`,
