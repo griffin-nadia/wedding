@@ -24,3 +24,26 @@ test("every card and sheet is the same width, and an open FAQ never moves it", a
   await triggers.first().click(); await triggers.nth(1).click()
   expect(await width("#letter")).toBe(before)
 })
+
+// Run 21: on laptops each card is as tall as what's on it. At 1440x900 no page has more than 64px of card with nothing
+// in it (a long page fills the frame and scrolls inside, so it has none), and no page title has the old moss rule.
+test("every card fits its content: no more than 64px of dead space at 1440x900", async ({ page }, info) => {
+  test.skip(info.project.name === "phone", "laptops")
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  for (const url of ["?h=sample", "the-day?h=sample", "travel?h=sample", "our-story?h=sample", "faqs?h=sample"]) {
+    await page.goto(url); await page.locator("#letter").waitFor(); await page.waitForTimeout(300)
+    const m = await page.evaluate(() => {
+      const card = document.querySelector("#letter")!, sc = card.querySelector(".letter-scroll") ?? card
+      // What's on it: from its first child's top to its last child's bottom, plus the padding (scrollHeight never
+      // drops below the scroller's own height, so it can't see empty space)
+      const kids = [...sc.children].filter((e) => getComputedStyle(e).position !== "absolute" && (e as HTMLElement).offsetParent)
+      const cs = getComputedStyle(sc), h = card.getBoundingClientRect().height
+      const content = kids.length ? kids[kids.length - 1].getBoundingClientRect().bottom - kids[0].getBoundingClientRect().top + parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) : h
+      if (sc !== card && sc.scrollHeight > sc.clientHeight + 1) return { dead: 0, rule: false, scrolls: true }
+      const rule = [...card.querySelectorAll(".heading")].some((e) => getComputedStyle(e, "::after").content !== "none")
+      return { dead: Math.round(h - Math.min(content, h)), rule, scrolls: false }
+    })
+    expect(m.dead, `${url}: dead space`).toBeLessThanOrEqual(64)
+    expect(m.rule, `${url}: rule under the title`).toBe(false)
+  }
+})
