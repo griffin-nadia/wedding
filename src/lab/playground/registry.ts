@@ -10,6 +10,7 @@ import { entries as arrival } from "./x/arrival"
 import { entries as loading } from "./x/loading"
 import { entries as sheets } from "./x/sheets"
 import { entries as map } from "./x/map"
+import { entries as story24b } from "./x/story24b"
 
 /**
  * What the lab keeps (lab run 19): the choices still open and the parked ideas, by area in the order guests meet
@@ -20,6 +21,7 @@ export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "opening", title: "Opening", entries: opening },
   { id: "arrival", title: "Arrival framing", entries: arrival },
   { id: "story", title: "Our story", entries: story },
+  { id: "story24b", title: "Our story, nine ways (run 24, F to I)", entries: story24b },
   { id: "journey", title: "Journey", entries: journey },
   { id: "map", title: "Venue map", entries: map },
   { id: "confirmation", title: "Confirmation", entries: confirmation },

@@ -1,5 +1,5 @@
 {
- "measured": "2026-10-19",
+ "measured": "2026-10-22",
  "profile": "Pixel 7, CPU 4x slower, 1.6 Mbps / 150 ms",
  "entries": {
   "confirm-stamp": {
@@ -409,6 +409,102 @@
      "kb": 10
     }
    }
+  },
+  "story-passport": {
+   "fps": 58,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 27,
+   "takes": {
+    "stamped": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 27
+    },
+    "stickers": {
+     "fps": 58,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 27
+    }
+   }
+  },
+  "story-emaki": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 26,
+   "takes": {
+    "sumi": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 4,
+     "kb": 26
+    },
+    "landmarks": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 4,
+     "kb": 26
+    }
+   }
+  },
+  "story-lantern-lane": {
+   "fps": 60,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 22,
+   "takes": {
+    "-": {
+     "fps": 60,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 22
+    }
+   }
+  },
+  "story-strip": {
+   "fps": 58,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 34,
+   "takes": {
+    "story": {
+     "fps": 58,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 3,
+     "kb": 34
+    },
+    "home": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 34
+    },
+    "keepsake": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 34
+    }
+   }
   }
  },
  "baselines": {
@@ -426,29 +522,5 @@
    "longestMs": 361,
    "loadLongTasks": 1
   }
- },
- "loading": {
-  "profile": "Pixel 7, CPU 4x slower, 1.6 Mbps / 150 ms",
-  "globeKB": 201,
-  "rows": [
-   {
-    "label": "today",
-    "envelopeMs": 2955,
-    "globeStallMs": 2299,
-    "repeatVisitMs": 245
-   },
-   {
-    "label": "preload the arrival art",
-    "envelopeMs": 2740,
-    "globeStallMs": 2305,
-    "repeatVisitMs": 244
-   },
-   {
-    "label": "preload and idle warm",
-    "envelopeMs": 2735,
-    "globeStallMs": 15,
-    "repeatVisitMs": 248
-   }
-  ]
  }
 }
