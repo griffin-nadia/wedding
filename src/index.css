@@ -639,11 +639,9 @@
   position: fixed; z-index: 50;
   /* Phones: the visible area (src/lib/keyboard.ts), so with the keyboard up Back / Next sit right on top of it.
      One height for every step, so Back / Next never move between steps (v3 S). */
-  /* Run 25: as tall as what's on it (no empty band above Next), from the bottom; while typing it's the full
-     keyboard-down height from the top, as before (18g), so the keyboard's extra room never resizes it */
-  top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); left: 12px; right: 12px;
+  top: calc(var(--vv-top, 0px) + 12px); left: 12px; right: 12px;
   max-height: calc(100svh - 24px - env(safe-area-inset-bottom));
-  height: auto;
+  height: calc(100svh - 24px - env(safe-area-inset-bottom)); /* the keyboard-down size, always (18g) */
   /* width auto: the letter's width: 100% (run 19) would make a fixed sheet the full screen from 12px in, so it ran
      12px off the right edge and cut the X (run 19 UX test). left and right set it here; laptops set a width below */
   width: auto; max-width: none; margin: 0; padding: 0; gap: 0;
@@ -652,7 +650,7 @@
 }
 @media (min-width: 768px) {
   /* Laptops: the same margin above and below, so the sheet sits evenly between the bar and the bottom edge */
-  .sheet { --sheet-pad: var(--space-6); --sheet-gap: 48px; top: calc(64px + (100dvh - 64px) / 2); bottom: auto; left: 50%; right: auto; translate: -50% -50%; width: min(var(--letter-width), calc(100vw - 48px)); max-height: calc(100dvh - 64px - 2 * var(--sheet-gap)); height: min(640px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
+  .sheet { --sheet-pad: var(--space-6); --sheet-gap: 48px; top: calc(64px + (100dvh - 64px) / 2); left: 50%; right: auto; translate: -50% -50%; width: min(var(--letter-width), calc(100vw - 48px)); max-height: calc(100dvh - 64px - 2 * var(--sheet-gap)); height: min(640px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
 }
 .sheet-head { flex: none; padding: var(--sheet-pad) calc(var(--sheet-pad) + 44px) var(--space-4) var(--sheet-pad); }
 .sheet-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: var(--space-2) var(--sheet-pad) var(--space-7); scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
@@ -1287,7 +1285,16 @@ svg.lucide { stroke-width: 1.5; }
 /* Typing on a phone (18g, src/lib/keyboard.ts): nothing changes size. The keyboard overlays the page; the sheet's
    Back / Next lift just above it (a transform), and the scrolling card and the sheet's body get the keyboard's height
    as extra room at the bottom, so the field can scroll above it */
-@media (max-width: 767px) { [data-typing] .sheet:not(.sheet-fit) { top: calc(var(--vv-top, 0px) + 12px); bottom: auto; height: calc(100svh - 24px - env(safe-area-inset-bottom)); } }
+/* The reply sheet on phones (run 25): as tall as what's on it (no empty band above Next), sitting at the bottom. While
+   typing it's the full keyboard-down height from the top, as every sheet is (18g), so the field has room above the
+   keyboard; it settles back when the keyboard goes */
+@media (max-width: 767px) {
+  .sheet.rsvp-sheet { top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); height: auto; }
+  :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); } /* no deep band above the footer */
+  /* The song step too: its results open and close under the field and chosen songs land above it, so it keeps the
+     full height and the field never moves */
+  [data-typing] .sheet.rsvp-sheet, .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { top: calc(var(--vv-top, 0px) + 12px); bottom: auto; height: calc(100svh - 24px - env(safe-area-inset-bottom)); }
+}
 [data-typing] .rsvp-actions { transform: translateY(calc(-1 * var(--kb-lift, 0px))); position: relative; z-index: 3; }
 [data-typing] .sheet-body { padding-bottom: calc(var(--space-7) + var(--kb, 0px)); }
 [data-typing] .letter-scroll { padding-bottom: calc(var(--letter-pad) + var(--kb, 0px)); }

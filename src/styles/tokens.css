@@ -183,7 +183,7 @@
   --input-line-hover: var(--line-strong);
   --input-focus: var(--line-focus);
   --input-caret: var(--action);
-  --input-selected-bg: color-mix(in oklab, var(--ink-moss) 18%, var(--input-bg)); /* run 25: a moss tint, not straw */
+  --input-selected-bg: color-mix(in oklab, var(--action) 16%, var(--input-bg)); /* run 25: a moss green tint, not straw */
   --input-selected-line: var(--action);
   --input-pressed-bg: var(--surface-fill);
   --input-disabled-bg: var(--surface-paper);
@@ -236,6 +236,14 @@
   /* Scene grade: saturate .92, contrast .95, warm tint 4% */
   --scene-filter: saturate(0.92) contrast(0.95) sepia(0.04);
   --scene-scrim: var(--surface-scrim);
+}
+/* Run 25 (Jehan): on walnut the greens are deep, not light. Buttons are the deep sage with cream words, as in light
+   mode (5.4:1); the selected tint is that deep sage over the field, so it reads green without glowing (text AA, measured) */
+[data-theme="lantern"], [data-theme="lantern"] .paper {
+  --input-selected-bg: color-mix(in oklab, var(--brand-sage-ink) 45%, var(--input-bg));
+  --button-bg: var(--brand-sage-ink);
+  --button-ink: var(--brand-shiro-kinari);
+  --button-line-hover: color-mix(in oklab, var(--brand-sage-ink) 45%, var(--ink));
 }
 
 /* ─── Scales (same in every mode) ───────────────────────────────────────────── */

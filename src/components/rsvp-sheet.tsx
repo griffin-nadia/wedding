@@ -271,7 +271,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild disabled={locked}>{children}</SheetTrigger>
-        <SheetContent aria-describedby={undefined}
+        <SheetContent aria-describedby={undefined} className="rsvp-sheet"
           // Enter (the keyboard's tick) in a text or date field goes to the next field, or puts the keyboard away after
           // the last; it never moves the step on. The song search, the radios and the message keep theirs.
           onKeyDown={(e) => {
