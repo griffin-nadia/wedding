@@ -1388,6 +1388,11 @@ svg.lucide { stroke-width: 1.5; }
 .remove-btn { display: grid; flex: none; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-chip); color: var(--muted-foreground); outline: 2px solid transparent; outline-offset: 2px; }
 .remove-btn:focus-visible { outline-color: var(--ring); }
 @media (hover: hover) { .remove-btn:hover { color: var(--foreground); } }
+/* A reply's status (run 21): the line in its status ink with a small icon, the next action beside it */
+.reply-status { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-4); row-gap: var(--space-1); }
+.reply-status-line { display: inline-flex; align-items: center; gap: var(--space-2); font-family: var(--font-label); font-weight: 500; color: var(--status-success); }
+.reply-status[data-tone="pending"] .reply-status-line { color: var(--status-pending); }
+.reply-status[data-tone="closed"] .reply-status-line { color: var(--status-closed); }
 .song-card { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--card); }
 
 /* Paper you could hold (the fortune box and its slip, the flying-from card, the envelope, the sent letter): the paper

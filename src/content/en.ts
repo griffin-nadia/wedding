@@ -114,7 +114,7 @@ export const en = {
   },
   theme: { label: "Evening mode" },
   home: {
-    pills: { replied: "Replied" },
+    pills: { replied: "Replied, thank you" },
     rsvpClosed: `Replies are closed now. If something's changed, message ${A} or ${B}.`,
     dear: (name: string) => `Dear ${name},`,
     /** The greeting's names in this language: "Sam, Alex and your plus one" */
