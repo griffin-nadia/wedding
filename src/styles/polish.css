@@ -92,6 +92,14 @@ html { scrollbar-gutter: stable; }
   :is(.is-opening, .is-sealing) .envelope-float, :is(.is-opening, .is-sealing) .envelope-float::after, .arrival.is-pulling .envelope-float, .arrival.is-pulling .envelope-float::after { animation-play-state: paused; }
   .arrival .envelope:active { transform: translateY(-4px) scale(var(--press-scale)); }
 }
+/* Laptops (run 21): a slight lean towards the pointer while it waits, up to 6px across, 4px down and 2 degrees, eased.
+   Only while sealed and still (not opening, sealing or being pulled), so the open animation starts from the true box. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .arrival:not(.is-opening, .is-sealing, .is-pulling) .arrival-stack {
+    transform: perspective(1200px) translate(calc(var(--px, 0) * 6px), calc(var(--py, 0) * 4px)) rotateY(calc(var(--px, 0) * 2deg)) rotateX(calc(var(--py, 0) * -2deg));
+    transition: transform 900ms var(--ease-paper);
+  }
+}
 /* The music toggle, on but waiting for the first tap to be allowed to play: a slow ring, none under reduced motion */
 @keyframes music-waiting { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--action) 40%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in oklab, var(--action) 0%, transparent); } }
 @media (prefers-reduced-motion: no-preference) { [data-music-toggle][data-waiting] { animation: music-waiting 2.4s var(--ease-paper-in-out) infinite; } }

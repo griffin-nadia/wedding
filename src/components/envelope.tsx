@@ -194,6 +194,23 @@ export function Arrival({ enabled, onOpened, children, reseal = 0 }: { enabled: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
   useEffect(() => () => stop(), [])
+  // Laptops (run 21): while it waits, the envelope leans a few px and a degree or two towards the pointer, eased by CSS
+  // (polish.css, .arrival-stack). Off on touch and under reduced motion, and gone the moment it opens or seals.
+  useEffect(() => {
+    const el = stage.current
+    if (phase !== "sealed" || !el || !matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)").matches) return
+    const lean = (e: PointerEvent) => {
+      const r = button.current?.getBoundingClientRect()
+      if (!r) return
+      const k = (v: number) => Math.max(-1, Math.min(1, v)).toFixed(3)
+      el.style.setProperty("--px", k((e.clientX - (r.left + r.width / 2)) / (innerWidth / 2)))
+      el.style.setProperty("--py", k((e.clientY - (r.top + r.height / 2)) / (innerHeight / 2)))
+    }
+    const rest = () => { el.style.setProperty("--px", "0"); el.style.setProperty("--py", "0") }
+    window.addEventListener("pointermove", lean)
+    document.documentElement.addEventListener("pointerleave", rest)
+    return () => { window.removeEventListener("pointermove", lean); document.documentElement.removeEventListener("pointerleave", rest); el.style.removeProperty("--px"); el.style.removeProperty("--py") }
+  }, [phase])
 
   const arrival = enabled && phase !== "open"
   const first = household?.guests.filter((g) => !g.plusOne).map((g) => g.firstName).join(" & ") ?? ""

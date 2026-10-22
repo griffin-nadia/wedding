@@ -1,5 +1,5 @@
-import { config } from "./config"
-import { DATES } from "./wedding-dates"
+import { config } from "./config.ts"
+import { DATES } from "./wedding-dates.ts"
 
 export function countdown(now = new Date()) {
   const ms = Math.max(0, new Date(config.weddingStart).getTime() - now.getTime())
