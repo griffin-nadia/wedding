@@ -123,7 +123,7 @@ export const PENDING = {
     ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。",
   },
   "faqs.details.a": {
-    en: "Your reply comes straight to us and no one else sees it. We'll delete it a few months after the wedding.",
+    en: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding.",
     ja: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。",
   },
   "faqs.whoMade.a": {

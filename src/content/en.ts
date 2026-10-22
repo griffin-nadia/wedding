@@ -315,7 +315,7 @@ export const en = {
     // Their picks (planner, 7 to 11 Oct): rough prices per night
     picks: {
       title: "Our picks",
-      note: "Links go to each hotel's own site, but compare other booking sites too. Prices change.",
+      note: "Links go to each hotel's own site, but we encourage you to compare other booking sites. Prices may change, and some hotels may not make rooms available until 6 months before. It will most likely be cheaper per person to book for larger groups: even 4 people is better than 2.",
       hotelsTitle: "Hotels",
       airbnbsTitle: "Airbnbs",
       airbnbsNote: "Cheaper per person when you split one.",
@@ -334,12 +334,12 @@ export const en = {
         { name: "DoubleTree by Hilton Kyoto Higashiyama", area: "Kiyomizu-Gojo", price: "from ~$200 AUD", note: "Next to a station", href: "https://www.hilton.com/en/hotels/itmhadi-doubletree-kyoto-higashiyama/" },
       ],
       airbnbs: [
-        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$320", note: "Not right next to a station", href: "https://www.airbnb.com.au/rooms/32966481" },
+        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$320", note: "Not right next to a station, but achievable", href: "https://www.airbnb.com.au/rooms/32966481" },
         { area: "Kiyomizu-Gojo", sleeps: "4", price: "~$400", note: "", href: "https://www.airbnb.com.au/rooms/1682420188495547858" },
-        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$400", note: "Not right next to a station", href: "https://www.airbnb.com.au/rooms/1541783233800920181" },
-        { area: "Kiyomizu-Gojo", sleeps: "4 to 5", price: "~$450", note: "", href: "https://www.airbnb.com.au/rooms/1735167450296336070" },
+        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$400", note: "Not right next to a station, but achievable", href: "https://www.airbnb.com.au/rooms/1541783233800920181" },
+        { area: "Kiyomizu-Gojo", sleeps: "4 to 5", price: "~$450", note: "4 might be better", href: "https://www.airbnb.com.au/rooms/1735167450296336070" },
         { area: "Higashiyama", sleeps: "4", price: "~$450", note: "", href: "https://www.airbnb.com.au/rooms/29807727" },
-        { area: "Near The Sodoh", sleeps: "6", price: "~$460", note: "Very close to the venue, not close to a station", href: "https://www.airbnb.com.au/rooms/15104813" },
+        { area: "Near The Sodoh", sleeps: "6", price: "~$460", note: "One bedroom is the living room. Very close to the venue, but not close to a station", href: "https://www.airbnb.com.au/rooms/15104813" },
         { area: "Sanjo", sleeps: "9", price: "~$660", note: "", href: "https://www.airbnb.com.au/rooms/1456233517873267728" },
       ],
     },
