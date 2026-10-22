@@ -1,6 +1,7 @@
 import type { Entry } from "./types"
 import { entries as opening } from "./x/opening"
 import { entries as story } from "./x/story"
+import { entries as story24 } from "./x/story24"
 import { entries as journey } from "./x/journey"
 import { entries as confirmation } from "./x/confirmation"
 import { entries as paper } from "./x/paper"
@@ -20,6 +21,7 @@ export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "opening", title: "Opening", entries: opening },
   { id: "arrival", title: "Arrival framing", entries: arrival },
   { id: "story", title: "Our story", entries: story },
+  { id: "story24", title: "Our story, nine ways (run 24)", entries: story24 },
   { id: "journey", title: "Journey", entries: journey },
   { id: "map", title: "Venue map", entries: map },
   { id: "confirmation", title: "Confirmation", entries: confirmation },
