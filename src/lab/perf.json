@@ -413,14 +413,14 @@
   "globe-watercolour": {
    "fps": 56,
    "longTasks": 2,
-   "longestMs": 124,
+   "longestMs": 132,
    "kb": 242,
    "takes": {
     "-": {
      "fps": 56,
      "p95": 17,
      "longTasks": 2,
-     "longestMs": 124,
+     "longestMs": 132,
      "loadLongTasks": 2,
      "kb": 242
     }
@@ -471,6 +471,70 @@
      "longestMs": 0,
      "loadLongTasks": 2,
      "kb": 240
+    }
+   }
+  },
+  "globe-dotted": {
+   "fps": 59,
+   "longTasks": 1,
+   "longestMs": 59,
+   "kb": 239,
+   "takes": {
+    "-": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 1,
+     "longestMs": 59,
+     "loadLongTasks": 2,
+     "kb": 239
+    }
+   }
+  },
+  "globe-lantern": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 239,
+   "takes": {
+    "-": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 239
+    }
+   }
+  },
+  "globe-papercut": {
+   "fps": 58,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 240,
+   "takes": {
+    "-": {
+     "fps": 58,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 240
+    }
+   }
+  },
+  "globe-inkline": {
+   "fps": 59,
+   "longTasks": 0,
+   "longestMs": 0,
+   "kb": 239,
+   "takes": {
+    "-": {
+     "fps": 59,
+     "p95": 17,
+     "longTasks": 0,
+     "longestMs": 0,
+     "loadLongTasks": 2,
+     "kb": 239
     }
    }
   }

@@ -24,7 +24,8 @@ import { breathe, cssHex } from "./kit-paint"
  *    (lon -180..180 across, lat 90..-90 down), painted in steps with `await breathe(g)` between them (kit-paint.ts has
  *    land(), sheet(), grain(), seeded(), lonX/latY). Cache nothing yourself: the kit keeps one picture per look and theme.
  *    (Optional also: back, the colour behind the key's swatches when a line colour wouldn't show on the page.)
- * 2. Optional: seeThrough (the far side through the paper), shade (darker towards the rim), rim (an ink outline), glsl
+ * 2. Optional: seeThrough (the far side through the paper), shade (darker towards the rim), rim (an ink outline), glow
+ *    (a still glow under the places and lines, for Lantern night), glsl
  *    (a few lines of fragment shader acting on `col`, with vUv, vK = 0 flat .. 1 globe, vZ = how much a point faces
  *    you), segments (a low count for a faceted look), inks (line colours), farLines, decor (an overlay inside the
  *    map's box, e.g. a compass rose or a glass dome) and css (its own styles, classes prefixed x-<id>-).
@@ -62,6 +63,10 @@ export type Look = {
   segments?: [number, number]
   /** The colour behind the key's swatches (the look's sea), when a line colour wouldn't show on the page's paper */
   back?: (night: boolean) => string
+  /** A still glow under every place and line on the 2D layer (e.g. lanterns at night): its colour, how it mixes, how
+   *  big the glow at a guest's city is in CSS pixels at 680 wide (Kyoto's is twice that), and the strength of a wide
+   *  soft pass under each line, 0 for none. Nothing moves in it: no shimmer. */
+  glow?: (night: boolean) => { colour: string; blend: GlobalCompositeOperation; size: number; line: number }
   /** Drawn over the map inside its box (aria-hidden decoration) */
   decor?: ReactNode
   /** Its own styles */
@@ -220,6 +225,15 @@ export function GlobeLab({ look }: { look: Look }) {
         // A CPU canvas: a few dozen lines a frame is cheap to draw there and needs no GPU flush or read back
         const g = cv.getContext("2d", { willReadFrequently: true })!
         const far = look.farLines ?? (look.seeThrough ?? 0) * 0.5
+        // The look's glow, as one soft sprite drawn at each place (cheap: a few dozen small images a frame)
+        const glow = look.glow?.(night)
+        const sprite = document.createElement("canvas")
+        if (glow) {
+          sprite.width = sprite.height = 64
+          const sg = sprite.getContext("2d")!, rg = sg.createRadialGradient(32, 32, 0, 32, 32, 32)
+          rg.addColorStop(0, glow.colour); rg.addColorStop(0.25, glow.colour); rg.addColorStop(1, "transparent")
+          sg.globalAlpha = 1; sg.fillStyle = rg; sg.fillRect(0, 0, 64, 64)
+        }
         let w = 0, h = 0, r = 1
         const size = () => {
           w = el.clientWidth; h = el.clientHeight; r = Math.min(phone ? 1.5 : 2, devicePixelRatio)
@@ -303,6 +317,17 @@ export function GlobeLab({ look }: { look: Look }) {
             g.beginPath(); g.arc(w / 2, h / 2, R, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1
           }
           const globe = s.m > 0.98
+          if (glow) {
+            const z = Math.max(0.6, w / 680) * glow.size
+            g.globalCompositeOperation = glow.blend
+            const spot = (la: number, lo: number, size: number) => {
+              place(la * RAD, wrap(lo * RAD - s.lon), 0.004, s.m, s.tilt, pt); project(pt, w, h, px)
+              if (!(globe && hidden(pt))) g.drawImage(sprite, px[0] - size / 2, px[1] - size / 2, size, size)
+            }
+            spot(KYOTO.lat, KYOTO.lon, z * 2)
+            for (const { trip } of arcs) spot(trip.lat, trip.lon, trip.kind === "guest" ? z : z * 1.4)
+            g.globalCompositeOperation = "source-over"
+          }
           for (let j = 0; j < arcs.length; j++) {
             const { trip, lat, lon, alt } = arcs[j]
             const p = reduce ? 1 : Math.max(0, Math.min(1, (s.clock - starts[j]) / dur))
@@ -320,6 +345,11 @@ export function GlobeLab({ look }: { look: Look }) {
             g.globalAlpha = trip.kind === "guest" ? 0.7 : 1
             // The household's own line gets a soft darker edge under it, so the gold holds on pale paper
             if (trip.kind === "you") { g.globalAlpha = 0.25; drawLine(g, style, xs, ys, al, n, N, { ...o, colour: inks!.ink, width: o.width + 2, head: false }); g.globalAlpha = 1 }
+            if (glow?.line) {
+              g.globalCompositeOperation = glow.blend; g.globalAlpha = glow.line * (trip.kind === "guest" ? 0.7 : 1)
+              drawLine(g, style, xs, ys, al, n, N, { ...o, halo: true, head: false })
+              g.globalCompositeOperation = "source-over"; g.globalAlpha = trip.kind === "guest" ? 0.7 : 1
+            }
             drawLine(g, style, xs, ys, al, n, N, o)
           }
           g.globalAlpha = 1

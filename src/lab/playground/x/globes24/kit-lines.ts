@@ -23,6 +23,8 @@ export type LineDraw = {
   head: boolean
   /** Seconds, for the leaf's sway */
   time: number
+  /** A wide soft pass under the line (a look's glow): the same dots and dashes in the same places, only wider */
+  halo?: boolean
 }
 
 const PLANE = new Path2D("M1 0L-0.85 -0.7L-0.4 0L-0.85 0.7Z")
@@ -50,16 +52,17 @@ function ribbon(g: CanvasRenderingContext2D, xs: ArrayLike<number>, ys: ArrayLik
 }
 
 function run(g: CanvasRenderingContext2D, style: LineStyle, xs: ArrayLike<number>, ys: ArrayLike<number>, a: number, b: number, total: number, o: LineDraw) {
-  const w = o.width
+  const w = o.width, k = o.halo ? 3.4 : 1
   g.strokeStyle = o.colour; g.fillStyle = o.colour; g.lineCap = "round"; g.lineJoin = "round"
-  if (style === "ink") return ribbon(g, xs, ys, a, b, total, w * 1.25)
+  if (style === "ink") return ribbon(g, xs, ys, a, b, total, w * 1.25 * k)
+  if (o.halo && style === "thread") { g.lineWidth = w * k; g.setLineDash([]); path(g, xs, ys, a, b); g.stroke(); return }
   if (style === "thread") {
     // A thread: the strand, then a fainter twist along it so it reads as spun
     g.lineWidth = w; g.setLineDash([]); path(g, xs, ys, a, b); g.stroke()
     g.lineWidth = Math.max(0.6, w * 0.4); g.setLineDash([w * 1.4, w * 1.6]); g.strokeStyle = "rgba(255, 255, 255, 0.38)"; g.stroke()
     return
   }
-  g.lineWidth = style === "dots" ? w * 1.5 : style === "stitch" ? w * 1.1 : Math.max(1, w * 0.75)
+  g.lineWidth = k * (style === "dots" ? w * 1.5 : style === "stitch" ? w * 1.1 : Math.max(1, w * 0.75))
   g.setLineDash(style === "dots" ? [0.01, w * 2.8] : style === "stitch" ? [w * 3, w * 2.4] : [w * 1.2, w * 2.4])
   path(g, xs, ys, a, b); g.stroke()
 }
@@ -79,7 +82,7 @@ export function drawLine(g: CanvasRenderingContext2D, style: LineStyle, xs: Arra
   }
   g.setLineDash([])
   // The thread's knot where it starts
-  if (style === "thread" && al[0] > 0) {
+  if (style === "thread" && !o.halo && al[0] > 0) {
     g.globalAlpha = base * al[0]; g.fillStyle = o.colour; g.strokeStyle = o.ink; g.lineWidth = 0.8
     g.beginPath(); g.arc(xs[0], ys[0], o.width * 1.35, 0, Math.PI * 2); g.fill(); g.stroke()
     g.beginPath(); g.arc(xs[0] + o.width * 1.5, ys[0] - o.width * 0.6, o.width * 0.7, 0, Math.PI * 2); g.strokeStyle = o.colour; g.stroke()
