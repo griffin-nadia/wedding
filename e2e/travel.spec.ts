@@ -23,6 +23,9 @@ test("the jump links: the active one in full, soft fades where more links are pa
 
 test("around the venue: no label overlaps the river, a route, a leaf or another label", async ({ page }) => {
   await page.goto("travel?h=sample#around")
+  // The old drawn map only shows with Nadia's map switched off (config.venueMap, on since run 26)
+  await page.waitForLoadState("networkidle")
+  test.skip(await page.locator(".vmap").count() > 0, "Nadia's venue map is on")
   const map = page.locator(".kmap")
   await map.scrollIntoViewIfNeeded()
   for (const name of ["The Sodoh", "Kyoto Station", "Gion-Shijo Station", "Yasaka Pagoda"]) {

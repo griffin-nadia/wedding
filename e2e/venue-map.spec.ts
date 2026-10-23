@@ -1,15 +1,11 @@
 import { test, expect } from "@playwright/test"
 
-// Run 22: Nadia's venue map is off on the site (config.venueMap) until the invites are out; ?preview shows it. On it:
-// a button over each of her 11 places, the chosen one's card, the route switch, the full-size link and the list with
-// the Japanese names.
-test("the venue map is off by default and complete with ?preview", async ({ page }) => {
+// Run 22: Nadia's venue map (config.venueMap, on since run 26, so no ?preview needed). On it: a button over each of
+// her 11 places, the chosen one's card, the route key, Open the map and the list with the Japanese names.
+test("the venue map is on and complete", async ({ page }) => {
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
   await page.goto("travel?h=sample#around")
-  await expect(page.locator(".kmap")).toBeVisible()
-  await expect(page.locator(".vmap")).toHaveCount(0)
-
-  await page.goto("travel?h=sample&preview#around")
+  await expect(page.locator(".kmap")).toHaveCount(0)
   const map = page.locator(".vmap")
   await expect(map).toBeVisible()
   await expect(map.locator(".vmap-pin")).toHaveCount(11)
