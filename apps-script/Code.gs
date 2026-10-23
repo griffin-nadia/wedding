@@ -28,7 +28,9 @@
  * Script properties (Project settings > Script properties) override these defaults:
  *   SITE_URL        https://griffin-nadia.github.io/wedding
  *   CHANGES_LOCK    2027-04-30  (after this date the site refuses edits)
- *   REPLY_TO        griffinandnadia@gmail.com
+ *   REPLY_TO        the wedding account's address: only here, never in the repo (run 26). If it's missing, the
+ *                   first ?action=health after a deploy fills it in from the web app's own account (it runs as the
+ *                   wedding account), and health stays "ok":false until it's set
  *   RSVP_BY         2027-02-15
  *   TEST_EMAIL      where test invites go (asked for the first time you send a test)
  *   NOTIFY_CHANGES  "yes" to email REPLY_TO when someone changes from coming to not coming
@@ -49,7 +51,7 @@ const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", ema
 const DEFAULTS = {
   SITE_URL: "https://griffin-nadia.github.io/wedding",
   CHANGES_LOCK: "2027-04-30",
-  REPLY_TO: "griffinandnadia@gmail.com",
+  REPLY_TO: "", // Script Properties only (run 26)
   RSVP_BY: "2027-02-15",
   TEST_EMAIL: "",
   NOTIFY_CHANGES: "no",
@@ -444,6 +446,7 @@ function doGet(e) {
     if (action === "content") return json_(content_())
     if (action === "crew") return json_(crew_(p.token))
     // Run 20: anyone gets only { ok }; the detail needs ?key= (HEALTH_KEY in Script Properties, docs/monitoring.md)
+    if (action === "health") ensureReplyTo_()
     if (action === "ping" && !keyOk_(p.key)) return json_({ ok: true })
     if (action === "health" && !keyOk_(p.key)) return json_({ ok: health_().ok })
     if (action === "ping") {
@@ -2948,8 +2951,21 @@ function health_() {
     out.queueMoving = !out.pending || (last > 0 && Date.now() - last < 15 * 60 * 1000)
   } catch (err) { out.queueMoving = false }
   try { out.emailQuota = MailApp.getRemainingDailyQuota() } catch (err) { /* not authorised yet: left null */ }
-  out.ok = out.sheet && out.queueMoving
+  // Run 26: the wedding account's address is set (Script Properties), or no email can go to them
+  out.replyTo = Boolean(PropertiesService.getScriptProperties().getProperty("REPLY_TO"))
+  out.ok = out.sheet && out.queueMoving && out.replyTo
   return out
+}
+
+/** Run 26: REPLY_TO lives only in Script Properties. The web app runs as whoever deployed it, the wedding account, so
+ *  a health check through it fills a missing REPLY_TO with that account's address. Never overwrites a set one. */
+function ensureReplyTo_() {
+  try {
+    const props = PropertiesService.getScriptProperties()
+    if (props.getProperty("REPLY_TO")) return
+    const me = runningAs_()
+    if (me) props.setProperty("REPLY_TO", me)
+  } catch (err) { /* health then reports replyTo: false */ }
 }
 
 /**

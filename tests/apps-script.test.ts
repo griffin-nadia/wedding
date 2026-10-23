@@ -66,6 +66,7 @@ test("the launch report's quota guard: invite emails counted per address, and wh
 
 // Google's services stubbed: what health_ and alert_ do with them
 function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: string } = {}) {
+  if (!("REPLY_TO" in props)) props.REPLY_TO = "us@couple.test" // run 26: Script Properties only, as on the live script
   const sent: unknown[] = [], posted: string[] = [], cache: Record<string, string> = {}
   const g = {
     __sent: sent, __posted: posted, console: { error() {} },
@@ -73,7 +74,7 @@ function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: st
     CacheService: { getScriptCache: () => ({ get: (k: string) => cache[k] ?? null, put: (k: string, v: string) => { cache[k] = v } }) },
     MailApp: { getRemainingDailyQuota: () => 97, sendEmail: (m: unknown) => sent.push(m) },
     UrlFetchApp: { fetch: (_u: string, o: { payload: string }) => posted.push(o.payload) },
-    Session: { getEffectiveUser: () => ({ getEmail: () => opts.me ?? "griffinandnadia@gmail.com" }) },
+    Session: { getEffectiveUser: () => ({ getEmail: () => opts.me ?? "us@couple.test" }) },
     SpreadsheetApp: { getActive: () => ({ getSheetByName: () => (opts.sheet === false ? null : { getLastRow: () => 40 }) }) },
     ContentService: { MimeType: { JSON: "json" }, createTextOutput: (t: string) => ({ setMimeType: () => ({ getContent: () => t }) }) },
     ScriptApp: { getProjectTriggers: () => [] },
@@ -83,7 +84,7 @@ function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: st
   return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void; watchHealth: () => void; flushQueue: () => void; doGet: (e: object) => { getContent: () => string }; foldSmall_: (c: object[], min: number) => { name: string; n: number }[]; ask_: (b: object) => { ok: boolean; code?: string } } }
 }
 test("?action=health: ok only when the sheet opens and the queue is moving; counts, no guest data", () => {
-  assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "service", "sheet"])
+  assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "replyTo", "service", "sheet"])
   assert.equal(backEnd({}).__f.health_().ok, true)
   assert.equal(backEnd({}, { sheet: false }).__f.health_().ok, false)
   assert.equal(backEnd({ "q:mail:x": "{}", last_flush_at: String(Date.now() - 20 * 60 * 1000) }).__f.health_().ok, false) // stuck
@@ -171,4 +172,14 @@ test("journeys: a city with one household folds into its country, and a country 
     { name: "Melbourne", country: "AU", lat: -37.81, lon: 144.96, n: 3 },
     { name: "AU", country: "AU", lat: -37, lon: 144, n: 2 },
   ])
+})
+test("run 26: REPLY_TO only in Script Properties; health fills a missing one from the web app's account, never overwrites", () => {
+  const empty = backEnd({ REPLY_TO: "" }, { me: "wedding@example.com" })
+  assert.equal(empty.__f.health_().ok, false) // not set: health says so
+  empty.__f.doGet({ parameter: { action: "health" } })
+  assert.equal(empty.__f.health_().replyTo, true)
+  const set = backEnd({ REPLY_TO: "wedding@example.com" }, { me: "someone@example.com" })
+  set.__f.doGet({ parameter: { action: "health" } })
+  assert.equal(set.__f.health_().ok, true)
+  assert.doesNotMatch(fs.readFileSync("apps-script/Code.gs", "utf8"), /@gmail\.com/) // no address in the repo
 })
