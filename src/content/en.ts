@@ -212,7 +212,7 @@ export const en = {
       // Their final wording (Inv details, column E, 22 Oct): Before you fly, Flights, Accommodation, SIM / wifi
       { title: "Passport", body: "Check your travel information is all up to date! Make sure your passport has at least 6 months left after you fly home. If it needs renewing, get onto it soon!" },
       { title: "Flights", body: "Book your flights as early as you can. The date's locked in, so it's not going anywhere! While you're over here, make a trip of it. We'll share some ideas for the days before the wedding, and we'd love it if you stuck around for a few days after too." },
-      { title: "Where to stay", body: "Once you have your flights booked, you'll need to book somewhere to stay! We will collect some recommendations for hotels and Air BnBs near the venue. Heads up: Japanese hotels are usually pretty small and no-frills, so plan for that. Want to team up with other guests and share a place? Go for it! If you're stuck, give us a shout!" },
+      { title: "Where to stay", body: "Once you have your flights booked, you'll need to book somewhere to stay! Please see the where to stay guide above. Want to team up with other guests and share a place? Go for it! If you're stuck, give us a shout!" },
       { title: "SIM or pocket wifi", body: "Grab an eSIM or pocket wifi before you go. A few we like:", links: [
         { label: "Sakura Mobile", href: "https://www.sakuramobile.jp/" },
         { label: "Ninja WiFi", href: "https://ninjawifi.com/en/plan/sim" },

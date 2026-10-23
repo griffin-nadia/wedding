@@ -5,7 +5,7 @@ import { FORTUNES } from "@/content/en"
 import { getFortunes, saveDraw, type Fortune } from "@/lib/api"
 import { useLang } from "@/lib/lang"
 import { canShake, draftsOn, drawnKey, FORTUNE_EVENT, keepDraws, localDraws, saveFortune } from "@/lib/fortune"
-import { fortuneFor, fortuneIndex, lastDraw, mergeDraws, pickFor, type Draw } from "@/lib/draws"
+import { fortuneFor, fortuneIndex, lastDraw, mergeDraws, pickFor, randomPick, type Draw } from "@/lib/draws"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { kanjiNumber } from "@/lib/kanji"
@@ -97,7 +97,8 @@ export function FortuneCard({ token, className, title }: { token: string; classN
   const fortune = pool[i]
 
   function record(draw: number) {
-    const k = pickFor(token, draw, pool, drafts, draw > 1 ? fortune.no : undefined) // a redraw is always a new slip
+    // The first is the household's own; a redraw is random and always a new slip (run 26 review)
+    const k = draw > 1 ? randomPick(pool, drafts, fortune.no) : pickFor(token, draw, pool, drafts)
     const d = { draw, no: pool[k].no }
     setDraws((now) => mergeDraws(now, [d]))
     keepDraws(token, [d])
