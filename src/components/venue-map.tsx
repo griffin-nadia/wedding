@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { flushSync } from "react-dom"
 import { Maximize2, MapPin } from "lucide-react"
 import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useLang } from "@/lib/lang"
@@ -77,19 +78,41 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
     const ro = new ResizeObserver(fit); ro.observe(box)
     return () => ro.disconnect()
   }, [place, zoom.box])
-  // One gentle pulse of the dots the first time the map scrolls into view (run 24b), so it's clear they can be tapped
-  const [seen, setSeen] = useState(false)
+  // One gentle pulse of the dots the first time the map scrolls into view (run 24b), so it's clear they can be tapped.
+  // Run 26: "pulse" only while it plays, so a dot that stops being the chosen one later doesn't pulse again.
+  const [seen, setSeen] = useState<"pulse" | "done" | null>(null)
   useEffect(() => {
     const el = zoom.box.current
     if (!el || seen) return
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen(true); io.disconnect() } }, { threshold: 0.5 })
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen("pulse"); io.disconnect() } }, { threshold: 0.5 })
     io.observe(el)
     return () => io.disconnect()
   }, [zoom.box, seen])
+  useEffect(() => {
+    if (seen !== "pulse") return
+    const t = setTimeout(() => setSeen("done"), 1300)
+    return () => clearTimeout(t)
+  }, [seen])
+  // Run 26: the places are one stop for Tab (the chosen one, or the last one focused); the arrow keys move to the
+  // nearest place that way on the map, Home and End to the first and last. Enter or Space chooses it (its card).
+  const [focused, setFocused] = useState<string | null>(null)
+  const keys = (e: React.KeyboardEvent) => {
+    const from = m.places.find((p) => p.id === (e.target as HTMLElement).dataset.id)
+    const dir = ({ ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] } as Record<string, number[]>)[e.key]
+    if (!from || (!dir && e.key !== "Home" && e.key !== "End")) return
+    e.preventDefault()
+    let to = e.key === "Home" ? m.places[0] : e.key === "End" ? m.places[m.places.length - 1] : undefined, best = Infinity
+    if (dir) for (const p of m.places) {
+      const dx = p.at[0] - from.at[0], dy = (p.at[1] - from.at[1]) * (1500 / 1800) // the art is 1800 × 1500
+      const along = dx * dir[0] + dy * dir[1], across = Math.abs(dx * dir[1] - dy * dir[0])
+      if (along > 0 && along + 2 * across < best) { best = along + 2 * across; to = p }
+    }
+    if (to) art.current?.querySelector<HTMLElement>(`[data-id="${to.id}"]`)?.focus()
+  }
   return (
     <section aria-label={m.title} className="flex flex-col gap-4">
       <p className="text-small text-muted-foreground">{k.intro}</p>
-      <div className="vmap" ref={zoom.box} data-zoomed={zoom.s > 1 || undefined} data-seen={seen || undefined} {...zoom.handlers}>
+      <div className="vmap" ref={zoom.box} data-zoomed={zoom.s > 1 || undefined} data-seen={seen ?? undefined} {...zoom.handlers}>
         <div className="vmap-art" ref={art} style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` }}>
           <picture>
             <source type="image/avif" srcSet={`${base}art/map/venue-map-800.avif 800w, ${base}art/map/venue-map-1600.avif 1600w`} sizes="(min-width: 768px) 652px, 92vw" />
@@ -102,14 +125,17 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
           </svg>
           {/* The old map's pins on her dots: a ring on each, filled when chosen, and the chosen one's label chip (Japanese
               over English) on the side away from her own painted label, so it never covers it */}
+          <div role="toolbar" aria-label={m.listTitle} className="vmap-pins" onKeyDown={keys}>
           {m.places.map((p, i) => (
             <button key={p.id} type="button" aria-pressed={on === p.id} aria-label={`${p.name}, ${p.ja}`} onClick={() => setOn(p.id)}
+              data-id={p.id} tabIndex={(focused ?? on) === p.id ? 0 : -1} onFocus={() => setFocused(p.id)}
               className={cn("vmap-pin", on === p.id && "is-on")} data-chip={on === p.id ? side : p.chip} data-kind={DOT[p.id] ?? "place"}
               style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%`, "--tilt": `${(i * 67) % 360}deg` } as React.CSSProperties}>
               <span aria-hidden className="vmap-dot" />
               {on === p.id && <span aria-hidden className="vmap-chip"><span lang="ja" className="font-ja">{p.ja}</span><span>{p.name}</span></span>}
             </button>
           ))}
+          </div>
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
@@ -120,18 +146,18 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
         <span className="text-small text-muted-foreground">{k.notToScale}</span>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-4">
-        {inModal ? <span /> : <VenueMapOpen />}
+        {inModal ? <span /> : <VenueMapOpen from={zoom.box} />}
         <span className="text-small text-muted-foreground vmap-hint">{m.zoomHint}</span>
       </div>
-      <div key={place.id} className="kmap-card" aria-live="polite">
+      <div key={place.id} className="kmap-card vmap-card" aria-live="polite">
         <p className="font-medium text-foreground">{place.name} <span lang="ja" className="font-ja text-muted-foreground">{place.ja}</span></p>
         <p>{place.body}</p>
-        <a href={place.maps} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center gap-1 self-start"><MapPin className="size-4" aria-hidden />{k.directions}</a>
+        <a href={place.maps} target="_blank" rel="noreferrer" className="btn-text press inline-flex min-h-11 items-center gap-1 self-start"><MapPin className="size-4" aria-hidden />{k.directions}</a>
       </div>
       <details className="vmap-list">
         <summary className="btn-text min-h-11 inline-flex items-center">{m.listTitle}</summary>
         <ul className="flex flex-col gap-1 pt-2">
-          {m.places.map((p) => <li key={p.id}><button type="button" className="btn-text min-h-11 text-left" onClick={() => setOn(p.id)}>{p.name} <span lang="ja" className="font-ja">{p.ja}</span></button></li>)}
+          {m.places.map((p) => <li key={p.id}><button type="button" className="btn-text press min-h-11 text-left" onClick={() => { setOn(p.id); setFocused(null) }}>{p.name} <span lang="ja" className="font-ja">{p.ja}</span></button></li>)}
         </ul>
       </details>
     </section>
@@ -142,14 +168,34 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
  * Run 25: "Open the map": the same map, places, card and routes full screen, from Travel (under the map) and The day
  * (beside How to get there, where there's no map inline). A dialog: focus stays in it, Escape and the close button
  * close it and focus goes back to the link. One component, so both pages show the same thing.
+ * Run 26: one shared transition (a view transition): the map grows out of the inline map (Travel) or the link (The day)
+ * into the full screen, and shrinks back into it on close, while the page fades. Reduced motion: the fade only.
+ * Browsers without view transitions: the sheet rises as every sheet does.
  */
-export function VenueMapOpen({ className }: { className?: string }) {
+type VT = { finished: Promise<void> }
+export function VenueMapOpen({ className, from }: { className?: string; from?: React.RefObject<HTMLElement | null> }) {
   const { t } = useLang()
   const m = t.venueMap
+  const [open, setOpen] = useState(false)
+  const [viaVt, setViaVt] = useState(false)
+  const link = useRef<HTMLButtonElement>(null)
+  const change = (next: boolean) => {
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => VT }
+    if (!doc.startViewTransition) return setOpen(next)
+    const root = document.documentElement, still = matchMedia("(prefers-reduced-motion: reduce)").matches
+    const src = still ? null : (from?.current ?? link.current)
+    root.dataset.vt = still ? "map-fade" : "map"
+    if (src && next) src.style.viewTransitionName = "vmap"
+    const vt = doc.startViewTransition(() => {
+      if (src) src.style.viewTransitionName = next ? "" : "vmap"
+      flushSync(() => { setViaVt(next); setOpen(next) })
+    })
+    vt.finished.finally(() => { if (src) src.style.viewTransitionName = ""; delete root.dataset.vt })
+  }
   return (
-    <Sheet>
-      <SheetTrigger asChild><button type="button" className={cn("btn-text inline-flex min-h-11 items-center gap-2 self-start", className)}><Maximize2 className="size-4" aria-hidden />{m.open}</button></SheetTrigger>
-      <SheetContent className="venue-modal" closeLabel={m.close} aria-describedby={undefined}>
+    <Sheet open={open} onOpenChange={change}>
+      <SheetTrigger asChild><button ref={link} type="button" className={cn("btn-text press inline-flex min-h-11 items-center gap-2 self-start", className)}><Maximize2 className="size-4" aria-hidden />{m.open}</button></SheetTrigger>
+      <SheetContent className="venue-modal" data-vt={viaVt || undefined} closeLabel={m.close} aria-describedby={undefined}>
         <SheetHead><SheetTitle className="heading">{m.title}</SheetTitle></SheetHead>
         <SheetBody><VenueMap inModal /></SheetBody>
       </SheetContent>

@@ -103,9 +103,10 @@ test("dots keep the minimum gap, sit on their spots, and no chip covers a dot", 
         const img = m.querySelector("img")!.getBoundingClientRect()
         const dots = [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((pin) => {
           const d = pin.querySelector<HTMLElement>(".vmap-dot")!, b = d.getBoundingClientRect(), cs = getComputedStyle(d)
-          const halo = pin.classList.contains("is-on") ? Math.max(0, ...[...cs.boxShadow.matchAll(/0px 0px 0px ([\d.]+)px/g)].map((x) => +x[1])) : 0
-          const scale = pin.classList.contains("is-on") ? new DOMMatrix(cs.transform).a : 1
-          return { x: b.left + b.width / 2, y: b.top + b.height / 2, r: (d.offsetWidth / 2) * scale + halo, b,
+          // The chosen one: its fill's soft ring (a spread from inside the ink ring), grown with the dot
+          const on = pin.classList.contains("is-on"), spread = +(getComputedStyle(d, "::before").boxShadow.match(/0px 0px 0px ([\d.]+)px/)?.[1] ?? 0)
+          const r = on ? Math.max(d.offsetWidth / 2, d.clientWidth / 2 + spread) * new DOMMatrix(cs.transform).a : d.offsetWidth / 2
+          return { x: b.left + b.width / 2, y: b.top + b.height / 2, r, b,
             at: Math.hypot(b.left + b.width / 2 - (img.left + (parseFloat(pin.style.left) / 100) * img.width), b.top + b.height / 2 - (img.top + (parseFloat(pin.style.top) / 100) * img.height)) }
         })
         let gap = Infinity
@@ -119,4 +120,23 @@ test("dots keep the minimum gap, sit on their spots, and no chip covers a dot", 
       expect(r.covered, `${w}: place ${i}: its chip covers a dot`).toBe(false)
     }
   }
+})
+
+// Run 26: the places are one Tab stop; arrow keys move to the nearest place that way, Enter chooses it (its card)
+test("arrow keys move between places and Enter opens the card", async ({ page }, info) => {
+  test.skip(info.project.name !== "laptop", "keyboard")
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto("travel?h=sample&preview#around")
+  const map = page.locator(".vmap")
+  await expect(map.getByRole("toolbar")).toBeVisible()
+  await expect(map.locator('.vmap-pin[tabindex="0"]')).toHaveCount(1)
+  await map.getByRole("button", { name: /The Sodoh/ }).focus()
+  await page.keyboard.press("ArrowDown") // The Sodoh, then straight down: Yasaka Pagoda
+  await expect(map.getByRole("button", { name: /Yasaka Pagoda/ })).toBeFocused()
+  await page.keyboard.press("ArrowUp")
+  await page.keyboard.press("ArrowUp") // up from The Sodoh: Yasaka Shrine
+  await expect(map.getByRole("button", { name: /Yasaka Shrine/ })).toBeFocused()
+  await page.keyboard.press("Enter")
+  await expect(page.locator(".kmap-card")).toContainText("Yasaka Shrine")
+  await expect(map.getByRole("button", { name: /Yasaka Shrine/ })).toHaveAttribute("aria-pressed", "true")
 })
