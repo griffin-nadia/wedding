@@ -310,6 +310,24 @@ test("the fortune folds open, centred, then settles", async ({ page }) => {
   await expect(dialog.getByRole("group", { name: /Great blessing/i })).toHaveCount(1) // the copies are hidden from screen readers
 })
 
+// Run 26: Draw another gives a new fortune and saves it as the next draw; the first stays saved as it was
+test("draw another adds draw 2 and keeps draw 1", async ({ page }) => {
+  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
+  await openForm(page)
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
+  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
+  await toCheck(page); await press(page, /^Send our reply$/)
+  await dialog.getByRole("button", { name: "Draw one" }).click()
+  const words = dialog.locator(".omikuji-slip .omikuji-text")
+  const first = await words.textContent()
+  await dialog.getByRole("button", { name: "Draw another" }).click()
+  await expect(words).not.toHaveText(first!)
+  await expect(dialog.locator(".omikuji-slip")).toBeFocused()
+  const draws = await page.evaluate(() => JSON.parse(localStorage.getItem("ng-draws-sample") ?? "[]"))
+  expect(draws.map((d: { draw: number }) => d.draw)).toEqual([1, 2])
+})
+
 // Run 25: a fortune drawn on an earlier visit no longer opens already unfolded for good (why it never folded after an
 // update on Android): each visit the tin is back, the same fortune folds open, and within the visit it stays open
 test("the fortune folds again on a later visit, after an update, then stays open for the visit", async ({ page }) => {
