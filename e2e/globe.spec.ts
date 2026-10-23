@@ -5,6 +5,7 @@ import { test, expect, type Page } from "@playwright/test"
 // − on the globe, Escape and the X back to the story. Chapter pins on both views go to their stop.
 test.use({ launchOptions: { args: ["--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } })
 test.describe.configure({ timeout: 90_000 })
+test.use({ trace: "retain-on-failure" }) // run 26: a trace when the full-screen map is slow on CI
 const toEnd = async (page: Page) => {
   await page.goto("our-story?h=sample")
   const next = page.getByRole("button", { name: /next chapter/i })
