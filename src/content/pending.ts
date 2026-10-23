@@ -173,6 +173,8 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.contactDay", ja: "当日の連絡先は改めてお知らせします。電話番号は日が近づいたらここに載せます。" },
   { key: "day.arrival", ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします" },
   { key: "story.keepReading", ja: "続きを読む" },
+  { key: "fortune.again", ja: "もう一度ひく" },
+  { key: "fortune.homeTitle", ja: "おみくじをひく" },
   { key: "photos.kid-griffin-1998.alt", ja: "1998年の学校写真の幼いグリフィン。赤いTシャツでほほえんでいる" },
   { key: "photos.kid-nadia-home.alt", ja: "家でにっこり笑う幼いナディア。髪をクリップで留めた二つ結びに、クリスマスツリーのTシャツ" },
   { key: "journey.victoria", ja: "ビクトリア" },

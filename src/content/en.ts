@@ -117,7 +117,7 @@ export const en = {
     seeList: "See as a list", seeMap: "See the map",
     list: { nadia: `${NADIA}: Brisbane to Kyoto`, griffin: `${GRIFFIN}: Canada to Kyoto`, you: (city: string) => `Your line: ${city} to Kyoto`, city: (city: string, n: number) => `${city}: ${n} ${n === 1 ? "line" : "lines"}` },
   },
-  fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes.", hint: "Tap the box to draw one.", hintShake: "Tap the box, or give your phone a little shake.", boxLabel: "The fortune box. Draw a fortune", drawing: "Shaking the box…", onMap: "See your line on the map" },
+  fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes.", hint: "Tap the box to draw one.", hintShake: "Tap the box, or give your phone a little shake.", boxLabel: "The fortune box. Draw a fortune", drawing: "Shaking the box…", onMap: "See your line on the map", again: "Draw another", homeTitle: "Draw your fortune" },
   driver: { label: "Taxi from Kyoto Station", fare: "15 to 20 minutes. Free in an MK Taxi with a ticket from the venue.", show: "Show the driver", maps: "Directions in Google Maps", mapsOpens: "opens Google Maps", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
   countdownMore: {
     until: "until we see you in Kyoto", tomorrow: "Tomorrow", today: "Today's the day", married: "Married",

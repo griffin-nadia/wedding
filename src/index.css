@@ -1155,7 +1155,7 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-stick { fill: var(--brand-hachimitsu); translate: 0 14px; transition: translate var(--duration-base) var(--ease-paper) 700ms; }
 .omikuji-tin.is-drawing .omikuji-stick { translate: 0 0; }
 /* The omikuji's washi (run 25): fixed colours, the same in light and Lantern */
-.omikuji-slip, .omikuji-back {
+.omikuji-slip, .omikuji-back, .omikuji-again {
   --washi: rgb(248 241 226 / 0.96);
   --washi-back: rgb(241 232 213 / 0.95);
   --washi-band-top: linear-gradient(to right, rgb(168 79 50 / 0.82), rgb(168 79 50 / 0.92) 12%, rgb(168 79 50 / 0.88) 88%, rgb(168 79 50 / 0.78));
@@ -1174,7 +1174,8 @@ svg.lucide { stroke-width: 1.5; }
    slip; the middle hangs from the first crease, the last from the second (nested, so it rides with the middle). The
    real slip holds its place underneath, unseen, then takes over with the creases easing out. */
 .done-column > .sent-next > .omikuji-stage { margin-inline: auto; }
-.omikuji-stage { position: relative; width: 100%; }
+.omikuji-stage { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--space-5); }
+.omikuji-paper { position: relative; width: 100%; } /* the fold's copies cover the slip only, not Draw another */
 .omikuji-slip.is-folded { opacity: 0; animation: none; }
 .omikuji-slip.is-fresh { animation: none; }
 .omikuji-fold { position: absolute; inset: 0; perspective: 1100px; transform-style: preserve-3d; pointer-events: none; }
@@ -1210,11 +1211,36 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-slip:focus-visible { outline-color: var(--input-focus); }
 .omikuji-slip .label-caps { color: var(--brand-kuri); }
 .omikuji-no { font-size: var(--type-small-size); letter-spacing: 0.2em; color: var(--brand-kuri); }
-.omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--brand-doro); }
+.omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--tier); }
+/* Run 26: the five tiers, calmest to strongest. Only the colour of the tier (its kanji and its name) and the seal's
+   ring change, with a heavier ring from Special up; layout, font and size are the same for all five */
+.omikuji-slip { --tier: var(--tier-great); --tier-ring: var(--tier-great-ring); --seal-ring: 5.5; }
+.omikuji-slip[data-tier="good"] { --tier: var(--tier-good); --tier-ring: var(--tier-good-ring); }
+.omikuji-slip[data-tier="special"] { --tier: var(--tier-special); --tier-ring: var(--tier-special-ring); --seal-ring: 6.5; }
+.omikuji-slip[data-tier="grand"] { --tier: var(--tier-grand); --tier-ring: var(--tier-grand-ring); --seal-ring: 7; }
+.omikuji-slip[data-tier="super"] { --tier: var(--tier-super); --tier-ring: var(--tier-super-ring); --seal-ring: 8; }
+.omikuji-slip .omikuji-tier { color: var(--tier); }
+.omikuji-seal .hanko-rim { stroke: var(--tier-ring); stroke-width: var(--seal-ring); }
+.omikuji-seal .hanko-rim-inner { stroke: var(--tier-ring); }
 .omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 34ch; } /* Nadia's fortunes run to three or four sentences (run 23) */
-.omikuji-category { color: var(--ink-muted); }
-.omikuji-count { opacity: 0.8; }
-.omikuji-save { min-height: 44px; color: var(--brand-doro); } /* the one link style (btn-text), in the slip's own ink: it's always bright paper */
+/* Run 26: tier, category and No. x of 25 in Caveat, as if written in by hand; the fortune stays in the serif */
+.omikuji-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.25rem; line-height: 1.1; letter-spacing: 0; text-transform: none; color: var(--brand-kuri); }
+.omikuji-category { color: var(--brand-kogecha); opacity: 0.75; }
+/* The one link style (btn-text), in the slip's own ink (it's always bright paper); run 26: in the serif, italic */
+.omikuji-save { min-height: 44px; color: var(--brand-doro); font-family: var(--font-display); font-style: italic; font-size: var(--type-body-size); }
+/* Run 26: Draw another. The slip's washi and ink, with a soft honey glow: the one thing to do next (no motion) */
+.omikuji-again {
+  min-height: 48px; padding: var(--space-2) var(--space-6); border-radius: var(--radius-control);
+  background-color: var(--washi); background-image: var(--washi-fibre); color: var(--brand-doro);
+  font-family: var(--font-display); font-size: var(--type-body-size); line-height: 1.2;
+  box-shadow: var(--elevation-paper), 0 0 0 1px rgb(168 79 50 / 0.35), 0 0 18px 4px rgb(var(--glow-honey) / 0.45);
+  outline: 2px solid transparent; outline-offset: 4px; transition: box-shadow var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper);
+  --glow-honey: 226 170 74;
+}
+@media (hover: hover) { .omikuji-again:hover:not(:disabled) { box-shadow: var(--elevation-paper), 0 0 0 1px rgb(168 79 50 / 0.5), 0 0 26px 8px rgb(var(--glow-honey) / 0.6); } }
+.omikuji-again:active:not(:disabled) { transform: scale(var(--press-scale)); }
+.omikuji-again:focus-visible { outline-color: var(--input-focus); }
+.omikuji-again:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }
   .omikuji-stick { transition: none; }
