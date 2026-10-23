@@ -194,7 +194,7 @@ export function Arrival({ enabled, onOpened, children, reseal = 0 }: { enabled: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
   useEffect(() => () => stop(), [])
-  // Laptops (run 21): while it waits, the envelope leans a few px and a degree or two towards the pointer, eased by CSS
+  // Laptops (run 21, more in run 26c): while it waits, the envelope leans up to 24px and 6 degrees towards the pointer, eased by CSS
   // (polish.css, .arrival-stack). Off on touch and under reduced motion, and gone the moment it opens or seals.
   useEffect(() => {
     const el = stage.current

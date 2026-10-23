@@ -38,8 +38,8 @@ export function Box({ drawing }: { drawing: boolean }) {
  * Omikuji after RSVP: Nadia's 25 (22 Oct), five tiers of five (大吉, 素晴吉, 良い吉, 特別吉, メガ吉), one per category
  * (Food, Travel, Social, Shopping, Fun), from the sheet's Fortunes tab; the slip shows its own tier. No bad luck. Closed: the tin, a line and "Draw one"; the tin itself is
  * also the button. Drawing shakes the tin (900 ms) and raises its stick, then the slip, centred, folds open like a
- * real omikuji (run 19): it comes out folded in three, 大吉 on top; the middle third swings down from behind, then the
- * last, each a paper fold with its shade lifting as it flattens and a little give as it lands; then the creases ease
+ * real omikuji (run 19): it comes out folded in three; from the middle (run 26c) the top third swings up and the last
+ * swings down, each a paper fold with its shade lifting as it flattens and a little give as it lands; then the creases ease
  * out to the two faint lines the paper keeps (about 1.1 s, then 0.9 s). The real slip holds its place from the start,
  * so nothing below moves, and takes focus. Android phones can shake to draw. Reduced motion: no shake, no fold, the
  * slip fades in. The fortune is the household's for good, on any device. Run 25: the tin comes back on each visit, so
@@ -153,7 +153,7 @@ export function FortuneCard({ token, className, title }: { token: string; classN
     )
   }
   return (
-    <div className={cn("omikuji-stage", className)}>
+    <div data-tier={tierOf(fortune)} className={cn("omikuji-stage", className)}>
       <div className="omikuji-paper">
         <div key={n} ref={slip} data-tier={tierOf(fortune)} tabIndex={-1} role="group" aria-labelledby={`fortune-head-${token}`} className={cn("omikuji-slip paper-feel", fold === "folding" && "is-folded", fold === "settling" && "is-fresh")}>
           <span aria-hidden className="omikuji-creases" />
@@ -169,9 +169,10 @@ export function FortuneCard({ token, className, title }: { token: string; classN
 }
 
 /**
- * The fold: three paper copies of the slip, each cut to its third. The top third stays; the middle hangs from the
- * first crease and the last from the second, so the last rides with the middle until it opens in turn. Looks only
- * (inert, hidden from screen readers): the real slip under it is the one that's read and focused.
+ * The fold: three paper copies of the slip, each cut to its third. Run 26c: it opens from the middle, like a real
+ * omikuji unfolded in the hand: the middle third stays, the top third swings up from the first crease and the last
+ * swings down from the second, both from behind it. Looks only (inert, hidden from screen readers): the real slip
+ * under it is the one that's read and focused.
  */
 function Fold({ i, of, fortune }: { i: number; of: number; fortune: Fortune }) {
   const { t } = useLang()
@@ -180,16 +181,14 @@ function Fold({ i, of, fortune }: { i: number; of: number; fortune: Fortune }) {
       <span className="omikuji-creases" />
       <SlipWords i={i} of={of} fortune={fortune} copy />
       <Button variant="link" tabIndex={-1} className="omikuji-save">{t.fortune.save}</Button>
-      {part > 1 && <span className="omikuji-shade" />}
+      {part !== 2 && <span className="omikuji-shade" />}
     </div>
   )
   return (
     <div className="omikuji-fold" aria-hidden inert>
-      {copy(1)}
-      <div className="omikuji-leaf omikuji-leaf-2">
-        {copy(2)}<span className="omikuji-back omikuji-back-2" />
-        <div className="omikuji-leaf omikuji-leaf-3">{copy(3)}<span className="omikuji-back omikuji-back-3" /></div>
-      </div>
+      {copy(2)}
+      <div className="omikuji-leaf omikuji-leaf-up">{copy(1)}<span className="omikuji-back omikuji-back-1" /></div>
+      <div className="omikuji-leaf omikuji-leaf-down">{copy(3)}<span className="omikuji-back omikuji-back-3" /></div>
     </div>
   )
 }

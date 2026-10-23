@@ -121,74 +121,10 @@ export const PENDING = {
 } as const
 
 /**
- * New Japanese lines written by us, not by a native speaker: each needs a native read before launch
- * (`npm run check:pending` lists them). The text is as it stands in ja.ts, PENDING above or art.ts (the music credit); a unit test
- * keeps them the same.
- * When one has been read (and corrected in ja.ts), delete it here.
+ * Japanese lines still waiting on a native read (`npm run check:pending` lists them; a unit test keeps each the same as
+ * on the site). Empty since run 26c: Jehan, 24 Oct, the Japanese is final as it stands, nothing waits on a read.
  */
-export const JA_TO_READ: { key: string; ja: string }[] = [
-  { key: "trouble.title", ja: "ただいま少し不具合が起きています" },
-  { key: "trouble.body", ja: "数分おいて、もう一度お試しください。" },
-  { key: "notFound.sent", ja: "そのアドレスがリストにあれば、リンクをお送りしました。迷惑メールもご確認ください。" },
-  { key: "home.todo.food", ja: "お食事" },
-  { key: "home.todo.song", ja: "一曲" },
-  { key: "rsvp.dietaryOther", ja: "詳しく教えてください（任意）" },
-  { key: "rsvp.searchSong", ja: "検索" },
-  { key: "rsvp.useTyped", ja: "入力したとおりに使う" },
-  { key: "rsvp.songResults", ja: "件見つかりました" },
-  { key: "rsvp.listResults", ja: "件の候補" },
-  { key: "flying.placeholder", ja: "都市名や町名を入力" },
-  { key: "flying.noMatch", ja: "見つかりませんでした。" },
-  { key: "flying.dropPin", ja: "見つからないときは、地図にピンを置いてください" },
-  { key: "flying.pinHint", ja: "出発地を地図でタップしてください。" },
-  { key: "flying.pinCancel", ja: "やめる" },
-  { key: "ask.button", ja: "質問する" },
-  { key: "ask.failed", ja: "ただいま「質問する」がご利用いただけません。しばらくしてからもう一度お試しください。" },
-  { key: "ask.message", ja: "メッセージ" },
-  { key: "faqs.bring.a", ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下の「質問する」からお気軽にメッセージをどうぞ。" },
-  { key: "faqs.style.a", ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。" },
-  { key: "faqs.visa.q", ja: "ビザは必要ですか？" },
-  { key: "faqs.visa.a", ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。" },
-  { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
-  { key: "faqs.whoMade.a", ja: "家族みんなで作りました。文はグリフィン、目に見える絵はぜんぶナディア、サイトはまるごとジェハンが作りました。音楽は久石譲の「A Town With an Ocean View」、ピアノ演奏はPiano ZeroLです。" },
-  { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
-  { key: "home.pills.replied", ja: "お返事ありがとうございます" },
-  { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },
-  { key: "preview.feedbackLabel", ja: "読みにくいところ、気になるところは？" },
-  { key: "photos.kid-griffin.alt", ja: "小学校の初日、玄関の前に立つ幼い頃のグリフィン" },
-  // Their final wording (22 Oct), translated by us
-  { key: "changeBy", ja: "2027年4月30日まで、お返事はいつでも変更できます。航空券を予約したら、旅の日程も追加してください。" },
-  { key: "home.intro.0", ja: "ふたりの愛を祝い、物語の次の章を始めるために、すべてが始まった場所に友人と家族を招きます。" },
-  { key: "home.intro.1", ja: "京都は近所の会場よりも少し遠いので、旅が楽しく、楽で、思い出に残るものになるようにしたいと思っています。計画に必要なことはこの下にすべてあり、これからも追加していきます。" },
-  { key: "travel.items.passport", ja: "旅の情報が最新か確認してください！パスポートは、帰国したあとも6か月以上残っているか確かめてください。更新が必要なら、早めに済ませておきましょう！" },
-  { key: "travel.items.flights", ja: "航空券はできるだけ早めに予約してください。日程は確定しているので、動くことはありません！せっかくなので、旅行も楽しんでください。結婚式の前の数日に楽しめることをご紹介します。式のあとも数日ゆっくりしてもらえたらうれしいです。" },
-  { key: "travel.items.stay", ja: "航空券を予約したら、次は宿の予約です！会場の近くのホテルやAirbnbのおすすめをまとめます。日本のホテルはたいてい小さめで必要最低限なので、そのつもりで選んでください。ほかのゲストと一緒に泊まりたい？ぜひどうぞ！迷ったら、気軽に声をかけてください！" },
-  { key: "travel.items.sim", ja: "出発前に、eSIMかポケットWi-Fiを用意しておきましょう。おすすめはこちら：" },
-  { key: "stay.intro", ja: "早めの予約を。10月中旬の京都は混み合います。日本のホテルはたいてい小さめで必要最低限なので、そのつもりで選んでください。京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと一緒に泊まりたい？ぜひどうぞ！迷ったら、気軽に声をかけてください！" },
-  { key: "faqs.wear.a", ja: "ドレスコードはありません。いちばん自分らしくいられる服装でどうぞ。会場のまわりは石畳の道なので、歩きやすい靴でお越しください。" },
-  { key: "faqs.food.a", ja: "食事の制限やアレルギーを教えてください！結婚式の昼食はケータリングで、メニューは式の数か月前に決まります。" },
-  { key: "faqs.gifts.a", ja: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
-  { key: "qa.contact", ja: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！" },
-  { key: "stay.picks.airbnbsAbout", ja: "わたしたちが見つけたAirbnbと、1泊あたりのおおよその料金です。料金は変わることがあるので、ほかの予約サイトもぜひ見てみてください。みんなで一緒に泊まるのがおすすめです！人数が多いほど1人あたりは安くなることが多く、2人より4人のほうがお得です！" },
-  { key: "faqs.contactDay", ja: "当日の連絡先は改めてお知らせします。電話番号は日が近づいたらここに載せます。" },
-  { key: "day.arrival", ja: "受付開始の時間：いまプランナーに確認中です" },
-  { key: "story.keepReading", ja: "続きを読む" },
-  { key: "fortune.again", ja: "もう一度ひく" },
-  { key: "fortune.homeTitle", ja: "おみくじをひく" },
-  { key: "photos.kid-griffin-1998.alt", ja: "1998年の学校写真の幼いグリフィン。赤いTシャツでほほえんでいる" },
-  { key: "photos.kid-nadia-home.alt", ja: "家でにっこり笑う幼いナディア。髪をクリップで留めた二つ結びに、クリスマスツリーのTシャツ" },
-  { key: "journey.victoria", ja: "ビクトリア" },
-  { key: "journey.zoomIn", ja: "拡大" },
-  { key: "journey.zoomOut", ja: "縮小" },
-  { key: "journey.households", ja: "世帯" },
-  { key: "journey.open", ja: "全画面" },
-  { key: "journey.openLabel", ja: "地図を全画面で開く" },
-  { key: "journey.close", ja: "地図を閉じる" },
-  { key: "journey.view", ja: "地球儀か地図" },
-  { key: "journey.pin", ja: "章：" },
-  { key: "journey.pinGo", ja: "この章へ移動" },
-  { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
-]
+export const JA_TO_READ: { key: string; ja: string }[] = []
 
 /**
  * Still waiting on Griffin and Nadia but not standing in anywhere on the site yet (so not in PENDING): what's

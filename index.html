@@ -172,7 +172,7 @@
       })()
     </script>
     <!-- The paper's veil (run 26): on a first visit, plain paper and her seal over the page until the paper sheet is in
-         (src/lib/paper-sheet.ts), so it never pops in halfway through; never longer than 1.5 s once it shows. The seal breathes;
+         (src/lib/paper-sheet.ts), so it never pops in halfway through; about 1.5 s once it shows, never past 2.5 s (run 26c). The seal breathes;
          under reduced motion it's still and the veil only fades (250 ms, opacity). Not over the sealed envelope. -->
     <div id="paper-veil" aria-hidden="true" hidden><img src="%BASE_URL%brand/seal.svg" alt="" width="56" height="56"></div>
     <script>
@@ -181,12 +181,15 @@
         try { seen = localStorage.getItem("ng-paper-seen") } catch (e) {}
         var src = p && p.on && p.at(document.documentElement.getAttribute("data-theme") === "lantern")
         var gone = function () { if (!v.isConnected) return; v.setAttribute("data-gone", ""); setTimeout(function () { v.remove() }, 350) }
-        if (p) p.done = function (s, ok) { if (ok) { try { localStorage.setItem("ng-paper-seen", s) } catch (e) {} } gone() }
+        // Run 26c: about 1.5 s, so the paper is always in before the page shows: the veil goes once 1.5 s have passed
+        // and the sheet is in, and at 2.5 s whatever happens (a slow connection never waits on it longer)
+        var held = true, ready = false, maybe = function () { if (!held && ready) gone() }
+        if (p) p.done = function (s, ok) { if (ok) { try { localStorage.setItem("ng-paper-seen", s) } catch (e) {} } ready = true; maybe() }
         if (!src || seen === src || document.documentElement.hasAttribute("data-sealed")) return v.remove()
         v.hidden = false
-        // 1.5 s from the veil's first paint (two frames on), not from here: on a slow phone the first paint is seconds
+        // Timed from the veil's first paint (two frames on), not from here: on a slow phone the first paint is seconds
         // after this runs, and the veil would be gone before it was ever seen
-        requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(gone, 1500) }) })
+        requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(function () { held = false; maybe() }, 1500); setTimeout(gone, 2500) }) })
       })()
     </script>
     <div id="root"></div>

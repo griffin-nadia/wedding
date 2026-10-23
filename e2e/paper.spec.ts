@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test"
 
 // Run 26: the paper is a sheet exported ahead (scripts/paper-export.mjs), the size this screen shows it, asked for from
 // the first paint and laid over the cards and sheets once it has decoded, keeping text AA on its darkest spot. On a
-// first visit a plain veil covers the page until it's in (1.5 s at most once shown); not again once it's been seen. Reduced
+// first visit a plain veil covers the page for about 1.5 s, until it's in (2.5 s at most once shown, run 26c); not again once it's been seen. Reduced
 // motion: the same paper and veil, each a short plain fade (opacity only, the seal still). Save-Data: plain paper, nothing fetched. (Automated browsers skip it
 // unless a test asks, ng-paper=on, as these do.)
 test.use({ reducedMotion: "no-preference" })
@@ -28,12 +28,23 @@ for (const theme of ["autumn", "lantern"] as const) test(`the sheet for this scr
   expect(await page.evaluate(() => document.getElementById("paper-veil"))).toBeNull()
 })
 
-test("first visit: the veil covers the page until the sheet is in, never past 1.5 s", async ({ page }) => {
+test("first visit: the veil holds about 1.5 s even when the sheet is quick, and never past 2.5 s", async ({ page }) => {
+  await page.goto("?h=sample", { waitUntil: "commit" })
+  const veil = page.locator("#paper-veil")
+  await expect(veil).toBeVisible()
+  await page.waitForTimeout(1000)
+  await expect(veil).toBeVisible() // the sheet is in by now, but the veil stays its 1.5 s
+  await expect(veil).toHaveCount(0, { timeout: 2500 })
+})
+
+test("first visit: a held-back sheet keeps the veil to the 2.5 s cap, then it goes", async ({ page }) => {
   // The sheet held back, so the cap is what takes the veil away
-  await page.route(/\/paper\/.*\.avif$/, async (r) => { await new Promise((res) => setTimeout(res, 4000)); await r.continue() })
+  await page.route(/\/paper\/.*\.avif$/, async (r) => { await new Promise((res) => setTimeout(res, 5000)); await r.continue() })
   await page.goto("?h=sample", { waitUntil: "commit" }) // the load event waits for the held sheet
   const veil = page.locator("#paper-veil")
   await expect(veil).toBeVisible()
+  await page.waitForTimeout(1700)
+  await expect(veil).toBeVisible() // past 1.5 s, still waiting on the sheet
   await expect(veil).toHaveCount(0, { timeout: 2500 })
 })
 
