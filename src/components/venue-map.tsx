@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Maximize2, MapPin } from "lucide-react"
+import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useLang } from "@/lib/lang"
 import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
@@ -11,6 +12,10 @@ const ROUTES = {
   taxi: "M492 1156 L492 1010 L1156 1010 L1156 690 L1254 668",
   walk: "M1006 330 L1156 330 L1156 690 L1254 668",
 } as const
+
+/** Run 25: which of her dots each ring sits on (her red place dots, the green Keihan station rings, Kyoto Station's
+ *  orange ring), so each ring is her dot's own size */
+const DOT: Record<string, "station" | "jr"> = { station: "jr", gojo: "station", gion: "station", sanjo: "station", shichijo: "station", tofukuji: "station" }
 
 /** Nadia's map shows when config.venueMap is on, or with ?preview in the address (to try it before it's switched on) */
 export function venueMapOn() {
@@ -25,7 +30,7 @@ export function venueMapOn() {
  * card's own cream. Lantern: the same art as a framed print (her dark ink doesn't read on walnut; no filters).
  * Phones: pinch to zoom from 1x to 2.5x and drag to look around. Reduced motion: the route still, no glide.
  */
-export function VenueMap() {
+export function VenueMap({ inModal = false }: { inModal?: boolean }) {
   const { t } = useLang()
   const m = t.venueMap, k = t.kyotoMap
   const [on, setOn] = useState("venue")
@@ -58,7 +63,7 @@ export function VenueMap() {
               over English) on the side away from her own painted label, so it never covers it */}
           {m.places.map((p) => (
             <button key={p.id} type="button" aria-pressed={on === p.id} aria-label={`${p.name}, ${p.ja}`} onClick={() => setOn(p.id)}
-              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={p.chip} style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%` }}>
+              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={p.chip} data-kind={DOT[p.id] ?? "place"} style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%` }}>
               <span aria-hidden className="vmap-dot" />
               {on === p.id && <span aria-hidden className="vmap-chip"><span lang="ja" className="font-ja">{p.ja}</span><span>{p.name}</span></span>}
             </button>
@@ -73,7 +78,7 @@ export function VenueMap() {
         <span className="text-small text-muted-foreground">{k.notToScale}</span>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-4">
-        <a href={`${base}art/map/venue-map-full.webp`} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center gap-2"><Maximize2 className="size-4" aria-hidden />{m.full}<span className="sr-only">, {m.fullOpens}</span></a>
+        {inModal ? <span /> : <VenueMapOpen />}
         <span className="text-small text-muted-foreground vmap-hint">{m.zoomHint}</span>
       </div>
       <div key={place.id} className="kmap-card" aria-live="polite">
@@ -88,6 +93,25 @@ export function VenueMap() {
         </ul>
       </details>
     </section>
+  )
+}
+
+/**
+ * Run 25: "Open the map": the same map, places, card and routes full screen, from Travel (under the map) and The day
+ * (beside How to get there, where there's no map inline). A dialog: focus stays in it, Escape and the close button
+ * close it and focus goes back to the link. One component, so both pages show the same thing.
+ */
+export function VenueMapOpen({ className }: { className?: string }) {
+  const { t } = useLang()
+  const m = t.venueMap
+  return (
+    <Sheet>
+      <SheetTrigger asChild><button type="button" className={cn("btn-text inline-flex min-h-11 items-center gap-2 self-start", className)}><Maximize2 className="size-4" aria-hidden />{m.open}</button></SheetTrigger>
+      <SheetContent className="venue-modal" closeLabel={m.close} aria-describedby={undefined}>
+        <SheetHead><SheetTitle className="heading">{m.title}</SheetTitle></SheetHead>
+        <SheetBody><VenueMap inModal /></SheetBody>
+      </SheetContent>
+    </Sheet>
   )
 }
 

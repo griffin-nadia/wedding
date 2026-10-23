@@ -1,6 +1,6 @@
 import { test, expect, devices, type Page } from "@playwright/test"
 
-// 18g: a phone keyboard overlays the page and nothing shrinks. Android Chrome (overlays-content, the VirtualKeyboard
+// 18g: a phone keyboard overlays the page and nothing shrinks (run 25: the reply sheet rises to its full height once). Android Chrome (overlays-content, the VirtualKeyboard
 // API) and an iPhone (the visual viewport shrinks, the page doesn't), at 390: with the keyboard up the card's (or the
 // sheet's) top, width and corner radius and the photo's size are what they were with it down, and the focused field
 // with its helper or error sits fully above the keyboard (and above Back / Next). Headless browsers have no keyboard,
@@ -32,7 +32,7 @@ const keyboard = async (page: Page, h: number) => { await page.evaluate((h) => (
 const frame = (page: Page) => page.evaluate(() => {
   const el = document.querySelector(".sheet") ?? document.querySelector(".letter")!
   const r = el.getBoundingClientRect(), sc = document.querySelector(".scene")?.getBoundingClientRect()
-  return { top: Math.round(r.top), width: Math.round(r.width), radius: getComputedStyle(el).borderTopLeftRadius, photo: sc ? `${Math.round(sc.width)}x${Math.round(sc.height)}` : "" }
+  return { top: Math.round(r.top), width: Math.round(r.width), radius: getComputedStyle(el).borderTopLeftRadius, photo: sc ? `${Math.round(sc.width)}x${Math.round(sc.height)}` : "", fits: el.classList.contains("rsvp-sheet") }
 })
 /** The focused field with its helper or error: fully above the keyboard, and above Back / Next where there are */
 const clear = (page: Page, kb: number) => page.evaluate((kb) => {
@@ -48,7 +48,11 @@ async function check(page: Page, focus: () => Promise<void>, name: string) {
   const before = await frame(page)
   await focus()
   await keyboard(page, KB)
-  expect(await frame(page), `${name}: nothing moved or shrank`).toEqual(before)
+  // Run 25: the reply sheet is only as tall as what's on it, so while typing it rises once to the full height (from
+  // 12px), like every other sheet; nothing else moves or shrinks
+  const up = await frame(page)
+  if (before.fits) { expect(up.top, `${name}: the reply sheet rises to the top`).toBeLessThanOrEqual(12); expect({ ...up, top: 0 }, `${name}: nothing else changed`).toEqual({ ...before, top: 0 }) }
+  else expect(up, `${name}: nothing moved or shrank`).toEqual(before)
   expect(await clear(page, KB), `${name}: the field is clear of the keyboard`).toEqual({ above: true, inView: true, footerAbove: true })
   await keyboard(page, 0)
   expect(await frame(page), `${name}: back where it was`).toEqual(before)
@@ -65,7 +69,7 @@ for (const kind of ["android", "iphone"] as const) test.describe(kind, () => {
     await d.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
     await d.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
     await d.getByText("Bringing someone?").click()
-    const next = async () => { await page.evaluate(() => (document.activeElement as HTMLElement)?.blur()); await d.getByRole("button", { name: /^Next$/ }).click() }
+    const next = async () => { await page.evaluate(() => (document.activeElement as HTMLElement)?.blur()); await d.getByRole("button", { name: /^Next$/ }).click(); await page.waitForTimeout(300) } // the reply sheet settles to the new step's height (run 25)
     await check(page, () => d.getByLabel("Their name").focus(), "who: their name"); await next()
     await d.getByRole("group").first().getByRole("button", { name: "Other" }).click()
     await check(page, () => d.getByLabel(/Tell us more/).first().focus(), "food: tell us more"); await next()

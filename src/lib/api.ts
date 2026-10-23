@@ -224,6 +224,15 @@ export async function setFlying(token: string, city: FlyingCity): Promise<void> 
   if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
 }
 
+/** Run 25: any city or town, through the back end's geocoder (q), or the place at a dropped pin (lat, lon). Up to five
+ *  places, each a city or town with its region, country and centre. null: no back end, or it couldn't answer. */
+export type Place = { name: string; region: string; country: string; countryName: string; lat: number | null; lon: number | null }
+export async function geocode(token: string, where: { q: string } | { lat: number; lon: number }, signal?: AbortSignal): Promise<Place[] | null> {
+  if (!config.apiUrl) return null
+  const qs = "q" in where ? `q=${encodeURIComponent(where.q)}` : `lat=${where.lat.toFixed(3)}&lon=${where.lon.toFixed(3)}`
+  try { const d = await call(`${config.apiUrl}?action=geocode&token=${encodeURIComponent(token)}&${qs}`, { signal }); return d.ok && Array.isArray(d.places) ? (d.places as Place[]) : null } catch { return null }
+}
+
 /** Households per city and how many have told us, e.g. 17 of 40. Never names. */
 export async function getFlying(): Promise<{ counts: Partial<Record<Flying, number>>; cities?: { name: string; country: string; lat: number; lon: number; n: number }[]; told: number; households: number } | null> {
   if (!config.apiUrl) return null

@@ -694,8 +694,15 @@
 .sheet-close { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid transparent; border-radius: var(--radius-pill); color: var(--ink); outline: 2px solid transparent; outline-offset: 2px; }
 .sheet-close:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .sheet-close:hover { border-color: var(--line-strong); } }
-.rsvp-actions { flex: none; display: flex; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--line-hairline); }
+.rsvp-actions { flex: none; display: flex; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--line-hairline); }
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
+/* "All good?": who sees the reply, a small note just above Back and Send (run 25) */
+.rsvp-actions > .rsvp-privacy { flex: 1 0 100% !important; display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-small); line-height: var(--text-small--line-height); color: var(--muted-foreground); }
+/* "All good?" rows: the label, the answer, and Edit in one column on the right for every row, the message too (run 25) */
+.review-row { display: grid; grid-template-columns: minmax(5.5rem, 32%) minmax(0, 1fr); column-gap: var(--space-3); align-items: start; padding: var(--space-3) var(--space-4); }
+.review-row > dd { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-2); align-items: start; }
+.review-row > dt, .review-row > dd > span { padding-top: 2px; }
+.review-row[data-block] { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-1); }
 /* Steps slide the way you're going (300 ms); a fade only under reduced motion */
 .step-fwd { animation: step-fwd var(--duration-base) var(--ease-paper) both; }
 .step-back { animation: step-back var(--duration-base) var(--ease-paper) both; }
@@ -1296,6 +1303,16 @@ svg.lucide { stroke-width: 1.5; }
 /* Typing on a phone (18g, src/lib/keyboard.ts): nothing changes size. The keyboard overlays the page; the sheet's
    Back / Next lift just above it (a transform), and the scrolling card and the sheet's body get the keyboard's height
    as extra room at the bottom, so the field can scroll above it */
+/* The reply sheet on phones (run 25): as tall as what's on it (no empty band above Next), sitting at the bottom. While
+   typing it's the full keyboard-down height from the top, as every sheet is (18g), so the field has room above the
+   keyboard; it settles back when the keyboard goes */
+@media (max-width: 767px) {
+  .sheet.rsvp-sheet { top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); height: auto; }
+  :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); } /* no deep band above the footer */
+  /* The song step too: its results open and close under the field and chosen songs land above it, so it keeps the
+     full height and the field never moves */
+  [data-typing] .sheet.rsvp-sheet, .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { top: calc(var(--vv-top, 0px) + 12px); bottom: auto; height: calc(100svh - 24px - env(safe-area-inset-bottom)); }
+}
 [data-typing] .rsvp-actions { transform: translateY(calc(-1 * var(--kb-lift, 0px))); position: relative; z-index: 3; }
 [data-typing] .sheet-body { padding-bottom: calc(var(--space-7) + var(--kb, 0px)); }
 [data-typing] .letter-scroll { padding-bottom: calc(var(--letter-pad) + var(--kb, 0px)); }
@@ -1444,9 +1461,8 @@ svg.lucide { stroke-width: 1.5; }
 .radio-group { display: flex; flex-direction: column; gap: var(--space-2); padding-block: var(--space-2); outline: none; }
 .radio-group-label { font-family: var(--font-label); font-weight: 500; color: var(--ink); }
 .radio-group-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-@media (max-width: 359px) { .radio-group-options { grid-template-columns: 1fr; } }
 .radio-option {
-  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding-inline: var(--space-6); white-space: nowrap;
+  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: var(--space-2) var(--space-3) var(--space-2) var(--space-6); text-wrap: balance; /* side by side at every width (run 25): a long label wraps */
   border: 1px solid var(--line-strong); border-radius: var(--input-radius); background: var(--input-bg); color: var(--ink-soft); /* line-strong: 3:1 or more on the paper in both modes */
   font-family: var(--font-label); font-size: var(--type-ui-size); font-weight: 500; text-align: center; cursor: pointer;
   outline: 2px solid transparent; outline-offset: 2px; -webkit-tap-highlight-color: transparent; user-select: none;
@@ -1563,13 +1579,6 @@ svg.lucide { stroke-width: 1.5; }
   -webkit-mask-composite: source-in; mask-composite: intersect; }
 .story-print[data-tape="1"] { --tape: color-mix(in oklab, var(--brand-hachimitsu) 60%, white); }
 .story-print[data-tape="2"] { --tape: color-mix(in oklab, var(--brand-sabi) 45%, white); }
-/* "Where are you flying from?" quick chips (final run): wrap, never clip; the picked one marked */
-.fly-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.fly-chip-group { display: flex; flex-direction: column; gap: var(--space-1); }
-.fly-chip { min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--line-hairline); border-radius: var(--radius-pill); background: var(--surface-raised); color: var(--ink); font: 500 var(--type-small-size) / 1.2 var(--font-label); outline: 2px solid transparent; outline-offset: 2px; transition: background-color var(--duration-fast) var(--ease-paper), border-color var(--duration-fast) var(--ease-paper); }
-.fly-chip:focus-visible { outline-color: var(--input-focus); }
-@media (hover: hover) { .fly-chip:hover { border-color: var(--line-strong); } }
-.fly-chip[aria-pressed="true"] { background: var(--input-selected-bg); border-color: var(--input-selected-line); }
 /* The painted globe (final run): a square that fits the story's map stop */
 .journey-globe { position: relative; width: min(100%, 340px, 40svh); aspect-ratio: 1; }
 /* The globe itself: the drag surface (the corner control stays a plain control) */
@@ -1607,6 +1616,7 @@ svg.lucide { stroke-width: 1.5; }
 .segmented.journey-mode .segmented-item { min-height: 28px; padding-inline: var(--space-2); gap: 0; font-size: 12px; }
 .journey-mode .segmented-item::after, .journey-mode .segmented-tick { display: none; }
 /* The flat map: the globe's painting cut to the Pacific, the lines over it (5:4, the 400 × 320 viewBox) */
+.journey-flat.is-picking { cursor: crosshair; outline: 2px dashed color-mix(in oklab, var(--ink-moss) 60%, transparent); outline-offset: 2px; } /* run 25: dropping a pin */
 .journey-flat { position: relative; width: min(100%, calc(var(--flat-h, 36svh) * 1.25)); aspect-ratio: 5 / 4; border-radius: var(--radius-section); overflow: hidden; background: #2f3428; box-shadow: 0 0 0 1px var(--line-hairline); } /* run 25 (Jehan): the dark sage ground in both themes, the painting's own */
 .journey-flat-art, .journey-flat-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
 .journey-flat-lines.journey-map { background: none; }
@@ -1675,10 +1685,15 @@ svg.lucide { stroke-width: 1.5; }
 /* Nadia's venue map (run 22). Her art at its own ratio; the route, the ring and the buttons over it in % so they scale
    with it. Light: on the card's cream, no frame (the art is flattened onto that cream). Lantern: a cream print framed
    with a soft shadow and rounded corners (her dark ink can't sit on walnut, and no filters on her art). */
+/* Run 25: the map full screen (VenueMapOpen): the whole screen on phones, a wide sheet on laptops; the map as large as
+   fits above its key and card */
+.sheet.venue-modal { top: 0; left: 0; right: 0; bottom: 0; translate: none; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border-radius: 0; }
+@media (min-width: 768px) { .sheet.venue-modal { top: 50%; left: 50%; translate: -50% -50%; width: min(1100px, calc(100vw - 48px)); height: calc(100dvh - 48px); border-radius: var(--letter-radius); } }
+.venue-modal .vmap { width: min(100%, calc((100dvh - 260px) * 1.2)); margin-inline: auto; }
 .vmap { position: relative; overflow: hidden; aspect-ratio: 1800 / 1500; border-radius: var(--radius-control); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .vmap[data-zoomed] { touch-action: none; }
 [data-theme="lantern"] .vmap { border: 10px solid var(--brand-shiro-kinari); border-radius: 14px; box-shadow: var(--elevation-paper); }
-.vmap-art { position: absolute; inset: 0; transform-origin: 0 0; }
+.vmap-art { position: absolute; inset: 0; transform-origin: 0 0; container-type: inline-size; }
 .vmap-art img { display: block; width: 100%; height: 100%; }
 .vmap-route { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .vmap-route path { fill: none; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: 0.7; }
@@ -1690,7 +1705,11 @@ svg.lucide { stroke-width: 1.5; }
    chosen place's chip (Japanese over English) sits on the side away from her painted label (data-chip) */
 .vmap-pin { position: absolute; width: 44px; height: 44px; translate: -50% -50%; display: grid; place-items: center; border-radius: 50%; outline: 2px solid transparent; outline-offset: -4px; -webkit-tap-highlight-color: transparent; }
 .vmap-pin:focus-visible { outline-color: var(--input-focus); }
-.vmap-dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #4a2a16; box-shadow: 0 0 0 1.5px rgb(255 252 244 / 0.85), 0 1px 2px rgb(0 0 0 / 0.2); transition: transform var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper); }
+.vmap-dot { --d: 2.4cqw; width: max(10px, var(--d)); height: max(10px, var(--d)); border-radius: 50%; border: max(1.5px, 0.25cqw) solid #4a2a16; box-shadow: 0 0 0 1.5px rgb(255 252 244 / 0.85), 0 1px 2px rgb(0 0 0 / 0.2); transition: transform var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper); }
+/* Run 25: each ring is her dot's own size, as a share of the map's width (cqw), so it sits right over her red dots
+   (2.4%), the green station rings (3%) and Kyoto Station's orange ring (3.5%) at every width */
+.vmap-pin[data-kind="station"] .vmap-dot { --d: 3cqw; }
+.vmap-pin[data-kind="jr"] .vmap-dot { --d: 3.5cqw; }
 .vmap-pin.is-on .vmap-dot { background: #a43108; border-color: #fff8ee; transform: scale(1.15); box-shadow: 0 0 0 7px rgb(164 49 8 / 0.18), 0 1px 3px rgb(0 0 0 / 0.25); }
 @media (hover: hover) { .vmap-pin:hover .vmap-dot { transform: scale(1.12); } }
 @keyframes vmap-pulse { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.35); } }
@@ -1700,12 +1719,14 @@ svg.lucide { stroke-width: 1.5; }
 .vmap-pin[data-chip="left"] .vmap-chip { left: auto; right: 36px; text-align: right; align-items: flex-end; }
 .vmap-pin[data-chip="low"] .vmap-chip { translate: 0 8px; } /* right of the dot but starting below it: The Sodoh's own lettering is just above */
 .vmap-pin[data-chip="above"] .vmap-chip { top: auto; bottom: 36px; left: 50%; translate: -50% 0; align-items: center; text-align: center; }
-/* Phones: a smaller ring (the map is small; the 44px target stays), and no chip, as on the old map: the card under
-   the map names the chosen place, and a chip there would cover her labels */
+/* Phones: a smaller ring (the map is small; the 44px target stays) and a smaller chip, on the side away from her label */
 @media (max-width: 599px) {
-  .vmap-dot { width: 14px; height: 14px; border-width: 1.5px; }
   .vmap-pin.is-on .vmap-dot { box-shadow: 0 0 0 5px rgb(164 49 8 / 0.2), 0 1px 2px rgb(0 0 0 / 0.25); }
-  .vmap-chip { display: none; }
+  /* Run 25: the chosen place's chip shows on phones too, smaller and closer to the smaller ring */
+  .vmap-chip { left: 26px; padding: 2px 6px; font-size: 10px; white-space: normal; width: max-content; max-width: 8.5rem; }
+  .vmap-chip .font-ja { font-size: 11px; }
+  .vmap-pin[data-chip="left"] .vmap-chip { right: 26px; }
+  .vmap-pin[data-chip="above"] .vmap-chip { bottom: 26px; }
 }
 /* The key under the map: the two routes */
 .vmap-key { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: var(--type-small-size); color: var(--ink-soft); }
