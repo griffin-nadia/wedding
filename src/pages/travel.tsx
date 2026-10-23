@@ -149,7 +149,7 @@ function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => vo
     return () => { on = false }
   }, [])
   const picks = pickList(live, fallback)
-  // Her note in English; the translated note in Japanese
+  // Her note in English; the translated note in Japanese. The Airbnbs sheet has its own (run 26: hers is about hotels)
   const note = lang === "ja" ? p.note : twoSentences(picks.note)
   return (
     <div id="picks" className="flex scroll-mt-(--travel-head) flex-col gap-3">
@@ -157,7 +157,7 @@ function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => vo
       <div className="flex flex-col border-y border-border">
         <PickSheet id="hotels" title={p.hotelsTitle} note={note} list={picks.hotels} airbnb={false} open={sheet === "hotels"} onOpen={(o) => setSheet(o ? "hotels" : "")} />
         <div className="border-t border-border" />
-        <PickSheet id="airbnbs" title={p.airbnbsTitle} sub={p.airbnbsNote} note={note} list={picks.airbnbs} airbnb open={sheet === "airbnbs"} onOpen={(o) => setSheet(o ? "airbnbs" : "")} />
+        <PickSheet id="airbnbs" title={p.airbnbsTitle} sub={p.airbnbsNote} note={p.airbnbsAbout} list={picks.airbnbs} airbnb open={sheet === "airbnbs"} onOpen={(o) => setSheet(o ? "airbnbs" : "")} />
       </div>
     </div>
   )

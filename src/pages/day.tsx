@@ -9,6 +9,8 @@ import { VenueMapOpen, venueMapOn } from "@/components/venue-map"
 import { VenueMark } from "@/components/venue-mark"
 import { jstLabel, kyotoNow } from "@/lib/time"
 import { PageHeader } from "@/components/ui/page-header"
+import { config } from "@/lib/config"
+import { ART } from "@/lib/art"
 
 const ICONS = [Flower2, Wine, UtensilsCrossed]
 
@@ -108,6 +110,8 @@ export function DayPage() {
     <>
       <PageHeader title={t.day.title} lettering="theDay"><p className="font-medium text-foreground">{t.day.dateLong}</p></PageHeader>
       <Details />
+      {/* Nadia's landscape drawing (its own switch, off): no placeholder while it's off or the file isn't in */}
+      {config.dayLandscape && ART.dayLandscape && <img src={`${import.meta.env.BASE_URL}${ART.dayLandscape}`} alt="" loading="lazy" decoding="async" className="w-full" />}
       {timeline}
       <div className="no-print flex flex-col gap-4">
         <AddToCalendar />

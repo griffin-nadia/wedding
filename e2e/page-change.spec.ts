@@ -50,6 +50,14 @@ test("the card's top and visible bottom don't move between pages", async ({ page
   expect(new Set(tops).size).toBe(1)
 })
 
+// Run 26: day (autumn) is the default even on a device set to dark; Lantern only once it's been picked
+test("a first visit opens in day mode, whatever the device's setting", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" })
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off"); localStorage.removeItem("ng-theme") })
+  await page.goto("faqs?h=sample")
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "autumn")
+})
+
 test("the paper behind the page is the theme's colour, and theme-color matches it", async ({ page }) => {
   for (const theme of ["autumn", "lantern"]) {
     await go(page, "travel", theme)
