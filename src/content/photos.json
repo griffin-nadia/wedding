@@ -460,5 +460,21 @@
   "lqip": "yasaka-gate-shijo-lqip.webp",
   "width": 1600,
   "height": 2133
+ },
+ "story-taiwan": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-taiwan-lqip.webp",
+  "width": 800,
+  "height": 1067
  }
 }

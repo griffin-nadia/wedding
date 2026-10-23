@@ -51,9 +51,12 @@ const AT: Record<string, [number, number]> = {
 const PHOTO_STOPS: Record<string, Chapter> = {
   "5": { ...STORY_PLAN.find((c) => c.photo === "story-8")!, key: "photo-8", body: [] },
 }
+/** Run 26: a place's photo when the Content tab gives its chapter none (Taiwan: their edited tea-field selfie). A photo
+ *  set in the Content tab (story_N_photo) still wins */
+const PLACE_PHOTO: Record<string, string> = { Taiwan: "story-taiwan" }
 function withStops(story: Chapter[]): Chapter[] {
   return story.flatMap((c) => {
-    const ch = { ...c, at: c.at ?? (c.place ? AT[c.place] : undefined), photo: c.photo || undefined }
+    const ch = { ...c, at: c.at ?? (c.place ? AT[c.place] : undefined), photo: c.photo || (c.place ? PLACE_PHOTO[c.place] : undefined) }
     return PHOTO_STOPS[c.key] ? [ch, PHOTO_STOPS[c.key]] : [ch]
   })
 }
