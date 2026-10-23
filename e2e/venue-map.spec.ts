@@ -97,7 +97,7 @@ test("dots keep the minimum gap and their spots; chips stay clear of dots and he
     await page.goto(`travel?h=sample&w=${w}${full ? "f" : ""}#around`) // a new address each time, so the page reloads
     if (full) await page.getByRole("button", { name: "Open the map" }).click()
     const map = full ? page.getByRole("dialog").locator(".vmap") : page.locator(".vmap")
-    await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(300)
+    await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(1400) // past the dots' first pulse, so they're their own size
     const pins = map.locator(".vmap-pin"), where = `${w}${full ? " full screen" : ""}`
     for (let i = 0; i < await pins.count(); i++) {
       await pins.nth(i).evaluate((el: HTMLElement) => el.click()); await page.waitForTimeout(30)
@@ -118,7 +118,7 @@ test("dots keep the minimum gap and their spots; chips stay clear of dots and he
         const covered = [...m.querySelectorAll(".vmap-pin")].filter((p) => p !== on).some((p) => { const d = p.querySelector(".vmap-dot")!.getBoundingClientRect(); return hit(d.left, d.top, d.right, d.bottom) })
         const lettering = labels.filter(([x1, y1, x2, y2]) => hit(img.left + x1 / 100 * img.width, img.top + y1 / 100 * img.height, img.left + x2 / 100 * img.width, img.top + y2 / 100 * img.height)).length
         const inside = c.left >= box.left - 0.5 && c.right <= box.right + 0.5 && c.top >= box.top - 0.5 && c.bottom <= box.bottom + 0.5
-        return { gap: Math.round(gap * 10) / 10, off: Math.max(...dots.map((d) => d.at)), covered, lettering, inside, side: (on as HTMLElement).dataset.chip }
+        return { gap: Math.round(gap * 10) / 10, off: Math.max(...dots.map((d) => d.at)), covered, lettering, inside, side: `${Math.round(c.left - box.left)},${Math.round(c.top - box.top)}` }
       }, LABELS)
       expect(r.gap, `${where}: place ${i}: two dots too close`).toBeGreaterThanOrEqual(MIN_GAP)
       expect(r.off, `${where}: a dot off its spot`).toBeLessThanOrEqual(2)

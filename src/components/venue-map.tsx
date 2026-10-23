@@ -18,13 +18,33 @@ const ROUTES = {
  *  orange ring), so each ring is her dot's own size */
 const DOT: Record<string, "station" | "jr"> = { station: "jr", gojo: "station", gion: "station", sanjo: "station", shichijo: "station", tofukuji: "station" }
 
-/** Run 26: where the chip may go when its own place would cover another dot, run off the map or cover her painted
- *  lettering: its own side nudged lower or higher, the same a little further out, then the other side, then above or
- *  below. The dot never moves. Words in data-chip: left (else right), far, low or high (else centred), above, below. */
-const sides = (own: string) => {
-  const h = own === "left" ? "left" : "right", o = h === "left" ? "right" : "left", n = own === "low" ? ["low", "", "high"] : ["", "low", "high"]
-  const row = (x: string) => n.map((y) => `${x} ${y}`.trim())
-  return [...new Set([...(own === "above" ? ["above"] : []), ...row(h), ...row(`${h} far`), ...row(o), ...row(`${o} far`), "above", "below"])]
+type Box = { l: number; t: number; r: number; b: number }
+const hits = (a: Box, b: Box) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t
+/**
+ * Run 26: where the chosen place's chip goes (top left, in the map's own px). Every spot beside the dot (right or left,
+ * up to 40px lower, higher or further out, a px at a time) and above or below it is scored: over another dot is worst,
+ * then off the map (per px), then over her painted lettering, then each px away from the dot, and a little for leaving
+ * its own side (the side away from her label, from the content). Uses the chip's real size, so it holds whatever fonts
+ * the phone has. The dot never moves.
+ */
+function placeChip(c: { x: number; y: number }, gap: number, own: string, w: number, h: number, W: number, H: number, dots: Box[], labels: Box[]) {
+  let best = { x: c.x + gap, y: c.y - h / 2, cost: Infinity }
+  const at = (x: number, y: number, extra: number) => {
+    const box = { l: x, t: y, r: x + w, b: y + h }
+    // 1px kept clear of each edge: offsets are whole px, her places' % aren't
+    const out = Math.max(0, 1 - box.l) + Math.max(0, box.r + 1 - W) + Math.max(0, 1 - box.t) + Math.max(0, box.b + 1 - H)
+    const cost = dots.filter((d) => hits(box, d)).length * 10000 + out * 100 + labels.filter((l) => hits(box, l)).length * 50 + extra
+    if (cost < best.cost) best = { x, y, cost }
+  }
+  const side = own === "left" ? "left" : own === "above" ? "above" : "right"
+  for (let along = 0; along <= 40; along++) for (let across = -40; across <= 40; across += 2) {
+    const extra = along + Math.abs(across)
+    at(c.x + gap + along, c.y - h / 2 + across, extra + (side === "right" ? 0 : 15))
+    at(c.x - gap - along - w, c.y - h / 2 + across, extra + (side === "left" ? 0 : 15))
+    at(c.x - w / 2 + across, c.y - gap - along - h, extra + (side === "above" ? 0 : 25))
+    at(c.x - w / 2 + across, c.y + gap + along, extra + 25)
+  }
+  return best
 }
 /** Her painted labels on the map, as boxes in % of the art (x1, y1, x2, y2; the dark ink, .brief/tools/r26-labels.mjs) */
 const LABELS = [[60.6, 34.2, 79.7, 42.5], [58.8, 51.6, 73.6, 55.5], [61.4, 25, 76.2, 28.8], [77.6, 66, 93.7, 73], [19, 80.4, 35.4, 83.6],
@@ -50,36 +70,21 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
   const place = m.places.find((p) => p.id === on) ?? m.places[0]
   const zoom = usePinch()
   const art = useRef<HTMLDivElement>(null)
-  // Run 26: the chosen place's chip goes in the first place (its own first) where it stays on the map and covers no
-  // other dot; if there's none, where it covers least. Tried on the real chip before paint, and again on a resize.
-  const [side, setSide] = useState<string>(place.chip)
+  // Run 26: the chosen place's chip goes where placeChip finds room, before paint, and again when the map changes size
+  const [spot, setSpot] = useState<{ x: number; y: number } | null>(null)
   useLayoutEffect(() => {
     const box = zoom.box.current
     const fit = () => {
-      const pin = art.current?.querySelector<HTMLElement>(".vmap-pin.is-on"), chip = pin?.querySelector<HTMLElement>(".vmap-chip")
-      if (!box || !pin || !chip) return
-      // Each other dot's box from its pin's centre (the pin never animates; the dot can be mid-pulse)
-      const b = box.getBoundingClientRect(), dots = [...art.current!.querySelectorAll<HTMLElement>(".vmap-pin:not(.is-on)")].map((p) => {
-        const r = p.getBoundingClientRect(), d = p.querySelector<HTMLElement>(".vmap-dot")!.offsetWidth / 2 + 2
-        return { l: r.left + r.width / 2 - d, r: r.left + r.width / 2 + d, t: r.top + r.height / 2 - d, b: r.top + r.height / 2 + d }
-      })
-      const img = art.current!.querySelector("img")!.getBoundingClientRect()
-      const labels = LABELS.map(([x1, y1, x2, y2]) => ({ l: img.left + (x1 / 100) * img.width, r: img.left + (x2 / 100) * img.width, t: img.top + (y1 / 100) * img.height, b: img.top + (y2 / 100) * img.height }))
-      // Worst to least bad: over a dot, off the map (per px), over her lettering
-      const cost = () => {
-        const c = chip.getBoundingClientRect(), hit = (d: { l: number; r: number; t: number; b: number }) => d.l < c.right && d.r > c.left && d.t < c.bottom && d.b > c.top
-        const out = Math.max(0, b.left - c.left) + Math.max(0, c.right - b.right) + Math.max(0, b.top - c.top) + Math.max(0, c.bottom - b.bottom)
-        return dots.filter(hit).length * 10000 + out * 100 + labels.filter(hit).length * 50
-      }
-      // No transition while trying (reduced motion's 0.01ms transitions would otherwise report the old place)
-      let best = place.chip as string, least = Infinity
-      chip.style.setProperty("transition", "none", "important")
-      for (const s of sides(place.chip)) { pin.dataset.chip = s; const c = cost(); if (c < least) { least = c; best = s } if (!c) break }
-      // Settle on the best before the transition comes back (a layout read in between), so it doesn't slide over a dot
-      pin.dataset.chip = best
-      void chip.offsetWidth
-      chip.style.transition = ""
-      setSide(best)
+      const a = art.current, pin = a?.querySelector<HTMLElement>(".vmap-pin.is-on"), chip = pin?.querySelector<HTMLElement>(".vmap-chip")
+      if (!a || !pin || !chip) return
+      // All in the map's own px (offsets ignore the zoom's scale): each dot's centre is its place's % of the art
+      const W = a.offsetWidth, H = a.offsetHeight, ring = (p: HTMLElement) => p.querySelector<HTMLElement>(".vmap-dot")!.offsetWidth / 2
+      const pins = [...a.querySelectorAll<HTMLElement>(".vmap-pin")]
+      const dots = pins.filter((p) => p !== pin).map((p) => { const r = ring(p) + 2, x = p.offsetLeft, y = p.offsetTop; return { l: x - r, r: x + r, t: y - r, b: y + r } })
+      const labels = LABELS.map(([x1, y1, x2, y2]) => ({ l: (x1 / 100) * W, t: (y1 / 100) * H, r: (x2 / 100) * W, b: (y2 / 100) * H }))
+      const best = placeChip({ x: pin.offsetLeft, y: pin.offsetTop }, ring(pin) * 1.1 + 4, place.chip, chip.offsetWidth, chip.offsetHeight, W, H, dots, labels)
+      // As the chip's left and top inside its 44px pin (the pin's box starts 22px up and left of the dot)
+      setSpot({ x: best.x - pin.offsetLeft + 22, y: best.y - pin.offsetTop + 22 })
     }
     fit()
     if (!box) return
@@ -137,10 +142,10 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
           {m.places.map((p, i) => (
             <button key={p.id} type="button" aria-pressed={on === p.id} aria-label={`${p.name}, ${p.ja}`} onClick={() => setOn(p.id)}
               data-id={p.id} tabIndex={(focused ?? on) === p.id ? 0 : -1} onFocus={() => setFocused(p.id)}
-              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={on === p.id ? side : p.chip} data-kind={DOT[p.id] ?? "place"}
+              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={p.chip} data-kind={DOT[p.id] ?? "place"}
               style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%`, "--tilt": `${(i * 67) % 360}deg` } as React.CSSProperties}>
               <span aria-hidden className="vmap-dot" />
-              {on === p.id && <span aria-hidden className="vmap-chip"><span>{p.name}</span><span lang="ja" className="font-ja">{p.ja}</span></span>}
+              {on === p.id && <span aria-hidden className="vmap-chip" style={spot ? { left: spot.x, top: spot.y, right: "auto", bottom: "auto", translate: "none" } : undefined}><span>{p.name}</span><span lang="ja" className="font-ja">{p.ja}</span></span>}
             </button>
           ))}
           </div>
