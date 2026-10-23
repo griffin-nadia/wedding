@@ -13,7 +13,6 @@ import { Segmented } from "@/components/segmented"
 import { startsFlat } from "@/lib/globe-mode"
 import { chapterPins, type ChapterPin } from "@/lib/journey-names"
 import { JourneyLegend, usePlaceName } from "@/components/journey-mini"
-import { JourneyFlat } from "@/components/journey-flat"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
 import { Sheet, SheetBody, SheetClose, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -119,6 +118,12 @@ function GlobeWaiting() {
 /** Run 24: the globe's code warms one stop early, and the globe itself starts once the spring has settled on its stop,
  *  so building it (Three.js, painting the land) never lands mid-slide. Before and after: .brief/docs/runs/2026-10-24.md */
 const loadGlobe = () => import("@/components/journey-globe")
+/** Run 26: the flat map loads only when it's shown (a phone that starts flat, or Map in full screen). Imported up
+ *  front it sat on Our story's first load: a few ms later and the page lost a race with the music button's own reveal,
+ *  which React then holds 300 ms behind (its Suspense reveal throttle), pushing the first stop from 2.3 s to 2.6 s on a
+ *  throttled phone. Its place while it loads is the map's own dark ground, the same size, so nothing moves. */
+const JourneyFlat = lazy(() => import("@/components/journey-flat").then((m) => ({ default: m.JourneyFlat })))
+const FlatWaiting = () => <div className="journey-flat" data-theme="lantern" aria-hidden />
 type View = "globe" | "flat"
 const STEP = 1.4 // the + and − (journey-globe.tsx ZOOM.step), 1x to 3x on both views
 
@@ -177,7 +182,7 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
         </div>
         <div className="journey-viewer-stage" data-view={view}>
           {view === "flat"
-            ? <JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} />
+            ? <Suspense fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>
             : <Suspense fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>}
           <div className="globe-zoom">
             <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}>+</button>
@@ -219,7 +224,7 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
   const told = flying && flying.households > 0 ? flying : null
   const cities = journeys ?? NONE
   // The stop's globe waits for its stop to settle and for the lines
-  const stop = base === "flat" ? <JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={onPin} />
+  const stop = base === "flat" ? <Suspense fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={onPin} /></Suspense>
     : !(active && settled && journeys) ? <GlobeWaiting />
     : <Suspense fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={onPin} held={open} /></Suspense>
   return (
