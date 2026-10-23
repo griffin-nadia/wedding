@@ -53,7 +53,7 @@ test("the chosen place's chip shows on phones and stays on the map", async ({ pa
     await page.getByRole("button", { name: /Around the venue/ }).first().click()
     const pins = page.locator(".vmap-pin")
     for (let i = 0; i < await pins.count(); i++) {
-      await pins.nth(i).click({ force: true })
+      await pins.nth(i).evaluate((el: HTMLElement) => el.click()) // a pin can sit below the card's own scroll fold
       const r = await page.evaluate(() => { const c = document.querySelector(".vmap-chip")!.getBoundingClientRect(), m = document.querySelector(".vmap")!.getBoundingClientRect(); return { shown: c.width > 0, inside: c.left >= m.left && c.right <= m.right && c.top >= m.top && c.bottom <= m.bottom } })
       expect(r, `${w}: place ${i}`).toEqual({ shown: true, inside: true })
     }
