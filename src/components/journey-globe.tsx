@@ -4,7 +4,8 @@ import { loop } from "@/lib/frame"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import type { City } from "@/lib/city-search"
-import { bundle, type Place } from "@/lib/journey-names"
+import { bundle, nearHome, type ChapterPin, type Place } from "@/lib/journey-names"
+import { ChapterPins } from "@/components/chapter-pins"
 
 /**
  * The journey on a painted globe. Three.js loads only here, when it mounts. The picture is painted on this device
@@ -21,9 +22,14 @@ import { bundle, type Place } from "@/lib/journey-names"
  * keeps turning with inertia when let go, the tilt is clamped, and the slow turn waits 3 s after the last touch and
  * eases back in, so the two never fight. Reduced motion: held facing Kyoto with every line already drawn, nothing
  * turning, flying or following.
- * The pixel ratio is capped (1.5 on phones), and it stops drawing whenever it's off screen.
+ * The pixel ratio is capped (1.5 on phones), and it stops drawing whenever it's off screen (or while held: the stop's
+ * globe while the full-screen view is open).
+ * Run 25, the cold-load flash: the camera's distance is worked out from the box's shape whenever the box changes (it
+ * was only worked out once, from the first size), reduced motion redraws on a resize too, and the globe fades in over a
+ * still disc of the same size once its first frame is drawn (data-ready), never an empty square.
+ * Chapter pins (run 25): each chapter's place as a small numbered stamp, moved with the globe like the names.
  */
-type Line = { from: [number, number]; kind: "nadia" | "griffin" | "guest" | "you"; bundled?: boolean }
+type Line = { from: [number, number]; kind: "nadia" | "griffin" | "guest" | "you"; bundled?: boolean; low?: boolean }
 // Run 24: Griffin's line starts at Victoria (the brief: Kyoto, Brisbane and Victoria always labelled)
 const KYOTO: [number, number] = [35.01, 135.77], BRISBANE: [number, number] = [-27.47, 153.03], VICTORIA: [number, number] = [48.43, -123.37]
 /** Zoom range and the step for the + and − buttons (run 24) */
@@ -31,7 +37,7 @@ const ZOOM = { min: 1, max: 3, step: 1.4 }
 /** The turn's feel: degrees a second on its own, the wait after a touch, the follow and the glide */
 const TURN = { auto: 5, wait: 3000, easeIn: 1500, follow: 16, glide: 2.4, tilt: 55 }
 
-export function JourneyGlobe({ you, cities, label, children }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string; name?: string }[]; label: string; children?: ReactNode }) {
+export function JourneyGlobe({ you, cities, label, children, zoomable = false, held = false, pins = [], onPin }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string; name?: string }[]; label: string; children?: ReactNode; zoomable?: boolean; held?: boolean; pins?: ChapterPin[]; onPin?: (key: string) => void }) {
   const { t, lang } = useLang()
   const brisbane = useRef<HTMLSpanElement>(null), victoria = useRef<HTMLSpanElement>(null), tip = useRef<HTMLSpanElement>(null)
   const zoomBy = useRef<(f: number) => void>(() => {})
@@ -39,6 +45,11 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
   const box = useRef<HTMLDivElement>(null)
   const pin = useRef<HTMLDivElement>(null)
   const [failed, setFailed] = useState(false)
+  const [ready, setReady] = useState(false)
+  const hold = useRef(held)
+  hold.current = held
+  const pinEls = useRef<(HTMLSpanElement | null)[]>([])
+  const pinKey = pins.map((p) => p.key).join()
   useEffect(() => {
     const el = box.current
     if (!el) return
@@ -55,13 +66,12 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
           const [r, g, b] = x.getImageData(0, 0, 1, 1).data
           return `#${[r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("")}`
         }
-        const night = theme === "lantern"
         const countries = [...cities.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
         // Guest cities by the naming rule, a country with many lines bundled into one (lib/journey-names.ts)
         const guests = bundle(cities.map((c) => ({ name: c.name ?? "", country: c.country ?? "", lat: c.lat, lon: c.lon, n: c.n }) as Place), lang, t.journey.households)
         let tex: InstanceType<typeof THREE.Texture>
         if (ART.globeLand) tex = await new THREE.TextureLoader().loadAsync(`${import.meta.env.BASE_URL}${ART.globeLand}`)
-        else tex = new THREE.CanvasTexture(await paintGlobe(night ? GLOBE_LOOK.night : GLOBE_LOOK.day, phone ? 1024 : 2048, countries))
+        else tex = new THREE.CanvasTexture(await paintGlobe(GLOBE_LOOK.map, phone ? 1024 : 2048, countries))
         if (!alive) return
         tex.colorSpace = THREE.SRGBColorSpace
         let w = el.clientWidth, h = el.clientHeight
@@ -77,12 +87,15 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
         scene.add(far, near)
         const colour = { nadia: hex("--ink-story", "#a84f32"), griffin: hex("--ink-moss", "#727354"), guest: hex("--ink-soft", "#754b38"), you: hex("--journey-you", "#d5a34f"), edge: hex("--ink", "#3b2a20") }
         const N = 140
-        const make = ({ from, kind, bundled = false }: Line) => {
+        const make = ({ from, kind, bundled = false, low = false }: Line) => {
           const a = toV(...from), b = toV(...KYOTO), om = a.angleTo(b), pts: number[] = []
+          const side = a.clone().cross(b).normalize()
           if (om < 0.01) return null
           for (let i = 0; i < N; i++) {
             const s = i / (N - 1), v = a.clone().multiplyScalar(Math.sin((1 - s) * om)).add(b.clone().multiplyScalar(Math.sin(s * om))).divideScalar(Math.sin(om))
-            v.setLength(1.004 + 0.09 * om * Math.sin(Math.PI * s)); pts.push(v.x, v.y, v.z)
+            // Beside a home line's start: lower, and bowed off to one side, so the two lines part and both read
+            if (low) v.addScaledVector(side, 0.12 * om * Math.sin(Math.PI * s))
+            v.setLength(1.004 + (low ? 0.05 : 0.09) * om * Math.sin(Math.PI * s)); pts.push(v.x, v.y, v.z)
           }
           const g = new LineGeometry(); g.setPositions(pts)
           const dotted = kind === "guest", mine = kind === "you"
@@ -100,13 +113,15 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
         }
         // Home lines first, then everyone else's (one per city), then theirs, last
         const lines: Line[] = [{ from: BRISBANE, kind: "nadia" }, { from: VICTORIA, kind: "griffin" }, ...guests.map((c) => ({ from: [c.lat, c.lon] as [number, number], kind: "guest" as const, bundled: c.bundled }))]
-        if (you && you.lat != null && you.lon != null && you.id !== "jp") lines.push({ from: [you.lat, you.lon], kind: "you" })
+        if (you && you.lat != null && you.lon != null && you.id !== "jp") lines.push({ from: [you.lat, you.lon], kind: "you", low: nearHome(you.lat, you.lon) }) // beside a home line: a lower curve, so both read
         const arcs = lines.map((l) => ({ kind: l.kind, arc: make(l) })).filter((a) => a.arc) as { kind: Line["kind"]; arc: NonNullable<ReturnType<typeof make>> }[]
         const dot = (at: [number, number], r: number, c: string) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), new THREE.MeshBasicMaterial({ color: new THREE.Color(c) })); m.position.copy(toV(...at, 1.004)); m.renderOrder = 1; scene.add(m) }
         dot(KYOTO, 0.018, hex("--action", "#5b6b3a"))
         const last = lines[lines.length - 1]
         if (last.kind === "you") dot(last.from, 0.014, colour.you)
-        const dist = 1.3 / Math.tan((camera.fov * Math.PI) / 360) / Math.min(1, camera.aspect)
+        // The camera's distance fits the globe in the box's shorter side: worked out again on every resize (run 25)
+        const fit = () => 1.3 / Math.tan((camera.fov * Math.PI) / 360) / Math.min(1, camera.aspect || 1)
+        let dist = fit()
         const zoom = { v: 1, t: 1 }
         const clampZoom = (z: number) => Math.min(ZOOM.max, Math.max(ZOOM.min, z))
         // Where the camera looks from, as the latitude and longitude it's over (any longitude: no wrapping, no jump)
@@ -120,7 +135,11 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
         const named = [{ v: toV(...BRISBANE, 1.004), el: brisbane.current }, { v: toV(...VICTORIA, 1.004), el: victoria.current }]
         const guestAt = guests.map((g) => ({ v: toV(g.lat, g.lon, 1.004), label: g.label }))
         const toScreen = (v: InstanceType<typeof THREE.Vector3>) => { const s = v.clone().project(camera); return { x: ((s.x + 1) / 2) * w, y: ((1 - s.y) / 2) * h, back: v.dot(camera.position) < 0.08 * camera.position.length() } }
-        const placeNames = () => named.forEach(({ v, el: n }) => { if (!n) return; const s = toScreen(v); n.style.transform = `translate3d(${s.x.toFixed(1)}px, ${s.y.toFixed(1)}px, 0)`; n.dataset.back = String(s.back) })
+        const pinAt = pins.map((p) => toV(...p.at, 1.004))
+        const placeNames = () => {
+          named.forEach(({ v, el: n }) => { if (!n) return; const s = toScreen(v); n.style.transform = `translate3d(${s.x.toFixed(1)}px, ${s.y.toFixed(1)}px, 0)`; n.dataset.back = String(s.back) })
+          pinAt.forEach((v, i) => { const n = pinEls.current[i]; if (!n) return; const s = toScreen(v); n.style.setProperty("--x", `${s.x.toFixed(1)}px`); n.style.setProperty("--y", `${s.y.toFixed(1)}px`); n.dataset.back = String(s.back) })
+        }
         // A guest city's label on hover (laptops) or tap (phones): the nearest line start within 22px on the near side
         let tipFor: { x: number; y: number } | null = null, tipUntil = 0
         const showTip = (x: number, y: number, hold = 0) => {
@@ -150,13 +169,23 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
         // scroll always scrolls the page. Pinch with two fingers on phones. The + and − buttons. 1x to 3x, eased.
         const wheel = (e: WheelEvent) => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); zoom.t = clampZoom(zoom.t * Math.exp(-e.deltaY * 0.01)) }
         cv.addEventListener("wheel", wheel, { passive: false })
+        const resize = () => {
+          w = el.clientWidth; h = el.clientHeight
+          if (!w || !h) return
+          renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); dist = fit()
+          arcs.forEach(({ arc }) => arc.ms.forEach((m) => m.resolution.set(w, h)))
+        }
+        const ro = new ResizeObserver(() => { resize(); if (reduce) draw() })
+        let shown = false
+        const first = () => { if (!shown && alive) { shown = true; setReady(true) } }
+        const draw = () => { zoom.v = zoom.t; setCam(); renderer.render(scene, camera); placePin(); first() }
         if (reduce) {
-          const draw = () => { zoom.v = zoom.t; setCam(); renderer.render(scene, camera); placePin() }
           zoomBy.current = (f) => { zoom.t = clampZoom(zoom.t * f); draw() }
           cv.addEventListener("wheel", () => requestAnimationFrame(draw))
           cv.addEventListener("pointermove", (e) => e.pointerType === "mouse" && showTip(e.clientX, e.clientY))
           cv.addEventListener("pointerup", (e) => showTip(e.clientX, e.clientY, 2500))
-          draw(); stop = () => { cv.removeEventListener("wheel", wheel); renderer.dispose(); renderer.domElement.remove() }; return
+          draw(); ro.observe(el)
+          stop = () => { ro.disconnect(); cv.removeEventListener("wheel", wheel); renderer.dispose(); renderer.domElement.remove() }; return
         }
         zoomBy.current = (f) => { zoom.t = clampZoom(zoom.t * f) }
         // Opens over the Pacific, every line in view, then turns the short way to Kyoto
@@ -206,7 +235,7 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
         io.observe(el)
         const cancel = loop((now) => {
           const dt = Math.min(0.05, (now - then) / 1000); then = now
-          if (!visible) return true // off screen: nothing drawn until it's back
+          if (!visible || hold.current) { then = now; return true } // off screen or held: nothing drawn until it's back
           const s = (now - t0) / 1000
           // 0 to 1.2 s the home lines, 1.2 to 2.6 s everyone else's, then theirs, last
           arcs.forEach(({ kind, arc }, i) => {
@@ -232,19 +261,20 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
           zoom.v += (zoom.t - zoom.v) * (1 - Math.exp(-10 * dt))
           setCam()
           renderer.render(scene, camera)
-          placePin()
+          placePin(); first()
           return true
         })
-        const ro = new ResizeObserver(() => { w = el.clientWidth; h = el.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); arcs.forEach(({ arc }) => arc.ms.forEach((m) => m.resolution.set(w, h))) })
         ro.observe(el)
         stop = () => { cancel(); io.disconnect(); ro.disconnect(); cv.removeEventListener("wheel", wheel); renderer.dispose(); renderer.domElement.remove() }
       })
       .catch(() => setFailed(true))
     return () => { alive = false; stop() }
-  }, [you, cities, theme, lang, t.journey.households])
+    // pinKey stands for pins (the same places, the same pins)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [you, cities, theme, lang, t.journey.households, pinKey])
   if (failed) return null
   return (
-    <div className="journey-globe">
+    <div className="journey-globe" data-theme="lantern" data-ready={ready || undefined}>
       <div ref={box} className="journey-globe-art" role="img" aria-label={label}>
         <div ref={pin} className="globe-pin" aria-hidden><div className="globe-pin-body"><span className="globe-pin-seal">京</span><span className="globe-pin-text">{t.journey.kyotoPin}</span></div></div>
         <span ref={brisbane} className="globe-place" aria-hidden>{t.journey.brisbane}</span>
@@ -252,10 +282,11 @@ export function JourneyGlobe({ you, cities, label, children }: { you: City | nul
         <span ref={tip} className="globe-tip" aria-hidden hidden />
         <span className="sr-only">{t.journey.title}</span>
       </div>
-      <div className="globe-zoom">
+      <ChapterPins pins={pins} onPin={onPin} refs={pinEls} />
+      {zoomable && <div className="globe-zoom">
         <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoomBy.current(ZOOM.step)}>+</button>
         <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoomBy.current(1 / ZOOM.step)}>−</button>
-      </div>
+      </div>}
       {children}
     </div>
   )

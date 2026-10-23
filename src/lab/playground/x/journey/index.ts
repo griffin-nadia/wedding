@@ -27,4 +27,16 @@ export const entries: Entry[] = [
     promote: "The site's flat map (#176, #184) already uses the globe's painting. This crop and the bowing lines would go into journey-mini.tsx. No Three.js; paints in steps. Test: story.spec.ts flat-mode screenshot.",
     Component: lazy(() => import("./journey-flat-painted")),
   },
+  {
+    id: "journey-chapter-pins",
+    title: "Chapter pins on the journey map",
+    deciding: "Jehan: how each chapter's place shows on the map and the globe. Picked for feat/r25-journey: the stamp (its number ties the pin to \"Chapter 2 of 7\" and it reads at 20px without covering the lines). Tag or flag instead?",
+    summary: "Where each chapter happened (Hirakata, Canada, Australia, Brisbane; Taiwan once their words are in), as a stamp, a year tag or a little flag, over the site's own flat map. Tap one to see which stop it goes to. The crowd knob adds made-up households to judge them against many lines.",
+    takes: [{ id: "stamp", label: "Numbered stamp" }, { id: "tag", label: "Year tag" }, { id: "flag", label: "Flag" }],
+    knobs: [{ id: "crowd", label: "Crowd (demo households, never guests)", kind: "select", options: [["sample", "The sample's"], ["0", "None"], ["15", "15 demo"], ["40", "40 demo"]], def: "sample" }],
+    live: { path: "/our-story" },
+    refs: [{ label: "Open UI", href: "https://open-ui.org/" }],
+    promote: "Shipped as the stamp in src/components/chapter-pins.tsx (both views). Another look is a CSS change to .chapter-pin (the tag also needs the year passed in). No new weight.",
+    Component: lazy(() => import("./journey-chapter-pins")),
+  },
 ]
