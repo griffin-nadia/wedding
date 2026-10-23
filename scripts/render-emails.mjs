@@ -13,7 +13,7 @@ const ctx = {
   PropertiesService: { getScriptProperties: () => ({ getProperty: () => null, setProperty() {}, getProperties: () => ({}) }) },
   SpreadsheetApp: { getActive: () => ({ getSheetByName: () => null }) },
   CacheService: { getScriptCache: () => ({ get: () => null, put() {} }) },
-  Session: { getEffectiveUser: () => ({ getEmail: () => "griffinandnadia@gmail.com" }) },
+  Session: { getEffectiveUser: () => ({ getEmail: () => "wedding@example.com" }) },
   MailApp: { sendEmail: (m) => sent.push(m) },
   // Apps Script's formatDate for the patterns the emails use ("EEE d MMM yyyy", "d MMMM yyyy", "d MMM"), in Kyoto time
   Utilities: { formatDate: (d, tz, f) => {
@@ -43,7 +43,7 @@ for (const [name, changes] of [["confirmation-en", null], ["confirmation-updated
 // What's checked: the links, the name order, the reply-by and change-by dates
 const report = files.map(([f, subject, html, text, from, replyTo]) => ({
   file: f, subject,
-  from: from ?? "Griffin & Nadia (name)", replyTo: replyTo ?? "griffinandnadia@gmail.com",
+  from: from ?? "Griffin & Nadia (name)", replyTo: replyTo ?? "wedding@example.com",
   links: [...new Set([...String(html).matchAll(/href="([^"]+)"/g)].map((x) => x[1]))],
   nadiaFirst: /Nadia\s*(&|and)\s*Griffin/.test(subject + html + text),
   rsvpBy: (/Mon 15 Feb 2027|15 February 2027/.exec(text) ?? [/Feb/.test(text) ? "other" : "-"])[0],

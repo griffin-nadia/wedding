@@ -5,6 +5,7 @@ import { test, expect, type Page } from "@playwright/test"
 // − on the globe, Escape and the X back to the story. Chapter pins on both views go to their stop.
 test.use({ launchOptions: { args: ["--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } })
 test.describe.configure({ timeout: 90_000 })
+test.use({ trace: "retain-on-failure" }) // run 26: a trace when the full-screen map is slow on CI
 const toEnd = async (page: Page) => {
   await page.goto("our-story?h=sample")
   const next = page.getByRole("button", { name: /next chapter/i })
@@ -47,6 +48,11 @@ test("the stop shows the globe; Full screen opens it with Globe / Map, and close
   await expect(dialog.getByRole("button", { name: "Zoom in" })).toBeVisible()
   await expect(dialog.getByRole("button", { name: "Zoom out" })).toBeVisible()
   await expect(dialog.locator(".journey-legend")).toBeVisible()
+  // Run 26: the full-screen globe's box is the whole stage, so zoomed in it never shows as a square; + zooms it
+  const vw = page.viewportSize()!.width
+  expect((await dialog.locator(".journey-globe").boundingBox())!.width).toBeGreaterThanOrEqual(vw - 1)
+  // Each chapter pin carries the kotobuki stamp
+  await expect(dialog.locator(".chapter-pin-seal").first()).toHaveText("寿")
   // The globe fits its box after a resize (the camera's distance is worked out again): the buffer has the box's shape
   const vp = page.viewportSize()!
   await page.setViewportSize({ width: 700, height: 500 }); await page.waitForTimeout(400)
@@ -62,6 +68,14 @@ test("the stop shows the globe; Full screen opens it with Globe / Map, and close
   await expect(dialog.locator(".journey-flat .journey-guest")).toHaveCount(5)
   await expect(dialog.locator(".journey-flat .journey-guest-bundle")).toHaveCount(1)
   await expect(dialog.locator(".journey-flat .chapter-pin")).toHaveCount(await stop.locator(".chapter-pin").count())
+  // Run 26: no paper planes under reduced motion (the lines are already drawn); + and − zoom the map too, 1x to 3x
+  await expect(dialog.locator(".journey-plane")).toHaveCount(0)
+  const viewBox = () => dialog.locator("svg.journey-flat-lines").getAttribute("viewBox")
+  for (let i = 0; i < 5; i++) await dialog.getByRole("button", { name: "Zoom in" }).click()
+  await expect.poll(viewBox).toMatch(/ 133\.33\d* 106\.66\d*$/) // 3x at most: a third of 400 × 320
+  await expect(dialog.locator(".journey-flat")).toHaveAttribute("data-zoomed", "true")
+  for (let i = 0; i < 5; i++) await dialog.getByRole("button", { name: "Zoom out" }).click()
+  await expect.poll(viewBox).toBe("0 0 400 320")
   // Escape closes it, focus back on the control, the story where it was
   await page.keyboard.press("Escape")
   await expect(dialog).toHaveCount(0)

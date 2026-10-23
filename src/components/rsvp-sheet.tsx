@@ -1,7 +1,7 @@
 import { Info } from "lucide-react"
 import { DATES } from "@/lib/wedding-dates"
 import { nextFrame } from "@/lib/frame"
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
 import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -123,6 +123,23 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
     heading.current?.focus({ preventScroll: true })
     body.current?.scrollTo({ top: 0 })
   }, [step])
+  // Run 26: each step hugs its content, and the sheet's height eases from one step to the next (reduced motion: a
+  // jump). The height on screen is tracked as it changes, so a new step starts from wherever the last one stood.
+  const shownH = useRef(0)
+  const sheetEl = useRef<HTMLDivElement | null>(null)
+  const watchHeight = useCallback((el: HTMLDivElement | null) => {
+    sheetEl.current = el
+    if (!el) return
+    const ro = new ResizeObserver(() => { shownH.current = el.getBoundingClientRect().height })
+    ro.observe(el)
+    return () => { ro.disconnect(); shownH.current = 0 }
+  }, [])
+  useLayoutEffect(() => {
+    const el = sheetEl.current
+    const from = shownH.current, to = el?.getBoundingClientRect().height ?? 0
+    if (!el || !from || Math.abs(to - from) < 2 || matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    el.animate([{ height: `${from}px` }, { height: `${to}px` }], { duration: 250, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }) // --duration-base, --ease-paper
+  }, [step, done])
   useEffect(() => { setDim(open) }, [open, setDim])
   // The RSVP button in the top bar (/?rsvp=1) opens it even when the form has already loaded
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -271,7 +288,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild disabled={locked}>{children}</SheetTrigger>
-        <SheetContent aria-describedby={undefined} className="rsvp-sheet"
+        <SheetContent ref={watchHeight} aria-describedby={undefined} className="rsvp-sheet"
           // Enter (the keyboard's tick) in a text or date field goes to the next field, or puts the keyboard away after
           // the last; it never moves the step on. The song search, the radios and the message keep theirs.
           onKeyDown={(e) => {
@@ -365,7 +382,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
             {error && (error === t.rsvp.errors.paused
               ? <p role="status" className="rounded-md bg-section-alt px-4 py-3 text-foreground">{error}</p>
               : <div className="flex flex-col gap-2"><p role="alert" className="rounded-md border-2 border-destructive bg-card px-4 py-3 text-destructive">{error}</p>
-                  <AskUs><button type="button" className="btn-text inline-flex min-h-11 items-center self-start">{pending("ask.open", lang)}</button></AskUs></div>)}
+                  <AskUs><button type="button" className="btn-text inline-flex min-h-11 items-center self-end">{pending("ask.open", lang)}</button></AskUs></div>)}
             {offline && <p role="status" className="rounded-md border bg-card px-4 py-3">{t.rsvp.offline}</p>}
           </div>
           </SheetBody>

@@ -1,6 +1,6 @@
 // node scripts/leak-check.mjs [dir]: run 20, the end of every `npm run build` (so the gates and the deploy). Fails if
 // the built site (dist/ by default) carries something private:
-// - an email address other than the site's own contact (the wedding account) and the calendar file's id
+// - any email address other than the calendar file's id (run 26: not even the wedding account's own)
 // - a Google sheet, Drive or script id, other than the back end's own /exec address
 // - a test token, or a path into private/
 // - photo metadata (EXIF, XMP, GPS), or an image bigger than the site shows (2400 wide, 3200 long side)
@@ -9,7 +9,7 @@ import fs from "node:fs"
 import path from "node:path"
 
 const dir = process.argv[2] ?? "dist"
-const ALLOWED_EMAILS = new Set(["griffinandnadia@gmail.com", "nadia-griffin-2027@griffin-nadia.github.io"])
+const ALLOWED_EMAILS = new Set(["nadia-griffin-2027@griffin-nadia.github.io"]) // the calendar file's id only (run 26)
 const TEST_TOKENS = ["test6", "testtoken1", "k7x2mq9p4r"]
 const MAX_W = 2400, MAX_LONG = 3200
 const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]))
