@@ -638,7 +638,11 @@
 /* Laptops (run 21): every sheet is a centred dialog over the page, which stays there softly dimmed and blurred so it
    still reads behind. Phones keep the sheet that covers the page. */
 @media (min-width: 768px) {
-  .sheet-overlay { background: color-mix(in oklab, var(--brand-ink-deep) 28%, transparent); -webkit-backdrop-filter: blur(6px) saturate(0.9); backdrop-filter: blur(6px) saturate(0.9); }
+  .sheet-overlay { background: color-mix(in oklab, var(--brand-ink-deep) 28%, transparent); }
+}
+/* The blur only with a mouse (run 26): never on a phone, even one turned sideways past 768 */
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  .sheet-overlay { -webkit-backdrop-filter: blur(6px) saturate(0.9); backdrop-filter: blur(6px) saturate(0.9); }
 }
 /* The RSVP sheet is the letter: fixed header and footer, only the content scrolls. Height follows the content. */
 .sheet {
