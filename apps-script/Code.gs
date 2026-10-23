@@ -1500,10 +1500,14 @@ function geocode_(p) {
   const key = "geo:" + (pin ? lat.toFixed(2) + "," + lon.toFixed(2) : q.toLowerCase())
   const cache = CacheService.getScriptCache(), hit = cache.get(key)
   if (hit) return { ok: true, places: JSON.parse(hit) }
-  const g = Maps.newGeocoder().setLanguage("en")
-  const res = pin ? g.reverseGeocode(lat, lon) : g.geocode(q)
+  const g = function (lean) { const x = Maps.newGeocoder().setLanguage("en"); return lean ? x.setRegion(lean) : x }
+  // Run 26: one name in two places ("Victoria": the Australian state, the Canadian city) is two choices. The geocoder
+  // gives only its best match, so a search asks again leaning to Australia and to Canada (most guests' homes) and
+  // merges them, best match first. Three lookups for a new search; answers are cached, so a repeat costs none.
+  const found = pin ? (g().reverseGeocode(lat, lon).results || [])
+    : ["", "au", "ca"].reduce(function (all, lean) { return all.concat(g(lean).geocode(q).results || []) }, [])
   const places = [], seen = {}
-  ;(res.results || []).forEach(function (r) {
+  found.forEach(function (r) {
     const part = function (type) { return (r.address_components || []).filter(function (c) { return c.types.indexOf(type) >= 0 })[0] }
     // A city or town; failing that (a search like "Victoria" whose best match is a state), the state or province itself
     const town = part("locality") || part("postal_town") || part("administrative_area_level_3") || part("colloquial_area") || part("administrative_area_level_2") || part("natural_feature") || part("administrative_area_level_1")
@@ -1550,7 +1554,8 @@ function setFlying_(token, city) {
     const okCountry = country === "" || /^[A-Z]{2}$/.test(country)
     const okAt = (lat === null && lon === null) || (isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180)
     if (!okId || !okName || !okCountry || !okAt) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
-    row = { name: name, id: id, region: String(city.region || "").slice(0, 80), country: country, lat: lat, lon: lon }
+    // Run 26: a found place or a pin is kept as its city or town and country only (no region)
+    row = { name: name, id: id, region: /^(geo|pin)$/.test(id) ? "" : String(city.region || "").slice(0, 80), country: country, lat: lat, lon: lon }
   } else return { ok: false, code: "bad_request", error: ERRORS.bad_request }
   const lock = LockService.getUserLock()
   if (!lock.tryLock(10000)) return { ok: false, code: "busy", error: ERRORS.busy }

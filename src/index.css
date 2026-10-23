@@ -704,6 +704,14 @@
 .sheet-close:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .sheet-close:hover { border-color: var(--line-strong); } }
 .rsvp-actions { flex: none; display: flex; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--line-hairline); }
+/* Run 26: on laptops the reply sheet hugs each step too (its height eases between steps, rsvp-sheet.tsx) and can grow
+   closer to the bar and the bottom edge, so a whole reply on "All good?" reads without scrolling inside it. The song
+   step keeps the full height, as on phones, so its field never moves as results open */
+@media (min-width: 768px) {
+  .sheet.rsvp-sheet { --sheet-gap: 12px; height: auto; }
+  :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); }
+  .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { height: calc(100dvh - 64px - 2 * var(--sheet-gap)); }
+}
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
 /* "All good?": who sees the reply, a small note just above Back and Send (run 25) */
 .rsvp-actions > .rsvp-privacy { flex: 1 0 100% !important; display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-small); line-height: var(--text-small--line-height); color: var(--muted-foreground); }
