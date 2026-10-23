@@ -1256,14 +1256,15 @@ svg.lucide { stroke-width: 1.5; }
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
 /* The kid opener (run 24): three instant prints in a small pile that fills the spread's media box. Each print is the
    story's instant print (4:5) at about 1.05 × --print-h tall; positions in % of the pile so it scales */
-.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 1.9)); height: calc(var(--stop-h) - var(--space-2)); }
+.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 1.4)); /* run 25: two prints, overlapping as on phones */ height: calc(var(--stop-h) - var(--space-2)); }
 .story-slide-opener .story-media { width: 100%; } /* the pile's prints are placed in it, so it can't size to them */
 .story-kid { position: absolute; }
 .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.72); }
 .story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
-.story-kid-him { left: 10%; top: 2%; z-index: 2; }
+.story-kid-him { left: 0; top: 2%; z-index: 2; }
 .story-kid-him .story-print { --tilt: 4deg; }
-.story-kid-her { right: 0; top: 9%; z-index: 3; }
+.story-kid-her { right: 0; top: 14%; z-index: 3; }
+.story-kid-her .story-print { --tape-x: 50%; --tape-w: 38%; --tape-turn: -2.5deg; }
 .story-kid-her .story-print { --tilt: -5deg; }
 /* Phones: the pile staggers down the stop's full height (his top left, hers lower right over his corner, taped there,
    his first day tucked under his, peeking out at the bottom left), so both faces stay clear and there's no empty band */
@@ -1273,14 +1274,14 @@ svg.lucide { stroke-width: 1.5; }
   .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.45); container-type: size; }
   .story-kids { height: 100%; }
   /* Run 25: two prints, his top left and hers bottom right, overlapping at his lower corner */
-  .story-kid .story-print { --print-h: min(50cqh, 76cqw); }
-  .story-kid-him { left: 3%; top: 1%; }
-  .story-kid-her { right: 3%; top: auto; bottom: 1%; }
-  .story-kids-tape { left: 44%; top: 47%; width: 24%; rotate: -34deg; }
+  /* Run 25 (Jehan): a little smaller and more tilted, so they still overlap at the corners but neither covers a face */
+  .story-kid .story-print { --print-h: min(43cqh, 64cqw); }
+  .story-kid-him .story-print { --tilt: -7deg; }
+  .story-kid-her .story-print { --tilt: 8deg; }
+  .story-kid-him { left: 2%; top: 2%; }
+  .story-kid-her { right: 2%; top: auto; bottom: 2%; }
 }
-/* Tape across where hers overlaps his */
-.story-kids-tape { position: absolute; z-index: 4; left: 52%; top: 10%; width: 22%; height: 22px; rotate: 58deg; opacity: 0.82; background: color-mix(in oklab, var(--brand-sage) 70%, white); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
-  -webkit-mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent); mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent); }
+
 
 /* Their picks: compact rows, the whole row is the link */
 .stay-pick { min-height: 48px; padding-block: var(--space-2); }
@@ -1554,7 +1555,8 @@ svg.lucide { stroke-width: 1.5; }
 }
 @media (pointer: coarse) and (prefers-reduced-motion: no-preference) { .story-print:active { transform: translateY(-8px) scale(1.02) rotate(calc(var(--tilt, -3deg) * 0.8)); transition-duration: 200ms; } }
 @media (prefers-reduced-motion: reduce) { .story-print { transition: filter var(--duration-fast) linear; } .story-print:hover { filter: brightness(1.04); } }
-.story-print[data-tape]::before { content: ""; position: absolute; z-index: 2; top: -9px; left: var(--tape-x, 50%); width: var(--tape-w, 38%); height: 20px; translate: -50% 0; rotate: var(--tape-turn, calc(var(--lean, 1) * 3deg)); opacity: 0.82;
+/* Run 25: the kid opener's tape is this one too, on Nadia's print (the same width, colour, angle and place as any taped print) */
+.story-print[data-tape]::before, .story-kid-her .story-print::before { content: ""; position: absolute; z-index: 2; top: -9px; left: var(--tape-x, 50%); width: var(--tape-w, 38%); height: 20px; translate: -50% 0; rotate: var(--tape-turn, calc(var(--lean, 1) * 3deg)); opacity: 0.82;
   background: var(--tape, color-mix(in oklab, var(--brand-sage) 70%, white)); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
   -webkit-mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent), repeating-linear-gradient(0deg, #000 0 2px, rgb(0 0 0 / 0.6) 2px 3px);
   mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent), repeating-linear-gradient(0deg, #000 0 2px, rgb(0 0 0 / 0.6) 2px 3px);

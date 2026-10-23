@@ -12,7 +12,7 @@ import { pending } from "@/content/pending"
 
 /**
  * The opener (run 24): Griffin's 1998 school portrait and Nadia's home photo as instant prints, tilted opposite ways,
- * hers leaning into his, a strip of tape across where they overlap. Sized to fill the spread. Run 25: two prints only;
+ * hers leaning into his and over his corner, with a strip of washi tape across her top edge like the other taped prints. Sized to fill the spread. Run 25: two prints only;
  * his first day of school (kid-griffin, his own pick) is out of the opener for now, the file stays in photos.json.
  */
 function Opener() {
@@ -23,7 +23,6 @@ function Opener() {
     <div className="story-kids">
       <div className="story-kid story-kid-him"><Photo name="kid-griffin-1998" treatment="print" sizes={sizes} className="story-print" /></div>
       <div className="story-kid story-kid-her"><Photo name="kid-nadia-home" treatment="print" sizes={sizes} className="story-print" /></div>
-      <span aria-hidden className="story-kids-tape" />
     </div>
   )
 }
