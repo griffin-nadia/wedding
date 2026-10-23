@@ -15,8 +15,37 @@ test("the venue map is on and complete", async ({ page }) => {
   await expect(page.locator(".vmap-key")).toContainText("Taxi from the station")
   await expect(page.locator(".vmap-key")).toContainText("Walk from Gion-Shijo")
   await expect(page.getByRole("button", { name: "Open the map" })).toBeVisible()
-  await page.locator(".vmap-list summary").click()
-  await expect(page.locator(".vmap-list [lang=ja]", { hasText: "清水寺" })).toBeVisible()
+  await expect(page.getByRole("radiogroup", { name: "The places on the map" }).getByRole("radio")).toHaveCount(11)
+})
+
+// Run 26c: the places selector is a radio group (APG, native radios): Tab lands on the chosen place, the arrow keys
+// move and choose, and the map's dot (opaque, honey gold and bigger when chosen) and the card follow
+test("the places radio group: keyboard chooses, the dot and card follow", async ({ page }, info) => {
+  test.skip(info.project.name !== "laptop", "keyboard")
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto("travel?h=sample#around")
+  const group = page.getByRole("radiogroup", { name: "The places on the map" })
+  const sodoh = group.getByRole("radio", { name: "The Sodoh" })
+  await expect(sodoh).toBeChecked()
+  await sodoh.focus()
+  await page.keyboard.press("ArrowRight")
+  await expect(group.getByRole("radio", { name: "Kyoto Station" })).toBeFocused()
+  await expect(group.getByRole("radio", { name: "Kyoto Station" })).toBeChecked()
+  await expect(page.locator(".kmap-card")).toContainText("Hachijo exit")
+  await page.keyboard.press("ArrowLeft")
+  await page.keyboard.press("ArrowLeft") // back past the first: wraps to the last
+  await expect(group.getByRole("radio", { name: "Kiyomizu-dera" })).toBeChecked()
+  await expect(page.locator(".vmap").getByRole("button", { name: /Kiyomizu-dera/ })).toHaveAttribute("aria-pressed", "true")
+  await page.waitForTimeout(400) // the gold fades in and the dot grows over 200ms
+  const dots = await page.locator(".vmap").evaluate((m) => [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((p) => {
+    const d = p.querySelector<HTMLElement>(".vmap-dot")!, cs = getComputedStyle(d), fill = getComputedStyle(d, "::before")
+    return { on: p.classList.contains("is-on"), alpha: Number(cs.backgroundColor.match(/[\d.]+/g)?.[3] ?? 1), shadow: cs.boxShadow !== "none", gold: fill.opacity === "1", scale: new DOMMatrix(cs.transform).a }
+  }))
+  for (const d of dots) { expect(d.alpha).toBe(1); expect(d.shadow).toBe(true) }
+  const on = dots.filter((d) => d.on)
+  expect(on).toHaveLength(1)
+  expect(on[0].gold).toBe(true)
+  expect(on[0].scale).toBeGreaterThan(1.2)
 })
 
 // Run 24b: every ring sits on its own dot in Nadia's art (the place's % of the image), at three widths (run 25: and 2560)

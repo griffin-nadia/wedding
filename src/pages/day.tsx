@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Flower2, UtensilsCrossed, Wine } from "lucide-react"
+import { Flower2, Navigation, UtensilsCrossed, Wine } from "lucide-react"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { directionsUrl } from "@/lib/calendar"
 import { DATES } from "@/lib/wedding-dates"
@@ -69,15 +69,17 @@ function Timeline({ now }: { now: Date }) {
 function Details() {
   const { t } = useLang()
   return (
-    <div className="flex flex-col gap-2">
+    <div className="day-details flex flex-col gap-3">
+      <VenueMark />
+      {/* Run 26c: each line balanced, so the street line never leaves "Ward" on its own at 390 */}
       <div className="flex flex-col">
-        <VenueMark className="mb-3" />
-        {t.day.addressLines.map((l) => <p key={l}>{l}</p>)}
+        {t.day.addressLines.map((l) => <p key={l} className="text-balance">{l}</p>)}
       </div>
       {/* How to get there (Google Maps directions) and, once Nadia's map is switched on, Open the map beside it: the same
           full-screen map as Travel's (run 25; the map itself is inline on Travel only) */}
+      {/* Run 26c: both links the same (icon, gap, height), so they line up with each other and the address */}
       <div className="flex flex-wrap items-center gap-x-6">
-        <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center">{t.day.howToGetThere}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
+        <a href={directionsUrl} target="_blank" rel="noreferrer" className="btn-text press inline-flex min-h-11 items-center gap-2"><Navigation className="size-4" aria-hidden />{t.day.howToGetThere}<span className="sr-only">, {t.driver.mapsOpens}</span></a>
         {venueMapOn() && <VenueMapOpen />}
       </div>
     </div>

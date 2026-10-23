@@ -195,7 +195,7 @@ export const en = {
     print: "Print the day",
     now: "Now",
     rainPlan: "If it rains, the ceremony moves inside to one of the venue's chapels.",
-    venueFacts: "The Sodoh was the home of the painter Takeuchi Seihō. Its 1.4-acre garden changes colour with the seasons.",
+    venueFacts: "The Sodoh used to be the painter Takeuchi Seihō's home, and the garden is huge (1.4 acres). It changes colour with the seasons.",
     gettingTitleJa: "行き方",
     stay: [
       { label: "Gion and Higashiyama", good: "Walk to the venue, the prettiest streets", watch: "Pricier, crowded, hilly stone lanes", maps: "https://www.google.com/maps/search/?api=1&query=Gion+Higashiyama+Kyoto" },
@@ -210,9 +210,9 @@ export const en = {
     ticked: "Done",
     items: [
       // Their final wording (Inv details, column E, 22 Oct): Before you fly, Flights, Accommodation, SIM / wifi
-      { title: "Passport", body: "Check your travel information is all up to date! Please ensure your passport is valid for at least 6 months past your return date. If you need to renew your passport, please do so soon!" },
-      { title: "Flights", body: "Please book flights as early as you are reasonably able to. The date of the wedding is locked in, so there's no chance of it moving! If you can, please take the opportunity to enjoy Japan while you are here. We will have suggestions for activities for several days leading up to the wedding, and encourage you to stick around for a few days after if you are able." },
-      { title: "Where to stay", body: "Once you have your flights booked, you'll need to book somewhere to stay! We will collect some recommendations for hotels and Air BnBs near the venue. Please keep in mind Japanese hotels tend to be quite small and perfunctory, so factor that into your decision-making. If you would like to coordinate with other guests and share accommodation, please do so! If you feel stuck, reach out to us!" },
+      { title: "Passport", body: "Check your travel information is all up to date! Make sure your passport has at least 6 months left after you fly home. If it needs renewing, get onto it soon!" },
+      { title: "Flights", body: "Book your flights as early as you can. The date's locked in, so it's not going anywhere! While you're over here, make a trip of it. We'll share some ideas for the days before the wedding, and we'd love it if you stuck around for a few days after too." },
+      { title: "Where to stay", body: "Once you have your flights booked, you'll need to book somewhere to stay! We will collect some recommendations for hotels and Air BnBs near the venue. Heads up: Japanese hotels are usually pretty small and no-frills, so plan for that. Want to team up with other guests and share a place? Go for it! If you're stuck, give us a shout!" },
       { title: "SIM or pocket wifi", body: "Grab an eSIM or pocket wifi before you go. A few we like:", links: [
         { label: "Sakura Mobile", href: "https://www.sakuramobile.jp/" },
         { label: "Ninja WiFi", href: "https://ninjawifi.com/en/plan/sim" },
@@ -261,7 +261,7 @@ export const en = {
       { id: "gion", name: "Gion Shijo Station", ja: "祇園四条駅", at: [55.8, 20.7], chip: "right", body: "On the Keihan line, at the bottom of Shijo-dori. About 10 minutes on foot to the venue along old stone lanes, with a few steps.", maps: "https://www.google.com/maps/dir/?api=1&origin=Gion-Shijo+Station&destination=The+Sodoh+Higashiyama+Kyoto&travelmode=walking" },
       { id: "sanjo", name: "Sanjo Station", ja: "三条駅", at: [55.8, 6.9], chip: "left", body: "On the Keihan line, the top of the map: close to Kawaramachi's shops and restaurants.", maps: "https://www.google.com/maps/search/?api=1&query=Sanjo+Station+Kyoto" },
       { id: "shichijo", name: "Shichijo Station", ja: "七条駅", at: [48.1, 64.2], chip: "right", body: "On the Keihan line, one stop south of Kiyomizu Gojo.", maps: "https://www.google.com/maps/search/?api=1&query=Shichijo+Station+Kyoto" },
-      { id: "tofukuji", name: "Tofukuji Station", ja: "東福寺駅", at: [50.8, 90.3], chip: "left", body: "Where the JR Nara line from Kyoto Station meets the Keihan line. Tofuku-ji temple, known for its autumn maples, is a short walk away.", maps: "https://www.google.com/maps/search/?api=1&query=Tofukuji+Station+Kyoto" },
+      { id: "tofukuji", name: "Tofukuji Station", ja: "東福寺駅", at: [50.8, 90.3], chip: "left", body: "Where the JR Nara line from Kyoto Station meets the Keihan line. Tofuku-ji is a short walk away, and its autumn maples are something else.", maps: "https://www.google.com/maps/search/?api=1&query=Tofukuji+Station+Kyoto" },
       { id: "kawaramachi", name: "Kawaramachi Shopping Street", ja: "河原町", at: [50, 13.1], chip: "right", body: "Kyoto's main shopping street, with covered arcades running off it. Good for food and a wander.", maps: "https://www.google.com/maps/search/?api=1&query=Kawaramachi+Kyoto" },
       { id: "shrine", name: "Yasaka Shrine", ja: "八坂神社", at: [68, 25.2], chip: "right", body: "At the top of Shijo-dori, open day and night. About 10 minutes on foot from the venue.", maps: "https://www.google.com/maps/search/?api=1&query=Yasaka+Shrine+Kyoto" },
       { id: "pagoda", name: "Yasaka Pagoda", ja: "八坂の塔", at: [66.9, 49.9], chip: "right", body: "The five-storey pagoda on the lane by the venue. If you can see it, you're nearly there.", maps: "https://www.google.com/maps/search/?api=1&query=Yasaka+Pagoda+Kyoto" },
@@ -285,7 +285,7 @@ export const en = {
     seeOnMap: "See it on a map",
     seeStay: "See where to stay",
     flyingTitle: "Flying in",
-    flyingBody: "Osaka (Kansai, KIX) is the easiest way in. Jetstar flies direct from Brisbane in about 9 hours; from Melbourne it's one stop. The Haruka train gets you from the airport to Kyoto Station in about 75 minutes. Visitors on a foreign passport can buy JR West's HARUKA One-way Ticket (¥2,200 to Kyoto) online before you fly; it isn't sold in Japan, and you collect it at a JR station with your passport. The limousine bus is about ¥2,800 and easier with big bags.",
+    flyingBody: "Osaka (Kansai, KIX) is the easiest way in. Jetstar flies direct from Brisbane in about 9 hours, or it's one stop from Melbourne. The Haruka train gets you to Kyoto Station in about 75 minutes. If you're on a foreign passport, you can buy JR West's HARUKA One-way Ticket (¥2,200 to Kyoto) online before you fly. You can't get it in Japan, so sort it first and pick it up at a JR station with your passport. Big bags? The limousine bus is about ¥2,800.",
     tokyoBody: "Coming from Tokyo? The bullet train takes about 2¼ hours. Book a Nozomi a month ahead in busy weeks, and sit on the E side for Mt Fuji.",
     walkingTitle: "Walking in",
     walkingBody: "10 minutes from Gion-Shijo, along old stone lanes with a few steps. Lovely, but take a taxi in nice shoes.",
@@ -310,13 +310,13 @@ export const en = {
     title: "Where to stay",
     // The first sentence is the summary line at the top of Travel. The rest is their Accommodation wording (column E,
     // 22 Oct), with the accommodation tax kept in
-    intro: "Book early: mid October is busy in Kyoto. Please keep in mind Japanese hotels tend to be quite small and perfunctory, so factor that into your decision-making. Kyoto adds a small accommodation tax per person per night. If you would like to coordinate with other guests and share accommodation, please do so! If you feel stuck, reach out to us!",
+    intro: "Book early: mid October is busy in Kyoto. Japanese hotels are usually pretty small and no-frills, so plan for that. Kyoto adds a small tax per person per night. Want to team up with other guests and share a place? Go for it! If you're stuck, give us a shout!",
     mapLink: "See the three areas on a map",
     mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
     // Their picks (planner, 7 to 11 Oct): rough prices per night
     picks: {
       title: "Our picks",
-      note: "Links go to each hotel's own site, but we encourage you to compare other booking sites. Prices may change, and some hotels may not make rooms available until 6 months before. It will most likely be cheaper per person to book for larger groups: even 4 people is better than 2.",
+      note: "The links go to each hotel's own site, but shop around on the booking sites too. Prices move, and some hotels don't open rooms until 6 months out. Bigger groups usually work out cheaper per person: even 4 beats 2.",
       hotelsTitle: "Hotels",
       airbnbsTitle: "Airbnbs",
       airbnbsNote: "Cheaper per person when you split one.",
@@ -337,9 +337,9 @@ export const en = {
         { name: "DoubleTree by Hilton Kyoto Higashiyama", area: "Kiyomizu-Gojo", price: "from ~$200 AUD", note: "Next to a station", href: "https://www.hilton.com/en/hotels/itmhadi-doubletree-kyoto-higashiyama/" },
       ],
       airbnbs: [
-        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$320", note: "Not right next to a station, but achievable", href: "https://www.airbnb.com.au/rooms/32966481" },
+        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$320", note: "Not right by a station, but doable", href: "https://www.airbnb.com.au/rooms/32966481" },
         { area: "Kiyomizu-Gojo", sleeps: "4", price: "~$400", note: "", href: "https://www.airbnb.com.au/rooms/1682420188495547858" },
-        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$400", note: "Not right next to a station, but achievable", href: "https://www.airbnb.com.au/rooms/1541783233800920181" },
+        { area: "Kiyomizu-Gojo", sleeps: "8", price: "~$400", note: "Not right by a station, but doable", href: "https://www.airbnb.com.au/rooms/1541783233800920181" },
         { area: "Kiyomizu-Gojo", sleeps: "4 to 5", price: "~$450", note: "4 might be better", href: "https://www.airbnb.com.au/rooms/1735167450296336070" },
         { area: "Higashiyama", sleeps: "4", price: "~$450", note: "", href: "https://www.airbnb.com.au/rooms/29807727" },
         { area: "Near The Sodoh", sleeps: "6", price: "~$460", note: "One bedroom is the living room. Very close to the venue, but not close to a station", href: "https://www.airbnb.com.au/rooms/15104813" },
