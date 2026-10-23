@@ -251,6 +251,7 @@ export const ja: DeepPartial<Content> = {
       hotelsTitle: "ホテル",
       airbnbsTitle: "Airbnb",
       airbnbsNote: "人数で割ると1人あたりは安くなります。",
+      airbnbsAbout: "わたしたちが見つけたAirbnbと、1泊あたりのおおよその料金です。料金は変わることがあるので、ほかの予約サイトもぜひ見てみてください。みんなで一緒に泊まるのがおすすめです！人数が多いほど1人あたりは安くなることが多く、2人より4人のほうがお得です！",
       perNight: (price: string) => `1泊${price}`,
       sleeps: (n: string) => `${n.replace(" to ", "〜")}名まで`,
       opensHotel: "ホテルのサイトがひらきます",

@@ -109,12 +109,6 @@ export const PENDING = {
     en: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding.",
     ja: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。",
   },
-  // Run 26 draft for Jehan's OK: the top of the Airbnbs sheet, in Griffin's voice (their note there was about hotels).
-  // Their planner facts kept: rough prices a night, prices change, compare other sites, bigger groups cost less each
-  "stay.airbnbs.note": {
-    en: "A few Airbnbs we found, with rough prices a night. Prices may change, so have a look on other booking sites too. Teaming up is the way to go: bigger groups will most likely pay less per person, and even 4 people is better than 2!",
-    ja: "わたしたちが見つけたAirbnbと、1泊あたりのおおよその料金です。料金は変わることがあるので、ほかの予約サイトもぜひ見てみてください。みんなで一緒に泊まるのがおすすめです！人数が多いほど1人あたりは安くなることが多く、2人より4人のほうがお得です！",
-  },
   // Their Time (Inv details, column E, 22 Oct): the planner still has to confirm it
   "day.arrival": {
     en: "Arrival time: to be confirmed by the wedding planner",
@@ -173,7 +167,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.food.a", ja: "食事の制限やアレルギーを教えてください！結婚式の昼食はケータリングで、メニューは式の数か月前に決まります。" },
   { key: "faqs.gifts.a", ja: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
   { key: "qa.contact", ja: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！" },
-  { key: "stay.airbnbs.note", ja: "わたしたちが見つけたAirbnbと、1泊あたりのおおよその料金です。料金は変わることがあるので、ほかの予約サイトもぜひ見てみてください。みんなで一緒に泊まるのがおすすめです！人数が多いほど1人あたりは安くなることが多く、2人より4人のほうがお得です！" },
+  { key: "stay.picks.airbnbsAbout", ja: "わたしたちが見つけたAirbnbと、1泊あたりのおおよその料金です。料金は変わることがあるので、ほかの予約サイトもぜひ見てみてください。みんなで一緒に泊まるのがおすすめです！人数が多いほど1人あたりは安くなることが多く、2人より4人のほうがお得です！" },
   { key: "faqs.contactDay", ja: "当日の連絡先は改めてお知らせします。電話番号は日が近づいたらここに載せます。" },
   { key: "day.arrival", ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします" },
   { key: "story.keepReading", ja: "続きを読む" },

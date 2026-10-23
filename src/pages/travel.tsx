@@ -1,4 +1,3 @@
-import { pending } from "@/content/pending"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { letterScroll, nextFrame, scrollToEl, still } from "@/lib/frame"
 import { useLocation } from "react-router-dom"
@@ -158,7 +157,7 @@ function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => vo
       <div className="flex flex-col border-y border-border">
         <PickSheet id="hotels" title={p.hotelsTitle} note={note} list={picks.hotels} airbnb={false} open={sheet === "hotels"} onOpen={(o) => setSheet(o ? "hotels" : "")} />
         <div className="border-t border-border" />
-        <PickSheet id="airbnbs" title={p.airbnbsTitle} sub={p.airbnbsNote} note={pending("stay.airbnbs.note", lang)} list={picks.airbnbs} airbnb open={sheet === "airbnbs"} onOpen={(o) => setSheet(o ? "airbnbs" : "")} />
+        <PickSheet id="airbnbs" title={p.airbnbsTitle} sub={p.airbnbsNote} note={p.airbnbsAbout} list={picks.airbnbs} airbnb open={sheet === "airbnbs"} onOpen={(o) => setSheet(o ? "airbnbs" : "")} />
       </div>
     </div>
   )

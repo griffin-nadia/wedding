@@ -320,6 +320,8 @@ export const en = {
       hotelsTitle: "Hotels",
       airbnbsTitle: "Airbnbs",
       airbnbsNote: "Cheaper per person when you split one.",
+      // Run 26 (Jehan approved, in Griffin's voice): the top of the Airbnbs sheet, which had the hotels' note
+      airbnbsAbout: "A few Airbnbs we found, with rough prices a night. Prices may change, so have a look on other booking sites too. Teaming up is the way to go: bigger groups will most likely pay less per person, and even 4 people is better than 2!",
       perNight: (price: string) => `${price} a night`,
       sleeps: (n: string) => `Sleeps ${n}`,
       opensHotel: "opens the hotel's site",
