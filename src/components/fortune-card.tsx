@@ -5,7 +5,7 @@ import { FORTUNES } from "@/content/en"
 import { getFortunes, saveDraw, type Fortune } from "@/lib/api"
 import { useLang } from "@/lib/lang"
 import { canShake, draftsOn, drawnKey, FORTUNE_EVENT, keepDraws, localDraws, saveFortune } from "@/lib/fortune"
-import { fortuneFor, fortuneIndex, lastDraw, livePool, mergeDraws, type Draw } from "@/lib/draws"
+import { fortuneFor, fortuneIndex, lastDraw, mergeDraws, pickFor, type Draw } from "@/lib/draws"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { kanjiNumber } from "@/lib/kanji"
@@ -84,19 +84,20 @@ export function FortuneCard({ token, className, title }: { token: string; classN
     window.addEventListener(FORTUNE_EVENT, sync)
     return () => { live.current = false; window.removeEventListener(FORTUNE_EVENT, sync) }
   }, [token])
-  const drawable = livePool(tips, draftsOn())
-  const pool = drawable.length ? drawable : DRAFT_FORTUNES
+  // The whole numbered pool, drafts included, so every household's pick is the same as before run 26; a draft is
+  // stepped past while the switch is off (all drafts: the built-in tips)
+  const drafts = draftsOn()
+  const pool = tips.some((f) => drafts || !f.draft) ? tips : DRAFT_FORTUNES
   const n = Math.max(1, lastDraw(draws)) // a slip opened before run 26 kept no list: that was draw 1
   // The latest draw's saved fortune where there is one (so a later change to the pool never changes a saved slip),
   // otherwise its pick
   const savedNo = draws.find((d) => d.draw === n)?.no
-  const saved = savedNo ? pool.findIndex((f) => f.no === savedNo) : -1
-  const i = saved >= 0 ? saved : fortuneFor(token, n, pool.length)
+  const saved = savedNo ? pool.findIndex((f) => f.no === savedNo && (drafts || !f.draft)) : -1
+  const i = saved >= 0 ? saved : fortuneFor(token, n, pool, drafts)
   const fortune = pool[i]
 
   function record(draw: number) {
-    let k = fortuneFor(token, draw, pool.length)
-    if (draw > 1 && pool[k].no === fortune.no && pool.length > 1) k = (k + 1) % pool.length // a redraw is always a new slip
+    const k = pickFor(token, draw, pool, drafts, draw > 1 ? fortune.no : undefined) // a redraw is always a new slip
     const d = { draw, no: pool[k].no }
     setDraws((now) => mergeDraws(now, [d]))
     keepDraws(token, [d])

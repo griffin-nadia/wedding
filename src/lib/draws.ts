@@ -14,21 +14,33 @@ export function fortuneIndex(token: string, of: number) {
   return h % of
 }
 
-/** What a guest can draw from: drafts (see `draft` on Fortune) only while the storyFortunes switch is on. */
-export const livePool = <F extends Drawable>(all: F[], drafts: boolean) => all.filter((f) => drafts || !f.draft)
+/**
+ * May this fortune be drawn? Not a draft (see `draft` on Fortune) while the storyFortunes switch is off, and not the
+ * one to avoid (the draw just before). From index i, steps forward through the numbered pool to the first that may.
+ */
+function stepFrom<F extends Drawable>(i: number, pool: F[], drafts: boolean, avoid?: number) {
+  for (const skip of [avoid, undefined]) // a pool of one: allow the same again rather than nothing
+    for (let k = 0; k < pool.length; k++) {
+      const j = (i + k) % pool.length
+      if ((drafts || !pool[j].draft) && pool[j].no !== skip) return j
+    }
+  return -1 // nothing may be drawn (every line a draft): the caller falls back to the built-in tips
+}
+
+/** One draw's pick, as an index into the whole numbered pool (in No. order, drafts included): the same hash over the
+ *  same pool as before run 26, then forward past a draft (or the line to avoid). */
+export const pickFor = <F extends Drawable>(token: string, n: number, pool: F[], drafts: boolean, avoid?: number) =>
+  stepFrom(fortuneIndex(n <= 1 ? token : `${token}#${n}`, pool.length), pool, drafts, avoid)
 
 /**
- * The fortune for draw n, as an index into the pool. The first is the household's own, from its token as before run
- * 26 (so nobody's first fortune changes); each redraw comes from the token and its number, and is never the same as
- * the draw just before it. The same on every device, so a draw shows the same fortune wherever it's opened.
+ * The fortune for draw n, as an index into the whole pool. The first is the household's own, exactly as before run 26
+ * (the pool stays all 25, so "No. x of 25" and everyone's fortune hold); only a household whose line is a draft moves
+ * on to the next line that isn't. Each redraw comes from the token and its number, never a draft and never the same
+ * as the draw before. The same on every device.
  */
-export function fortuneFor(token: string, n: number, of: number) {
-  let i = 0, prev = -1
-  for (let k = 1; k <= Math.max(1, n); k++) {
-    i = fortuneIndex(k === 1 ? token : `${token}#${k}`, of)
-    if (i === prev && of > 1) i = (i + 1) % of
-    prev = i
-  }
+export function fortuneFor<F extends Drawable>(token: string, n: number, pool: F[], drafts: boolean) {
+  let i = -1
+  for (let k = 1; k <= Math.max(1, n); k++) i = pickFor(token, k, pool, drafts, i >= 0 ? pool[i].no : undefined)
   return i
 }
 
