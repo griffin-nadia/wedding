@@ -220,8 +220,22 @@ test("where are you flying from: one field for any city or town, or a pin on the
   await expect(city).toHaveValue("Victoria, Canada")
   await expect(dialog.getByText("From Victoria")).toBeVisible()
   await expect(dialog.locator(".journey-end .journey-you-dot")).toHaveCount(1) // their line on the journey stop's flat map
-  // Nothing matches: drop a pin instead, and the tap on the map puts them there
+  // Run 26 live bug: "Sydney" typed and Enter (the keyboard's Done) straight away, while the last search's list is still
+  // up, saved that list's first place (Victoria, Canada). Enter only picks from the answer to what's in the field
+  await city.fill("Victoria"); await expect(dialog.getByRole("option").first()).toBeVisible()
+  await city.fill("Sydney"); await city.press("Enter")
+  await expect(dialog.getByRole("option", { name: /Sydney.*New South Wales/ })).toBeVisible()
+  await city.press("Enter")
+  await expect(city).toHaveValue("Sydney, Australia")
+  await expect(dialog.getByText("From Sydney")).toBeVisible()
+  // Run 26 live bug: "fiji" found nothing (the back end) or only Fuji (the site's list): the country's towns now
+  await city.fill("fiji")
+  await expect(dialog.getByRole("option").first()).toContainText("Suva")
+  // Nothing matches: drop a pin instead (never under the list), and the tap on the map puts them there
   await city.fill("zzzzqq")
+  await expect(dialog.getByText("Nothing found for that.")).toBeVisible()
+  const pinButton = dialog.getByRole("button", { name: "Can't find it? Drop a pin instead" })
+  expect(await pinButton.evaluate((el) => { const r = el.getBoundingClientRect(), top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return el === top || el.contains(top) })).toBe(true)
   await dialog.getByRole("button", { name: "Can't find it? Drop a pin instead" }).click()
   await expect(dialog.getByText("Tap the map where you're flying from.")).toBeVisible()
   await page.waitForTimeout(600) // the map scrolls into view

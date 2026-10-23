@@ -55,3 +55,10 @@ test("run 26: the field searches from three letters, two in Japanese", () => {
   for (const q of ["", "Vi", " Vi ", "京"]) assert.equal(searchable(q), false, q)
   for (const q of ["Vic", "Savusavu", "京都"]) assert.equal(searchable(q), true, q)
 })
+
+test("run 26: a country typed on its own suggests its capital and towns (fiji found only Fuji)", () => {
+  const fiji = all("fiji")
+  assert.match(fiji[0], /^Suva, .*Fiji$/)
+  assert.ok(fiji.some((x) => /^Nadi, .*Fiji$/.test(x)), fiji.join(" | "))
+  assert.equal(cityLabel({ id: "geo", name: "Fiji", region: "", country: "FJ", countryName: "Fiji", lat: -17.7, lon: 178.07 }), "Fiji")
+})

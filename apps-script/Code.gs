@@ -1556,8 +1556,9 @@ function geocode_(p) {
   const places = [], seen = {}
   found.forEach(function (r) {
     const part = function (type) { return (r.address_components || []).filter(function (c) { return c.types.indexOf(type) >= 0 })[0] }
-    // A city or town; failing that (a search like "Victoria" whose best match is a state), the state or province itself
-    const town = part("locality") || part("postal_town") || part("administrative_area_level_3") || part("colloquial_area") || part("administrative_area_level_2") || part("natural_feature") || part("administrative_area_level_1")
+    // A city or town; failing that (a search like "Victoria" whose best match is a state), the state or province itself,
+    // and failing that (run 26: "Fiji" is a country, so it found nothing) the country
+    const town = part("locality") || part("postal_town") || part("administrative_area_level_3") || part("colloquial_area") || part("administrative_area_level_2") || part("natural_feature") || part("administrative_area_level_1") || part("country")
     const country = part("country"), region = part("administrative_area_level_1")
     if (!town || !country || places.length >= 5) return
     const at = r.geometry && r.geometry.location

@@ -28,6 +28,7 @@ export function JourneyEnd({ token }: { token: string }) {
   const shown = city ? cityLabel(city) : ""
   const [q, setQ] = useState(shown)
   const [found, setFound] = useState<City[]>([]) // the last answer, kept on screen while the next one loads
+  const [foundFor, setFoundFor] = useState("") // what was typed for that answer
   const [loading, setLoading] = useState(false)
   const [failed, setFailed] = useState(false)
   const [pinning, setPinning] = useState(false)
@@ -36,12 +37,12 @@ export function JourneyEnd({ token }: { token: string }) {
   const typing = q !== shown && searchable(q)
   // Search as they type: a 300 ms pause, then the geocoder (or, with no back end, the site's own list)
   useEffect(() => {
-    if (!typing) { setFound([]); setLoading(false); setFailed(false); return }
-    const key = q.trim().toLowerCase(), hit = answers.get(key)
-    if (hit) { setFound(hit); setLoading(false); setFailed(false); return }
+    if (!typing) { setFound([]); setFoundFor(""); setLoading(false); setFailed(false); return }
+    const key = keyOf(q), hit = answers.get(key)
+    if (hit) { setFound(hit); setFoundFor(key); setLoading(false); setFailed(false); return }
     setLoading(true); setFailed(false)
     const ctl = new AbortController()
-    const land = (r: City[] | null) => { if (ctl.signal.aborted) return; if (r) answers.set(key, r); setFound(r ?? []); setFailed(!r); setLoading(false) }
+    const land = (r: City[] | null) => { if (ctl.signal.aborted) return; if (r) answers.set(key, r); setFound(r ?? []); setFoundFor(key); setFailed(!r); setLoading(false) }
     const wait = window.setTimeout(async () => {
       if (!config.apiUrl) {
         try { index.current ??= await loadCities(); land(searchCities(index.current, q)) } catch { land(null) }
@@ -73,18 +74,24 @@ export function JourneyEnd({ token }: { token: string }) {
   shownNow.current = shown
   const settle = () => setQ(shownNow.current)
   const results = typing ? found : []
+  // Run 26 live bug: Enter (the phone keyboard's Done) picked the first row of the list on screen, which while the next
+  // search loads is the last search's ("Victoria" typed, then "Sydney" and Done: Victoria, Canada was saved), or with
+  // nothing on screen put the last pick back. Enter now picks only from the answer to what's in the field.
+  const fresh = foundFor === keyOf(q)
   const status = !typing ? "idle" : loading ? "loading" : failed ? "error" : results.length ? "results" : "empty"
   return (
     <section aria-label={t.flying.endTitle} className="journey-end paper-feel">
-      <Combobox id="fly-from" label={t.flying.endTitle} help={t.flying.hint} placeholder={t.flying.placeholder} query={q} onQuery={setQ} onLeave={settle}
+      <Combobox id="fly-from" label={t.flying.endTitle} help={t.flying.hint} placeholder={t.flying.placeholder} query={q} onQuery={(v) => { setQ(v); setPinning(false) }} onLeave={settle}
         options={results.map((c, i) => ({ key: `${i}:${cityLabel(c)}`, label: c.name, sub: [c.region, c.countryName].filter(Boolean).join(", ") || undefined, selected: city ? same(c, city) : false }))}
-        onPick={(o) => { const c = results[Number(o.key.split(":")[0])]; if (c) choose(c) }} onSubmit={() => (results[0] ? choose(results[0]) : settle())}
-        status={status} emptyText={t.flying.noMatch} errorText={t.flying.noMatch} enterKeyHint="done" />
+        onPick={(o) => { const c = results[Number(o.key.split(":")[0])]; if (c) choose(c) }} onSubmit={() => { if (fresh && results[0]) choose(results[0]); else if (!typing) settle() }}
+        // Run 26 live bug: "Nothing found" was a box floating over the page, on top of "Drop a pin instead". It's in the
+        // page now, with the pin button under it, so nothing ever covers the button
+        status={status} enterKeyHint="done" />
       {(status === "empty" || status === "error" || pinning) && (
         <div className="flex flex-wrap items-center gap-x-4">
           {pinning
             ? <><p role="status" className="text-small text-foreground">{t.flying.pinHint}</p><button type="button" className="btn-text min-h-11" onClick={() => setPinning(false)}>{t.flying.pinCancel}</button></>
-            : <button type="button" className="btn-text min-h-11" onClick={() => { setPinning(true); requestAnimationFrame(() => mapBox.current?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })) }}>{t.flying.dropPin}</button>}
+            : <><p role="status" className="journey-end-none w-full text-small text-muted-foreground">{t.flying.noMatch}</p><button type="button" className="btn-text min-h-11" onClick={() => { setPinning(true); requestAnimationFrame(() => mapBox.current?.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })) }}>{t.flying.dropPin}</button></>}
         </div>
       )}
       <div ref={mapBox}><JourneyFlat you={city} cities={journeys} label={t.journey.map(city ? city.name : null)} onPick={pinning ? (lat, lon) => void pin(lat, lon) : undefined} /></div>
@@ -94,6 +101,7 @@ export function JourneyEnd({ token }: { token: string }) {
 }
 
 // Answers for this visit, by what was typed (memory only, gone on reload)
+const keyOf = (typed: string) => typed.trim().toLowerCase()
 const answers = new Map<string, City[]>()
 const same = (a: City, b: City) => a.name === b.name && a.country === b.country && a.lat === b.lat && a.lon === b.lon
 const toCity = (p: Place): City => ({ id: "geo", name: p.name, region: p.region, country: p.country, countryName: p.countryName, lat: p.lat, lon: p.lon })
