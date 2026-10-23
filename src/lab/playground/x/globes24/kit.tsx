@@ -6,11 +6,12 @@ import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import { Stage } from "../../stage"
 import { getSpeed, ms, still, tween } from "../../motion"
-import { useKnob, useParam } from "../../params"
+import { getParam, setParam, useKnob, useParam } from "../../params"
+import type { Knob } from "../../types"
 import { ASPECT, DIST, FLAT, TAN, hidden, place, project, wrap } from "./kit-geo"
-import { KYOTO, RAD, demoCrowd, trips, type Kind, type LineStyle, type Trip } from "./kit-data"
-import { drawLine, travels } from "./kit-lines"
-import { breathe, cssHex } from "./kit-paint"
+import { ICONS, KYOTO, LINE_STYLES, RAD, TUNE, demoCrowd, trips, type Icon, type Kind, type LineStyle, type Trip } from "./kit-data"
+import { drawLine, iconFor, travels } from "./kit-lines"
+import { breathe, cssHex, land, sheet } from "./kit-paint"
 
 /**
  * THE GLOBE KIT (lab run 24b, area globes24). Everything a globe look needs except its painting: the journey data, the
@@ -44,6 +45,8 @@ export type Inks = Record<Kind, string> & { ink: string; paper: string }
 export type Look = {
   /** The line style it opens with (the Line style knob changes it; keep index.ts's globeKnobs() the same) */
   line: LineStyle
+  /** What travels the lines at first (run 26; default "auto", the line style's own; keep globeKnobs()'s the same) */
+  icon?: Icon
   /** The 2:1 picture, painted in steps (see above) */
   paint: (o: { night: boolean; width: number; countries: string[]; inks: Inks }) => Promise<HTMLCanvasElement>
   /** Line colours: the site's tokens unless the look changes them */
@@ -131,6 +134,20 @@ const css = `
 .${P}-legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
 .${P}-legend canvas { width: 30px; height: 12px; }
 .${P}-note { margin: 0; font-size: var(--type-small-size); color: var(--ink-muted, var(--ink-soft)); text-align: center; }
+.${P}-views { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: var(--space-4) var(--space-5); width: 100%; }
+.${P}-view { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); margin: 0; flex: 1 1 360px; max-width: 620px; }
+.${P}-view[data-size="stop"] { flex: 0 1 280px; }
+.${P}-view figcaption { font: 500 var(--type-small-size) / 1.3 var(--font-label); color: var(--ink-soft); }
+.${P}-view > .${P}-box { width: 100%; }
+.${P}-tune { width: min(100%, 680px); border-top: 1px solid var(--line-hairline); padding-top: var(--space-2); }
+.${P}-tune summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; font: 500 var(--type-small-size) / 1.3 var(--font-label); color: var(--ink); }
+.${P}-tune summary:focus-visible, .${P}-tune-reset:focus-visible { outline: 2px solid var(--input-focus); outline-offset: 2px; border-radius: 4px; }
+.${P}-tune-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-1) var(--space-5); }
+.${P}-tune-row { display: grid; grid-template-columns: 8.5em 1fr 3.2em; align-items: center; gap: var(--space-2); min-height: 44px; font-size: var(--type-small-size); color: var(--ink-soft); }
+.${P}-tune-row select { grid-column: 2 / 4; }
+.${P}-tune-row input { width: 100%; accent-color: var(--action); }
+.${P}-tune-row output { font-variant-numeric: tabular-nums; color: var(--ink); text-align: right; }
+.${P}-tune-reset { justify-self: start; min-height: 44px; padding: 0 var(--space-2); border: 0; background: none; color: var(--action); font: 500 var(--type-small-size) / 1.3 var(--font-label); text-decoration: underline; cursor: pointer; }
 .${P}-wait { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-soft); font-size: var(--type-small-size); }
 `
 
@@ -151,33 +168,135 @@ function Swatch({ style, colour, inks, width, back }: { style: LineStyle; colour
 
 const WIDTH: Record<Kind, number> = { nadia: 2.4, griffin: 2.4, guest: 1.3, you: 3 }
 
-/** The whole take for one look: toggle, map, key. See the top of this file. */
+/** The land as a mask (white land on black, 2:1), for the Land opacity slider: one per page */
+let landMask: Promise<HTMLCanvasElement> | null = null
+const maskOf = () => (landMask ??= land(1024).then(({ all }) => {
+  const [c, g] = sheet(1024)
+  g.fillStyle = "#000"; g.fillRect(0, 0, 1024, 512); g.fillStyle = "#fff"; g.fill(all)
+  return c
+}))
+
+/** The tuning panel's values (run 26), as the frame loop reads them */
+type Tune = { land: number; grain: number; weight: number; shadow: number; iconSize: number; icon: Exclude<Icon, "auto"> }
+type Arc = { trip: Trip } & ReturnType<typeof arcOf>
+type ViewProps = { look: Look; night: boolean; inks: Inks; arcs: Arc[]; list: Trip[]; style: LineStyle; tune: Tune; mode: string; reduce: boolean; size: "stop" | "full"; label: string }
+
+/**
+ * The whole take for one look (see the top of this file). Run 26: the same look in two views, the story stop's size and
+ * the full screen's, with one Globe / Map switch above both, so they curl together; and the tuning panel under the key.
+ */
 export function GlobeLab({ look }: { look: Look }) {
   const { t, lang } = useLang()
   const { theme } = useTheme()
   const night = theme === "lantern"
   const style = useKnob("line", look.line) as LineStyle
+  const icon = useKnob("icon", look.icon ?? "auto") as Icon
   const crowdN = Number(useKnob("crowd", "0"))
+  const views = useKnob("views", "both")
+  const tune: Tune = {
+    land: useKnob("land", 100) / 100, grain: useKnob("grain", 0) / 100, weight: useKnob("weight", 100) / 100,
+    shadow: useKnob("shadow", 0) / 100, iconSize: useKnob("iconSize", 100) / 100, icon: iconFor(style, icon),
+  }
   const [mode, setMode] = useParam("view", "globe")
   const [cities, setCities] = useState<Journey[]>([])
   useEffect(() => { void getJourneys().then((c) => setCities(c.length ? c : SAMPLE_JOURNEYS)) }, [])
   const crowd = useMemo(() => demoCrowd(crowdN), [crowdN])
   const list = useMemo(() => trips(cities, crowd, SAMPLE_JOURNEYS[0], { brisbane: t.journey.brisbane }), [cities, crowd, t.journey.brisbane])
   const arcs = useMemo(() => list.map((x) => ({ trip: x, ...arcOf(x) })), [list])
+  const reduce = still()
+  // The line colours, read from the theme once it's on the page; both views wait for them, so a theme change builds
+  // each view once
+  const root = useRef<HTMLDivElement>(null)
+  const [inks, setInks] = useState<{ look: Look; night: boolean; ink: Inks } | null>(null)
+  useEffect(() => {
+    const el = root.current
+    if (!el) return
+    const base: Inks = {
+      nadia: cssHex(el, "--ink-story", "#a84f32"), griffin: cssHex(el, "--ink-moss", "#727354"), guest: cssHex(el, "--ink-soft", "#754b38"),
+      you: cssHex(el, "--journey-you", "#d5a34f"), ink: cssHex(el, "--ink", "#3b2a20"), paper: cssHex(el, "--letter-bg", "#f6ecdc"),
+    }
+    setInks({ look, night, ink: { ...base, ...look.inks?.(night, base) } })
+  }, [look, night])
+  const ink = inks && inks.look === look && inks.night === night ? inks.ink : null
+  const legend: [Kind, string][] = [["nadia", t.journey.legend.nadia], ["griffin", t.journey.legend.griffin], ["guest", t.journey.legend.guests], ["you", `${t.journey.legend.you} (sample)`]]
+  const guests = list.filter((x) => x.kind === "guest")
+  const common = ink && { look, night, inks: ink, arcs, list, style, tune, mode, reduce }
+  return (
+    <Stage hint="Drag to turn it. One switch curls both views. Tune it under the key.">
+      <style>{css}{look.css ?? ""}</style>
+      <div ref={root} className={P}>
+        <Segmented className={`${P}-toggle`} label={(lang === "ja" ? "地図" : "Map")} size="sm" value={mode as "globe" | "flat"} onChange={setMode}
+          items={[{ value: "globe", label: (lang === "ja" ? "地球儀" : "Globe") }, { value: "flat", label: (lang === "ja" ? "地図" : "Map") }]} />
+        <div className={`${P}-views`}>
+          {views === "both" && <figure className={`${P}-view`} data-size="stop">{common ? <View {...common} size="stop" label="In the story" /> : <div className={`${P}-box`} />}<figcaption>In the story</figcaption></figure>}
+          <figure className={`${P}-view`} data-size="full">{common ? <View {...common} size="full" label="Full screen" /> : <div className={`${P}-box`} />}<figcaption>Full screen</figcaption></figure>
+        </div>
+        {ink && (
+          <ul className={`${P}-legend`} aria-label="Key">
+            {legend.map(([k, label]) => <li key={k}><Swatch style={style} colour={ink[k]} inks={ink} width={WIDTH[k] * tune.weight} back={look.back?.(night)} />{label}</li>)}
+          </ul>
+        )}
+        {crowdN > 0 && <p className={`${P}-note`}>Demo crowd: {crowdN} made-up households, not guests.</p>}
+        <TunePanel style={look.line} icon={look.icon ?? "auto"} />
+        <ul className="sr-only">
+          <li>{t.journey.list.nadia}</li><li>{t.journey.list.griffin}</li>
+          {guests.map((x) => <li key={x.id}>{x.label}</li>)}
+          <li>{t.journey.list.you(SAMPLE_JOURNEYS[0].name)}</li>
+        </ul>
+      </div>
+    </Stage>
+  )
+}
 
+/** The tuning panel (run 26): every slider on the page, under the key, so the globe stays in view while you tune.
+ *  The same values as the Options sheet's knobs (they live in the address, so Copy settings carries them). */
+function TunePanel({ style, icon: def }: { style: LineStyle; icon: Icon }) {
+  const [line, setLine] = useParam("k.line", style)
+  const [icon, setIcon] = useParam("k.icon", def)
+  const reset = () => { for (const k of [...TUNE.map((x) => x.id), "icon"]) setParam(`k.${k}`, null) }
+  // Open at first on a laptop, or when the link carries tuning; closed on a phone so both views come first
+  const [first] = useState(() => matchMedia("(min-width: 900px)").matches || TUNE.some((k) => getParam(`k.${k.id}`) !== null))
+  return (
+    <details className={`${P}-tune`} open={first}>
+      <summary>Tune the look</summary>
+      <div className={`${P}-tune-body`}>
+        <label className={`${P}-tune-row`}><span>Line style</span>
+          <select className="field" value={line} onChange={(e) => setLine(e.target.value)}>{LINE_STYLES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+        </label>
+        <label className={`${P}-tune-row`}><span>Travelling icon</span>
+          <select className="field" value={icon} onChange={(e) => setIcon(e.target.value)}>{ICONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+        </label>
+        {TUNE.map((k) => k.kind === "range" && <Slider key={k.id} k={k} />)}
+        <button type="button" className={`${P}-tune-reset`} onClick={reset}>Back to the look as painted</button>
+      </div>
+    </details>
+  )
+}
+function Slider({ k }: { k: Extract<Knob, { kind: "range" }> }) {
+  const [v, set] = useParam(`k.${k.id}`, String(k.def))
+  return (
+    <label className={`${P}-tune-row`}><span>{k.label}</span>
+      <input type="range" min={k.min} max={k.max} step={k.step} value={v} onChange={(e) => set(e.target.value)} aria-valuetext={`${v}${k.unit ?? ""}`} />
+      <output>{v}{k.unit ?? ""}</output>
+    </label>
+  )
+}
+
+/** One view of the look: the map's box, its paper, lines and names. Both views read the same switch and tuning. */
+function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, label }: ViewProps) {
+  const { t } = useLang()
   const box = useRef<HTMLDivElement>(null), art = useRef<HTMLDivElement>(null), layer = useRef<HTMLCanvasElement>(null), tip = useRef<HTMLDivElement>(null)
   const marks = useRef(new Map<string, HTMLElement>())
-  const [inks, setInks] = useState<Inks | null>(null)
   const [state, setState] = useState<"painting" | "ready" | "failed">("painting")
   const [open, setOpen] = useState<string | null>(null)
   const [focusAt, setFocusAt] = useState(0)
-  const reduce = still()
   // Everything the frame loop reads, kept in one place so a knob or the toggle never rebuilds the globe
   const st = useRef({ lon: mode === "flat" ? FLAT_LON : FACE.lon, tilt: look.tilt == null ? FACE.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
-  const live = useRef({ arcs, style, open, inks })
-  live.current = { arcs, style, open, inks }
-  // A new line style or crowd draws the lines again from the start
-  useEffect(() => { st.current.clock = 0; st.current.dirty = true }, [style, crowdN])
+  const live = useRef({ arcs, style, open, inks, tune })
+  live.current = { arcs, style, open, inks, tune }
+  // A new line style, crowd or travelling icon draws the lines again from the start; any other tuning redraws
+  useEffect(() => { st.current.clock = 0; st.current.dirty = true }, [style, arcs, tune.icon])
+  useEffect(() => { st.current.dirty = true }, [tune.land, tune.grain, tune.weight, tune.iconSize])
 
   // The toggle: the paper curls into the globe (or opens out flat) over 1.3 s; under reduced motion it fades
   const first = useRef(true)
@@ -206,17 +325,12 @@ export function GlobeLab({ look }: { look: Look }) {
     const el = box.current, cv = layer.current, holder = art.current
     if (!el || !cv || !holder) return
     let alive = true, stop = () => {}
-    const base: Inks = {
-      nadia: cssHex(el, "--ink-story", "#a84f32"), griffin: cssHex(el, "--ink-moss", "#727354"), guest: cssHex(el, "--ink-soft", "#754b38"),
-      you: cssHex(el, "--journey-you", "#d5a34f"), ink: cssHex(el, "--ink", "#3b2a20"), paper: cssHex(el, "--letter-bg", "#f6ecdc"),
-    }
-    const ink: Inks = { ...base, ...look.inks?.(night, base) }
-    setInks(ink); setState("painting")
-    el.style.setProperty("--x-g24-guest", ink.guest)
+    setState("painting")
+    el.style.setProperty("--x-g24-guest", inks.guest)
     const phone = matchMedia("(pointer: coarse)").matches
     const countries = [...new Set([...SAMPLE_JOURNEYS.map((c) => c.country), "AU", "CA", "JP", "NZ"])]
     // The paper goes on the page first (empty) while the look paints, then gets its picture
-    const painting = pictureOf(look, night, phone ? 1024 : 2048, countries, ink)
+    const painting = pictureOf(look, night, phone ? 1024 : 2048, countries, inks)
     void import("./kit-three")
       .then(async ({ makePaper }) => {
         if (!alive) return
@@ -243,9 +357,10 @@ export function GlobeLab({ look }: { look: Look }) {
         size()
         const ro = new ResizeObserver(size); ro.observe(el)
         stop = () => { ro.disconnect(); paper.canvas.remove(); paper.dispose() }
-        const picture = await painting
+        const [picture, mask] = await Promise.all([painting, maskOf()])
         if (!alive) return
         await breathe(picture.getContext("2d"))
+        paper.setMask(mask)
         await paper.setPicture(picture)
         if (!alive) return
         let visible = true
@@ -291,8 +406,8 @@ export function GlobeLab({ look }: { look: Look }) {
         const draw = (now: number) => {
           const dt = Math.min(0.05, (now - then) / 1000) * getSpeed(); then = now
           if (!visible) return true
-          const { arcs, style, open, inks } = live.current
-          const travel = travels(style), dur = travel ? 2.2 : 1.2
+          const { arcs, style, open, inks, tune } = live.current
+          const dur = tune.icon !== "none" || travels(style) ? 2.2 : 1.2
           // The lines' timeline: Nadia's and Griffin's, then the guests', then the household's own
           const starts = arcs.map(({ trip }, i) => (trip.kind === "nadia" ? 0.3 : trip.kind === "griffin" ? 0.55 : trip.kind === "you" ? 1.4 + Math.min(arcs.length, 30) * 0.08 + 0.6 : 1.4 + (i - 2) * 0.08))
           const drawing = !reduce && s.clock < Math.max(...starts) + dur + 0.1
@@ -309,12 +424,13 @@ export function GlobeLab({ look }: { look: Look }) {
           const moving = s.drag || s.morphing || Math.abs(s.vLon) + Math.abs(s.vTilt) > 1e-4 || (s.m === 1 && !reduce)
           if (!moving && !drawing && !s.dirty) return true // a still flat map: nothing to draw
           s.dirty = false
+          paper.tune(tune.land, tune.grain)
           paper.render(s)
           g.setTransform(r, 0, 0, r, 0, 0); g.clearRect(0, 0, w, h)
           // The ink rim, as the paper becomes a ball
           if (look.rim && s.m > 0.85) {
             const R = (Math.tan(Math.asin(1 / DIST)) / TAN) * (h / 2)
-            g.globalAlpha = (s.m - 0.85) / 0.15; g.strokeStyle = inks!.ink; g.lineWidth = look.rim
+            g.globalAlpha = (s.m - 0.85) / 0.15; g.strokeStyle = inks.ink; g.lineWidth = look.rim
             g.beginPath(); g.arc(w / 2, h / 2, R, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1
           }
           const globe = s.m > 0.98
@@ -342,10 +458,10 @@ export function GlobeLab({ look }: { look: Look }) {
               place(lat[i], lon[i] - s.lon + shift, alt[i], s.m, s.tilt, pt); project(pt, w, h, px)
               xs[i] = px[0]; ys[i] = px[1]; al[i] = globe && hidden(pt) ? far : 1
             }
-            const o = { colour: inks![trip.kind], width: WIDTH[trip.kind], ink: inks!.ink, paper: inks!.paper, head: !reduce, time: s.clock }
+            const o = { colour: inks[trip.kind], width: WIDTH[trip.kind] * tune.weight, ink: inks.ink, paper: inks.paper, head: !reduce, time: s.clock, icon: tune.icon, iconSize: tune.iconSize }
             g.globalAlpha = trip.kind === "guest" ? 0.7 : 1
             // The household's own line gets a soft darker edge under it, so the gold holds on pale paper
-            if (trip.kind === "you") { g.globalAlpha = 0.25; drawLine(g, style, xs, ys, al, n, N, { ...o, colour: inks!.ink, width: o.width + 2, head: false }); g.globalAlpha = 1 }
+            if (trip.kind === "you") { g.globalAlpha = 0.25; drawLine(g, style, xs, ys, al, n, N, { ...o, colour: inks.ink, width: o.width + 2, head: false }); g.globalAlpha = 1 }
             if (glow?.line) {
               g.globalCompositeOperation = glow.blend; g.globalAlpha = glow.line * (trip.kind === "guest" ? 0.7 : 1)
               drawLine(g, style, xs, ys, al, n, N, { ...o, halo: true, head: false })
@@ -383,7 +499,9 @@ export function GlobeLab({ look }: { look: Look }) {
       })
       .catch(() => alive && setState("failed"))
     return () => { alive = false; stop() }
-  }, [look, night, reduce])
+    // inks changes with the look and the theme (GlobeLab reads them once each is on the page)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inks, reduce])
   // The tooltip moves with its dot, so it needs a frame drawn when it opens
   useEffect(() => { st.current.dirty = true }, [open])
 
@@ -398,48 +516,31 @@ export function GlobeLab({ look }: { look: Look }) {
     marks.current.get(guests[n].id)?.querySelector("button")?.focus()
   }
   const openTrip = list.find((x) => x.id === open)
-  const legend: [Kind, string][] = [["nadia", t.journey.legend.nadia], ["griffin", t.journey.legend.griffin], ["guest", t.journey.legend.guests], ["you", `${t.journey.legend.you} (sample)`]]
   const ref = (id: string) => (n: HTMLElement | null) => { if (n) marks.current.set(id, n); else marks.current.delete(id) }
+  // The shadow slider: one drop shadow on the paper and the lines together (it follows the globe's or the map's edge)
+  const shadow = tune.shadow > 0 ? `drop-shadow(0 ${(2 + 8 * tune.shadow).toFixed(1)}px ${(3 + 16 * tune.shadow).toFixed(1)}px rgb(0 0 0 / ${(0.55 * tune.shadow).toFixed(2)}))` : undefined
   return (
-    <Stage hint="Drag to turn it. Globe and Flat curl the same paper.">
-      <style>{css}{look.css ?? ""}</style>
-      <div className={P} onKeyDown={(e) => { if (e.key === "Escape") setOpen(null) }}>
-        <Segmented className={`${P}-toggle`} label={(lang === "ja" ? "地図" : "Map")} size="sm" value={mode as "globe" | "flat"} onChange={setMode}
-          items={[{ value: "globe", label: (lang === "ja" ? "地球儀" : "Globe") }, { value: "flat", label: (lang === "ja" ? "平面の地図" : "Flat map") }]} />
-        <div ref={box} className={`${P}-box`} tabIndex={0} role="group" aria-roledescription="map" aria-label={`${t.journey.title}. Drag, or use the arrow keys, to turn it.`}>
-          <div ref={art} className={`${P}-art`}><canvas ref={layer} aria-hidden /></div>
-          {look.decor}
-          <div className={`${P}-marks`}>
-            <div ref={ref("kyoto")} className={`${P}-mark`} aria-hidden><span className={`${P}-kyoto`}><span className={`${P}-seal`}>京</span><span className={`${P}-name`}>{t.journey.kyotoPin}</span></span></div>
-            <div role="group" aria-label="Where guests are coming from">
-              {guests.map((x, i) => (
-                <div key={x.id} ref={ref(x.id)} className={`${P}-mark`}>
-                  <button type="button" className={`${P}-dot`} aria-label={x.label} aria-expanded={open === x.id} tabIndex={i === Math.min(focusAt, guests.length - 1) ? 0 : -1}
-                    onClick={() => { setFocusAt(i); setOpen(x.id) }} onFocus={() => { setFocusAt(i); setOpen(x.id) }} onBlur={() => setOpen(null)}
-                    onPointerEnter={(e) => { if (e.pointerType === "mouse") setOpen(x.id) }} onPointerLeave={(e) => { if (e.pointerType === "mouse") setOpen(null) }}
-                    onKeyDown={(e) => roam(e, i)} />
-                </div>
-              ))}
+    <div ref={box} className={`${P}-box`} data-size={size} tabIndex={0} role="group" aria-roledescription="map" aria-label={`${t.journey.title}, ${label.toLowerCase()}. Drag, or use the arrow keys, to turn it.`} onKeyDown={(e) => { if (e.key === "Escape") setOpen(null) }}>
+      <div ref={art} className={`${P}-art`} style={{ filter: shadow }}><canvas ref={layer} aria-hidden /></div>
+      {look.decor}
+      <div className={`${P}-marks`}>
+        <div ref={ref("kyoto")} className={`${P}-mark`} aria-hidden><span className={`${P}-kyoto`}><span className={`${P}-seal`}>京</span><span className={`${P}-name`}>{t.journey.kyotoPin}</span></span></div>
+        <div role="group" aria-label="Where guests are coming from">
+          {guests.map((x, i) => (
+            <div key={x.id} ref={ref(x.id)} className={`${P}-mark`}>
+              <button type="button" className={`${P}-dot`} aria-label={x.label} aria-expanded={open === x.id} tabIndex={i === Math.min(focusAt, guests.length - 1) ? 0 : -1}
+                onClick={() => { setFocusAt(i); setOpen(x.id) }} onFocus={() => { setFocusAt(i); setOpen(x.id) }} onBlur={() => setOpen(null)}
+                onPointerEnter={(e) => { if (e.pointerType === "mouse") setOpen(x.id) }} onPointerLeave={(e) => { if (e.pointerType === "mouse") setOpen(null) }}
+                onKeyDown={(e) => roam(e, i)} />
             </div>
-            {list.filter((x) => x.always).map((x) => (
-              <div key={x.id} ref={ref(x.id)} className={`${P}-mark`} aria-hidden><span className={`${P}-pip`} /><span className={`${P}-name`}>{x.label}</span></div>
-            ))}
-            {openTrip && <div ref={tip} className={`${P}-tip`} role="status">{openTrip.label}</div>}
-          </div>
-          {state !== "ready" && <p className={`${P}-wait`} aria-live="polite">{state === "failed" ? "No WebGL here: the site falls back to its flat map." : "Painting the globe…"}</p>}
+          ))}
         </div>
-        {inks && (
-          <ul className={`${P}-legend`} aria-label="Key">
-            {legend.map(([k, label]) => <li key={k}><Swatch style={style} colour={inks[k]} inks={inks} width={WIDTH[k]} back={look.back?.(night)} />{label}</li>)}
-          </ul>
-        )}
-        {crowdN > 0 && <p className={`${P}-note`}>Demo crowd: {crowdN} made-up households, not guests.</p>}
-        <ul className="sr-only">
-          <li>{t.journey.list.nadia}</li><li>{t.journey.list.griffin}</li>
-          {guests.map((x) => <li key={x.id}>{x.label}</li>)}
-          <li>{t.journey.list.you(SAMPLE_JOURNEYS[0].name)}</li>
-        </ul>
+        {list.filter((x) => x.always).map((x) => (
+          <div key={x.id} ref={ref(x.id)} className={`${P}-mark`} aria-hidden><span className={`${P}-pip`} /><span className={`${P}-name`}>{x.label}</span></div>
+        ))}
+        {openTrip && <div ref={tip} className={`${P}-tip`} role="status">{openTrip.label}</div>}
       </div>
-    </Stage>
+      {state !== "ready" && <p className={`${P}-wait`} aria-live="polite">{state === "failed" ? "No WebGL here: the site falls back to its flat map." : "Painting the globe…"}</p>}
+    </div>
   )
 }

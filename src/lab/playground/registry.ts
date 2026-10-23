@@ -12,6 +12,7 @@ import { entries as loading } from "./x/loading"
 import { entries as sheets } from "./x/sheets"
 import { entries as map } from "./x/map"
 import { entries as globes24 } from "./x/globes24"
+import { entries as globes26 } from "./x/globes26"
 import { entries as art24 } from "./x/art24"
 import { entries as open24 } from "./x/open24"
 import { entries as story24b } from "./x/story24b"
@@ -30,6 +31,7 @@ export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "journey", title: "Journey", entries: journey },
   { id: "map", title: "Venue map", entries: map },
   { id: "globes24", title: "Globe looks (run 24b)", entries: globes24 },
+  { id: "globes26", title: "Globe looks, pushed further (run 26)", entries: globes26 },
   { id: "confirmation", title: "Confirmation", entries: confirmation },
   { id: "sheets", title: "Sheets and status", entries: sheets },
   { id: "paper", title: "Paper and light", entries: paper },

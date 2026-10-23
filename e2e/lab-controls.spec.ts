@@ -28,3 +28,17 @@ test("lab: the Shortlist has every open decision, each take pickable", async ({ 
   await seal.getByRole("radio", { name: /G·N/ }).check()
   await expect(page.getByText(/1 of \d+ picked/)).toBeVisible()
 })
+
+test("lab: a globe look shows both views under one switch, and its tuning panel keeps the sliders in the address", async ({ page }) => {
+  await page.goto("lab/lab-play.html?x=globe-airmail")
+  await expect(page.getByRole("group", { name: /in the story\./ })).toBeVisible()
+  await expect(page.getByRole("group", { name: /full screen\./ })).toBeVisible()
+  await page.getByRole("radio", { name: "Map" }).click()
+  await expect(page).toHaveURL(/view=flat/)
+  const tune = page.locator("details", { hasText: "Tune the look" })
+  if (!(await tune.getAttribute("open")) && (await tune.getAttribute("open")) !== "") await tune.locator("summary").click()
+  await tune.getByRole("slider", { name: "Shadow" }).fill("60")
+  await expect(page).toHaveURL(/k\.shadow=60/)
+  await tune.getByRole("button", { name: "Back to the look as painted" }).click()
+  await expect(page).not.toHaveURL(/k\.shadow/)
+})

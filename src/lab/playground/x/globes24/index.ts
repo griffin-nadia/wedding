@@ -3,7 +3,8 @@ import type { Entry } from "../../types"
 import { globeKnobs } from "./kit-data"
 
 /**
- * Globe looks (lab run 24b): one take per look, all on the same kit (kit.tsx: the journey data, the crowd switch, the
+ * Globe looks (lab run 24b; run 26 added six more in ../globes26 and, on every look, both views under one switch and a
+ * tuning panel): one take per look, all on the same kit (kit.tsx: the journey data, the crowd switch, the
  * Globe/Flat toggle that curls the paper, the key, the place names and the line styles). Looks 5 to 11 go here too.
  */
 const REFS = [

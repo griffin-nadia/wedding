@@ -13,10 +13,27 @@ export const LINE_STYLES: [LineStyle, string][] = [
 export const RAD = Math.PI / 180
 export const KYOTO = { lat: 35.01, lon: 135.77 }
 
-/** The two knobs every look has: the line style (its default) and the crowd */
-export const globeKnobs = (line: LineStyle): Knob[] => [
+/** What travels each line once (run 26): "auto" is the line style's own (a plane on Paper plane, a leaf on Maple leaf,
+ *  nothing on the rest); any other choice flies on every line style */
+export type Icon = "auto" | "plane" | "flock" | "crane" | "leaf" | "none"
+export const ICONS: [Icon, string][] = [["auto", "The line style's"], ["plane", "Paper plane"], ["flock", "Three paper planes"], ["crane", "Paper crane"], ["leaf", "Maple leaf"], ["none", "None"]]
+
+/** The tuning panel's knobs (run 26), on every look. Each default leaves the look exactly as it was painted. */
+export const TUNE: Knob[] = [
+  { id: "land", label: "Land opacity", kind: "range", min: 0, max: 100, step: 5, def: 100, unit: "%" },
+  { id: "grain", label: "Paper grain (added)", kind: "range", min: 0, max: 100, step: 5, def: 0, unit: "%" },
+  { id: "weight", label: "Line weight", kind: "range", min: 50, max: 300, step: 10, def: 100, unit: "%" },
+  { id: "shadow", label: "Shadow", kind: "range", min: 0, max: 100, step: 5, def: 0, unit: "%" },
+  { id: "iconSize", label: "Travelling icon size", kind: "range", min: 50, max: 300, step: 10, def: 100, unit: "%" },
+]
+
+/** The knobs every look has: the line style (its default), what travels it, the crowd, how many views, and the tuning */
+export const globeKnobs = (line: LineStyle, icon: Icon = "auto"): Knob[] => [
   { id: "line", label: "Line style", kind: "select", options: LINE_STYLES, def: line },
+  { id: "icon", label: "Travelling icon", kind: "select", options: ICONS, def: icon },
   { id: "crowd", label: "Crowd (demo households)", kind: "select", options: [["0", "None"], ["15", "15 demo"], ["40", "40 demo"]], def: "0" },
+  { id: "views", label: "Views", kind: "select", options: [["both", "Story stop and full screen"], ["one", "Full screen only"]], def: "both" },
+  ...TUNE,
 ]
 
 /** Made-up households for judging a crowd: real towns, invented counts, never guests. Spread over AU, NZ, CA, JP, US, UK. */
