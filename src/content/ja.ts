@@ -80,6 +80,7 @@ export const ja: DeepPartial<Content> = {
     kyoto: "京都", brisbane: "ブリスベン", canada: "カナダ",
     seeList: "リストで見る", seeMap: "地図で見る", next: "次へ", done: "閉じる",
     keepReading: "続きを読む", keepReadingLabel: (title: string) => `続きを読む：${title}`,
+    backToStory: "ストーリーに戻る", openPhoto: (what: string) => `写真を大きく見る：${what}`, closePhoto: "写真を閉じる",
   },
   music: { on: "音楽を流す", off: "音楽を止める" },
   journey: {
@@ -313,6 +314,7 @@ export const ja: DeepPartial<Content> = {
     songsFull: (n: number) => `${n}曲追加済みです。変更するには1曲削除してください。`,
     songsAdded: "選んだ曲",
     edit: (what: string) => `${what}を編集`,
+    editShort: "編集",
     noMessage: "メッセージなし",
     songPlaceholder: "曲を検索",
     arrival: "到着日",

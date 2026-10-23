@@ -96,6 +96,8 @@ export const en = {
     kyoto: "Kyoto", brisbane: "Brisbane", canada: "Canada",
     seeList: "See as a list", seeMap: "See the map", next: "Next", done: "Done",
     keepReading: "Keep reading", keepReadingLabel: (title: string) => `Keep reading: ${title}`,
+    // Run 25: the chapter and list sheets, and a photo full screen
+    backToStory: "Back to the story", openPhoto: (what: string) => `Open the photo: ${what}`, closePhoto: "Close the photo",
   },
   flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", endTitle: "Where are you flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (key: string, city: string) => (key === "Already in Japan" ? "You're already in Japan" : `From ${/^(Somewhere|Elsewhere)/.test(key) ? city.toLowerCase() : city}`), change: "Change", placeholder: "Type your city or town", noMatch: "Nothing found for that.",
     // Run 25: one search for any city or town, or a pin on the map
@@ -246,8 +248,8 @@ export const en = {
     intro: "Tap a place to see where it is and how to get there.",
     alt: "Nadia's painted map of Higashiyama, Kyoto. Kyoto Station is at the bottom left on the JR line. The Kamo River and the Keihan line run north past Tofukuji, Shichijo, Kiyomizu Gojo, Gion Shijo and Sanjo stations, with Kawaramachi Shopping Street to the west. To the east are Yasaka Shrine, the Yasaka Pagoda, The Sodoh and, up the hill, Kiyomizu-dera.",
     listTitle: "The places on the map",
-    full: "View the full map",
-    fullOpens: "opens the map on its own",
+    // Run 25: the same map full screen, from Travel (under the map) and The day (beside How to get there)
+    open: "Open the map", close: "Close the map",
     zoomHint: "Pinch to zoom",
     directions: "Directions in Google Maps",
     places: [
@@ -386,6 +388,7 @@ export const en = {
     songsFull: (n: number) => `${n} songs added. Remove one to change it.`,
     songsAdded: "Your songs",
     edit: (what: string) => `Edit ${what}`,
+    editShort: "Edit",
     noMessage: "No message",
     songPlaceholder: "Search for a song",
     arrival: "Arriving",

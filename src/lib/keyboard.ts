@@ -49,9 +49,10 @@ export function useKeyboardAvoid() {
       if (covered !== kb) { kb = covered; set("--kb", covered) }
       const nt = Math.round(vv.offsetTop)
       if (nt !== top) { top = nt; set("--vv-top", nt) }
-      // The sheet's Back / Next: lifted by however much of the sheet the keyboard covers
-      const sheet = document.querySelector<HTMLElement>(".sheet")
-      const l = sheet ? Math.max(0, Math.round(sheet.getBoundingClientRect().bottom - keyTop())) : 0
+      // The sheet's Back / Next: lifted by however much of them the keyboard covers (run 25: measured from the footer
+      // itself, less the lift it already has, since the reply sheet's own box changes size as typing starts)
+      const foot = document.querySelector<HTMLElement>(".sheet .rsvp-actions")
+      const l = foot ? Math.max(0, Math.round(foot.getBoundingClientRect().bottom + (root.hasAttribute("data-typing") ? Math.max(0, lift) : 0) - keyTop())) : 0
       if (l !== lift) { lift = l; set("--kb-lift", l) }
       const typing = Boolean(field()) && kb >= 120
       if (typing !== root.hasAttribute("data-typing")) {
@@ -60,6 +61,9 @@ export function useKeyboardAvoid() {
         const card = document.querySelector<HTMLElement>(".letter:not(.sheet)")
         if (card) card.style.height = typing ? `${card.offsetHeight}px` : ""
         root.toggleAttribute("data-typing", typing)
+        // Run 25: the reply sheet changes size as typing starts or stops (it fits its content otherwise), so the lift
+        // is measured again once that has laid out
+        requestAnimationFrame(apply); window.setTimeout(apply, 200)
       }
       reveal()
     }

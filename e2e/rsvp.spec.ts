@@ -309,3 +309,24 @@ test("the fortune folds open, centred, then settles", async ({ page }) => {
   expect(Math.abs(slip.x + slip.width / 2 - (col.x + col.width / 2))).toBeLessThan(2)
   await expect(dialog.getByRole("group", { name: /Great blessing/i })).toHaveCount(1) // the copies are hidden from screen readers
 })
+
+// Run 25: a fortune drawn on an earlier visit no longer opens already unfolded for good (why it never folded after an
+// update on Android): each visit the tin is back, the same fortune folds open, and within the visit it stays open
+test("the fortune folds again on a later visit, after an update, then stays open for the visit", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" })
+  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
+  await page.addInitScript(() => localStorage.setItem("ng-fortune-sample", "1")) // drawn on an earlier visit (the old key)
+  await openForm(page)
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
+  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
+  await toCheck(page); await press(page, /^Send our reply$/)
+  await dialog.getByRole("button", { name: "Draw one" }).click()
+  await expect(dialog.locator(".omikuji-fold .omikuji-leaf")).toHaveCount(2)
+  await expect(dialog.locator(".omikuji-fold")).toHaveCount(0, { timeout: 4000 })
+  // An update in the same visit: straight to the slip
+  await dialog.getByRole("button", { name: "Change my reply" }).click()
+  await toCheck(page); await press(page, /^Send our reply$/)
+  await expect(dialog.locator(".omikuji-slip")).toBeVisible()
+  await expect(dialog.getByRole("button", { name: "Draw one" })).toHaveCount(0)
+})
