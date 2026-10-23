@@ -1,6 +1,6 @@
 import type React from "react"
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react"
-import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Globe, Maximize2 } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { ART } from "@/lib/art"
@@ -72,7 +72,7 @@ function BackToStory() {
  * story (the drag marks the track, and the click that follows a drag is ignored).
  */
 type Dims = Record<string, { width: number; height: number }>
-function PhotoOpen({ name, label, className, children }: { name: string; label: string; className?: string; children: ReactNode }) {
+export function PhotoOpen({ name, label, className, children }: { name: string; label: string; className?: string; children: ReactNode }) {
   const { t } = useLang()
   const p = (photos as Dims)[name]
   return (
@@ -431,21 +431,29 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         <span aria-hidden className="journey-dots">{Array.from({ length: total }, (_, i) => <span key={i} className={cn(i === at && "is-on")} />)}</span>
         <button type="button" className="utility-btn" onClick={() => go(target.current + 1)} disabled={at >= total - 1} aria-label={t.story.nextChapter}><ChevronRight className="size-5" aria-hidden /></button>
       </div>
-      <StoryList chapters={chapters} />
+      {/* Run 26: the list's Globe button opens the journey stop's own full-screen view (its trigger), once the list has
+          closed, so it's the same viewer, toggle and close as from the stop */}
+      <StoryList chapters={chapters} onGlobe={() => { go(total - 1); requestAnimationFrame(() => track.current?.querySelector<HTMLButtonElement>(".story-slide-map .journey-open")?.click()) }} />
     </div>
   )
 }
 
 /** Run 25: "See as a list" opens the whole story as a sheet over it, like Keep reading: a line runs down past each
- *  stop (The day's timeline), each with its thumbnail (tap to open it full screen), year and place, title and words */
-function StoryList({ chapters }: { chapters: Chapter[] }) {
+ *  stop (The day's timeline), each with its thumbnail (tap to open it full screen), year and place, title and words.
+ *  Run 26: a Globe button at the top opens the journey's full-screen globe and map, as the stop's control does */
+function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => void }) {
   const { t } = useLang()
+  const [open, setOpen] = useState(false)
+  const globe = useRef(false)
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (o) globe.current = false }}>
       <SheetTrigger asChild><button type="button" className="story-link btn-text min-h-11 self-center">{t.story.seeList}</button></SheetTrigger>
-      <SheetContent aria-describedby={undefined}>
+      <SheetContent aria-describedby={undefined} onCloseAutoFocus={(e) => { if (!globe.current) return; e.preventDefault(); onGlobe() }}>
         <SheetHead><SheetTitle className="heading">{t.story.title}</SheetTitle></SheetHead>
         <SheetBody>
+          <button type="button" className="journey-open story-list-globe" aria-label={t.journey.openLabel} onClick={() => { globe.current = true; setOpen(false) }}>
+            <Globe className="size-4" aria-hidden />{t.journey.globe}
+          </button>
           <ol className="story-timeline">
             {chapters.map((ch) => {
               const label = [ch.title, ch.year].filter(Boolean).join(", ")
