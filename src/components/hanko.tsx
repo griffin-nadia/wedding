@@ -29,8 +29,8 @@ export function Hanko({ size = "md", stamp = false, glyph = "寿", className }: 
   return (
     <span aria-hidden className={cn("hanko hanko-seal", stamp && "hanko-stamp", size === "sm" ? "size-10" : "size-20", className)}>
       <svg viewBox="0 0 100 100" className="size-full" fill="none">
-        <path d={OUTER} stroke="currentColor" strokeWidth="5.5" strokeLinejoin="round" />
-        <path d={INNER} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d={OUTER} className="hanko-rim" stroke="currentColor" strokeWidth="5.5" strokeLinejoin="round" />
+        <path d={INNER} className="hanko-rim-inner" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
         {glyph === "GN"
           ? <text x="50" y="62" textAnchor="middle" fill="currentColor" fontSize="34" fontFamily="var(--font-display)" letterSpacing="-1">G·N</text>
           : <text x="50" y="66" textAnchor="middle" fill="currentColor" fontSize="46" fontFamily="var(--font-ja)" fontWeight="600">{glyph}</text>}

@@ -214,7 +214,10 @@ test("where are you flying from: one field for any city or town, or a pin on the
   await city.fill("Victoria")
   await expect(dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ })).toBeVisible()
   await dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ }).click()
-  await expect(city).toHaveValue("Victoria, British Columbia, Canada")
+  // Run 26: saved as the city and its country only, and it stays in the field once the list has closed
+  await expect(city).toHaveValue("Victoria, Canada")
+  await page.waitForTimeout(300)
+  await expect(city).toHaveValue("Victoria, Canada")
   await expect(dialog.getByText("From Victoria")).toBeVisible()
   await expect(dialog.locator(".journey-end .journey-you-dot")).toHaveCount(1) // their line on the journey stop's flat map
   // Nothing matches: drop a pin instead, and the tap on the map puts them there
@@ -308,6 +311,24 @@ test("the fortune folds open, centred, then settles", async ({ page }) => {
   const slip = (await dialog.locator(".omikuji-slip").boundingBox())!, col = (await dialog.locator(".done-column").boundingBox())!
   expect(Math.abs(slip.x + slip.width / 2 - (col.x + col.width / 2))).toBeLessThan(2)
   await expect(dialog.getByRole("group", { name: /Great blessing/i })).toHaveCount(1) // the copies are hidden from screen readers
+})
+
+// Run 26: Draw another gives a new fortune and saves it as the next draw; the first stays saved as it was
+test("draw another adds draw 2 and keeps draw 1", async ({ page }) => {
+  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
+  await openForm(page)
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
+  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
+  await toCheck(page); await press(page, /^Send our reply$/)
+  await dialog.getByRole("button", { name: "Draw one" }).click()
+  const words = dialog.locator(".omikuji-slip .omikuji-text")
+  const first = await words.textContent()
+  await dialog.getByRole("button", { name: "Draw another" }).click()
+  await expect(words).not.toHaveText(first!)
+  await expect(dialog.locator(".omikuji-slip")).toBeFocused()
+  const draws = await page.evaluate(() => JSON.parse(localStorage.getItem("ng-draws-sample") ?? "[]"))
+  expect(draws.map((d: { draw: number }) => d.draw)).toEqual([1, 2])
 })
 
 // Run 25: a fortune drawn on an earlier visit no longer opens already unfolded for good (why it never folded after an
