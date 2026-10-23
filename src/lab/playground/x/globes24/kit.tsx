@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from "react"
 import { getJourneys, SAMPLE_JOURNEYS, type Journey } from "@/lib/api"
 import { Segmented } from "@/components/segmented"
 import { loop } from "@/lib/frame"
@@ -9,7 +9,8 @@ import { getSpeed, ms, still, tween } from "../../motion"
 import { getParam, setParam, useKnob, useParam } from "../../params"
 import type { Knob } from "../../types"
 import { ASPECT, DIST, FLAT, TAN, hidden, place, project, wrap } from "./kit-geo"
-import { ICONS, KYOTO, LINE_STYLES, RAD, TUNE, demoCrowd, trips, type Icon, type Kind, type LineStyle, type Trip } from "./kit-data"
+import { BRISBANE_SAMPLE, CHAPTERS, ICONS, KYOTO, KYOTO_PLACES, LINE_STYLES, RAD, TUNE, chapterTrips, demoCrowd, trips, type Chapter, type Icon, type Kind, type LineStyle, type Trip } from "./kit-data"
+import { Sheet, SheetBody, SheetClose, SheetContent, SheetDescription, SheetHead, SheetTitle } from "@/components/ui/sheet"
 import { drawLine, iconFor, travels } from "./kit-lines"
 import { breathe, cssHex, land, sheet } from "./kit-paint"
 
@@ -87,7 +88,7 @@ const TURN = { auto: 4 * RAD, wait: 3000, easeIn: 1500, glide: 2.4, tilt: 55 * R
 const N = 64
 function arcOf(t: Trip) {
   const v = (lat: number, lon: number) => [Math.cos(lat * RAD) * Math.cos(lon * RAD), Math.cos(lat * RAD) * Math.sin(lon * RAD), Math.sin(lat * RAD)]
-  const a = v(t.lat, t.lon), b = v(KYOTO.lat, KYOTO.lon)
+  const to = t.to ?? KYOTO, a = v(t.lat, t.lon), b = v(to.lat, to.lon), lift = t.near ? 0.5 : 1
   const om = Math.acos(Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))
   const lat = new Float32Array(N), lon = new Float32Array(N), alt = new Float32Array(N)
   let prev = 0
@@ -96,7 +97,7 @@ function arcOf(t: Trip) {
     let l = Math.atan2(p[1], p[0])
     if (i) l = prev + wrap(l - prev)
     prev = l
-    lat[i] = Math.asin(Math.max(-1, Math.min(1, p[2]))); lon[i] = l; alt[i] = 0.004 + 0.09 * om * Math.sin(Math.PI * s)
+    lat[i] = Math.asin(Math.max(-1, Math.min(1, p[2]))); lon[i] = l; alt[i] = 0.004 + 0.09 * lift * om * Math.sin(Math.PI * s)
   }
   return { lat, lon, alt }
 }
@@ -123,7 +124,42 @@ const css = `
 .${P}-mark[data-side="left"] .${P}-name { left: auto; right: 8px; }
 .${P}-pip { position: absolute; width: 7px; height: 7px; translate: -50% -50%; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 2px var(--letter-bg); }
 .${P}-kyoto { display: flex; align-items: center; gap: 6px; translate: -12px -50%; position: absolute; white-space: nowrap; }
-.${P}-seal { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 5px; background: var(--action); color: var(--action-foreground, #fff); font: 400 14px / 1 var(--font-ja); box-shadow: 0 1px 2px rgb(0 0 0 / 0.2); }
+.${P}-seal { width: 10px; height: 10px; rotate: 45deg; border-radius: 2px; background: var(--action); box-shadow: 0 0 0 2px var(--letter-bg); }
+/* Run 26c: G and N beside Victoria and Brisbane, in their own line colour, in place of the plain dot */
+.${P}-badge { position: absolute; display: grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px; translate: -50% -50%; border-radius: 9px; background: var(--b); color: var(--letter-bg); font: 600 11px / 1 var(--font-label); letter-spacing: 0.02em; box-shadow: 0 0 0 1.5px var(--letter-bg), 0 1px 2px rgb(0 0 0 / 0.2); }
+.${P}-mark:has(.${P}-badge) .${P}-name { left: 13px; }
+.${P}-mark[data-side="left"]:has(.${P}-badge) .${P}-name { left: auto; right: 13px; }
+/* Run 26c: a chapter's place, much quieter than a guest's dot: a thin ring, no number. 32px to tap. */
+.${P}-ch { position: absolute; width: 32px; height: 32px; translate: -50% -50%; padding: 0; border: 0; background: none; pointer-events: auto; cursor: pointer; border-radius: 50%; }
+.${P}-ch::after { content: ""; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px; translate: -50% -50%; border-radius: 50%; border: 1.5px solid var(--ink-story, var(--ink-soft)); background: color-mix(in oklab, var(--letter-bg) 70%, transparent); opacity: 0.85; transition: scale 150ms; }
+.${P}-ch:hover::after, .${P}-ch:focus-visible::after { scale: 1.35; opacity: 1; }
+.${P}-ch:focus-visible { outline: 2px solid var(--input-focus); outline-offset: -6px; }
+/* Run 26c: the Kyoto close-up, so the venue map's places show at once with the world */
+.${P}-inset { position: absolute; right: 6px; bottom: 6px; width: clamp(104px, 33%, 176px); aspect-ratio: 1; margin: 0; padding: 0; border-radius: 6px; background: color-mix(in oklab, var(--letter-bg) 94%, transparent); box-shadow: 0 0 0 1px var(--line-hairline), 0 2px 6px rgb(0 0 0 / 0.14); pointer-events: auto; cursor: default; }
+/* On the globe it sits bottom left (Brisbane's N and name sit on the rim, bottom right); on the map bottom right (the
+   empty South Pacific). Smaller on the story stop's size. */
+.${P}-box[data-mode="globe"] .${P}-inset { right: auto; left: 6px; }
+.${P}-box[data-size="stop"] .${P}-inset { width: clamp(84px, 27%, 124px); }
+.${P}-inset svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.${P}-inset text { font: 500 6.5px / 1 var(--font-label); fill: var(--ink); paint-order: stroke; stroke: var(--letter-bg); stroke-width: 2px; }
+.${P}-inset .t { font-size: 6px; fill: var(--ink-soft); letter-spacing: 0.04em; text-transform: uppercase; }
+.${P}-chapters { width: min(100%, 680px); margin: 0; }
+.${P}-chapters h3 { margin: 0 0 var(--space-1); font: 500 var(--type-small-size) / 1.3 var(--font-label); color: var(--ink); }
+.${P}-chapters ol { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-2); margin: 0; padding: 0; list-style: none; }
+.${P}-chapters button { min-height: 44px; padding: 0 var(--space-3); border: 1px solid var(--line-hairline); border-radius: 999px; background: color-mix(in oklab, var(--letter-bg) 80%, transparent); color: var(--ink); font: 500 var(--type-small-size) / 1.2 var(--font-label); cursor: pointer; }
+.${P}-chapters button span { color: var(--ink-soft); font-variant-numeric: tabular-nums; margin-right: 0.4em; }
+.${P}-chapters button:hover { border-color: var(--ink-soft); }
+.${P}-chapters button:focus-visible { outline: 2px solid var(--input-focus); outline-offset: 2px; }
+.${P}-sheet .sheet-body { display: flex; flex-direction: column; gap: var(--space-3); padding-bottom: var(--space-4); }
+.${P}-sheet .${P}-box { width: min(100%, 520px); align-self: center; }
+.${P}-sheet-line { margin: 0; color: var(--ink); }
+.${P}-sheet .${P}-toggle { align-self: center; }
+.${P}-sheet-also { min-height: 24px; padding: 0 4px; border: 0; background: none; color: var(--action); font: inherit; text-decoration: underline; cursor: pointer; }
+.${P}-sheet-also:focus-visible { outline: 2px solid var(--input-focus); outline-offset: 2px; border-radius: 4px; }
+.${P}-sheet-meta { margin: 0; font-size: var(--type-small-size); color: var(--ink-soft); }
+.${P}-sheet-back { align-self: flex-end; min-height: 44px; padding: 0 var(--space-4); border: 1px solid var(--line-hairline); border-radius: 999px; background: none; color: var(--action); font: 500 var(--type-small-size) / 1 var(--font-label); cursor: pointer; }
+.${P}-sheet-back:focus-visible { outline: 2px solid var(--input-focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .${P}-ch::after { transition: none; } }
 .${P}-kyoto .${P}-name { position: static; translate: none; }
 .${P}-dot { position: absolute; width: 44px; height: 44px; translate: -50% -50%; padding: 0; border: 0; background: none; pointer-events: auto; cursor: pointer; border-radius: 50%; }
 .${P}-dot::after { content: ""; position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; translate: -50% -50%; border-radius: 50%; background: var(--x-g24-guest); box-shadow: 0 0 0 1.5px var(--letter-bg); }
@@ -179,7 +215,13 @@ const maskOf = () => (landMask ??= land(1024).then(({ all }) => {
 /** The tuning panel's values (run 26), as the frame loop reads them */
 type Tune = { land: number; grain: number; weight: number; shadow: number; iconSize: number; icon: Exclude<Icon, "auto"> }
 type Arc = { trip: Trip } & ReturnType<typeof arcOf>
-type ViewProps = { look: Look; night: boolean; inks: Inks; arcs: Arc[]; list: Trip[]; style: LineStyle; tune: Tune; mode: string; reduce: boolean; size: "stop" | "full"; label: string }
+type ViewProps = {
+  look: Look; night: boolean; inks: Inks; arcs: Arc[]; list: Trip[]; style: LineStyle; tune: Tune; mode: string; reduce: boolean; size: "stop" | "full"; label: string
+  /** Run 26c: the chapters' quiet pins, and what a tap on one does (opens its detail view; never goes to the chapter) */
+  chapters?: Chapter[]; onChapter?: (key: string, from: HTMLElement) => void
+  /** Run 26c: the Kyoto close-up in the corner (default on), Kyoto's own mark (default on), where the globe faces first */
+  inset?: boolean; kyoto?: boolean; face?: { lon: number; tilt: number }
+}
 
 /**
  * The whole take for one look (see the top of this file). Run 26: the same look in two views, the story stop's size and
@@ -199,7 +241,13 @@ export function GlobeLab({ look }: { look: Look }) {
   }
   const [mode, setMode] = useParam("view", "globe")
   const [cities, setCities] = useState<Journey[]>([])
-  useEffect(() => { void getJourneys().then((c) => setCities(c.length ? c : SAMPLE_JOURNEYS)) }, [])
+  // Run 26c: plus lab sample travellers from Brisbane, so the map shows them in their own spots beside N
+  useEffect(() => { void getJourneys().then((c) => setCities([...(c.length ? c : SAMPLE_JOURNEYS), BRISBANE_SAMPLE])) }, [])
+  // Run 26c: the chapter open in the detail view (its own sheet over the playground; the page never moves)
+  const [chapter, setChapter] = useState<Chapter | null>(null)
+  // The opener, kept here: Safari doesn't focus a button on click, and focus must go back to it on close
+  const opener = useRef<HTMLElement | null>(null)
+  const openChapter = (key: string, from: HTMLElement) => { opener.current = from; setChapter(CHAPTERS.find((c) => c.key === key) ?? null) }
   const crowd = useMemo(() => demoCrowd(crowdN), [crowdN])
   const list = useMemo(() => trips(cities, crowd, SAMPLE_JOURNEYS[0], { brisbane: t.journey.brisbane }), [cities, crowd, t.journey.brisbane])
   const arcs = useMemo(() => list.map((x) => ({ trip: x, ...arcOf(x) })), [list])
@@ -222,14 +270,14 @@ export function GlobeLab({ look }: { look: Look }) {
   const guests = list.filter((x) => x.kind === "guest")
   const common = ink && { look, night, inks: ink, arcs, list, style, tune, mode, reduce }
   return (
-    <Stage hint="Drag to turn it. One switch curls both views. Tune it under the key.">
+    <Stage hint="Drag to turn it. One switch curls every view. Tap a story line to see it explained.">
       <style>{css}{look.css ?? ""}</style>
       <div ref={root} className={P}>
         <Segmented className={`${P}-toggle`} label={(lang === "ja" ? "地図" : "Map")} size="sm" value={mode as "globe" | "flat"} onChange={setMode}
           items={[{ value: "globe", label: (lang === "ja" ? "地球儀" : "Globe") }, { value: "flat", label: (lang === "ja" ? "地図" : "Map") }]} />
         <div className={`${P}-views`}>
-          {views === "both" && <figure className={`${P}-view`} data-size="stop">{common ? <View {...common} size="stop" label="In the story" /> : <div className={`${P}-box`} />}<figcaption>In the story</figcaption></figure>}
-          <figure className={`${P}-view`} data-size="full">{common ? <View {...common} size="full" label="Full screen" /> : <div className={`${P}-box`} />}<figcaption>Full screen</figcaption></figure>
+          {views === "both" && <figure className={`${P}-view`} data-size="stop">{common ? <View {...common} size="stop" label="In the story" chapters={PINS} onChapter={openChapter} /> : <div className={`${P}-box`} />}<figcaption>In the story</figcaption></figure>}
+          <figure className={`${P}-view`} data-size="full">{common ? <View {...common} size="full" label="Full screen" chapters={PINS} onChapter={openChapter} /> : <div className={`${P}-box`} />}<figcaption>Full screen</figcaption></figure>
         </div>
         {ink && (
           <ul className={`${P}-legend`} aria-label="Key">
@@ -237,6 +285,11 @@ export function GlobeLab({ look }: { look: Look }) {
           </ul>
         )}
         {crowdN > 0 && <p className={`${P}-note`}>Demo crowd: {crowdN} made-up households, not guests.</p>}
+        <nav className={`${P}-chapters`} aria-labelledby={`${P}-chapters`}>
+          <h3 id={`${P}-chapters`}>The story's lines (tap one, or a ring on the map)</h3>
+          <ol>{CHAPTERS.map((c) => <li key={c.key}><button type="button" aria-haspopup="dialog" onClick={(e) => openChapter(c.key, e.currentTarget)}>{c.year && <span>{c.year}</span>}{c.title}</button></li>)}</ol>
+        </nav>
+        {common && <ChapterSheet chapter={chapter} onClose={() => setChapter(null)} onPick={setChapter} opener={opener} common={common} />}
         <TunePanel style={look.line} icon={look.icon ?? "auto"} />
         <ul className="sr-only">
           <li>{t.journey.list.nadia}</li><li>{t.journey.list.griffin}</li>
@@ -282,8 +335,51 @@ function Slider({ k }: { k: Extract<Knob, { kind: "range" }> }) {
   )
 }
 
+/** One quiet ring per place on the map (the first chapter there); its detail view links the others there */
+const PINS = CHAPTERS.filter((c, i) => CHAPTERS.findIndex((d) => d.place === c.place) === i)
+
+/** Where the globe faces first for a chapter's lines: the middle of all their ends */
+function faceOf(list: Trip[]) {
+  const v = [0, 0, 0]
+  for (const t of list) for (const p of [t, t.to ?? KYOTO]) { v[0] += Math.cos(p.lat * RAD) * Math.cos(p.lon * RAD); v[1] += Math.cos(p.lat * RAD) * Math.sin(p.lon * RAD); v[2] += Math.sin(p.lat * RAD) }
+  return { lon: Math.atan2(v[1], v[0]), tilt: Math.atan2(v[2], Math.hypot(v[0], v[1])) }
+}
+
+/**
+ * Run 26c: a chapter's detail view. Tapping a chapter (its ring on the map, or its name in the list) opens this over the
+ * playground and never moves the page or goes to the chapter: the line explained in words, and a map of only that
+ * chapter's lines in the same look, under the same Globe / Map switch. It is the site's own sheet (Radix dialog, the
+ * APG dialog pattern): focus moves in, Tab stays inside, Escape, the X or Back to the map closes it, and focus goes back
+ * to what opened it.
+ */
+function ChapterSheet({ chapter, onClose, onPick, opener, common }: { chapter: Chapter | null; onClose: () => void; onPick: (c: Chapter) => void; opener: RefObject<HTMLElement | null>; common: Omit<ViewProps, "size" | "label"> }) {
+  const list = useMemo(() => (chapter ? chapterTrips(chapter) : []), [chapter])
+  const arcs = useMemo(() => list.map((x) => ({ trip: x, ...arcOf(x) })), [list])
+  const toKyoto = list.some((x) => x.toLabel === "Kyoto")
+  const also = chapter ? CHAPTERS.filter((c) => c !== chapter && c.place === chapter.place) : []
+  // The same Globe / Map switch as the page's (one value in the address), so every view changes together
+  const [mode, setMode] = useParam("view", "globe")
+  return (
+    <Sheet open={!!chapter} onOpenChange={(o) => { if (!o) onClose() }}>
+      <SheetContent className={`${P}-sheet`} closeLabel="Close this line" onCloseAutoFocus={(e) => { const el = opener.current; if (el?.isConnected) { e.preventDefault(); el.focus({ preventScroll: true }) } }}>
+        {chapter && <>
+          <SheetHead><SheetTitle className="font-display text-heading">{chapter.year ? `${chapter.year} · ` : ""}{chapter.title}</SheetTitle></SheetHead>
+          <SheetBody>
+            <SheetDescription className={`${P}-sheet-line`}>{chapter.line}</SheetDescription>
+            <p className={`${P}-sheet-meta`}>{chapter.place}. Lab sample: the words for each line are placeholders until the story's own go in.</p>
+            <Segmented className={`${P}-toggle`} label="Map" size="sm" value={mode as "globe" | "flat"} onChange={setMode} items={[{ value: "globe", label: "Globe" }, { value: "flat", label: "Map" }]} />
+            <View key={chapter.key} {...common} arcs={arcs} list={list} size="stop" mode={mode} label={`${chapter.title}, its line`} inset={toKyoto} kyoto={toKyoto} face={faceOf(list)} />
+            {also.length > 0 && <p className={`${P}-sheet-meta`}>Also here: {also.map((c) => <button key={c.key} type="button" className={`${P}-sheet-also`} onClick={() => onPick(c)}>{c.year ? `${c.year} · ` : ""}{c.title}</button>)}</p>}
+            <SheetClose asChild><button type="button" className={`${P}-sheet-back`}>Back to the map</button></SheetClose>
+          </SheetBody>
+        </>}
+      </SheetContent>
+    </Sheet>
+  )
+}
+
 /** One view of the look: the map's box, its paper, lines and names. Both views read the same switch and tuning. */
-function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, label }: ViewProps) {
+function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, label, chapters = [], onChapter, inset = true, kyoto = true, face = FACE }: ViewProps) {
   const { t } = useLang()
   const box = useRef<HTMLDivElement>(null), art = useRef<HTMLDivElement>(null), layer = useRef<HTMLCanvasElement>(null), tip = useRef<HTMLDivElement>(null)
   const marks = useRef(new Map<string, HTMLElement>())
@@ -291,9 +387,9 @@ function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, 
   const [open, setOpen] = useState<string | null>(null)
   const [focusAt, setFocusAt] = useState(0)
   // Everything the frame loop reads, kept in one place so a knob or the toggle never rebuilds the globe
-  const st = useRef({ lon: mode === "flat" ? FLAT_LON : FACE.lon, tilt: look.tilt == null ? FACE.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
-  const live = useRef({ arcs, style, open, inks, tune })
-  live.current = { arcs, style, open, inks, tune }
+  const st = useRef({ lon: mode === "flat" ? FLAT_LON : face.lon, tilt: look.tilt == null || face !== FACE ? face.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
+  const live = useRef({ arcs, style, open, inks, tune, chapters })
+  live.current = { arcs, style, open, inks, tune, chapters }
   // A new line style, crowd or travelling icon draws the lines again from the start; any other tuning redraws
   useEffect(() => { st.current.clock = 0; st.current.dirty = true }, [style, arcs, tune.icon])
   useEffect(() => { st.current.dirty = true }, [tune.land, tune.grain, tune.weight, tune.iconSize])
@@ -406,7 +502,7 @@ function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, 
         const draw = (now: number) => {
           const dt = Math.min(0.05, (now - then) / 1000) * getSpeed(); then = now
           if (!visible) return true
-          const { arcs, style, open, inks, tune } = live.current
+          const { arcs, style, open, inks, tune, chapters: chapterList } = live.current
           const dur = tune.icon !== "none" || travels(style) ? 2.2 : 1.2
           // The lines' timeline: Nadia's and Griffin's, then the guests', then the household's own
           const starts = arcs.map(({ trip }, i) => (trip.kind === "nadia" ? 0.3 : trip.kind === "griffin" ? 0.55 : trip.kind === "you" ? 1.4 + Math.min(arcs.length, 30) * 0.08 + 0.6 : 1.4 + (i - 2) * 0.08))
@@ -471,10 +567,16 @@ function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, 
           }
           g.globalAlpha = 1
           // The names and dots, pinned to their places; hidden round the back of the globe
-          const marksAt = (id: string, la: number, lo: number) => {
+          // Run 26c: nudge moves a mark off a taken spot (screen px), with an ink hairline back to its real place
+          const marksAt = (id: string, la: number, lo: number, nudge?: [number, number]) => {
             const m = marks.current.get(id)
             place(la * RAD, wrap(lo * RAD - s.lon), 0.004, s.m, s.tilt, pt); project(pt, w, h, px)
             const off = (globe && hidden(pt)) || px[0] < -4 || px[0] > w + 4 || px[1] < -4 || px[1] > h + 4
+            if (nudge && !off) {
+              g.globalAlpha = 0.55; g.strokeStyle = inks.ink; g.lineWidth = 0.8; g.setLineDash([])
+              g.beginPath(); g.moveTo(px[0], px[1]); g.lineTo(px[0] + nudge[0], px[1] + nudge[1]); g.stroke(); g.globalAlpha = 1
+              px[0] += nudge[0]; px[1] += nudge[1]
+            }
             if (m) {
               m.style.transform = `translate3d(${px[0].toFixed(1)}px, ${px[1].toFixed(1)}px, 0)`
               const vis = off ? "hidden" : "visible"
@@ -484,8 +586,10 @@ function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, 
             return off
           }
           marksAt("kyoto", KYOTO.lat, KYOTO.lon)
+          for (const c of chapterList) marksAt(`ch-${c.key}`, c.at.lat, c.at.lon, c.nudge)
+          for (const { trip } of arcs) if (trip.to && trip.toLabel) marksAt(`${trip.id}-to`, trip.to.lat, trip.to.lon)
           for (const { trip } of arcs) {
-            const off = marksAt(trip.id, trip.lat, trip.lon)
+            const off = marksAt(trip.id, trip.lat, trip.lon, trip.nudge)
             if (trip.id === open && tip.current) {
               tip.current.style.transform = `translate3d(${px[0].toFixed(1)}px, ${px[1].toFixed(1)}px, 0)`
               tip.current.style.visibility = off ? "hidden" : "visible"
@@ -520,11 +624,12 @@ function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, 
   // The shadow slider: one drop shadow on the paper and the lines together (it follows the globe's or the map's edge)
   const shadow = tune.shadow > 0 ? `drop-shadow(0 ${(2 + 8 * tune.shadow).toFixed(1)}px ${(3 + 16 * tune.shadow).toFixed(1)}px rgb(0 0 0 / ${(0.55 * tune.shadow).toFixed(2)}))` : undefined
   return (
-    <div ref={box} className={`${P}-box`} data-size={size} tabIndex={0} role="group" aria-roledescription="map" aria-label={`${t.journey.title}, ${label.toLowerCase()}. Drag, or use the arrow keys, to turn it.`} onKeyDown={(e) => { if (e.key === "Escape") setOpen(null) }}>
+    <div ref={box} className={`${P}-box`} data-size={size} data-mode={mode} tabIndex={0} role="group" aria-roledescription="map" aria-label={`${t.journey.title}, ${label.toLowerCase()}. Drag, or use the arrow keys, to turn it.`} onKeyDown={(e) => { if (e.key === "Escape") setOpen(null) }}>
       <div ref={art} className={`${P}-art`} style={{ filter: shadow }}><canvas ref={layer} aria-hidden /></div>
       {look.decor}
+      {inset && <KyotoInset />}
       <div className={`${P}-marks`}>
-        <div ref={ref("kyoto")} className={`${P}-mark`} aria-hidden><span className={`${P}-kyoto`}><span className={`${P}-seal`}>京</span><span className={`${P}-name`}>{t.journey.kyotoPin}</span></span></div>
+        {kyoto && <div ref={ref("kyoto")} className={`${P}-mark`} aria-hidden><span className={`${P}-kyoto`}><span className={`${P}-seal`} /><span className={`${P}-name`}>{t.journey.kyotoPin}</span></span></div>}
         <div role="group" aria-label="Where guests are coming from">
           {guests.map((x, i) => (
             <div key={x.id} ref={ref(x.id)} className={`${P}-mark`}>
@@ -536,11 +641,58 @@ function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, 
           ))}
         </div>
         {list.filter((x) => x.always).map((x) => (
-          <div key={x.id} ref={ref(x.id)} className={`${P}-mark`} aria-hidden><span className={`${P}-pip`} /><span className={`${P}-name`}>{x.label}</span></div>
+          <div key={x.id} ref={ref(x.id)} className={`${P}-mark`} aria-hidden>
+            {x.badge ? <span className={`${P}-badge`} style={{ "--b": inks[x.kind] } as CSSProperties}>{x.badge}</span> : <span className={`${P}-pip`} />}<span className={`${P}-name`}>{x.label}</span>
+          </div>
         ))}
+        {list.filter((x, i, all) => x.to && x.toLabel && all.findIndex((y) => y.toLabel === x.toLabel) === i && !(kyoto && x.toLabel === "Kyoto")).map((x) => (
+          <div key={`${x.id}-to`} ref={ref(`${x.id}-to`)} className={`${P}-mark`} aria-hidden><span className={`${P}-pip`} /><span className={`${P}-name`}>{x.toLabel}</span></div>
+        ))}
+        {chapters.length > 0 && (
+          <div role="group" aria-label="The story's places">
+            {chapters.map((c) => (
+              <div key={c.key} ref={ref(`ch-${c.key}`)} className={`${P}-mark`}>
+                <button type="button" className={`${P}-ch`} aria-haspopup="dialog" aria-label={`${c.year ? `${c.year}, ` : ""}${c.title}, ${c.place}. Explain its line`} title={`${c.title}, ${c.place}`} onClick={(e) => onChapter?.(c.key, e.currentTarget)} />
+              </div>
+            ))}
+          </div>
+        )}
         {openTrip && <div ref={tip} className={`${P}-tip`} role="status">{openTrip.label}</div>}
       </div>
       {state !== "ready" && <p className={`${P}-wait`} aria-live="polite">{state === "failed" ? "No WebGL here: the site falls back to its flat map." : "Painting the globe…"}</p>}
     </div>
+  )
+}
+
+/**
+ * Run 26c: Kyoto close up, in the map's corner, so every place shows at once: at world scale the venue, the pagoda and
+ * the stations all sit on Kyoto's one pixel. The venue map's places at their real spots (about 3.5 km across), the main
+ * ones named, the rest named on hover and in its label. Still: it never turns with the world.
+ */
+const BOUNDS = { n: 35.0125, s: 34.9775, w: 135.7535, e: 135.7955 }
+function KyotoInset() {
+  const x = (lon: number) => 8 + ((lon - BOUNDS.w) / (BOUNDS.e - BOUNDS.w)) * 84
+  const y = (lat: number) => 14 + ((BOUNDS.n - lat) / (BOUNDS.n - BOUNDS.s)) * 78
+  const label = `Kyoto close up: ${KYOTO_PLACES.map((p) => p.name).join(", ")}`
+  return (
+    <figure className={`${P}-inset`} role="img" aria-label={label} onPointerDown={(e) => e.stopPropagation()}>
+      <svg viewBox="0 0 100 100" aria-hidden>
+        <text className="t" x={6} y={9}>Kyoto close up</text>
+        {/* The Kamo river, roughly, for a sense of place */}
+        <path d={`M${x(135.7712)} ${y(35.0125)} L${x(135.7716)} ${y(35.003)} L${x(135.7695)} ${y(34.99)} L${x(135.7672)} ${y(34.9775)}`} fill="none" stroke="var(--line-hairline)" strokeWidth={2.4} strokeLinecap="round" />
+        {KYOTO_PLACES.map((p) => {
+          const cx = x(p.lon), cy = y(p.lat), lines = p.short?.split(" / ") ?? [], [dx, dy, anchor] = p.lab ?? [5, 2, "start"]
+          const tx = cx + dx, ty = cy + dy
+          return (
+            <g key={p.id}>
+              <title>{p.name}</title>
+              {p.venue ? <rect x={cx - 3} y={cy - 3} width={6} height={6} rx={1} transform={`rotate(45 ${cx} ${cy})`} fill="var(--action)" stroke="var(--letter-bg)" strokeWidth={1} />
+                : <circle cx={cx} cy={cy} r={p.short ? 2.4 : 1.7} fill={p.short ? "var(--ink-story, var(--ink))" : "var(--ink-soft)"} stroke="var(--letter-bg)" strokeWidth={0.8} />}
+              {p.short && <text x={tx} y={ty} textAnchor={anchor}>{lines.map((l, i) => <tspan key={l} x={tx} dy={i ? 7 : 0}>{l}</tspan>)}</text>}
+            </g>
+          )
+        })}
+      </svg>
+    </figure>
   )
 }

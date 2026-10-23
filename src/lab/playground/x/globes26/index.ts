@@ -7,7 +7,7 @@ import { globeKnobs } from "../globes24/kit-data"
  * paper flying the lines (a paper plane, a flock of three, or a paper crane). Every look, old and new, now shows the
  * story stop's view and the full screen's together under one Globe / Map switch, with the tuning panel under the key.
  */
-const DECIDING = "Griffin and Nadia: any of these six worth a place beside the eleven from run 24b? Tune it (land, grain, line weight, shadow, the travelling icon) and Copy settings with the look you like."
+const DECIDING = "Jehan picks one. Recommended (run 26c): Airmail. It speaks the invitation's own language (a letter in the post, the envelope they open first), its pale sea keeps every line, the G and N and the Kyoto close-up readable at the story stop's size, and in Lantern it turns into night airmail without losing the lines. Tune it (land, grain, line weight, shadow, the travelling icon) and Copy settings with the look you like."
 const KIT = "Ships on the run 24b kit (see the Globe looks area's notes: one bent Three.js plane, the lines and names on a 2D layer). The tuning panel's values become the look's own settings: land opacity needs the land mask (one more small texture, painted on the device), grain is a few lines of shader, the shadow is one CSS drop shadow on the globe's layer (check it on a slow phone while it turns), and the travelling icon is drawn with the lines (no extra cost)."
 const REFS = [
   { label: "Stripe, the globe", href: "https://stripe.com/blog/globe" },
