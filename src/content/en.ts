@@ -386,6 +386,7 @@ export const en = {
     songsFull: (n: number) => `${n} songs added. Remove one to change it.`,
     songsAdded: "Your songs",
     edit: (what: string) => `Edit ${what}`,
+    editShort: "Edit",
     noMessage: "No message",
     songPlaceholder: "Search for a song",
     arrival: "Arriving",

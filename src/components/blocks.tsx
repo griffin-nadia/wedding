@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLang } from "@/lib/lang"
 
 /** Step progress: three thin bars with real values. */
 export function StepProgress({ step, of, label }: { step: number; of: number; label: string }) {
@@ -13,15 +14,17 @@ export function StepProgress({ step, of, label }: { step: number; of: number; la
 
 /** A review row with an Edit link back to its step. */
 export function ReviewRow({ label, children, edit, editLabel, block = false }: { label: string; children: ReactNode; edit: () => void; editLabel: string; block?: boolean }) {
+  const editText = useLang().t.rsvp.editShort
   return (
     // dl > div > dt + dd only (the Edit button lives inside the dd)
-    <div className={cn("flex gap-3 px-4 py-3", block ? "flex-col" : "items-start justify-between")}>
+    // Run 25: a grid, so every row's Edit sits in one column on the right (the message's too) and answers get the room
+    <div className="review-row" data-block={block || undefined}>
       <dt className="font-medium text-foreground">{label}</dt>
-      <dd className={cn("flex min-w-0 gap-2", block ? "flex-col" : "flex-1 items-start justify-end text-right")}>
-        <span className={cn(block && "whitespace-pre-line break-words")}>{children}</span>
+      <dd className="min-w-0">
+        <span className={cn("break-words", block && "whitespace-pre-line")}>{children}</span>
         <button type="button" onClick={edit} aria-label={editLabel}
-          className={cn("btn-text inline-flex min-h-11 shrink-0 items-center gap-1 self-start px-2", block ? "-ml-2" : "-mt-2")}>
-          <Pencil className="size-5" aria-hidden />Edit
+          className="btn-text -mt-2 inline-flex min-h-11 shrink-0 items-center gap-1 px-2">
+          <Pencil className="size-5" aria-hidden />{editText}
         </button>
       </dd>
     </div>
