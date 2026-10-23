@@ -1,5 +1,5 @@
 import type React from "react"
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react"
 import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
@@ -100,8 +100,12 @@ const SPRING = { k: 170, c: 20 }
 // Three.js and the painted globe load only when the journey stop is showing
 const JourneyGlobe = lazy(() => loadGlobe().then((m) => ({ default: m.JourneyGlobe })))
 
-/** Run 25: the globe's place before it's drawn, a still disc the globe's own size (never an empty square) */
-const GlobeWaiting = () => <div className="journey-globe" aria-hidden />
+/** Run 25: the globe's place before it's drawn, a still disc the globe's own size (never an empty square). Run 26: with
+ *  a quiet "Drawing the map…" on it after a moment, for a slow phone */
+function GlobeWaiting() {
+  const { t } = useLang()
+  return <div className="journey-globe" aria-hidden><span className="journey-globe-wait">{t.journey.loading}</span></div>
+}
 
 /**
  * The journey to Kyoto, once, as the last stop (final run): Nadia's and Griffin's lines, then the guests' (one per
@@ -116,19 +120,81 @@ const GlobeWaiting = () => <div className="journey-globe" aria-hidden />
  *  so building it (Three.js, painting the land) never lands mid-slide. Before and after: .brief/docs/runs/2026-10-24.md */
 const loadGlobe = () => import("@/components/journey-globe")
 type View = "globe" | "flat"
-function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: boolean; pins: ChapterPin[]; onPin: (key: string) => void }) {
-  const { t } = useLang()
+const STEP = 1.4 // the + and − (journey-globe.tsx ZOOM.step), 1x to 3x on both views
+
+/** Run 26: the journey's data, asked for once per household however many maps show it (the stop and the list's viewer) */
+const asked = new Map<string, { flying: ReturnType<typeof getFlying>; journeys: Promise<Journey[]> }>()
+function useJourneyData() {
   const { household } = useHousehold()
+  const token = household?.token
   // Read once per household (run 25): a new object every render rebuilt the globe on every re-render
-  const you = useMemo(() => readFlying(household?.token), [household?.token])
+  const you = useMemo(() => readFlying(token), [token])
   const [flying, setFlying] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
   // null until the back end answers, so the globe is built once with its lines rather than again when they arrive
   const [journeys, setJourneys] = useState<Journey[] | null>(null)
-  useEffect(() => { void getFlying().then(setFlying); void getJourneys(household?.token).then(setJourneys) }, [household?.token])
+  useEffect(() => {
+    const key = token ?? ""
+    if (!asked.has(key)) asked.set(key, { flying: getFlying(), journeys: getJourneys(token) })
+    const a = asked.get(key)!
+    let alive = true
+    void a.flying.then((f) => alive && setFlying(f)); void a.journeys.then((j) => alive && setJourneys(j))
+    return () => { alive = false }
+  }, [token])
+  const nameOf = usePlaceName()
+  const name = you ? nameOf(you.name) : null
+  const { t } = useLang()
+  const label = t.journey.map(name, you?.id === "jp" || you?.country === "JP" ? "Already in Japan" : undefined)
+  return { you, flying, journeys, label }
+}
+
+/**
+ * Run 26: the map full screen, on its own, so Our story's list can open it too. Stable props:
+ * - trigger: the control that opens it (a button; focus goes back to it on close, and the page stays where it was)
+ * - pins, onPin: the chapter pins; tapping one closes the view and calls onPin(key) (the caller goes to that chapter)
+ * - onOpenChange: told when it opens and closes (the stop holds its own globe still while it's open)
+ * Globe / Map in a fixed row at the top (globe first, unless the phone starts flat), the map in the middle filling
+ * the stage, + and − in the bottom corner for both views, 1x to 3x; pinch on phones, Ctrl or Cmd with the wheel.
+ */
+export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger: ReactElement; pins: ChapterPin[]; onPin: (key: string) => void; onOpenChange?: (open: boolean) => void }) {
+  const { t } = useLang()
+  const { you, journeys, label } = useJourneyData()
   const [base] = useState<View>(() => (startsFlat() ? "flat" : "globe"))
   const [open, setOpen] = useState(false)
   const [view, setView] = useState<View>(base)
   const jumped = useRef(false)
+  const zoom = useRef<((f: number) => void) | null>(null)
+  const cities = journeys ?? NONE
+  const go = (key: string) => { jumped.current = true; setOpen(false); onOpenChange?.(false); onPin(key) }
+  return (
+    <Sheet open={open} onOpenChange={(o) => { setOpen(o); onOpenChange?.(o); if (o) { jumped.current = false; setView(base) } }}>
+      <SheetTrigger asChild>{trigger}</SheetTrigger>
+      <SheetContent className="journey-viewer" closeLabel={t.journey.close} aria-describedby={undefined}
+        onCloseAutoFocus={(e) => { if (jumped.current) e.preventDefault() }}>
+        <SheetTitle className="sr-only">{t.journey.title}</SheetTitle>
+        {/* Globe / Map in one fixed spot at the top, the same in both views */}
+        <div className="journey-viewer-bar">
+          <Segmented label={t.journey.view} size="sm" className="journey-mode" value={view} onChange={setView} items={[{ value: "globe", label: t.journey.globe }, { value: "flat", label: t.journey.flat }]} />
+        </div>
+        <div className="journey-viewer-stage" data-view={view}>
+          {view === "flat"
+            ? <JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} />
+            : <Suspense fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>}
+          <div className="globe-zoom">
+            <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}>+</button>
+            <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}>−</button>
+          </div>
+        </div>
+        <div className="journey-viewer-foot"><JourneyLegend you={Boolean(you && you.id !== "jp")} /></div>
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: boolean; pins: ChapterPin[]; onPin: (key: string) => void }) {
+  const { t } = useLang()
+  const { you, flying, journeys, label } = useJourneyData()
+  const [base] = useState<View>(() => (startsFlat() ? "flat" : "globe"))
+  const [open, setOpen] = useState(false)
   // One stop early, while they read: the globe's code, then its land painted in idle time (paintGlobe keeps it, so the
   // globe mounts on a ready painting; the same look, size and countries as journey-globe.tsx asks for)
   const { theme } = useTheme()
@@ -150,41 +216,21 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
     const id = window.setTimeout(() => setSettled(true), still() ? 0 : 550)
     return () => window.clearTimeout(id)
   }, [active])
-  const nameOf = usePlaceName()
-  const name = you ? nameOf(you.name) : null
-  const label = t.journey.map(name, you?.id === "jp" || you?.country === "JP" ? "Already in Japan" : undefined)
   const told = flying && flying.households > 0 ? flying : null
   const cities = journeys ?? NONE
-  const show = (v: View, where: "stop" | "full") => {
-    const go = where === "full" ? (key: string) => { jumped.current = true; setOpen(false); onPin(key) } : onPin
-    if (v === "flat") return <JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} />
-    // The stop's globe waits for its stop to settle and for the lines; the full-screen one builds straight away
-    if (where === "stop" && !(active && settled && journeys)) return <GlobeWaiting />
-    return <Suspense fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable={where === "full"} held={where === "stop" && open} /></Suspense>
-  }
-  const legend = <JourneyLegend you={Boolean(you && you.id !== "jp")} />
+  // The stop's globe waits for its stop to settle and for the lines
+  const stop = base === "flat" ? <JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={onPin} />
+    : !(active && settled && journeys) ? <GlobeWaiting />
+    : <Suspense fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={onPin} held={open} /></Suspense>
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (o) { jumped.current = false; setView(base) } }}>
-        {/* The control sits where the Globe / Flat switch was, centred above the map */}
-        <div className="journey-mode-bar">
-          <SheetTrigger asChild>
-            <button type="button" className="journey-open" aria-label={t.journey.openLabel}><Maximize2 className="size-4" aria-hidden />{t.journey.open}</button>
-          </SheetTrigger>
-        </div>
-        {show(base, "stop")}
-        <SheetContent className="journey-viewer" closeLabel={t.journey.close} aria-describedby={undefined}
-          onCloseAutoFocus={(e) => { if (jumped.current) e.preventDefault() }}>
-          <SheetTitle className="sr-only">{t.journey.title}</SheetTitle>
-          {/* Globe / Map in one fixed spot at the top, the same in both views */}
-          <div className="journey-viewer-bar">
-            <Segmented label={t.journey.view} size="sm" className="journey-mode" value={view} onChange={setView} items={[{ value: "globe", label: t.journey.globe }, { value: "flat", label: t.journey.flat }]} />
-          </div>
-          <div className="journey-viewer-stage" data-view={view}>{show(view, "full")}</div>
-          <div className="journey-viewer-foot">{legend}</div>
-        </SheetContent>
-      </Sheet>
-      {legend}
+      {/* The control sits where the Globe / Flat switch was, centred above the map */}
+      <div className="journey-mode-bar">
+        <JourneyViewer pins={pins} onPin={onPin} onOpenChange={setOpen}
+          trigger={<button type="button" className="journey-open" aria-label={t.journey.openLabel}><Maximize2 className="size-4" aria-hidden />{t.journey.open}</button>} />
+      </div>
+      {stop}
+      <JourneyLegend you={Boolean(you && you.id !== "jp")} />
       {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )

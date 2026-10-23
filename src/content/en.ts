@@ -111,7 +111,7 @@ export const en = {
     kyoto: "Kyoto · 15 Oct 2027", kyotoPin: "Kyoto, 15 Oct 2027", brisbane: "Brisbane", canada: "Canada", victoria: "Victoria",
     zoomIn: "Zoom in", zoomOut: "Zoom out", households: (n: number) => `${n} households`,
     // Run 25: the stop opens the map full screen, with Globe / Map inside; a chapter's pin goes to its stop
-    open: "Full screen", openLabel: "Open the map full screen", close: "Close the map", view: "Globe or map", globe: "Globe", flat: "Map",
+    open: "Full screen", openLabel: "Open the map full screen", loading: "Drawing the map…", close: "Close the map", view: "Globe or map", globe: "Globe", flat: "Map",
     pin: (n: number, title: string, place: string) => `${n ? `Chapter ${n}: ` : ""}${title}, ${place}. Go to its stop`,
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "Guests", you: "Your line" },
     count: (n: number, of: number) => `${n} of ${of} lines drawn so far`,
