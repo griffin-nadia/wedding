@@ -42,14 +42,17 @@ export function Box({ drawing }: { drawing: boolean }) {
  * last, each a paper fold with its shade lifting as it flattens and a little give as it lands; then the creases ease
  * out to the two faint lines the paper keeps (about 1.1 s, then 0.9 s). The real slip holds its place from the start,
  * so nothing below moves, and takes focus. Android phones can shake to draw. Reduced motion: no shake, no fold, the
- * slip fades in. Return visits open on the slip. The fortune is the household's for good, on any device.
+ * slip fades in. The fortune is the household's for good, on any device. Run 25: the tin comes back on each visit, so
+ * the fold plays on a first reply and after an update (once per visit; within a visit it opens on the slip). Before,
+ * a slip drawn once opened already unfolded for ever after, which is why it never folded after an update on Jehan's
+ * Android phone.
  */
 const FOLD_MS = 1100
 export function FortuneCard({ token, className }: { token: string; className?: string }) {
   const { t } = useLang()
   const [tips, setTips] = useState(DRAFT_FORTUNES)
   const [state, setState] = useState<"closed" | "drawing" | "open">(() => {
-    try { return localStorage.getItem(drawnKey(token)) ? "open" : "closed" } catch { return "closed" }
+    try { return sessionStorage.getItem(drawnKey(token)) ? "open" : "closed" } catch { return "closed" }
   })
   const slip = useRef<HTMLDivElement>(null)
   // "folding": the paper copies fold open over the real slip (hidden, holding its place); "settling": the real slip,
@@ -68,7 +71,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     window.setTimeout(() => {
       setState("open")
       if (!still) { setFold("folding"); window.setTimeout(() => setFold("settling"), FOLD_MS) }
-      try { localStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ }
+      try { sessionStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ }
       nextFrame(() => slip.current?.focus())
     }, still ? 0 : 900)
   }
