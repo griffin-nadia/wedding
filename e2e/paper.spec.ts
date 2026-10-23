@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test"
 // Run 26: the paper is a sheet exported ahead (scripts/paper-export.mjs), the size this screen shows it, asked for from
 // the first paint and laid over the cards and sheets once it has decoded, keeping text AA on its darkest spot. On a
 // first visit a plain veil covers the page until it's in (1.5 s at most once shown); not again once it's been seen. Reduced
-// motion: the same paper and veil, nothing fades. Save-Data: plain paper, nothing fetched. (Automated browsers skip it
+// motion: the same paper and veil, each a short plain fade (opacity only, the seal still). Save-Data: plain paper, nothing fetched. (Automated browsers skip it
 // unless a test asks, ng-paper=on, as these do.)
 test.use({ reducedMotion: "no-preference" })
 test.beforeEach(async ({ page }) => { await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-paper", "on") }) })
@@ -37,7 +37,7 @@ test("first visit: the veil covers the page until the sheet is in, never past 1.
   await expect(veil).toHaveCount(0, { timeout: 2500 })
 })
 
-test("reduced motion: the same paper, nothing fades; Save-Data: plain, nothing fetched", async ({ browser }) => {
+test("reduced motion: the same paper and veil, a plain opacity fade; Save-Data: plain, nothing fetched", async ({ browser }) => {
   for (const opts of [{ reducedMotion: "reduce" as const }, {}]) {
     const c = await browser.newContext(opts)
     const save = !("reducedMotion" in opts)
@@ -46,17 +46,17 @@ test("reduced motion: the same paper, nothing fades; Save-Data: plain, nothing f
     const p = await c.newPage(), sheets: string[] = []
     p.on("request", (r) => { if (/\/paper\//.test(r.url())) sheets.push(r.url()) })
     await p.goto("?h=sample", { waitUntil: "commit" })
-    // Reduced motion: the veil's seal is still and the veil goes without a fade
+    // Reduced motion (Jehan): the veil fades, opacity only, and its seal is still
     if (!save) {
       await p.locator("#paper-veil").waitFor({ state: "visible" })
-      const [anim, fade] = await p.locator("#paper-veil").evaluate((v) => [getComputedStyle(v.querySelector("img")!).animationName, getComputedStyle(v).transitionDuration])
-      expect(anim).toBe("none")
-      expect(parseFloat(fade)).toBeLessThan(0.01) // 0s, or the site's 0.01 ms reduced-motion rule
+      const v = await p.locator("#paper-veil").evaluate((el) => { const a = getComputedStyle(el), i = getComputedStyle(el.querySelector("img")!); return { prop: a.transitionProperty, dur: parseFloat(a.transitionDuration), transform: a.transform, anim: i.animationName, seal: i.transform } })
+      expect(v).toEqual({ prop: "opacity", dur: 0.25, transform: "none", anim: "none", seal: "none" })
     }
     await p.waitForTimeout(3000)
     expect(await p.evaluate(() => document.documentElement.hasAttribute("data-paper"))).toBe(!save)
     expect(sheets.length > 0).toBe(!save)
-    if (!save) expect(parseFloat(await p.evaluate(() => getComputedStyle(document.querySelector("#letter")!, "::after").transitionDuration))).toBeLessThan(0.01)
+    // The paper itself fades in too, opacity only (an exception to the site's 0.01 ms reduced-motion rule)
+    if (!save) expect(await p.evaluate(() => { const a = getComputedStyle(document.querySelector("#letter")!, "::after"); return { prop: a.transitionProperty, dur: parseFloat(a.transitionDuration), transform: a.transform } })).toEqual({ prop: "opacity", dur: 0.25, transform: "none" })
     await c.close()
   }
 })

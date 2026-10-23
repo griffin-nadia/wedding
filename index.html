@@ -101,7 +101,7 @@
       #paper-veil[data-gone]{opacity:0;pointer-events:none}
       #paper-veil img{opacity:.5;animation:paper-veil 1.2s ease-in-out infinite alternate}
       @keyframes paper-veil{to{opacity:.85;transform:scale(1.04)}}
-      @media (prefers-reduced-motion:reduce){#paper-veil{transition:none}#paper-veil img{animation:none;opacity:.7}}
+      @media (prefers-reduced-motion:reduce){#paper-veil{transition-duration:250ms}#paper-veil img{animation:none;opacity:.7}}
     </style>
     <meta property="og:title" content="Griffin & Nadia · Kyoto, 15 October 2027" />
     <meta property="og:description" content="You're invited." />
@@ -173,7 +173,7 @@
     </script>
     <!-- The paper's veil (run 26): on a first visit, plain paper and her seal over the page until the paper sheet is in
          (src/lib/paper-sheet.ts), so it never pops in halfway through; never longer than 1.5 s once it shows. The seal breathes;
-         under reduced motion it's still and the veil goes without a fade. Not over the sealed envelope. -->
+         under reduced motion it's still and the veil only fades (250 ms, opacity). Not over the sealed envelope. -->
     <div id="paper-veil" aria-hidden="true" hidden><img src="%BASE_URL%brand/seal.svg" alt="" width="56" height="56"></div>
     <script>
       (function () {

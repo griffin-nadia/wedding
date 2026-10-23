@@ -129,6 +129,9 @@
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
+    /* Run 26 (Jehan): the paper and its veil (index.html) still fade, opacity only, a short plain fade */
+    [data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper, .arrival-sheet, .phone-qr, .site-bar, .site-nav)::after,
+    #paper-veil { transition-duration: 250ms !important; }
   }
 }
 
