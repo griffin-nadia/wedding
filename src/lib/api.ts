@@ -1,5 +1,6 @@
 import { config } from "./config"
 import { ApiError, call, isRetryable, type ErrorCode } from "./call"
+import { isDraws, type Draw } from "./draws"
 
 export { ApiError, type ErrorCode }
 
@@ -253,16 +254,25 @@ export async function getJourneys(token?: string): Promise<Journey[]> {
   try { const d = await call(`${config.apiUrl}?action=journeys`); return d.ok && Array.isArray(d.cities) ? (d.cities as Journey[]) : [] } catch { return [] } // an older back end has no journeys: none, not a crash
 }
 
-/** One omikuji (run 23): Nadia's tier in English and Japanese, its category and the words */
-export type Fortune = { no: number; tier: string; tierJa: string; category: string; text: string }
-/** The fortunes from the sheet's Fortunes tab (null: use the built-in drafts). An older back end answers plain strings. */
-export async function getFortunes(token: string): Promise<Fortune[] | null> {
+/** One omikuji (run 23): Nadia's tier in English and Japanese, its category and the words. draft (run 26): a fortune
+ *  still waiting on Griffin and Nadia's OK (the Fortunes tab's Draft column), never drawn unless config.storyFortunes */
+export type Fortune = { no: number; tier: string; tierJa: string; category: string; text: string; draft?: boolean }
+/** The fortunes from the sheet's Fortunes tab (null: use the built-in drafts), and this household's draws (run 26; null
+ *  from an older back end, which doesn't keep them). An older back end still answers plain strings. */
+export async function getFortunes(token: string): Promise<{ fortunes: Fortune[]; draws: Draw[] | null } | null> {
   if (!config.apiUrl) return null
   try {
     const d = await call(`${config.apiUrl}?action=fortunes&token=${encodeURIComponent(token)}`) // only for a real link (run 23)
     if (!d.ok || !Array.isArray(d.fortunes)) return null
-    return (d.fortunes as (Fortune | string)[]).map((f, i) => (typeof f === "string" ? { no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text: f } : f))
+    const fortunes = (d.fortunes as (Fortune | string)[]).map((f, i) => (typeof f === "string" ? { no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text: f } : f))
+    return { fortunes, draws: isDraws(d.draws) ? d.draws : null }
   } catch { return null }
+}
+/** Run 26: saves one draw against the household (appended in the Draws tab; a number already there is kept as it
+ *  was). Quiet on failure: this device's own list still has it. */
+export async function saveDraw(token: string, draw: Draw): Promise<void> {
+  if (!config.apiUrl) return
+  try { await call(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "draw", token, ...draw }) }) } catch { /* kept on this device */ }
 }
 
 /** Crew links (the tuning panel and /kit; the lab is local only since 18 Oct): true only for a token in the sheet's Crew tab. No back end (local sample mode) lets everyone in. */

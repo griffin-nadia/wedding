@@ -12,6 +12,7 @@
  *   Log      every submission and send, in plain words (written by the site)
  *   Emails   invite and reminder wording (created by the menu, edited by Nadia)
  *   Content  fortunes, Our story chapters and the site mode (created by the menu, edited by Nadia)
+ *   Draws    one row per omikuji draw: Token, Draw (1, 2, 3...), No, At (written by the site, append only; run 26)
  *   Crew     four crew links for /kit and /lab (created by "Make crew links"; no guest data)
  *   Questions  Ask us questions and their answers (created on the first question)
  *   Summary, How to update  ours; the tidy adds the To look at box and "Your weekly 5 minutes"
@@ -439,7 +440,7 @@ function doGet(e) {
     // Run 23: the story (now their own words, with visas, cities and work in it) and the fortunes only for a real
     // link (a household, a review link or a crew link). Anything else gets the same answer as an unknown link.
     if ((action === "fortunes" || action === "content") && !knownLink_(p.token)) return fail_("not_found")
-    if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_() })
+    if (action === "fortunes") return json_({ ok: true, fortunes: fortunes_(), draws: draws_(p.token) })
     if (action === "stay") return json_(stayPicks_())
     if (action === "content") return json_(content_())
     if (action === "crew") return json_(crew_(p.token))
@@ -483,15 +484,16 @@ function doPost(e) {
   if (body && body.action === "feedback") return json_(feedback_(body))
   const preview = body && typeof body === "object" ? previewHousehold_(body.token) : null
   if (preview) {
-    if (body.action === "flying" || body.action === "stamps") return json_({ ok: true })
+    if (body.action === "flying" || body.action === "stamps" || body.action === "draw") return json_({ ok: true })
     if (body.action !== "rsvp") return fail_("bad_request")
     const input = validate_(preview, body)
     if (input.error) return fail_(input.error)
     return json_({ ok: true, updated: false, changes: [], household: applyInput_(preview, input) })
   }
-  if (body && (body.action === "flying" || body.action === "stamps" || body.action === "rsvp") && over_("post:" + String(body.token || "").slice(0, 40), 30)) return fail_("busy")
+  if (body && (body.action === "flying" || body.action === "stamps" || body.action === "draw" || body.action === "rsvp") && over_("post:" + String(body.token || "").slice(0, 40), 30)) return fail_("busy")
   if (body && body.action === "flying") return json_(setFlying_(body.token, body.city))
   if (body && body.action === "stamps") return json_(setStamps_(body.token, body.stamps))
+  if (body && body.action === "draw") return json_(addDraw_(body.token, body.draw, body.no))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
   if (isLocked_()) return fail_("closed")
 
@@ -1359,13 +1361,61 @@ function fortunes_() {
   let out = []
   if (ss_().getSheetByName("Fortunes")) {
     out = rows_("Fortunes")
-      .map((r) => ({ no: Number(r.No) || 0, tier: String(r.Tier || "").trim().slice(0, 40), tierJa: String(r["Tier (ja)"] || "").trim().slice(0, 10), category: String(r.Category || "").trim().slice(0, 20), text: String(r.Text || "").trim().slice(0, 400) }))
+      .map((r) => Object.assign({ no: Number(r.No) || 0, tier: String(r.Tier || "").trim().slice(0, 40), tierJa: String(r["Tier (ja)"] || "").trim().slice(0, 10), category: String(r.Category || "").trim().slice(0, 20), text: String(r.Text || "").trim().slice(0, 400) }, isDraft_(r.Draft) ? { draft: true } : {}))
       .filter((f) => f.no > 0 && f.text)
       .sort((a, b) => a.no - b.no)
   }
   if (!out.length) out = FORTUNES.map((text, i) => ({ no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text: text }))
   cache.put("fortunes", JSON.stringify(out), 600)
   return out
+}
+
+/**
+ * Run 26: an optional Draft column on the Fortunes tab. Story-based fortunes are Jehan's drafts, waiting on Nadia and
+ * Griffin's checks: mark them yes (or a tick) and the site never draws them until its storyFortunes switch is on.
+ */
+function isDraft_(v) {
+  return v === true || /^(y|yes|true|draft)$/i.test(String(v == null ? "" : v).trim())
+}
+
+// ---------- omikuji draws (run 26) ----------
+
+/**
+ * Each draw a household makes, in the Draws tab (made on the first draw): Token, Draw (1, 2, 3...), No (the fortune's
+ * number on the Fortunes tab) and At. Append only: "Draw another" adds the next number, and a number already there is
+ * kept as it was (a retry, or the same draw from another device), so a redraw never overwrites a saved fortune.
+ */
+const DRAWS_TAB = "Draws"
+function draws_(token) {
+  token = String(token || "").trim()
+  if (!token || !ss_().getSheetByName(DRAWS_TAB)) return []
+  return rows_(DRAWS_TAB)
+    .filter((r) => String(r.Token || "").trim() === token)
+    .map((r) => ({ draw: Number(r.Draw) || 0, no: Number(r.No) || 0 }))
+    .filter((d) => d.draw > 0 && d.no > 0)
+    .sort((a, b) => a.draw - b.draw)
+}
+
+function addDraw_(token, draw, no) {
+  token = String(token || "").trim()
+  const whole = (v) => typeof v === "number" && Math.floor(v) === v && v >= 1 && v <= 999
+  if (!TOKEN_SHAPE.test(token) || !whole(draw) || !whole(no)) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
+  if (!cachedHousehold_(token)) return { ok: false, code: "not_found", error: ERRORS.not_found }
+  const lock = LockService.getScriptLock()
+  if (!lock.tryLock(10000)) return { ok: false, code: "busy", error: ERRORS.busy }
+  try {
+    let tab = ss_().getSheetByName(DRAWS_TAB)
+    if (!tab) {
+      tab = ss_().insertSheet(DRAWS_TAB)
+      tab.appendRow(["Token", "Draw", "No", "At"])
+      tab.setFrozenRows(1)
+    }
+    const have = draws_(token)
+    if (!have.some((d) => d.draw === draw)) tab.appendRow([cell_(token), draw, no, new Date()])
+    return { ok: true, draws: draws_(token) }
+  } finally {
+    lock.releaseLock()
+  }
 }
 
 function setupContentTab() {

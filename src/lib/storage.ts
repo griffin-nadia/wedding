@@ -24,6 +24,8 @@ const RULES: [RegExp, (s: string) => boolean][] = [
   [/^ng-flying:/, (s) => !s.startsWith("{") || json((c) => obj(c) && str(c.id) && str(c.name))(s)],
   [/^ng-tune$/, json((t) => obj(t) && (t.overrides === undefined || (obj(t.overrides) && Object.values(t.overrides).every(obj))) && (t.notes === undefined || Array.isArray(t.notes)))],
   [/^ng-(song-art|fly-)/, json(obj)],
+  // Run 26: a household's omikuji draws, append only: [{ draw, no }]
+  [/^ng-draws-/, json((v) => Array.isArray(v) && v.every((d) => obj(d) && Number.isInteger(d.draw) && Number.isInteger(d.no)))],
   [/^ng-content$/, json((c) => obj(c) && Array.isArray(c.story) && c.story.every((ch) => obj(ch) && Array.isArray(ch.body)) && str(c.mode))],
 ]
 

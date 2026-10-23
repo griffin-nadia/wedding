@@ -22,6 +22,8 @@ import { AskUs } from "@/components/ask-us"
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
+// Run 26: the fortune on Home after a yes (its own chunk, shared with the reply sheet's)
+const FortuneCard = lazy(() => import("@/components/fortune-card").then((m) => ({ default: m.FortuneCard })))
 
 // The names reveal once, letter by letter, the first time the letter is opened (v3 L). Never again.
 const REVEAL_NAMES = (() => {
@@ -172,6 +174,10 @@ export function HomePage() {
         </div>
       )}
       {mode === "invite" && household && locked && done && <NextStep h={household} open={openAt} locked />}
+      {/* Run 26: after a yes, their fortune on the invite too: draw one, see the latest again, or draw another */}
+      {mode === "invite" && household && done && household.guests.some((g) => g.attending === "yes") && (
+        <Suspense fallback={null}><FortuneCard token={household.token} title={pending("fortune.homeTitle", lang)} className="home-fortune" /></Suspense>
+      )}
       <HomeCountdown />
     </>
   )

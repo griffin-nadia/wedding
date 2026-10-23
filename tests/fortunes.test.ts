@@ -39,3 +39,44 @@ test("no Fortunes tab, or an empty one: the drafts, all 大吉", () => {
 test("the slip's number in kanji, 1 to 25", () => {
   assert.deepEqual([1, 7, 10, 11, 12, 19, 20, 21, 25].map(kanjiNumber), ["一", "七", "十", "十一", "十二", "十九", "二十", "二十一", "二十五"])
 })
+
+// Run 26: the Draft column, and draws kept per household, append only
+test("a Fortunes row marked Draft carries draft: true; the rest are unchanged", () => {
+  const out = fortunesFrom([["No", "Tier", "Tier (ja)", "Category", "Text", "Draft"], [1, "Great Blessing", "大吉", "Food", "Theirs", ""], [2, "Great Blessing", "大吉", "Fun", "Jehan's", "yes"]]) as { draft?: boolean }[]
+  assert.equal(out[0].draft, undefined)
+  assert.equal(out[1].draft, true)
+})
+
+test("draws: the first is the household's own, a redraw is never the one before, and drafts stay out", async () => {
+  const { fortuneFor, fortuneIndex, livePool, mergeDraws, lastDraw } = await import("../src/lib/draws.ts")
+  assert.equal(fortuneFor("abc123", 1, 25), fortuneIndex("abc123", 25)) // nobody's first fortune changes
+  for (const token of ["abc123", "sample", "zz9", "t-0"]) for (let n = 2; n < 40; n++) assert.notEqual(fortuneFor(token, n, 25), fortuneFor(token, n - 1, 25))
+  assert.equal(fortuneFor("abc123", 7, 25), fortuneFor("abc123", 7, 25)) // the same on every device
+  const pool = [{ no: 1 }, { no: 2, draft: true }, { no: 3 }]
+  assert.deepEqual(livePool(pool, false).map((f) => f.no), [1, 3])
+  assert.equal(livePool(pool, true).length, 3)
+  const saved = [{ draw: 1, no: 4 }, { draw: 2, no: 9 }]
+  assert.deepEqual(mergeDraws(saved, [{ draw: 2, no: 11 }, { draw: 3, no: 5 }]), [{ draw: 1, no: 4 }, { draw: 2, no: 9 }, { draw: 3, no: 5 }])
+  assert.equal(lastDraw([]), 0)
+})
+
+test("the back end appends each draw and never rewrites one", () => {
+  const rows: unknown[][] = []
+  let tab: { appendRow: (r: unknown[]) => void; setFrozenRows: () => void; getDataRange: () => { getValues: () => unknown[][] } } | null = null
+  const make = () => (tab = { appendRow: (r) => void rows.push(r.map((v) => (typeof v === "string" ? v.replace(/^'/, "") : v))), setFrozenRows: () => {}, getDataRange: () => ({ getValues: () => rows }) })
+  const g = {
+    console, PropertiesService: { getScriptProperties: () => ({ getProperty: () => null }) },
+    CacheService: { getScriptCache: () => ({ get: () => null, put: () => {} }) },
+    LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock: () => {} }) },
+    SpreadsheetApp: { getActive: () => ({ getSheetByName: (n: string) => (n === "Draws" ? tab : null), insertSheet: make }) },
+  }
+  vm.createContext(g)
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;cachedHousehold_ = (t) => t === 'house1' ? { token: t } : null; globalThis.__d = addDraw_", g)
+  const add = (g as unknown as { __d: (t: string, d: unknown, n: unknown) => { ok: boolean; code?: string; draws?: unknown } }).__d
+  assert.equal(add("house1", 1, 7).ok, true)
+  assert.deepEqual(JSON.parse(JSON.stringify(add("house1", 2, 12).draws)), [{ draw: 1, no: 7 }, { draw: 2, no: 12 }])
+  assert.deepEqual(JSON.parse(JSON.stringify(add("house1", 1, 3).draws)), [{ draw: 1, no: 7 }, { draw: 2, no: 12 }]) // draw 1 stays 7
+  assert.equal(rows.length, 3) // the header and two draws
+  assert.equal(add("nobody", 1, 1).code, "not_found")
+  assert.equal(add("house1", "2", 1).code, "bad_request")
+})

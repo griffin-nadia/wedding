@@ -279,6 +279,7 @@
   --font-label: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: var(--font-label);
   --font-ja: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-hand: "Caveat", "Zen Old Mincho", cursive; /* the omikuji slip's hand-written lines (run 26) */
 
   --type-display-size: clamp(56px, 3.2vw + 44px, 88px);                /* the names: 56 on a phone, 88 by 1440 */
   --type-display-leading: 1;

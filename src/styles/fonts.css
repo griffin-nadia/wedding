@@ -78,3 +78,14 @@
   src: url("../../node_modules/@fontsource/zen-old-mincho/files/zen-old-mincho-117-400-normal.woff2") format("woff2");
   unicode-range: U+672C;
 }
+/* Caveat (run 26), the hand on the omikuji slip: tier, category and No. x of 25. Self-hosted, cut to basic Latin and
+   kerning (17 KB) from @fontsource/caveat 5.3.0, SIL Open Font License 1.1 (src/assets/fonts/OFL-Caveat.txt).
+   The fortune card asks for it before the slip opens, so swap never shows mid-fold. */
+@font-face {
+  font-family: "Caveat";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../assets/fonts/caveat-500-basic-latin.woff2") format("woff2");
+  unicode-range: U+0020-007E, U+00A0, U+2019, U+2026;
+}
