@@ -4,7 +4,6 @@
 
 import { DATES } from "@/lib/wedding-dates"
 import { fmtDay } from "@/lib/dates"
-import { ART } from "@/lib/art"
 import { pending } from "./pending"
 
 const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
@@ -321,6 +320,8 @@ export const en = {
       hotelsTitle: "Hotels",
       airbnbsTitle: "Airbnbs",
       airbnbsNote: "Cheaper per person when you split one.",
+      // Run 26 (Jehan approved, in Griffin's voice): the top of the Airbnbs sheet, which had the hotels' note
+      airbnbsAbout: "A few Airbnbs we found, with rough prices a night. Prices may change, so have a look on other booking sites too. Teaming up is the way to go: bigger groups will most likely pay less per person, and even 4 people is better than 2!",
       perNight: (price: string) => `${price} a night`,
       sleeps: (n: string) => `Sleeps ${n}`,
       opensHotel: "opens the hotel's site",
@@ -359,7 +360,8 @@ export const en = {
       { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "Do I need a visa?", a: pending("faqs.visa.a", "en") },
       { q: "What happens to my details?", a: pending("faqs.details.a", "en") },
-      { q: "Who made this site?", a: `${pending("faqs.whoMade.a", "en")} ${pending("faqs.whoMade.song", "en").replace("{song}", ART.music.credit.en).replace("{artist}", ART.music.artist)}` },
+      // Run 26: Jehan's wording, as written. The song title (ART.music.title) is the link to the track
+      { q: "Who made this site?", a: "A proper family effort. Griffin wrote the words, Nadia drew everything you can see, and Jehan built the whole site. The music is A Town With an Ocean View by Joe Hisaishi, played on piano by Piano ZeroL." },
     ],
     onTheDay: "On the day, contact",
     // Their Questions (column E, 22 Oct): the line above Ask us at the end of FAQs

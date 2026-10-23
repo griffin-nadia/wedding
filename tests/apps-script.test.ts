@@ -66,6 +66,7 @@ test("the launch report's quota guard: invite emails counted per address, and wh
 
 // Google's services stubbed: what health_ and alert_ do with them
 function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: string } = {}) {
+  if (!("REPLY_TO" in props)) props.REPLY_TO = "us@couple.test" // run 26: Script Properties only, as on the live script
   const sent: unknown[] = [], posted: string[] = [], cache: Record<string, string> = {}
   const g = {
     __sent: sent, __posted: posted, console: { error() {} },
@@ -73,17 +74,17 @@ function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: st
     CacheService: { getScriptCache: () => ({ get: (k: string) => cache[k] ?? null, put: (k: string, v: string) => { cache[k] = v } }) },
     MailApp: { getRemainingDailyQuota: () => 97, sendEmail: (m: unknown) => sent.push(m) },
     UrlFetchApp: { fetch: (_u: string, o: { payload: string }) => posted.push(o.payload) },
-    Session: { getEffectiveUser: () => ({ getEmail: () => opts.me ?? "griffinandnadia@gmail.com" }) },
+    Session: { getEffectiveUser: () => ({ getEmail: () => opts.me ?? "us@couple.test" }) },
     SpreadsheetApp: { getActive: () => ({ getSheetByName: () => (opts.sheet === false ? null : { getLastRow: () => 40 }) }) },
     ContentService: { MimeType: { JSON: "json" }, createTextOutput: (t: string) => ({ setMimeType: () => ({ getContent: () => t }) }) },
     ScriptApp: { getProjectTriggers: () => [] },
   }
   vm.createContext(g)
-  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_, watchHealth, flushQueue, doGet, foldSmall_ }", g)
-  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void; watchHealth: () => void; flushQueue: () => void; doGet: (e: object) => { getContent: () => string }; foldSmall_: (c: object[], min: number) => { name: string; n: number }[] } }
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_, watchHealth, flushQueue, doGet, foldSmall_, ask_ }", g)
+  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void; watchHealth: () => void; flushQueue: () => void; doGet: (e: object) => { getContent: () => string }; foldSmall_: (c: object[], min: number) => { name: string; n: number }[]; ask_: (b: object) => { ok: boolean; code?: string } } }
 }
 test("?action=health: ok only when the sheet opens and the queue is moving; counts, no guest data", () => {
-  assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "service", "sheet"])
+  assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "replyTo", "service", "sheet"])
   assert.equal(backEnd({}).__f.health_().ok, true)
   assert.equal(backEnd({}, { sheet: false }).__f.health_().ok, false)
   assert.equal(backEnd({ "q:mail:x": "{}", last_flush_at: String(Date.now() - 20 * 60 * 1000) }).__f.health_().ok, false) // stuck
@@ -110,6 +111,19 @@ test("outbox emails carry their household's token (so test ones can be cleared) 
   b.__f.flushOut_()
   assert.equal(b.__sent.length, 2)
   assert.ok(b.__sent.every((m) => !("token" in (m as object))))
+})
+
+// Run 26: Ask us without an invite has no token to rate limit on, so all of those share one 10 minute budget too
+test("no-invite asks: honeypot kept out, user text stored as plain text, 10 in 10 minutes from everyone", () => {
+  const props: Record<string, string> = {}, b = backEnd(props), rows: unknown[][] = []
+  vm.runInContext("questionsSheet_ = () => ({ appendRow: (r) => __rows.push(r) })", Object.assign(b, { __rows: rows }))
+  assert.deepEqual({ ...b.__f.ask_({ website: "x", name: "Bot", email: "b@example.com", question: "hi" }) }, { ok: true })
+  assert.equal(rows.length, 0)
+  for (let i = 0; i < 10; i++) assert.equal(b.__f.ask_({ name: "=Sam" + i, email: `s${i}@example.com`, question: "=1+1" }).ok, true)
+  assert.equal(b.__f.ask_({ name: "Kim", email: "kim@example.com", question: "hello" }).code, "busy")
+  assert.equal(rows.length, 10)
+  assert.equal(rows[0][1], "'=Sam0"); assert.equal(rows[0][4], "'=1+1")
+  assert.ok(Object.values(props).every((v) => !/"to":"[^"]*example\.com"/.test(v))) // the email goes to REPLY_TO, never to them
 })
 
 test("two songs at most (run 19): the back end keeps the first two, like the form", () => {
@@ -158,4 +172,14 @@ test("journeys: a city with one household folds into its country, and a country 
     { name: "Melbourne", country: "AU", lat: -37.81, lon: 144.96, n: 3 },
     { name: "AU", country: "AU", lat: -37, lon: 144, n: 2 },
   ])
+})
+test("run 26: REPLY_TO only in Script Properties; health fills a missing one from the web app's account, never overwrites", () => {
+  const empty = backEnd({ REPLY_TO: "" }, { me: "wedding@example.com" })
+  assert.equal(empty.__f.health_().ok, false) // not set: health says so
+  empty.__f.doGet({ parameter: { action: "health" } })
+  assert.equal(empty.__f.health_().replyTo, true)
+  const set = backEnd({ REPLY_TO: "wedding@example.com" }, { me: "someone@example.com" })
+  set.__f.doGet({ parameter: { action: "health" } })
+  assert.equal(set.__f.health_().ok, true)
+  assert.doesNotMatch(fs.readFileSync("apps-script/Code.gs", "utf8"), /@gmail\.com/) // no address in the repo
 })

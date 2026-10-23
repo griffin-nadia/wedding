@@ -214,7 +214,10 @@ test("where are you flying from: one field for any city or town, or a pin on the
   await city.fill("Victoria")
   await expect(dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ })).toBeVisible()
   await dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ }).click()
-  await expect(city).toHaveValue("Victoria, British Columbia, Canada")
+  // Run 26: saved as the city and its country only, and it stays in the field once the list has closed
+  await expect(city).toHaveValue("Victoria, Canada")
+  await page.waitForTimeout(300)
+  await expect(city).toHaveValue("Victoria, Canada")
   await expect(dialog.getByText("From Victoria")).toBeVisible()
   await expect(dialog.locator(".journey-end .journey-you-dot")).toHaveCount(1) // their line on the journey stop's flat map
   // Nothing matches: drop a pin instead, and the tap on the map puts them there

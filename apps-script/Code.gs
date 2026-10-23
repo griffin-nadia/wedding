@@ -29,7 +29,9 @@
  * Script properties (Project settings > Script properties) override these defaults:
  *   SITE_URL        https://griffin-nadia.github.io/wedding
  *   CHANGES_LOCK    2027-04-30  (after this date the site refuses edits)
- *   REPLY_TO        griffinandnadia@gmail.com
+ *   REPLY_TO        the wedding account's address: only here, never in the repo (run 26). If it's missing, the
+ *                   first ?action=health after a deploy fills it in from the web app's own account (it runs as the
+ *                   wedding account), and health stays "ok":false until it's set
  *   RSVP_BY         2027-02-15
  *   TEST_EMAIL      where test invites go (asked for the first time you send a test)
  *   NOTIFY_CHANGES  "yes" to email REPLY_TO when someone changes from coming to not coming
@@ -50,7 +52,7 @@ const TABS = { guests: "Guests", rsvps: "RSVPs", songs: "Songs", log: "Log", ema
 const DEFAULTS = {
   SITE_URL: "https://griffin-nadia.github.io/wedding",
   CHANGES_LOCK: "2027-04-30",
-  REPLY_TO: "griffinandnadia@gmail.com",
+  REPLY_TO: "", // Script Properties only (run 26)
   RSVP_BY: "2027-02-15",
   TEST_EMAIL: "",
   NOTIFY_CHANGES: "no",
@@ -446,6 +448,7 @@ function doGet(e) {
     if (action === "content") return json_(content_())
     if (action === "crew") return json_(crew_(p.token))
     // Run 20: anyone gets only { ok }; the detail needs ?key= (HEALTH_KEY in Script Properties, docs/monitoring.md)
+    if (action === "health") ensureReplyTo_()
     if (action === "ping" && !keyOk_(p.key)) return json_({ ok: true })
     if (action === "health" && !keyOk_(p.key)) return json_({ ok: health_().ok })
     if (action === "ping") {
@@ -1602,10 +1605,14 @@ function geocode_(p) {
   const key = "geo:" + (pin ? lat.toFixed(2) + "," + lon.toFixed(2) : q.toLowerCase())
   const cache = CacheService.getScriptCache(), hit = cache.get(key)
   if (hit) return { ok: true, places: JSON.parse(hit) }
-  const g = Maps.newGeocoder().setLanguage("en")
-  const res = pin ? g.reverseGeocode(lat, lon) : g.geocode(q)
+  const g = function (lean) { const x = Maps.newGeocoder().setLanguage("en"); return lean ? x.setRegion(lean) : x }
+  // Run 26: one name in two places ("Victoria": the Australian state, the Canadian city) is two choices. The geocoder
+  // gives only its best match, so a search asks again leaning to Australia and to Canada (most guests' homes) and
+  // merges them, best match first. Three lookups for a new search; answers are cached, so a repeat costs none.
+  const found = pin ? (g().reverseGeocode(lat, lon).results || [])
+    : ["", "au", "ca"].reduce(function (all, lean) { return all.concat(g(lean).geocode(q).results || []) }, [])
   const places = [], seen = {}
-  ;(res.results || []).forEach(function (r) {
+  found.forEach(function (r) {
     const part = function (type) { return (r.address_components || []).filter(function (c) { return c.types.indexOf(type) >= 0 })[0] }
     // A city or town; failing that (a search like "Victoria" whose best match is a state), the state or province itself
     const town = part("locality") || part("postal_town") || part("administrative_area_level_3") || part("colloquial_area") || part("administrative_area_level_2") || part("natural_feature") || part("administrative_area_level_1")
@@ -1652,7 +1659,8 @@ function setFlying_(token, city) {
     const okCountry = country === "" || /^[A-Z]{2}$/.test(country)
     const okAt = (lat === null && lon === null) || (isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180)
     if (!okId || !okName || !okCountry || !okAt) return { ok: false, code: "bad_request", error: ERRORS.bad_request }
-    row = { name: name, id: id, region: String(city.region || "").slice(0, 80), country: country, lat: lat, lon: lon }
+    // Run 26: a found place or a pin is kept as its city or town and country only (no region)
+    row = { name: name, id: id, region: /^(geo|pin)$/.test(id) ? "" : String(city.region || "").slice(0, 80), country: country, lat: lat, lon: lon }
   } else return { ok: false, code: "bad_request", error: ERRORS.bad_request }
   const lock = LockService.getUserLock()
   if (!lock.tryLock(10000)) return { ok: false, code: "busy", error: ERRORS.busy }
@@ -1771,7 +1779,8 @@ function questionsSheet_() {
 /**
  * A guest's question (the site's Ask us sheet). From an invite, the household is known; from "can't find your
  * invite" there's no token, so a name and an email come with it. Kept out: anything in the hidden website field (a
- * bot), more than 3 an hour from one household or email, empty or over 500 characters. Saved to the Questions tab
+ * bot), more than 3 an hour from one household or email, more than 10 in 10 minutes from everyone without an invite
+ * (run 26), empty or over 500 characters. Saved to the Questions tab
  * (as plain text), then Griffin and Nadia hear about it: an email through the wedding account's queue, and Discord
  * too if DISCORD_WEBHOOK_URL is set in Script Properties (docs/discord.md).
  */
@@ -1790,6 +1799,9 @@ function ask_(body) {
     household = String(body.name || "").trim().slice(0, 60)
     email = String(body.email || "").trim().toLowerCase().slice(0, 120)
     if (!household || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, code: "bad_email", error: ERRORS.bad_email }
+    // Run 26: no token means anyone can post, and Apps Script can't see an IP, so all of them share one budget too
+    // Known limit: one shared window, so a flood also holds back real guests for up to 10 minutes; fine at this size
+    if (over_("ask:anon", 10)) return { ok: false, code: "busy", error: ERRORS.busy }
   }
   const cache = CacheService.getScriptCache(), key = "ask:" + (token || email) + ":" + Math.floor(Date.now() / 3600000)
   const n = Number(cache.get(key) || 0)
@@ -3049,8 +3061,21 @@ function health_() {
     out.queueMoving = !out.pending || (last > 0 && Date.now() - last < 15 * 60 * 1000)
   } catch (err) { out.queueMoving = false }
   try { out.emailQuota = MailApp.getRemainingDailyQuota() } catch (err) { /* not authorised yet: left null */ }
-  out.ok = out.sheet && out.queueMoving
+  // Run 26: the wedding account's address is set (Script Properties), or no email can go to them
+  out.replyTo = Boolean(PropertiesService.getScriptProperties().getProperty("REPLY_TO"))
+  out.ok = out.sheet && out.queueMoving && out.replyTo
   return out
+}
+
+/** Run 26: REPLY_TO lives only in Script Properties. The web app runs as whoever deployed it, the wedding account, so
+ *  a health check through it fills a missing REPLY_TO with that account's address. Never overwrites a set one. */
+function ensureReplyTo_() {
+  try {
+    const props = PropertiesService.getScriptProperties()
+    if (props.getProperty("REPLY_TO")) return
+    const me = runningAs_()
+    if (me) props.setProperty("REPLY_TO", me)
+  } catch (err) { /* health then reports replyTo: false */ }
 }
 
 /**
