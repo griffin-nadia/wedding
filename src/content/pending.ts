@@ -92,8 +92,8 @@ export const PENDING = {
     ja: "グリフィンとナディアにメールする",
   },
   // The FAQ answers (run 19): shorter, in their voice, for Griffin and Nadia to tweak (the questions are in en.ts)
+  // Run 25: their last sentence (the planner's Q&A tab, 16 Oct)
   "faqs.bring.a": {
-    // Run 25: their last sentence (the planner's Q&A tab, 16 Oct)
     en: "Your invite is for the people named on it. If there's room for a plus one, your reply will ask “Bringing someone?”. You can send us a message directly or send an email to griffinandnadia@gmail.com if you are unsure.",
     ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、メッセージを送っていただくか、griffinandnadia@gmail.com までメールでお気軽にどうぞ。",
   },
