@@ -81,7 +81,8 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
       const W = a.offsetWidth, H = a.offsetHeight, ring = (p: HTMLElement) => p.querySelector<HTMLElement>(".vmap-dot")!.offsetWidth / 2
       const pins = [...a.querySelectorAll<HTMLElement>(".vmap-pin")]
       const dots = pins.filter((p) => p !== pin).map((p) => { const r = ring(p) + 2, x = p.offsetLeft, y = p.offsetTop; return { l: x - r, r: x + r, t: y - r, b: y + r } })
-      const labels = LABELS.map(([x1, y1, x2, y2]) => ({ l: (x1 / 100) * W, t: (y1 / 100) * H, r: (x2 / 100) * W, b: (y2 / 100) * H }))
+      // Her lettering's boxes, 1px larger all round (offsets are whole px; the art's % aren't)
+      const labels = LABELS.map(([x1, y1, x2, y2]) => ({ l: (x1 / 100) * W - 1, t: (y1 / 100) * H - 1, r: (x2 / 100) * W + 1, b: (y2 / 100) * H + 1 }))
       const best = placeChip({ x: pin.offsetLeft, y: pin.offsetTop }, ring(pin) * 1.1 + 4, place.chip, chip.offsetWidth, chip.offsetHeight, W, H, dots, labels)
       // As the chip's left and top inside its 44px pin (the pin's box starts 22px up and left of the dot)
       setSpot({ x: best.x - pin.offsetLeft + 22, y: best.y - pin.offsetTop + 22 })
