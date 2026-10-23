@@ -3,9 +3,9 @@
 import { DATES } from "./wedding-dates.ts"
 
 export const config = {
-  // Nadia's painted venue map (run 22): off until the invites have gone out (Nadia, 22 Oct). To switch it on, make this
-  // true. ?preview on any page shows it meanwhile (the lab too).
-  venueMap: false,
+  // Nadia's painted venue map (run 22). On since run 26 (Jehan, 23 Oct: "Everything live yeah"; Nadia wants it live).
+  // false brings back the old drawn map; ?preview on any page then still shows hers.
+  venueMap: true,
   // Story-based fortunes (run 26): Jehan's drafts from their story, marked Draft in the Fortunes tab (or draft: true),
   // waiting on Nadia and Griffin's checks. Off: they're never drawn, so nothing unchecked reads as final.
   storyFortunes: false,
