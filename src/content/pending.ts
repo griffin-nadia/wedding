@@ -109,16 +109,6 @@ export const PENDING = {
     en: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding.",
     ja: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。",
   },
-  // Run 25: warmer, in Griffin's voice (Jehan asked for it to read like him)
-  "faqs.whoMade.a": {
-    en: "A proper family effort! Griffin wrote the words, Nadia drew every little thing you see, and Nadia's brother Jehan designed and built the whole thing.",
-    ja: "家族みんなで作りました！文はグリフィン、絵はぜんぶナディア、デザインと制作はナディアの兄のジェハンです。",
-  },
-  // {song} is the music credit (src/lib/art.ts) and {artist} who plays it, said here only
-  "faqs.whoMade.song": {
-    en: "And the music? That's {song}, played on piano by {artist}.",
-    ja: "流れている曲は{song}、ピアノ演奏は{artist}です。",
-  },
   // Run 26 draft for Jehan's OK: the top of the Airbnbs sheet, in Griffin's voice (their note there was about hotels).
   // Their planner facts kept: rough prices a night, prices change, compare other sites, bigger groups cost less each
   "stay.airbnbs.note": {
@@ -164,8 +154,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.visa.q", ja: "ビザは必要ですか？" },
   { key: "faqs.visa.a", ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。" },
   { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
-  { key: "faqs.whoMade.a", ja: "家族みんなで作りました！文はグリフィン、絵はぜんぶナディア、デザインと制作はナディアの兄のジェハンです。" },
-  { key: "faqs.whoMade.song", ja: "流れている曲は{song}、ピアノ演奏は{artist}です。" },
+  { key: "faqs.whoMade.a", ja: "家族みんなで作りました。文はグリフィン、目に見える絵はぜんぶナディア、サイトはまるごとジェハンが作りました。音楽は久石譲の「A Town With an Ocean View」、ピアノ演奏はPiano ZeroLです。" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "home.pills.replied", ja: "お返事ありがとうございます" },
   { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },

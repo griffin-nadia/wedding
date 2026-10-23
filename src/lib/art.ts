@@ -39,6 +39,8 @@ export const ART = {
   music: {
     src: "audio/song.mp3",
     artist: "Piano ZeroL",
+    // The song's title: the FAQ answer's link to the track (config.links.music) goes on these words only
+    title: "A Town With an Ocean View",
     credit: { en: "“A Town With an Ocean View” (Joe Hisaishi)", ja: "「A Town With an Ocean View」（久石譲）" },
   },
   // The earlier song, cleared by the artist (6 Oct 2026). To switch back, see README → Music, then use this entry:

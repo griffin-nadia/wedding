@@ -11,7 +11,7 @@ export const config = {
   rsvpDue: DATES.rsvpBy,
   // Changes lock (before final numbers)
   changesLock: DATES.changesLock,
-  // Credit links (run 25): the laptop seal's "Site by Jehan Baguley" goes to Jehan's LinkedIn; "Piano ZeroL" in the
-  // "Who made this site?" FAQ goes to the track on Spotify
+  // Credit links (run 25): the laptop seal's "Site by Jehan Baguley" goes to Jehan's LinkedIn; the song's title in
+  // the "Who made this site?" FAQ goes to the track on Spotify (run 26)
   links: { jehan: "https://au.linkedin.com/in/jehanbaguley", music: "https://open.spotify.com/track/53StnIsGVxhcKaSwcJiY0Y" },
 }

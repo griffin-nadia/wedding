@@ -58,9 +58,10 @@ export function FaqsPage() {
   )
 }
 
-/** Run 25: in the "Who made this site?" answer, the pianist's name links to the track (config.links.music) */
+/** In the "Who made this site?" answer, the song's title links to the track (config.links.music); the pianist is plain
+ * text (run 26) */
 function withMusicLink(a: string) {
-  const name = ART.music.artist, at = a.indexOf(name)
+  const name = ART.music.title, at = a.indexOf(name)
   if (at < 0 || !config.links.music) return a
   return <>{a.slice(0, at)}<a href={config.links.music} target="_blank" rel="noreferrer" className="btn-text">{name}</a>{a.slice(at + name.length)}</>
 }

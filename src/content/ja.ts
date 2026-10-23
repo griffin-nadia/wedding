@@ -3,7 +3,6 @@
 // can switch to it (the switch is in the crew Options panel only until then). Polite form throughout (です・ます).
 // Nothing here says more than the English does: no facts added.
 import type { Content } from "./en"
-import { ART } from "@/lib/art"
 import { pending } from "./pending"
 
 type DeepPartial<T> = { [K in keyof T]?: T[K] extends (...a: never[]) => unknown ? T[K] : T[K] extends object ? DeepPartial<T[K]> : T[K] }
@@ -285,7 +284,7 @@ export const ja: DeepPartial<Content> = {
       { q: "ご祝儀やプレゼントは？", a: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
       { q: "ビザは必要ですか？", a: pending("faqs.visa.a", "ja") },
       { q: "個人情報はどうなりますか？", a: pending("faqs.details.a", "ja") },
-      { q: "このサイトはどなたが作ったのですか？", a: `${pending("faqs.whoMade.a", "ja")}${pending("faqs.whoMade.song", "ja").replace("{song}", ART.music.credit.ja).replace("{artist}", ART.music.artist)}` },
+      { q: "このサイトはどなたが作ったのですか？", a: "家族みんなで作りました。文はグリフィン、目に見える絵はぜんぶナディア、サイトはまるごとジェハンが作りました。音楽は久石譲の「A Town With an Ocean View」、ピアノ演奏はPiano ZeroLです。" },
     ],
     onTheDay: "当日の連絡先：",
     contact: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！",
