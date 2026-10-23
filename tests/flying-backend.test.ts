@@ -24,3 +24,17 @@ test("only a picked city or an older answer is saved: anything else is refused b
   for (const bad of ["Noeth Melbourne", { id: "x1", name: "Melbourne", country: "AU", lat: 1, lon: 1 }, { id: 1, name: "", country: "AU", lat: 1, lon: 1 }, { id: 1, name: "A", country: "Australia", lat: 1, lon: 1 }, { id: 1, name: "A", country: "AU", lat: 200, lon: 1 }, null])
     assert.equal((x.setFlying_("t", bad) as { code: string }).code, "bad_request", JSON.stringify(bad))
 })
+
+test("run 26: a search for one name (Victoria) finds it in each place, as separate choices", () => {
+  const at = (name: string, region: string, cc: string, country: string, lat: number, lng: number) => ({ geometry: { location: { lat, lng } }, address_components: [
+    { long_name: name, short_name: name, types: ["locality"] }, { long_name: region, short_name: region, types: ["administrative_area_level_1"] }, { long_name: country, short_name: cc, types: ["country"] }] })
+  const vic = { "": at("Victoria", "Victoria", "AU", "Australia", -37, 144), au: at("Victoria", "Victoria", "AU", "Australia", -37, 144), ca: at("Victoria", "British Columbia", "CA", "Canada", 48.43, -123.37) }
+  const c: Record<string, unknown> = {
+    Maps: { newGeocoder: () => { let lean = ""; const g = { setLanguage: () => g, setRegion: (r: string) => { lean = r; return g }, geocode: () => ({ results: [vic[lean as keyof typeof vic]] }) }; return g } },
+    CacheService: { getScriptCache: () => ({ get: () => null, put: () => {} }) },
+  }
+  vm.createContext(c)
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__g = geocode_", c)
+  const out = plain((c.__g as (p: unknown) => { places: { name: string; region: string; country: string }[] })({ q: "Victoria" }))
+  assert.deepEqual(out.places.map((p: { name: string; region: string; country: string }) => `${p.name}, ${p.region}, ${p.country}`), ["Victoria, Victoria, AU", "Victoria, British Columbia, CA"])
+})

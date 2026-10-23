@@ -129,6 +129,9 @@
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }
+    /* Run 26 (Jehan): the paper and its veil (index.html) still fade, opacity only, a short plain fade */
+    [data-paper] :is(.letter, .sheet-bright, .paper-feel, .envelope-paper, .arrival-sheet, .phone-qr, .site-bar, .site-nav)::after,
+    #paper-veil { transition-duration: 250ms !important; }
   }
 }
 
@@ -571,10 +574,12 @@
 /* Run 25: the bar and the dock get the card's edge where they meet the page (its 1px line at 60% and the 1px light
    inset), so bar, card and dock read as the same paper */
 .site-bar::before { border-bottom: 1px solid color-mix(in oklab, var(--line-hairline) 60%, transparent); box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.6); }
-.site-nav { border-top-color: color-mix(in oklab, var(--line-hairline) 60%, transparent) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6); }
+/* The dock's edge is phones only: from 768 the nav sits inside the bar, where Lantern's inset drew a faint line above
+   the tabs (run 26) */
+@media (max-width: 767px) { .site-nav { border-top-color: color-mix(in oklab, var(--line-hairline) 60%, transparent) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6); } }
 /* Lantern: the inverse, a darker edge (Jehan, run 25): a light glint reads as a bright line on the walnut bar */
 [data-theme="lantern"] .site-bar::before { border-bottom-color: rgb(0 0 0 / 0.45); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.35); }
-[data-theme="lantern"] .site-nav { border-top-color: rgb(0 0 0 / 0.45) !important; box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.35); }
+@media (max-width: 767px) { [data-theme="lantern"] .site-nav { border-top-color: rgb(0 0 0 / 0.45) !important; box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.35); } }
 .site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
@@ -638,7 +643,11 @@
 /* Laptops (run 21): every sheet is a centred dialog over the page, which stays there softly dimmed and blurred so it
    still reads behind. Phones keep the sheet that covers the page. */
 @media (min-width: 768px) {
-  .sheet-overlay { background: color-mix(in oklab, var(--brand-ink-deep) 28%, transparent); -webkit-backdrop-filter: blur(6px) saturate(0.9); backdrop-filter: blur(6px) saturate(0.9); }
+  .sheet-overlay { background: color-mix(in oklab, var(--brand-ink-deep) 28%, transparent); }
+}
+/* The blur only with a mouse (run 26): never on a phone, even one turned sideways past 768 */
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  .sheet-overlay { -webkit-backdrop-filter: blur(6px) saturate(0.9); backdrop-filter: blur(6px) saturate(0.9); }
 }
 /* The RSVP sheet is the letter: fixed header and footer, only the content scrolls. Height follows the content. */
 .sheet {
@@ -695,6 +704,14 @@
 .sheet-close:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .sheet-close:hover { border-color: var(--line-strong); } }
 .rsvp-actions { flex: none; display: flex; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--line-hairline); }
+/* Run 26: on laptops the reply sheet hugs each step too (its height eases between steps, rsvp-sheet.tsx) and can grow
+   closer to the bar and the bottom edge, so a whole reply on "All good?" reads without scrolling inside it. The song
+   step keeps the full height, as on phones, so its field never moves as results open */
+@media (min-width: 768px) {
+  .sheet.rsvp-sheet { --sheet-gap: 12px; height: auto; }
+  :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); }
+  .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { height: calc(100dvh - 64px - 2 * var(--sheet-gap)); }
+}
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
 /* "All good?": who sees the reply, a small note just above Back and Send (run 25) */
 .rsvp-actions > .rsvp-privacy { flex: 1 0 100% !important; display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-small); line-height: var(--text-small--line-height); color: var(--muted-foreground); }
@@ -1138,7 +1155,7 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-stick { fill: var(--brand-hachimitsu); translate: 0 14px; transition: translate var(--duration-base) var(--ease-paper) 700ms; }
 .omikuji-tin.is-drawing .omikuji-stick { translate: 0 0; }
 /* The omikuji's washi (run 25): fixed colours, the same in light and Lantern */
-.omikuji-slip, .omikuji-back {
+.omikuji-slip, .omikuji-back, .omikuji-again {
   --washi: rgb(248 241 226 / 0.96);
   --washi-back: rgb(241 232 213 / 0.95);
   --washi-band-top: linear-gradient(to right, rgb(168 79 50 / 0.82), rgb(168 79 50 / 0.92) 12%, rgb(168 79 50 / 0.88) 88%, rgb(168 79 50 / 0.78));
@@ -1157,7 +1174,8 @@ svg.lucide { stroke-width: 1.5; }
    slip; the middle hangs from the first crease, the last from the second (nested, so it rides with the middle). The
    real slip holds its place underneath, unseen, then takes over with the creases easing out. */
 .done-column > .sent-next > .omikuji-stage { margin-inline: auto; }
-.omikuji-stage { position: relative; width: 100%; }
+.omikuji-stage { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--space-5); }
+.omikuji-paper { position: relative; width: 100%; } /* the fold's copies cover the slip only, not Draw another */
 .omikuji-slip.is-folded { opacity: 0; animation: none; }
 .omikuji-slip.is-fresh { animation: none; }
 .omikuji-fold { position: absolute; inset: 0; perspective: 1100px; transform-style: preserve-3d; pointer-events: none; }
@@ -1193,11 +1211,36 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-slip:focus-visible { outline-color: var(--input-focus); }
 .omikuji-slip .label-caps { color: var(--brand-kuri); }
 .omikuji-no { font-size: var(--type-small-size); letter-spacing: 0.2em; color: var(--brand-kuri); }
-.omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--brand-doro); }
+.omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--tier); }
+/* Run 26: the five tiers, calmest to strongest. Only the colour of the tier (its kanji and its name) and the seal's
+   ring change, with a heavier ring from Special up; layout, font and size are the same for all five */
+.omikuji-slip { --tier: var(--tier-great); --tier-ring: var(--tier-great-ring); --seal-ring: 5.5; }
+.omikuji-slip[data-tier="good"] { --tier: var(--tier-good); --tier-ring: var(--tier-good-ring); }
+.omikuji-slip[data-tier="special"] { --tier: var(--tier-special); --tier-ring: var(--tier-special-ring); --seal-ring: 6.5; }
+.omikuji-slip[data-tier="grand"] { --tier: var(--tier-grand); --tier-ring: var(--tier-grand-ring); --seal-ring: 7; }
+.omikuji-slip[data-tier="super"] { --tier: var(--tier-super); --tier-ring: var(--tier-super-ring); --seal-ring: 8; }
+.omikuji-slip .omikuji-tier { color: var(--tier); }
+.omikuji-seal .hanko-rim { stroke: var(--tier-ring); stroke-width: var(--seal-ring); }
+.omikuji-seal .hanko-rim-inner { stroke: var(--tier-ring); }
 .omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 34ch; } /* Nadia's fortunes run to three or four sentences (run 23) */
-.omikuji-category { color: var(--ink-muted); }
-.omikuji-count { opacity: 0.8; }
-.omikuji-save { min-height: 44px; color: var(--brand-doro); } /* the one link style (btn-text), in the slip's own ink: it's always bright paper */
+/* Run 26: tier, category and No. x of 25 in Caveat, as if written in by hand; the fortune stays in the serif */
+.omikuji-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.25rem; line-height: 1.1; letter-spacing: 0; text-transform: none; color: var(--brand-kuri); }
+.omikuji-category { color: var(--brand-kogecha); opacity: 0.75; }
+/* The one link style (btn-text), in the slip's own ink (it's always bright paper); run 26: in the serif, italic */
+.omikuji-save { min-height: 44px; color: var(--brand-doro); font-family: var(--font-display); font-style: italic; font-size: var(--type-body-size); }
+/* Run 26: Draw another. The slip's washi and ink, with a soft honey glow: the one thing to do next (no motion) */
+.omikuji-again {
+  min-height: 48px; padding: var(--space-2) var(--space-6); border-radius: var(--radius-control);
+  background-color: var(--washi); background-image: var(--washi-fibre); color: var(--brand-doro);
+  font-family: var(--font-display); font-size: var(--type-body-size); line-height: 1.2;
+  box-shadow: var(--elevation-paper), 0 0 0 1px rgb(168 79 50 / 0.35), 0 0 18px 4px rgb(var(--glow-honey) / 0.45);
+  outline: 2px solid transparent; outline-offset: 4px; transition: box-shadow var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper);
+  --glow-honey: 226 170 74;
+}
+@media (hover: hover) { .omikuji-again:hover:not(:disabled) { box-shadow: var(--elevation-paper), 0 0 0 1px rgb(168 79 50 / 0.5), 0 0 26px 8px rgb(var(--glow-honey) / 0.6); } }
+.omikuji-again:active:not(:disabled) { transform: scale(var(--press-scale)); }
+.omikuji-again:focus-visible { outline-color: var(--input-focus); }
+.omikuji-again:disabled { cursor: default; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }
   .omikuji-stick { transition: none; }

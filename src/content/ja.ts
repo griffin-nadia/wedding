@@ -3,7 +3,6 @@
 // can switch to it (the switch is in the crew Options panel only until then). Polite form throughout (です・ます).
 // Nothing here says more than the English does: no facts added.
 import type { Content } from "./en"
-import { ART } from "@/lib/art"
 import { pending } from "./pending"
 
 type DeepPartial<T> = { [K in keyof T]?: T[K] extends (...a: never[]) => unknown ? T[K] : T[K] extends object ? DeepPartial<T[K]> : T[K] }
@@ -98,7 +97,7 @@ export const ja: DeepPartial<Content> = {
   },
   flying: { endTitle: "どちらから来られますか？", cities: { Brisbane: "ブリスベン", Melbourne: "メルボルン", Sydney: "シドニー", Perth: "パース", Adelaide: "アデレード", "Elsewhere in Australia": "オーストラリアのその他の地域", Canada: "カナダ", "Already in Japan": "日本国内から", "Somewhere else": "その他" }, title: "どちらから来られますか？", hint: "任意です。人数のみ表示し、お名前は表示しません。", thanks: "ありがとうございます。", yours: (key: string, city: string) => (key === "Already in Japan" ? "すでに日本にいらっしゃいます" : `${city}から`), change: "変更", placeholder: "都市名や町名を入力", noMatch: "見つかりませんでした。",
     dropPin: "見つからないときは、地図にピンを置いてください", pinHint: "出発地を地図でタップしてください。", pinCancel: "やめる", searching: "検索中…" },
-  fortune: { title: "旅のささやかなおみくじ", draw: "ひく", blessing: "大吉", blessingEn: "大吉", number: (n: number, of: number) => `第${n}番（全${of}番）`, save: "スマホに保存", copied: "コピーしました。メモに貼り付けてください。", hint: "箱をタップしてひいてください。", hintShake: "箱をタップするか、スマホを軽く振ってください。", boxLabel: "おみくじの箱。おみくじをひく", drawing: "箱を振っています…", onMap: "地図であなたの線を見る" },
+  fortune: { title: "旅のささやかなおみくじ", draw: "ひく", blessing: "大吉", blessingEn: "大吉", number: (n: number, of: number) => `第${n}番（全${of}番）`, save: "スマホに保存", copied: "コピーしました。メモに貼り付けてください。", hint: "箱をタップしてひいてください。", hintShake: "箱をタップするか、スマホを軽く振ってください。", boxLabel: "おみくじの箱。おみくじをひく", drawing: "箱を振っています…", onMap: "地図であなたの線を見る", again: "もう一度ひく", homeTitle: "おみくじをひく" },
   driver: { label: "京都駅からタクシーで", fare: "15〜20分です。会場のチケットがあればMKタクシーは無料です。", show: "運転手さんに見せる", maps: "Googleマップで道順を見る", mapsOpens: "Googleマップがひらきます", english: "Please take me here", done: "閉じる", copy: "住所をコピー", copied: "住所をコピーしました" },
   countdownMore: {
     until: "京都でお会いできる日まで", tomorrow: "いよいよ明日", today: "今日がその日です", married: "結婚しました",
@@ -252,6 +251,7 @@ export const ja: DeepPartial<Content> = {
       hotelsTitle: "ホテル",
       airbnbsTitle: "Airbnb",
       airbnbsNote: "人数で割ると1人あたりは安くなります。",
+      airbnbsAbout: "わたしたちが見つけたAirbnbと、1泊あたりのおおよその料金です。料金は変わることがあるので、ほかの予約サイトもぜひ見てみてください。みんなで一緒に泊まるのがおすすめです！人数が多いほど1人あたりは安くなることが多く、2人より4人のほうがお得です！",
       perNight: (price: string) => `1泊${price}`,
       sleeps: (n: string) => `${n.replace(" to ", "〜")}名まで`,
       opensHotel: "ホテルのサイトがひらきます",
@@ -285,7 +285,7 @@ export const ja: DeepPartial<Content> = {
       { q: "ご祝儀やプレゼントは？", a: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
       { q: "ビザは必要ですか？", a: pending("faqs.visa.a", "ja") },
       { q: "個人情報はどうなりますか？", a: pending("faqs.details.a", "ja") },
-      { q: "このサイトはどなたが作ったのですか？", a: `${pending("faqs.whoMade.a", "ja")}${pending("faqs.whoMade.song", "ja").replace("{song}", ART.music.credit.ja).replace("{artist}", ART.music.artist)}` },
+      { q: "このサイトはどなたが作ったのですか？", a: "家族みんなで作りました。文はグリフィン、目に見える絵はぜんぶナディア、サイトはまるごとジェハンが作りました。音楽は久石譲の「A Town With an Ocean View」、ピアノ演奏はPiano ZeroLです。" },
     ],
     onTheDay: "当日の連絡先：",
     contact: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！",

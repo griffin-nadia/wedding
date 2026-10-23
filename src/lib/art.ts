@@ -39,6 +39,8 @@ export const ART = {
   music: {
     src: "audio/song.mp3",
     artist: "Piano ZeroL",
+    // The song's title: the FAQ answer's link to the track (config.links.music) goes on these words only
+    title: "A Town With an Ocean View",
     credit: { en: "“A Town With an Ocean View” (Joe Hisaishi)", ja: "「A Town With an Ocean View」（久石譲）" },
   },
   // The earlier song, cleared by the artist (6 Oct 2026). To switch back, see README → Music, then use this entry:
@@ -55,6 +57,11 @@ export const ART = {
    * (src/lib/paint-globe.ts). Put the file in public/art/map/ and set its path here (e.g. "art/map/globe.webp").
    */
   globeLand: "",
+  /**
+   * Nadia's landscape drawing for The day (run 26, a slot only): shows under the venue details once config.dayLandscape
+   * is on. Empty until it lands, and nothing shows meanwhile. Put the file in public/art/ (e.g. "art/day-landscape.webp").
+   */
+  dayLandscape: "",
   /**
    * Nadia's hand lettering for the page headings and the G&N mark (run 21, slots only). One word per file, a
    * transparent PNG in any single colour (it's used as a mask and filled with the ink colour), exported by
