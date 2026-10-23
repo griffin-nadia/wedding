@@ -1,6 +1,7 @@
 import type { Entry } from "./types"
 import { entries as opening } from "./x/opening"
 import { entries as story } from "./x/story"
+import { entries as story24 } from "./x/story24"
 import { entries as journey } from "./x/journey"
 import { entries as confirmation } from "./x/confirmation"
 import { entries as paper } from "./x/paper"
@@ -10,6 +11,10 @@ import { entries as arrival } from "./x/arrival"
 import { entries as loading } from "./x/loading"
 import { entries as sheets } from "./x/sheets"
 import { entries as map } from "./x/map"
+import { entries as globes24 } from "./x/globes24"
+import { entries as art24 } from "./x/art24"
+import { entries as open24 } from "./x/open24"
+import { entries as story24b } from "./x/story24b"
 
 /**
  * What the lab keeps (lab run 19): the choices still open and the parked ideas, by area in the order guests meet
@@ -20,13 +25,18 @@ export const AREAS: { id: string; title: string; entries: Entry[] }[] = [
   { id: "opening", title: "Opening", entries: opening },
   { id: "arrival", title: "Arrival framing", entries: arrival },
   { id: "story", title: "Our story", entries: story },
+  { id: "story24", title: "Our story, nine ways (run 24, A to E)", entries: story24 },
+  { id: "story24b", title: "Our story, nine ways (run 24, F to I)", entries: story24b },
   { id: "journey", title: "Journey", entries: journey },
   { id: "map", title: "Venue map", entries: map },
+  { id: "globes24", title: "Globe looks (run 24b)", entries: globes24 },
   { id: "confirmation", title: "Confirmation", entries: confirmation },
   { id: "sheets", title: "Sheets and status", entries: sheets },
   { id: "paper", title: "Paper and light", entries: paper },
   { id: "micro", title: "Micro-interactions", entries: micro },
   { id: "logo", title: "Logo", entries: logo },
+  { id: "art24", title: "Kid photos and Nadia's art (run 24)", entries: art24 },
+  { id: "open24", title: "Opening a photo (run 24)", entries: open24 },
 ]
 export const ALL = AREAS.flatMap((a) => a.entries.map((e) => ({ ...e, area: a.id, areaTitle: a.title })))
 export const byId = (id: string) => ALL.find((e) => e.id === id)
