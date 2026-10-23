@@ -45,7 +45,8 @@ export function Combobox({ id: given, label, help, error, tags = [], onRemoveTag
   }, [status])
   useEffect(() => { setActive(-1) }, [options])
 
-  const showList = open && (options.length > 0 || status === "empty" || status === "error" || (status === "loading" && slow))
+  // No emptyText or errorText: nothing floats for those, the field's owner says it in the page (flying from, run 26)
+  const showList = open && (options.length > 0 || (status === "empty" && Boolean(emptyText)) || (status === "error" && Boolean(errorText)) || (status === "loading" && slow))
   const pick = (o: Option) => { onPick(o); setActive(-1) }
 
   return (

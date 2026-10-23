@@ -17,7 +17,7 @@ import { FieldError } from "@/components/ui/field"
 import { CheckboxGroup } from "@/components/ui/checkbox-group"
 import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
-import { JourneyEnd } from "@/components/journey-end"
+import { FlyingField, FlyingMap, useFlying } from "@/components/journey-end"
 import { useSceneDim } from "@/components/letter/letter"
 import { answerOf, ApiError, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
@@ -34,9 +34,11 @@ const MAX = { name: 40, song: 200, message: 2000 }
 const TRIP = { from: DATES.travelFrom, to: DATES.travelTo }
 // Up to two songs (18f)
 const SONGS = 2
-/** The steps (18f): one question each. Nobody coming skips food, song and dates, and gets the note on its own. */
-export type StepId = "who" | "food" | "song" | "travel" | "note" | "check"
-const stepsFor = (coming: number): StepId[] => (coming ? ["who", "food", "song", "travel", "check"] : ["who", "note", "check"])
+/** The steps (18f): one question each. Nobody coming skips food, song and dates, and gets the note on its own.
+ *  Run 26 (Jehan's call, 23 Oct): where they're flying from, then the map on its own, before the check (they were on
+ *  the done screen, after the fortune). Both optional. */
+export type StepId = "who" | "food" | "song" | "travel" | "from" | "map" | "note" | "check"
+const stepsFor = (coming: number): StepId[] => (coming ? ["who", "food", "song", "travel", "from", "map", "check"] : ["who", "note", "check"])
 // Fields that bring up a keyboard, for Enter's next field
 const TYPED = "input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=search]), textarea"
 
@@ -101,6 +103,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   const { household, setHousehold } = useHousehold()
   const { setDim } = useSceneDim()
   const [open, setOpen] = useState(openOnLoad)
+  const fly = useFlying(household?.token ?? "")
   // v3 Q9: while the sheet is open the letter steps aside and the sheet sits over the scene, dimmed to 40%
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sheet", open)
@@ -309,7 +312,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
           <SheetHead>
             <p className="label-caps text-muted-foreground">{t.rsvp.step(step, total)}</p>
             <SheetTitle ref={heading} tabIndex={-1} className="heading outline-none">
-              {{ who: t.rsvp.whoTitle, food: t.rsvp.dietary, song: t.rsvp.song, travel: pending("rsvp.travelTitle", lang), note: t.rsvp.noteTitle, check: t.rsvp.checkTitle }[at]}
+              {{ who: t.rsvp.whoTitle, food: t.rsvp.dietary, song: t.rsvp.song, travel: pending("rsvp.travelTitle", lang), from: t.flying.endTitle, map: t.journey.title, note: t.rsvp.noteTitle, check: t.rsvp.checkTitle }[at]}
             </SheetTitle>
             <StepProgress step={step} of={total} label={t.rsvp.step(step, total)} />
           </SheetHead>
@@ -354,6 +357,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
 
             {at === "travel" && <>{datesBlock}{messageField}</>}
             {at === "note" && messageField}
+            {at === "from" && <FlyingField fly={fly} onDropPin={() => goTo(stepOf("map"))} />}
+            {at === "map" && <FlyingMap fly={fly} />}
 
             {at === "check" && (
               <>
@@ -368,6 +373,9 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                   )}
                   {coming.length > 0 && (
                     <ReviewRow label={t.rsvp.dates} edit={() => goTo(stepOf("travel"))} editLabel={t.rsvp.edit(t.rsvp.dates)}>{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.stayLine) : t.rsvp.notSet}</ReviewRow>
+                  )}
+                  {coming.length > 0 && (
+                    <ReviewRow label={t.journey.review} edit={() => goTo(stepOf("from"))} editLabel={t.rsvp.edit(t.journey.review)}>{fly.city?.name || t.journey.notSaying}</ReviewRow>
                   )}
                   <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(stepOf(coming.length ? "travel" : "note"))} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
                 </dl>
@@ -397,8 +405,8 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
 /**
  * Success, on the same letter (18f: one column). In the sheet's head, like every step: the hanko and the heading
  * (so the close X sits in the head, never on a card). Then, evenly spaced: the line about the save, the fortune
- * once the stamp has landed (one thing moves at a time), where you're flying from, add to calendar, and Back to
- * your invite with Change my reply.
+ * once the stamp has landed (one thing moves at a time), add to calendar, and Back to your invite with Change my
+ * reply. Where they're flying from and its map are steps before the check since run 26.
  */
 function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveResult; confirm: "saving" | "saved" | "offline" | null; titleRef: React.RefObject<HTMLHeadingElement | null>; onClose: () => void; onChange: () => void }) {
   const { t } = useLang()
@@ -417,7 +425,6 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
         <div className="done-column">
           <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
           {answer !== "none" && <div className="sent-next"><FortuneCard token={h.token} /></div>}
-          {answer !== "none" && <div className="sent-next"><JourneyEnd token={h.token} /></div>}
           {answer !== "none" && <AddToCalendar />}
           <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-6">
             <Button size="md" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>

@@ -38,3 +38,15 @@ test("run 26: a search for one name (Victoria) finds it in each place, as separa
   const out = plain((c.__g as (p: unknown) => { places: { name: string; region: string; country: string }[] })({ q: "Victoria" }))
   assert.deepEqual(out.places.map((p: { name: string; region: string; country: string }) => `${p.name}, ${p.region}, ${p.country}`), ["Victoria, Victoria, AU", "Victoria, British Columbia, CA"])
 })
+
+test("run 26: a country found as itself (Fiji) is a place to pick, not nothing", () => {
+  const fiji = { geometry: { location: { lat: -17.713, lng: 178.065 } }, types: ["country", "political"], address_components: [{ long_name: "Fiji", short_name: "FJ", types: ["country", "political"] }] }
+  const c: Record<string, unknown> = {
+    Maps: { newGeocoder: () => { const g = { setLanguage: () => g, setRegion: () => g, geocode: () => ({ results: [fiji] }) }; return g } },
+    CacheService: { getScriptCache: () => ({ get: () => null, put: () => {} }) },
+  }
+  vm.createContext(c)
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__g = geocode_", c)
+  const out = plain((c.__g as (p: unknown) => { places: unknown[] })({ q: "fiji" }))
+  assert.deepEqual(out.places, [{ name: "Fiji", region: "", country: "FJ", countryName: "Fiji", lat: -17.71, lon: 178.07 }])
+})
