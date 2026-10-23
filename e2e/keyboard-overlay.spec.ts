@@ -75,9 +75,8 @@ for (const kind of ["android", "iphone"] as const) test.describe(kind, () => {
     await check(page, () => d.getByLabel(/Tell us more/).first().focus(), "food: tell us more"); await next()
     await check(page, () => d.getByRole("searchbox").focus(), "song: search"); await next()
     await check(page, () => d.getByLabel(/Anything else/).focus(), "travel: anything else"); await next()
-    await d.getByRole("button", { name: /^Send our reply$/ }).click()
-    await expect(d.getByText(/^(Sent|Updated)\./)).toBeVisible() // "Sending…" becomes two lines once sent
-    await check(page, () => d.getByRole("combobox", { name: /Where are you flying from\?|Or type your city/ }).focus(), "flying from")
+    // Run 26: flying from is its own step after the dates (then the map, then the check)
+    await check(page, () => d.getByRole("combobox", { name: "Type your city or town" }).focus(), "flying from")
   })
   test("can't find your invite", async ({ page }) => {
     await setup(page, kind)
