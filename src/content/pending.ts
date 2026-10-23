@@ -155,7 +155,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "home.pills.replied", ja: "お返事ありがとうございます" },
   { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },
   { key: "preview.feedbackLabel", ja: "読みにくいところ、気になるところは？" },
-  { key: "photos.kid-griffin.alt", ja: "小学校の初日、玄関の前に立つ幼い頃のグリフィン" },
+  { key: "photos.kid-griffin.alt", ja: "小学校の初日、黄色いセーターで玄関の前に立つ幼い頃のグリフィン" },
   // Their final wording (22 Oct), translated by us
   { key: "changeBy", ja: "2027年4月30日まで、お返事はいつでも変更できます。航空券を予約したら、旅の日程も追加してください。" },
   { key: "home.intro.0", ja: "ふたりの愛を祝い、物語の次の章を始めるために、すべてが始まった場所に友人と家族を招きます。" },

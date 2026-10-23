@@ -1,6 +1,7 @@
 import type React from "react"
+import { flushSync } from "react-dom"
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react"
-import { ChevronLeft, ChevronRight, Globe, Maximize2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Globe, List, Maximize2 } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { ART } from "@/lib/art"
@@ -11,7 +12,7 @@ import { readFlying } from "@/lib/journey"
 import { getFlying, getJourneys, type Journey } from "@/lib/api"
 import { Segmented } from "@/components/segmented"
 import { startsFlat } from "@/lib/globe-mode"
-import { chapterPins, type ChapterPin } from "@/lib/journey-names"
+import type { ChapterPin } from "@/lib/journey-names"
 import { JourneyLegend, usePlaceName } from "@/components/journey-mini"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
@@ -52,7 +53,11 @@ function ReadOn({ c, meta }: { c: Chapter; meta: string }) {
     <Sheet>
       <SheetTrigger asChild><button type="button" className="story-link btn-text min-h-11 self-center" aria-label={t.story.keepReadingLabel(c.title)}>{t.story.keepReading}</button></SheetTrigger>
       <SheetContent aria-describedby={undefined}>
-        <SheetHead><p className="text-small text-muted-foreground">{meta}</p><SheetTitle lang="en" className="heading">{c.title}</SheetTitle></SheetHead>
+        {/* Run 26c: the chapter's photo stays with it, small beside the title (decorative: the print said it already) */}
+        <SheetHead className="story-read-head">
+          {c.photo && <span aria-hidden className="story-thumb"><Photo name={c.photo} treatment="split" sizes="56px" alt="" /></span>}
+          <span className="flex min-w-0 flex-col gap-1"><span className="text-small text-muted-foreground">{meta}</span><SheetTitle lang="en" className="heading">{c.title}</SheetTitle></span>
+        </SheetHead>
         <SheetBody><div className="story-read"><Paragraphs body={c.body} /></div></SheetBody>
         <BackToStory />
       </SheetContent>
@@ -70,21 +75,49 @@ function BackToStory() {
  * Run 25: tap a print (or a list thumbnail) and it opens full screen, the whole photo uncropped on a dark ground, with
  * a close button; Escape closes it and focus goes back to the print. A swipe that starts on the print still moves the
  * story (the drag marks the track, and the click that follows a drag is ignored).
+ * Run 26c: the full view asks for the original's own size (up to 1600 wide, photo.tsx `full`), and FULL names a
+ * photo whose print is a close crop (Nadia's home photo: the whole print beside the door). The print grows into the
+ * full view and shrinks back on close (a view transition, like the venue map's); reduced motion: a fade only;
+ * browsers without view transitions: the sheet's own rise.
  */
 type Dims = Record<string, { width: number; height: number }>
+const FULL: Record<string, string> = { "kid-nadia-home": "kid-nadia-home-full" }
+let vtSeq = 0
 export function PhotoOpen({ name, label, className, children }: { name: string; label: string; className?: string; children: ReactNode }) {
   const { t } = useLang()
-  const p = (photos as Dims)[name]
+  const big = FULL[name] && FULL[name] in photos ? FULL[name] : name
+  const p = (photos as Dims)[big]
+  const r = p ? p.width / p.height : 0.8
+  const [open, setOpen] = useState(false)
+  const [viaVt, setViaVt] = useState(false)
+  const btn = useRef<HTMLButtonElement>(null)
+  const change = (next: boolean) => {
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } }
+    if (!doc.startViewTransition) return setOpen(next)
+    const root = document.documentElement, calm = still()
+    // The photo inside the print (not its paper border), so the picture itself grows
+    const src = calm ? null : btn.current?.querySelector<HTMLElement>(".photo-print > div, figure > div") ?? null
+    root.dataset.vt = calm ? "photo-fade" : "photo"
+    if (src && next) src.style.viewTransitionName = "vphoto"
+    const vt = doc.startViewTransition(() => {
+      if (src) src.style.viewTransitionName = next ? "" : "vphoto"
+      flushSync(() => { setViaVt(next); setOpen(next) })
+    })
+    // A close straight after the open skips the open's transition: only the latest one tidies up
+    const mine = ++vtSeq
+    vt.finished.finally(() => { if (mine !== vtSeq) return; if (src) src.style.viewTransitionName = ""; delete root.dataset.vt })
+  }
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={change}>
       <SheetTrigger asChild>
-        <button type="button" className={cn("photo-open", className)} aria-label={t.story.openPhoto(label)}
+        <button ref={btn} type="button" className={cn("photo-open", className)} aria-label={t.story.openPhoto(label)}
           onClick={(e) => { if ((e.currentTarget as HTMLElement).closest("[data-dragged]")) e.preventDefault() }}>{children}</button>
       </SheetTrigger>
-      <SheetContent className="photo-viewer" closeLabel={t.story.closePhoto} aria-describedby={undefined}>
+      <SheetContent className="photo-viewer" data-vt={viaVt || undefined} closeLabel={t.story.closePhoto} aria-describedby={undefined}>
         <SheetTitle className="sr-only">{label}</SheetTitle>
-        <div className="photo-viewer-frame" style={{ "--r": p ? p.width / p.height : 0.8 } as React.CSSProperties}>
-          <Photo name={name} treatment="print" sizes="94vw" alt={label} />
+        <div className="photo-viewer-frame" style={{ "--r": r } as React.CSSProperties}>
+          {/* The frame's width (index.css .photo-viewer-frame), so a laptop gets the sharp file and a phone no more than it shows */}
+          <Photo name={big} treatment="print" full priority sizes={`min(94vw, calc((100vh - 96px) * ${r.toFixed(3)}), 1100px)`} alt={label} />
         </div>
       </SheetContent>
     </Sheet>
@@ -242,6 +275,7 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
   )
 }
 const NONE: Journey[] = []
+const NO_PINS: ChapterPin[] = []
 
 /**
  * Our story, one stop at a time (APG carousel): the kid-photo opener when there is one, a stop per chapter, then the
@@ -394,8 +428,9 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
       {words && <div className="story-words">{words}</div>}
     </section>
   )
-  // Run 25: a chapter's pin on the map goes to its stop, and the carousel takes focus (the map's stop goes inert)
-  const pins = chapterPins(chapters)
+  // Run 25: a chapter's pin on the map goes to its stop, and the carousel takes focus (the map's stop goes inert).
+  // Run 26c (Nadia's review): no numbered chapter pins on the story's globe or map; the G, N and Kyoto marks stay
+  const pins = NO_PINS
   const toChapter = (key: string) => {
     const i = ends?.key === key ? total - 1 : stops.findIndex((c) => c.key === key) + lead
     if (i < lead && ends?.key !== key) return
@@ -445,15 +480,30 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
   const { t } = useLang()
   const [open, setOpen] = useState(false)
   const globe = useRef(false)
+  const bar = useRef<HTMLSpanElement>(null)
+  // Run 26c: how far down the list, as a thin line under the head (one write per scroll event, no re-render)
+  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget, room = el.scrollHeight - el.clientHeight
+    bar.current?.style.setProperty("--p", String(room > 0 ? Math.min(1, el.scrollTop / room) : 1))
+  }
   return (
     <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (o) globe.current = false }}>
-      <SheetTrigger asChild><button type="button" className="story-link btn-text min-h-11 self-center">{t.story.seeList}</button></SheetTrigger>
+      {/* Run 26c: a button (with its list icon), not a text link, so it reads apart from a chapter's Keep reading */}
+      <SheetTrigger asChild><Button variant="secondary" size="sm" className="story-list-open self-center"><List aria-hidden className="size-4" />{t.story.seeList}</Button></SheetTrigger>
       <SheetContent aria-describedby={undefined} onCloseAutoFocus={(e) => { if (!globe.current) return; e.preventDefault(); onGlobe() }}>
-        <SheetHead><SheetTitle className="heading">{t.story.title}</SheetTitle></SheetHead>
-        <SheetBody>
-          <button type="button" className="journey-open story-list-globe" aria-label={t.journey.openLabel} onClick={() => { globe.current = true; setOpen(false) }}>
-            <Globe className="size-4" aria-hidden />{t.journey.globe}
-          </button>
+        {/* Run 26c: the Globe button sits in the head beside the title, so it stays in reach all the way down. A sticky
+            globe beside the list was weighed and left out: a second WebGL globe in a scrolling sheet costs a phone
+            memory and battery, and this opens the full one */}
+        <SheetHead className="story-list-head">
+          <span className="flex items-center justify-between gap-3">
+            <SheetTitle className="heading">{t.story.title}</SheetTitle>
+            <button type="button" className="journey-open story-list-globe" aria-label={t.journey.openLabel} onClick={() => { globe.current = true; setOpen(false) }}>
+              <Globe className="size-4" aria-hidden />{t.journey.globe}
+            </button>
+          </span>
+          <span ref={bar} aria-hidden className="story-progress" />
+        </SheetHead>
+        <SheetBody onScroll={onScroll}>
           <ol className="story-timeline">
             {chapters.map((ch) => {
               const label = [ch.title, ch.year].filter(Boolean).join(", ")
