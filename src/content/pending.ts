@@ -94,8 +94,8 @@ export const PENDING = {
   // The FAQ answers (run 19): shorter, in their voice, for Griffin and Nadia to tweak (the questions are in en.ts)
   // Run 25: their last sentence (the planner's Q&A tab, 16 Oct), pointing at Ask us rather than an email address
   "faqs.bring.a": {
-    en: "Your invite is for the people named on it. If there's room for a plus one, your reply will ask “Bringing someone?”. You can send us a message directly with Ask us below if you are unsure.",
-    ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下の「質問する」からお気軽にメッセージをどうぞ。",
+    en: "Your invite is for the people named on it. If there's room for a plus one, your reply will ask “Bringing someone?”. Not sure? Send us a message with Ask us below.",
+    ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下の「質問する」からメッセージをどうぞ。",
   },
   "faqs.style.a": {
     en: "Not really. It's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are.",

@@ -66,7 +66,7 @@ const scripts = (page) => page.evaluate(() => performance.getEntriesByType("reso
 
 // What each experiment does while it's measured (its own motion); the rest just play on arrival
 const ACT = {
-  "opening-letter-out": async (p) => { await p.getByRole("button", { name: /Open your invitation/ }).click() },
+  "opening-letter-out": async (p) => { await p.getByRole("button", { name: /Open your invit/ }).click() },
   "opening-seal-reverse": async (p) => { await p.getByRole("button", { name: "Seal it again" }).click() },
   "confirm-stamp": async (p) => { await p.getByRole("button", { name: "Stamp again" }).click() },
   "story-prints": async (p) => { const b = p.locator(".x-sp-print"); for (const i of [0, 1, 2]) { await b.nth(i).click(); await p.waitForTimeout(300) } },

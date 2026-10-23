@@ -12,7 +12,7 @@ const LOCK_LONG = new Date(`${DATES.changesLock}T00:00:00Z`).toLocaleDateString(
 // Their final wording (Inv details, column E, 22 Oct)
 const CHANGE_BY = `You can change your answers any time until ${LOCK_LONG}, and add your travel dates once flights are booked.`
 // After the changes lock, in the same places (their wording, planner 7 to 11 Oct)
-const CHANGE_AFTER = "We know that life happens, so if you need to make any changes after the 30th of April please contact us directly."
+const CHANGE_AFTER = "Life happens! If you need to change anything after 30 April, just message us."
 
 // The couple's names live here once. Swapping the order is this one line.
 export const COUPLE = { first: "Griffin", second: "Nadia" }
@@ -60,7 +60,7 @@ export const en = {
     credit: "Site by Jehan Baguley",
     skip: "Skip to the letter",
     note: "Open your invite",
-    openLabel: (name: string) => `Open your invitation${name ? `, ${name}` : ""}`,
+    openLabel: (name: string) => `Open your invite${name ? `, ${name}` : ""}`,
     phoneTitle: "Open on your phone",
     phoneBody: "Scan to take this invite with you.",
   },
@@ -355,8 +355,8 @@ export const en = {
       { q: "Can I bring someone?", a: pending("faqs.bring.a", "en") },
       { q: "Is it a traditional Japanese wedding?", a: pending("faqs.style.a", "en") },
       // Their Dress code, Dietary and Gifts (column E, 22 Oct; "foorwear" fixed to "footwear")
-      { q: "What should I wear?", a: "No dress code. Wear whatever makes you feel like your best self. Please keep in mind that the area around the venue has cobble stone streets so please bring appropriate footwear." },
-      { q: "What about food?", a: "Please provide your dietary requirements! The wedding lunch will be catered and the menu will be determined several months before the wedding." },
+      { q: "What should I wear?", a: "No dress code. Wear whatever makes you feel like your best self. Heads up, the streets around the venue are cobblestone, so wear shoes you can actually walk in." },
+      { q: "What about food?", a: "Let us know what you can and can't eat! Lunch is catered, and we'll lock in the menu a few months out." },
       { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "Do I need a visa?", a: pending("faqs.visa.a", "en") },
       { q: "What happens to my details?", a: pending("faqs.details.a", "en") },
@@ -366,7 +366,7 @@ export const en = {
     ],
     onTheDay: "On the day, contact",
     // Their Questions (column E, 22 Oct): the line above Ask us at the end of FAQs
-    contact: "If you have ANY questions at all please feel free to reach out to either of us at any time - we are always happy to assist whenever we can!",
+    contact: "Got ANY questions at all? Message either of us, any time. We're always happy to help!",
   },
   rsvp: {
     step: (n: number, of = 3) => `Step ${n} of ${of}`,

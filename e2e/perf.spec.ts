@@ -51,7 +51,7 @@ test("home, first visit: the sealed envelope is requested before the main script
   page.on("request", (r) => { if (/envelope-closed-\d+\.avif$/.test(r.url())) { avif.push(r.url().split("/").pop()!); envelope ||= Date.now() - t0 } })
   page.on("requestfinished", (r) => { if (/\/assets\/index-[^/]+\.js$/.test(r.url())) main = Date.now() - t0 })
   await page.goto("?h=sample")
-  await expect(page.getByRole("button", { name: /^Open your invitation/ })).toBeVisible()
+  await expect(page.getByRole("button", { name: /^Open your invite/ })).toBeVisible()
   await page.waitForTimeout(4000) // long enough for Chrome's unused-preload warning
   console.log(`envelope asked for at ${envelope} ms, main script done at ${main} ms (${avif.join(", ")})`)
   expect(envelope).toBeGreaterThan(0)

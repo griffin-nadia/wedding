@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test"
 import fs from "node:fs"
 
 test.use({ reducedMotion: "no-preference" })
-const open = (page: Page) => page.getByRole("button", { name: /^Open your invitation/ })
+const open = (page: Page) => page.getByRole("button", { name: /^Open your invite/ })
 
 // 18e: a calm Open button under a floating envelope, which never offers its picture on a long press
 test("the arrival: a real Open button, no long-press save, and the float pauses where it is on opening", async ({ page }) => {
