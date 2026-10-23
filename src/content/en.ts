@@ -117,7 +117,7 @@ export const en = {
     seeList: "See as a list", seeMap: "See the map",
     list: { nadia: `${NADIA}: Brisbane to Kyoto`, griffin: `${GRIFFIN}: Canada to Kyoto`, you: (city: string) => `Your line: ${city} to Kyoto`, city: (city: string, n: number) => `${city}: ${n} ${n === 1 ? "line" : "lines"}` },
   },
-  fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes.", hint: "Tap the box to draw one.", hintShake: "Tap the box, or give your phone a little shake.", boxLabel: "The fortune box. Draw a fortune", drawing: "Shaking the box…", onMap: "See your line on the map", again: "Draw another", homeTitle: "Draw your fortune" },
+  fortune: { title: "A little fortune for the trip", draw: "Draw one", blessing: "大吉", blessingEn: "Great blessing", number: (n: number, of: number) => `No. ${n} of ${of}`, save: "Save to my phone", copied: "Copied. Paste it into your notes.", hint: "Tap the box to draw one.", hintShake: "Tap the box, or give your phone a little shake.", boxLabel: "The fortune box. Draw a fortune", drawing: "Shaking the box…", onMap: "See your line on the map", again: "Draw another", homeTitle: "Draw your fortune", homeAgain: "Draw your fortune again" },
   driver: { label: "Taxi from Kyoto Station", fare: "15 to 20 minutes. Free in an MK Taxi with a ticket from the venue.", show: "Show the driver", maps: "Directions in Google Maps", mapsOpens: "opens Google Maps", english: "Please take me here", done: "Done", copy: "Copy address", copied: "Address copied" },
   countdownMore: {
     until: "until we see you in Kyoto", tomorrow: "Tomorrow", today: "Today's the day", married: "Married",
@@ -360,8 +360,9 @@ export const en = {
       { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "Do I need a visa?", a: pending("faqs.visa.a", "en") },
       { q: "What happens to my details?", a: pending("faqs.details.a", "en") },
-      // Run 26: Jehan's wording, as written. The song title (ART.music.title) is the link to the track
-      { q: "Who made this site?", a: "A proper family effort. Griffin wrote the words, Nadia drew everything you can see, and Jehan built the whole site. The music is A Town With an Ocean View by Joe Hisaishi, played on piano by Piano ZeroL." },
+      // Run 26: Jehan's wording. Run 26c: no pianist, a modest credit; the song title links to the track and Jehan's
+      // name, quietly, to his LinkedIn (faqs.tsx)
+      { q: "Who made this site?", a: "A proper family effort. Griffin wrote the words, Nadia drew everything you can see, and Jehan built the site. The music is A Town With an Ocean View by Joe Hisaishi." },
     ],
     onTheDay: "On the day, contact",
     // Their Questions (column E, 22 Oct): the line above Ask us at the end of FAQs

@@ -122,19 +122,6 @@ export function Layout() {
     return () => window.removeEventListener("ng-reseal", on)
   }, [])
   // A new page starts at its top (the card scrolls, not the window), unless a link asked for a section (#hash)
-  // Laptops (run 21): a card shorter than the frame sits centred in it. Centred by a translate from its measured height
-  // (index.css, --card-centre), not by layout, so the card growing as its words arrive is a glide, never a layout shift
-  useLayoutEffect(() => {
-    const wrap = document.querySelector<HTMLElement>(".letter-wrap"), card = document.getElementById("letter")
-    if (!wrap || !card) return
-    const set = () => {
-      const cs = getComputedStyle(wrap), frame = wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
-      wrap.style.setProperty("--card-centre", `${Math.max(0, Math.round((frame - card.offsetHeight) / 2))}px`)
-    }
-    const ro = new ResizeObserver(set)
-    ro.observe(wrap); ro.observe(card); set()
-    return () => ro.disconnect()
-  }, [])
   useLayoutEffect(() => { if (!location.hash) letterScroll()?.scrollTo(0, 0) }, [pathname])
   useEffect(() => {
     document.documentElement.toggleAttribute("data-sealed", sealed)

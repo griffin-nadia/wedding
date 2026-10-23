@@ -503,15 +503,12 @@
 /* Except Home: its card is only as tall as what's on it (up to the frame) */
 :root .letter[data-page="home"] { flex-grow: 0; }
 .letter-wrap:has(.letter[data-page="home"]) .letter-sealed { flex-grow: 0; }
-/* Laptops (run 21): every card is as tall as what's on it, at least --letter-min so a short page still reads as a
-   card, and up to the frame, where it scrolls inside. Shorter than the frame, it sits centred between the bar and
-   the bottom margin; as tall, it fills it from the standard top gap. */
+/* Laptops: run 21 sized each card to its words and centred a short one, so its top and bottom edges moved from tab
+   to tab (2560 most of all). Run 26c: every tab's card fills the frame, Home's too, so its edges are the same on every
+   tab at any size: the standard gap under the bar's line above, and the same gap to the bottom of the screen below. */
 @media (min-width: 1024px) {
-  :root .letter:not(.sheet), :root .letter-sealed { flex: 0 1 auto; min-height: min(var(--letter-min, 440px), 100%); }
-  /* Centred by a translate the layout measures (--card-centre, layout.tsx): a glide as it grows, no layout shift */
-  :root #letter { translate: 0 var(--card-centre, 0px); transition: translate var(--duration-base) var(--ease-paper); }
+  :root .letter:not(.sheet), :root .letter-sealed, .letter-wrap:has(.letter[data-page]) .letter-sealed { flex: 1 1 auto; min-height: 0; }
 }
-@media (min-width: 1024px) and (prefers-reduced-motion: reduce) { :root #letter { transition: none; } }
 /* Our story fills the frame like the other pages (run 19: its spread fits now, so the frame is no longer tall round a
    small print), and the spread is centred in it, so the card's bottom edge never moves between pages */
 .letter-scroll {
@@ -578,12 +575,16 @@
    themes); the bar keeps its edge, below it */
 /* Lantern: the inverse, a darker edge (Jehan, run 25): a light glint reads as a bright line on the walnut bar */
 [data-theme="lantern"] .site-bar::before { border-bottom-color: rgb(0 0 0 / 0.45); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.35); }
-.site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
+/* Run 26c: the mark and Home's "With love" sign-off in the hand agreed in run 26 (Caveat, --font-hand, as on the omikuji
+   slip), a touch larger than the serif so it reads at the same weight */
+.signoff-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.5rem; line-height: 1.2; }
+.site-mark { margin-right: auto; font-family: var(--font-hand); font-weight: 500; font-size: calc(var(--type-heading-size) * 1.1); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
    its paper carries on under the home indicator (safe area), so nothing shows beneath it. */
 .site-nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--letter-bg); border-top: 1px solid transparent; }
-.site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px 8px; }
+/* Run 26c: 12px in from each side, so the first and last tab's marker line up with the card's edges above it */
+.site-nav ul { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; height: 64px; padding: 4px 12px; }
 .site-nav li { display: flex; position: relative; }
 /* The nav (final M): one curve for all of it (--ease-paper). On phones the pill follows a swipe: page-turn sets --swipe
    (-1 to 1, one dock slot per letter width) and the pill slides that far towards the next page, then settles on it. */
@@ -603,7 +604,10 @@
   .site-nav ul { display: flex; gap: var(--space-1); height: auto; padding: 0; }
   .site-nav-link { flex-direction: row; min-height: 44px; padding: 0 var(--space-4); font-size: var(--type-small-size); line-height: var(--type-small-leading); border-radius: var(--radius-control); outline-offset: 2px; }
 }
-@media (min-width: 1024px) { .site-bar { padding-left: var(--letter-left); } .site-mark { position: absolute; left: 24px; } }
+/* Run 26c: the bar lines up with the card under it. From 1024 the mark starts at the card's left edge; from 1280
+   (room for the RSVP and the switches beside it) the tabs end at the card's right edge, at 1440 and 2560 alike */
+@media (min-width: 1024px) { .site-bar { padding-left: var(--letter-left); } .site-mark { position: absolute; left: var(--letter-left); } }
+@media (min-width: 1280px) { .site-nav { position: absolute; top: 0; bottom: 0; left: auto; right: calc(100% - var(--letter-left) - var(--letter-width)); display: flex; align-items: center; } }
 /* Top bar: the current page on a sage tint, hover a lighter one under the pointer (Jehan, 6 Oct: the pale marker was hard
    to see). Options → Nav pill → Paper brings back the old sage-paper marker. */
 @media (min-width: 768px) {
@@ -932,7 +936,7 @@ svg.lucide { stroke-width: 1.5; }
 /* Accent B (Options): the earlier rust buttons, to compare against one green */
 ::selection { background: color-mix(in oklab, var(--ink-moss) 35%, transparent); color: var(--ink); }
 /* What's left as one compact row of chips (v3 S): ticked or a soft dash, each opens its step */
-.reply-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+:is(.reply-chips, .home-tags) { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 /* Run 19, on a phone: a 2x2 grid, calmer than four chips squeezed into one row (they don't fit at 390 at a legible
    size). Each column at least the widest tag, so at 320 they stack instead of clipping. The dates' "once you've booked"
    is said to screen readers only here: the next-step button under the tags already says it. */
@@ -1159,7 +1163,8 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-slip, .omikuji-back, .omikuji-again {
   --washi: rgb(248 241 226 / 0.96);
   --washi-back: rgb(241 232 213 / 0.95);
-  --washi-band-top: linear-gradient(to right, rgb(168 79 50 / 0.82), rgb(168 79 50 / 0.92) 12%, rgb(168 79 50 / 0.88) 88%, rgb(168 79 50 / 0.78));
+  /* Run 26c: the bands are printed in the tier's ink, the same as 第七番, the tier, the links and the seal */
+  --washi-band-top: linear-gradient(to right, color-mix(in srgb, var(--tier) 82%, transparent), color-mix(in srgb, var(--tier) 92%, transparent) 12%, color-mix(in srgb, var(--tier) 88%, transparent) 88%, color-mix(in srgb, var(--tier) 78%, transparent));
   --washi-band-bottom: var(--washi-band-top);
   /* Fibres: sparse short strands (a lightly stretched noise, high threshold) and a fine even grain, both faint */
   --washi-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.11' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.5 0 0 0 0 0.36 0 0 0 2.4 -1.45'/%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.42 0 0 0 0 0.3 0 0 0 0.35 -0.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.18'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E");
@@ -1185,22 +1190,22 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-part-2 { clip-path: inset(33.333% 0 33.333% 0); }
 .omikuji-part-3 { clip-path: inset(66.667% 0 0 0); }
 .omikuji-leaf { position: absolute; inset: 0; transform-style: preserve-3d; }
-.omikuji-leaf-2 { transform-origin: 50% 33.333%; animation: omikuji-leaf-2 1100ms var(--ease-paper-in-out) both; }
-.omikuji-leaf-3 { transform-origin: 50% 66.667%; animation: omikuji-leaf-3 1100ms var(--ease-paper-in-out) both; }
-/* Folded behind, zigzag: the middle swings down from behind the top, then the last from behind the middle, each
-   landing with a little give */
-@keyframes omikuji-leaf-2 { 0% { transform: rotateX(-178deg); } 48% { transform: rotateX(3deg); } 60%, 100% { transform: rotateX(0deg); } }
-@keyframes omikuji-leaf-3 { 0%, 24% { transform: rotateX(178deg); } 82% { transform: rotateX(-4deg); } 92% { transform: rotateX(1deg); } 100% { transform: rotateX(0deg); } }
+.omikuji-leaf-up { transform-origin: 50% 33.333%; animation: omikuji-leaf-up 1100ms var(--ease-paper-in-out) both; }
+.omikuji-leaf-down { transform-origin: 50% 66.667%; animation: omikuji-leaf-down 1100ms var(--ease-paper-in-out) both; }
+/* Run 26c: from the middle. Both outer thirds are folded behind the middle; the top swings up from the first crease
+   and the bottom down from the second, a beat apart, each landing with a little give */
+@keyframes omikuji-leaf-up { 0% { transform: rotateX(178deg); } 66% { transform: rotateX(-3deg); } 80% { transform: rotateX(1deg); } 100% { transform: rotateX(0deg); } }
+@keyframes omikuji-leaf-down { 0%, 12% { transform: rotateX(-178deg); } 78% { transform: rotateX(4deg); } 90% { transform: rotateX(-1deg); } 100% { transform: rotateX(0deg); } }
 /* The back of each third: plain paper, seen while it swings past edge-on */
 .omikuji-back { position: absolute; inset-inline: 0; width: 100%; max-width: 320px; margin-inline: auto; background-color: var(--washi-back); transform: rotateX(180deg); backface-visibility: hidden; }
-.omikuji-back-2 { top: 33.333%; height: 33.334%; }
+.omikuji-back-1 { top: 0; height: 33.334%; border-radius: var(--radius-control) var(--radius-control) 0 0; background-image: var(--washi-band-top), var(--washi-fibre); background-repeat: no-repeat, repeat; background-size: calc(100% - 20px) 6px, 220px 220px; background-position: center top 8px, 0 0; }
 .omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); background-image: var(--washi-band-bottom), var(--washi-fibre); background-repeat: no-repeat, repeat; background-size: calc(100% - 20px) 6px, 220px 220px; background-position: center bottom 8px, 0 0; }
 /* A third's shade lifts as it flattens */
 .omikuji-shade { position: absolute; inset: 0; z-index: 31; pointer-events: none; background: rgb(var(--tint-shadow) / 0.3); }
-.omikuji-part-2 .omikuji-shade { animation: omikuji-shade 1100ms var(--ease-paper) both; }
+.omikuji-part-1 .omikuji-shade { animation: omikuji-shade 1100ms var(--ease-paper) both; }
 .omikuji-part-3 .omikuji-shade { animation: omikuji-shade-3 1100ms var(--ease-paper) both; }
 @keyframes omikuji-shade { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes omikuji-shade-3 { 0%, 24% { opacity: 1; } 84%, 100% { opacity: 0; } }
+@keyframes omikuji-shade-3 { 0%, 12% { opacity: 1; } 80%, 100% { opacity: 0; } }
 /* The creases, sharp while it opens, then easing out to the two faint lines the paper keeps */
 .omikuji-creases { position: absolute; inset: 0; z-index: 31; border-radius: inherit; pointer-events: none; opacity: 0;
   background:
@@ -1211,34 +1216,38 @@ svg.lucide { stroke-width: 1.5; }
 @keyframes omikuji-creases { from { opacity: 1; } to { opacity: 0; } }
 .omikuji-slip:focus-visible { outline-color: var(--input-focus); }
 .omikuji-slip .label-caps { color: var(--brand-kuri); }
-.omikuji-no { font-size: var(--type-small-size); letter-spacing: 0.2em; color: var(--brand-kuri); }
+.omikuji-no { font-size: var(--type-small-size); letter-spacing: 0.2em; color: var(--tier); }
 .omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--tier); }
 /* Run 26: the five tiers, calmest to strongest. Only the colour of the tier (its kanji and its name) and the seal's
    ring change, with a heavier ring from Special up; layout, font and size are the same for all five */
-.omikuji-slip { --tier: var(--tier-great); --tier-ring: var(--tier-great-ring); --seal-ring: 5.5; }
-.omikuji-slip[data-tier="good"] { --tier: var(--tier-good); --tier-ring: var(--tier-good-ring); }
-.omikuji-slip[data-tier="special"] { --tier: var(--tier-special); --tier-ring: var(--tier-special-ring); --seal-ring: 6.5; }
-.omikuji-slip[data-tier="grand"] { --tier: var(--tier-grand); --tier-ring: var(--tier-grand-ring); --seal-ring: 7; }
-.omikuji-slip[data-tier="super"] { --tier: var(--tier-super); --tier-ring: var(--tier-super-ring); --seal-ring: 8; }
+/* Run 26c: the stage carries the tier too, so the fold's backs and Draw another share the slip's one ink */
+:is(.omikuji-stage, .omikuji-slip) { --tier: var(--tier-great); --tier-ring: var(--tier-great-ring); --seal-ring: 5.5; }
+[data-tier="good"] { --tier: var(--tier-good); --tier-ring: var(--tier-good-ring); }
+[data-tier="special"] { --tier: var(--tier-special); --tier-ring: var(--tier-special-ring); --seal-ring: 6.5; }
+[data-tier="grand"] { --tier: var(--tier-grand); --tier-ring: var(--tier-grand-ring); --seal-ring: 7; }
+[data-tier="super"] { --tier: var(--tier-super); --tier-ring: var(--tier-super-ring); --seal-ring: 8; }
 .omikuji-slip .omikuji-tier { color: var(--tier); }
 .omikuji-seal .hanko-rim { stroke: var(--tier-ring); stroke-width: var(--seal-ring); }
 .omikuji-seal .hanko-rim-inner { stroke: var(--tier-ring); }
 .omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 34ch; } /* Nadia's fortunes run to three or four sentences (run 23) */
 /* Run 26: tier, category and No. x of 25 in Caveat, as if written in by hand; the fortune stays in the serif */
-.omikuji-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.25rem; line-height: 1.1; letter-spacing: 0; text-transform: none; color: var(--brand-kuri); }
-.omikuji-category { color: var(--brand-kogecha); opacity: 0.75; }
+.omikuji-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.25rem; line-height: 1.1; letter-spacing: 0; text-transform: none; color: var(--tier); }
+/* Run 26c: the English sits in the paper like the Japanese: multiplied into the washi in the same ink (no specks or
+   bleed: Caveat's thin strokes broke up under them); the fortune itself in the slip's dark ink, a touch of the tier */
+.omikuji-slip :is(.omikuji-hand, .omikuji-text) { mix-blend-mode: multiply; }
+.omikuji-slip .omikuji-text { color: color-mix(in oklab, var(--brand-kogecha) 88%, var(--tier)); }
 /* The one link style (btn-text), in the slip's own ink (it's always bright paper); run 26: in the serif, italic */
-.omikuji-save { min-height: 44px; color: var(--brand-doro); font-family: var(--font-display); font-style: italic; font-size: var(--type-body-size); }
+.omikuji-save { min-height: 44px; color: var(--tier); font-family: var(--font-display); font-style: italic; font-size: var(--type-body-size); }
 /* Run 26: Draw another. The slip's washi and ink, with a soft honey glow: the one thing to do next (no motion) */
 .omikuji-again {
   min-height: 48px; padding: var(--space-2) var(--space-6); border-radius: var(--radius-control);
-  background-color: var(--washi); background-image: var(--washi-fibre); color: var(--brand-doro);
+  background-color: var(--washi); background-image: var(--washi-fibre); color: var(--tier);
   font-family: var(--font-display); font-size: var(--type-body-size); line-height: 1.2;
-  box-shadow: var(--elevation-paper), 0 0 0 1px rgb(168 79 50 / 0.35), 0 0 18px 4px rgb(var(--glow-honey) / 0.45);
+  box-shadow: var(--elevation-paper), 0 0 0 1px color-mix(in srgb, var(--tier) 35%, transparent), 0 0 18px 4px rgb(var(--glow-honey) / 0.45);
   outline: 2px solid transparent; outline-offset: 4px; transition: box-shadow var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper);
   --glow-honey: 226 170 74;
 }
-@media (hover: hover) { .omikuji-again:hover:not(:disabled) { box-shadow: var(--elevation-paper), 0 0 0 1px rgb(168 79 50 / 0.5), 0 0 26px 8px rgb(var(--glow-honey) / 0.6); } }
+@media (hover: hover) { .omikuji-again:hover:not(:disabled) { box-shadow: var(--elevation-paper), 0 0 0 1px color-mix(in srgb, var(--tier) 50%, transparent), 0 0 26px 8px rgb(var(--glow-honey) / 0.6); } }
 .omikuji-again:active:not(:disabled) { transform: scale(var(--press-scale)); }
 .omikuji-again:focus-visible { outline-color: var(--input-focus); }
 .omikuji-again:disabled { cursor: default; }
@@ -1588,6 +1597,16 @@ svg.lucide { stroke-width: 1.5; }
   filter: url(#ink-bleed); -webkit-mask: var(--texture-ink) 0 0 / 96px; mask: var(--texture-ink) 0 0 / 96px; mix-blend-mode: multiply; }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
+/* Run 26c: Jehan's name in the FAQs' credit, linked but quiet: the text's own colour, a faint dotted underline that
+   firms up on hover, the usual focus ring */
+.credit-link { color: inherit; text-decoration: underline dotted color-mix(in oklab, currentColor 45%, transparent); text-underline-offset: 3px; border-radius: 2px; outline: 2px solid transparent; outline-offset: 2px; }
+.credit-link:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .credit-link:hover { text-decoration-color: currentColor; } }
+/* Run 26c: the fortune's own sheet (Home's tag opens it): the card, then the slip, centred, with Back to your invite
+   under it as the second way out */
+.fortune-sheet-body { display: flex; flex-direction: column; align-items: center; gap: var(--space-6); }
+.fortune-sheet-body > .omikuji { width: 100%; }
+:root .reply-chip.home-tag { width: auto; color: var(--ink); } /* hugs its words, one row where both fit */
 /* Ask us (final run): "Is this it?" rows, and the field only a bot fills in */
 .ask-match { display: block; width: 100%; min-height: 44px; padding: var(--space-2) var(--space-3); border: 1px solid var(--line-hairline); border-radius: var(--radius-control); background: var(--surface-raised); color: var(--ink); text-align: left; outline: 2px solid transparent; outline-offset: 2px; }
 .ask-match:focus-visible { outline-color: var(--input-focus); }

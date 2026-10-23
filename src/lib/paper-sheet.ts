@@ -4,7 +4,7 @@ import SHEETS from "@/data/paper-sheets.json"
  * The paper (run 26): one sheet exported ahead of time (scripts/paper-export.mjs: the same PaperTexture sheet that
  * src/lib/paper-live.ts used to make here with WebGL, seconds after the page had settled), as AVIF at the size this
  * screen shows it. index.html picks the file and preloads it from the first paint, and covers the page with a plain
- * paper veil (the seal, breathing; under reduced motion the seal is still and both only fade, 250 ms opacity) until it's in, at most 1.5 s from its first paint, on a first visit only.
+ * paper veil (the seal, breathing; under reduced motion the seal is still and both only fade, 250 ms opacity) for about 1.5 s and until it's in (2.5 s at most from its first paint, run 26c), on a first visit only.
  * Once it has decoded it's laid over every paper surface (index.css, --paper-live) at the strength that keeps text AA.
  * A theme switch swaps in the other theme's sheet; turning the phone or resizing the window by more than a little
  * picks the size again. A browser that can't decode AVIF keeps the plain paper. Off under Save-Data.
