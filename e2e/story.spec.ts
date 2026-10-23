@@ -115,3 +115,33 @@ test("prints: a thin border, a layered shadow, a tilt and a strip of tape", asyn
   expect(r.tilted).toBe(true)
   expect(r.tape).toBe(true)
 })
+
+// Run 25: a print opens full screen (a close button, Escape, focus back on the print) and a swipe that starts on a print
+// still moves the story without opening it; See as a list and Keep reading open sheets that end in Back to the story
+test("a print opens full screen; the list is a sheet with Back to the story", async ({ page }, info) => {
+  await open(page)
+  await page.getByRole("button", { name: /next/i }).click()
+  await page.waitForTimeout(600)
+  const print = page.locator(".story-slide:not([inert]) .photo-open")
+  await print.click()
+  const viewer = page.getByRole("dialog")
+  await expect(viewer).toBeVisible()
+  await expect(viewer.getByRole("button", { name: "Close the photo" })).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(viewer).toHaveCount(0)
+  await expect(print).toBeFocused()
+  // A swipe from the print moves on and opens nothing
+  if (info.project.name === "phone") {
+    const at = await current(page), box = (await print.boundingBox())!
+    await page.mouse.move(box.x + box.width * 0.7, box.y + box.height / 2); await page.mouse.down()
+    for (let i = 1; i <= 8; i++) await page.mouse.move(box.x + box.width * 0.7 - i * 30, box.y + box.height / 2)
+    await page.mouse.up(); await page.waitForTimeout(700)
+    expect(await current(page)).toBe(at + 1)
+    await expect(page.getByRole("dialog")).toHaveCount(0)
+  }
+  await page.getByRole("button", { name: "See as a list" }).click()
+  const list = page.getByRole("dialog")
+  await expect(list.locator(".story-timeline li").first()).toBeVisible()
+  await list.getByRole("button", { name: "Back to the story" }).click()
+  await expect(page.getByRole("dialog")).toHaveCount(0)
+})
