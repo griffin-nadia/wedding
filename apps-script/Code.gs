@@ -1666,7 +1666,8 @@ function questionsSheet_() {
 /**
  * A guest's question (the site's Ask us sheet). From an invite, the household is known; from "can't find your
  * invite" there's no token, so a name and an email come with it. Kept out: anything in the hidden website field (a
- * bot), more than 3 an hour from one household or email, empty or over 500 characters. Saved to the Questions tab
+ * bot), more than 3 an hour from one household or email, more than 10 in 10 minutes from everyone without an invite
+ * (run 26), empty or over 500 characters. Saved to the Questions tab
  * (as plain text), then Griffin and Nadia hear about it: an email through the wedding account's queue, and Discord
  * too if DISCORD_WEBHOOK_URL is set in Script Properties (docs/discord.md).
  */
@@ -1685,6 +1686,9 @@ function ask_(body) {
     household = String(body.name || "").trim().slice(0, 60)
     email = String(body.email || "").trim().toLowerCase().slice(0, 120)
     if (!household || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, code: "bad_email", error: ERRORS.bad_email }
+    // Run 26: no token means anyone can post, and Apps Script can't see an IP, so all of them share one budget too
+    // Known limit: one shared window, so a flood also holds back real guests for up to 10 minutes; fine at this size
+    if (over_("ask:anon", 10)) return { ok: false, code: "busy", error: ERRORS.busy }
   }
   const cache = CacheService.getScriptCache(), key = "ask:" + (token || email) + ":" + Math.floor(Date.now() / 3600000)
   const n = Number(cache.get(key) || 0)

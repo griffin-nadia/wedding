@@ -138,11 +138,12 @@ try {
     await b.close() }
 
   // Ask us (final run): one tap sends once; the sheet's "busy" (a few in a row) and a lost connection each get their
-  // own calm line, the second with the wedding address to email instead
+  // own calm line (run 26: no email address to fall back on), and so does a back end that doesn't know the action
   for (const [name, answer, line] of [
     ["sends once and says so", (r, body) => (body?.action === "ask" ? { delay: 600, json: { ok: true } } : household()(r, body)), "Sent. We'll get back to you soon."],
     ["busy: try again in a little while", (r, body) => (body?.action === "ask" ? { ok: false, code: "busy" } : household()(r, body)), "That's a few questions in a row"],
-    ["connection lost: try again, or email us", (r, body) => (body?.action === "ask" ? "drop" : household()(r, body)), "We couldn't send that just now"],
+    ["connection lost: try again later", (r, body) => (body?.action === "ask" ? "drop" : household()(r, body)), "Ask us isn't working right now"],
+    ["an older back end: try again later", (r, body) => (body?.action === "ask" ? { ok: false, code: "bad_request" } : household()(r, body)), "Ask us isn't working right now"],
   ]) {
     const { b, page, log } = await open({ answer })
     await page.goto(`${URL0}faqs?h=test6`); await page.waitForLoadState("networkidle")
