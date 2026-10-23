@@ -47,6 +47,26 @@ function privateSong(): Plugin {
     },
   }
 }
+// The lab's private pictures (run 24): photos-private/ and private/nadia-art-*/ served by the dev server at
+// /wedding/__private/<path> (for lab takes that try photos not on the site yet, like Griffin's other childhood prints).
+// Dev server only, from memory: never in any build, and a lab test build just gets a 404 (the takes fall back to paper).
+const PRIVATE_DIRS: Record<string, string> = { photos: path.resolve(__dirname, "photos-private"), art: PRIVATE }
+function privatePictures(): Plugin {
+  return {
+    name: "private-pictures",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use("/wedding/__private/", (req, res, next) => {
+        const [root, ...rest] = decodeURIComponent((req.url ?? "").split("?")[0]).replace(/^\//, "").split("/")
+        const base = PRIVATE_DIRS[root], file = base && path.resolve(base, rest.join("/"))
+        if (!file || !file.startsWith(base + path.sep) || !/\.(png|jpe?g|webp|avif)$/i.test(file) || !fs.existsSync(file)) return next()
+        const type = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", avif: "image/avif" }[file.split(".").pop()!.toLowerCase()]
+        res.setHeader("Content-Type", type ?? "application/octet-stream")
+        fs.createReadStream(file).pipe(res)
+      })
+    },
+  }
+}
 // Also fails if anything from the lab is built (it's local only).
 /**
  * The lab is local only (final run, 18 Oct): `npm run lab` (the dev server), or `npm run build:lab` after `npm run
@@ -85,7 +105,7 @@ process.env.VITE_SITE_URL ||= "https://griffin-nadia.github.io/wedding"
 // Hosted at griffin-nadia.github.io/wedding (a project site), so base is the repo name.
 export default defineConfig(({ command, mode }) => ({
   base: mode === "lab" ? `/wedding/${LAB_PATH}/` : "/wedding/",
-  plugins: [react(), tailwindcss(), preloadFonts(), privateSong(), noPrivateInBuild(mode === "lab")],
+  plugins: [react(), tailwindcss(), preloadFonts(), privateSong(), privatePictures(), noPrivateInBuild(mode === "lab")],
   ...(mode === "lab" ? {
     publicDir: false,
     build: { outDir: `dist/${LAB_PATH}`, emptyOutDir: false, rollupOptions: { input: { lab: path.resolve(__dirname, "lab.html"), "lab-play": path.resolve(__dirname, "lab-play.html") } } },
