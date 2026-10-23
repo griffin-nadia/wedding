@@ -85,24 +85,6 @@ export const PENDING = {
     en: "You asked",
     ja: "いただいたご質問",
   },
-  // "Where are you flying from?": the field under the quick chips (final run)
-  "flying.orType": {
-    en: "Or type your city",
-    ja: "または都市名を入力",
-  },
-  // The journey stop's toggle (final run)
-  "journey.mapMode": {
-    en: "Map",
-    ja: "地図",
-  },
-  "journey.globe": {
-    en: "Globe",
-    ja: "地球儀",
-  },
-  "journey.flat": {
-    en: "Flat map",
-    ja: "平面の地図",
-  },
   // A way to actually message them where the copy says to (18e journey map): the wedding address already used on the
   // no-invite page
   "contact.emailUs": {
@@ -123,17 +105,18 @@ export const PENDING = {
     ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。",
   },
   "faqs.details.a": {
-    en: "Your reply comes straight to us and no one else sees it. We'll delete it a few months after the wedding.",
+    en: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding.",
     ja: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。",
   },
+  // Run 25: warmer, in Griffin's voice (Jehan asked for it to read like him)
   "faqs.whoMade.a": {
-    en: "Nadia's brother Jehan designed and built it, and Nadia drew everything you see.",
-    ja: "ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。",
+    en: "A proper family effort! Griffin wrote the words, Nadia drew every little thing you see, and Nadia's brother Jehan designed and built the whole thing.",
+    ja: "家族みんなで作りました！文はグリフィン、絵はぜんぶナディア、デザインと制作はナディアの兄のジェハンです。",
   },
-  // {song} is the music credit (src/lib/art.ts), said here only
+  // {song} is the music credit (src/lib/art.ts) and {artist} who plays it, said here only
   "faqs.whoMade.song": {
-    en: "The song is {song}, played on piano.",
-    ja: "曲は{song}のピアノ版です。",
+    en: "And the music? That's {song}, played on piano by {artist}.",
+    ja: "流れている曲は{song}、ピアノ演奏は{artist}です。",
   },
   // Their Time (Inv details, column E, 22 Oct): the planner still has to confirm it
   "day.arrival": {
@@ -163,16 +146,19 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "rsvp.useTyped", ja: "入力したとおりに使う" },
   { key: "rsvp.songResults", ja: "件見つかりました" },
   { key: "rsvp.listResults", ja: "件の候補" },
-  { key: "flying.placeholder", ja: "都市名を入力して探す" },
-  { key: "flying.noMatch", ja: "見つかりません。「その他」を選んでください。" },
+  { key: "flying.placeholder", ja: "都市名や町名を入力" },
+  { key: "flying.noMatch", ja: "見つかりませんでした。" },
+  { key: "flying.dropPin", ja: "見つからないときは、地図にピンを置いてください" },
+  { key: "flying.pinHint", ja: "出発地を地図でタップしてください。" },
+  { key: "flying.pinCancel", ja: "やめる" },
   { key: "ask.button", ja: "質問する" },
   { key: "faqs.bring.a", ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下からお気軽にどうぞ。" },
   { key: "faqs.style.a", ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。" },
   { key: "faqs.visa.q", ja: "ビザは必要ですか？" },
   { key: "faqs.visa.a", ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。" },
   { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
-  { key: "faqs.whoMade.a", ja: "ナディアの兄のジェハンがデザインと制作を、ナディアがすべての絵を描きました。" },
-  { key: "faqs.whoMade.song", ja: "曲は{song}のピアノ版です。" },
+  { key: "faqs.whoMade.a", ja: "家族みんなで作りました！文はグリフィン、絵はぜんぶナディア、デザインと制作はナディアの兄のジェハンです。" },
+  { key: "faqs.whoMade.song", ja: "流れている曲は{song}、ピアノ演奏は{artist}です。" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "home.pills.replied", ja: "お返事ありがとうございます" },
   { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },
@@ -193,6 +179,18 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "qa.contact", ja: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！" },
   { key: "day.arrival", ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします" },
   { key: "story.keepReading", ja: "続きを読む" },
+  { key: "photos.kid-griffin-1998.alt", ja: "1998年の学校写真の幼いグリフィン。赤いTシャツでほほえんでいる" },
+  { key: "photos.kid-nadia-home.alt", ja: "家でにっこり笑う幼いナディア。髪をクリップで留めた二つ結びに、クリスマスツリーのTシャツ" },
+  { key: "journey.victoria", ja: "ビクトリア" },
+  { key: "journey.zoomIn", ja: "拡大" },
+  { key: "journey.zoomOut", ja: "縮小" },
+  { key: "journey.households", ja: "世帯" },
+  { key: "journey.open", ja: "全画面" },
+  { key: "journey.openLabel", ja: "地図を全画面で開く" },
+  { key: "journey.close", ja: "地図を閉じる" },
+  { key: "journey.view", ja: "地球儀か地図" },
+  { key: "journey.pin", ja: "章：" },
+  { key: "journey.pinGo", ja: "この章へ移動" },
   { key: "music.credit.ja", ja: "「A Town With an Ocean View」（久石譲）" },
 ]
 

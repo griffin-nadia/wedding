@@ -568,6 +568,13 @@
 .site-bar { position: fixed; z-index: 40; top: 0; inset-inline: 0; height: var(--bar-h); display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); padding: env(safe-area-inset-top) max(var(--space-2), env(safe-area-inset-right)) 0 max(var(--space-4), env(safe-area-inset-left)); }
 /* 18e: the bar, the dock and the card are one paper (the card's colour token), with no glass and no change on scroll */
 .site-bar::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--letter-bg); }
+/* Run 25: the bar and the dock get the card's edge where they meet the page (its 1px line at 60% and the 1px light
+   inset), so bar, card and dock read as the same paper */
+.site-bar::before { border-bottom: 1px solid color-mix(in oklab, var(--line-hairline) 60%, transparent); box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.6); }
+.site-nav { border-top-color: color-mix(in oklab, var(--line-hairline) 60%, transparent) !important; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.6); }
+/* Lantern: the inverse, a darker edge (Jehan, run 25): a light glint reads as a bright line on the walnut bar */
+[data-theme="lantern"] .site-bar::before { border-bottom-color: rgb(0 0 0 / 0.45); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.35); }
+[data-theme="lantern"] .site-nav { border-top-color: rgb(0 0 0 / 0.45) !important; box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.35); }
 .site-mark { margin-right: auto; font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
@@ -687,8 +694,15 @@
 .sheet-close { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid transparent; border-radius: var(--radius-pill); color: var(--ink); outline: 2px solid transparent; outline-offset: 2px; }
 .sheet-close:focus-visible { outline-color: var(--input-focus); }
 @media (hover: hover) { .sheet-close:hover { border-color: var(--line-strong); } }
-.rsvp-actions { flex: none; display: flex; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--line-hairline); }
+.rsvp-actions { flex: none; display: flex; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--sheet-pad); background: var(--letter-bg); border-top: 1px solid var(--line-hairline); }
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
+/* "All good?": who sees the reply, a small note just above Back and Send (run 25) */
+.rsvp-actions > .rsvp-privacy { flex: 1 0 100% !important; display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-small); line-height: var(--text-small--line-height); color: var(--muted-foreground); }
+/* "All good?" rows: the label, the answer, and Edit in one column on the right for every row, the message too (run 25) */
+.review-row { display: grid; grid-template-columns: minmax(5.5rem, 32%) minmax(0, 1fr); column-gap: var(--space-3); align-items: start; padding: var(--space-3) var(--space-4); }
+.review-row > dd { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-2); align-items: start; }
+.review-row > dt, .review-row > dd > span { padding-top: 2px; }
+.review-row[data-block] { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-1); }
 /* Steps slide the way you're going (300 ms); a fade only under reduced motion */
 .step-fwd { animation: step-fwd var(--duration-base) var(--ease-paper) both; }
 .step-back { animation: step-back var(--duration-base) var(--ease-paper) both; }
@@ -1094,6 +1108,10 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* In a tick row the whole row tints, not just its question */
 :root .check-acc [data-slot="accordion-trigger"]::before { content: none; }
+/* Run 24: the focus ring is that same rounded shape (2px inside the row's height, 12px out to the sides), in the
+   focus colour, so it never cuts into the line below an open row the way a square outline 2px outside did */
+:root [data-slot="accordion-trigger"]:focus-visible { outline-color: transparent; }
+:root [data-slot="accordion-trigger"]:focus-visible::before { content: ""; opacity: 1 !important; /* over polish.css hiding an open row's tint */ background: none; box-shadow: inset 0 0 0 2px var(--input-focus); }
 @media (hover: hover) {
   :root :is([data-slot="accordion-trigger"], .check-row, .check-acc, .stay-row, .reply-row):hover::before { opacity: 1; }
   /* The tint is the hover now: drop the underline these rows used to show */
@@ -1119,10 +1137,19 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-glyph { fill: var(--brand-kogecha); font-family: var(--font-ja); font-size: 13px; }
 .omikuji-stick { fill: var(--brand-hachimitsu); translate: 0 14px; transition: translate var(--duration-base) var(--ease-paper) 700ms; }
 .omikuji-tin.is-drawing .omikuji-stick { translate: 0 0; }
+/* The omikuji's washi (run 25): fixed colours, the same in light and Lantern */
+.omikuji-slip, .omikuji-back {
+  --washi: rgb(248 241 226 / 0.96);
+  --washi-back: rgb(241 232 213 / 0.95);
+  --washi-band-top: linear-gradient(to right, rgb(168 79 50 / 0.82), rgb(168 79 50 / 0.92) 12%, rgb(168 79 50 / 0.88) 88%, rgb(168 79 50 / 0.78));
+  --washi-band-bottom: var(--washi-band-top);
+  /* Fibres: sparse short strands (a lightly stretched noise, high threshold) and a fine even grain, both faint */
+  --washi-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.11' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.5 0 0 0 0 0.36 0 0 0 2.4 -1.45'/%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.42 0 0 0 0 0.3 0 0 0 0.35 -0.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.18'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E");
+}
 .omikuji-slip {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: 100%; max-width: 320px; margin-inline: auto;
-  padding: var(--space-6) var(--space-5); text-align: center; background: var(--brand-paper-bright); color: var(--brand-kogecha);
-  border-block: 6px solid var(--brand-sabi); border-radius: var(--radius-control); box-shadow: var(--elevation-paper);
+  padding: calc(var(--space-6) + 6px) var(--space-5); text-align: center; background-color: var(--washi); color: var(--brand-kogecha);
+  border-radius: var(--radius-control); box-shadow: var(--elevation-paper);
   outline: 2px solid transparent; outline-offset: 4px;
   animation: toast-in var(--duration-base) var(--ease-paper) both; /* a slip opened before: it simply arrives */
 }
@@ -1146,9 +1173,9 @@ svg.lucide { stroke-width: 1.5; }
 @keyframes omikuji-leaf-2 { 0% { transform: rotateX(-178deg); } 48% { transform: rotateX(3deg); } 60%, 100% { transform: rotateX(0deg); } }
 @keyframes omikuji-leaf-3 { 0%, 24% { transform: rotateX(178deg); } 82% { transform: rotateX(-4deg); } 92% { transform: rotateX(1deg); } 100% { transform: rotateX(0deg); } }
 /* The back of each third: plain paper, seen while it swings past edge-on */
-.omikuji-back { position: absolute; inset-inline: 0; width: 100%; max-width: 320px; margin-inline: auto; background: color-mix(in oklab, var(--brand-paper-bright) 88%, var(--brand-kinari)); transform: rotateX(180deg); backface-visibility: hidden; }
+.omikuji-back { position: absolute; inset-inline: 0; width: 100%; max-width: 320px; margin-inline: auto; background-color: var(--washi-back); transform: rotateX(180deg); backface-visibility: hidden; }
 .omikuji-back-2 { top: 33.333%; height: 33.334%; }
-.omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); border-bottom: 6px solid var(--brand-sabi); }
+.omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); background-image: var(--washi-band-bottom), var(--washi-fibre); background-repeat: no-repeat, repeat; background-size: calc(100% - 20px) 6px, 220px 220px; background-position: center bottom 8px, 0 0; }
 /* A third's shade lifts as it flattens */
 .omikuji-shade { position: absolute; inset: 0; z-index: 31; pointer-events: none; background: rgb(var(--tint-shadow) / 0.3); }
 .omikuji-part-2 .omikuji-shade { animation: omikuji-shade 1100ms var(--ease-paper) both; }
@@ -1234,7 +1261,34 @@ svg.lucide { stroke-width: 1.5; }
 
 
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
-.story-kids { display: grid; grid-template-columns: repeat(2, minmax(0, 200px)); gap: var(--space-4); align-items: start; padding: var(--space-2); } /* room for the tilted corners */
+/* The kid opener (run 24): three instant prints in a small pile that fills the spread's media box. Each print is the
+   story's instant print (4:5) at about 1.05 × --print-h tall; positions in % of the pile so it scales */
+.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 1.4)); /* run 25: two prints, overlapping as on phones */ height: calc(var(--stop-h) - var(--space-2)); }
+.story-slide-opener .story-media { width: 100%; } /* the pile's prints are placed in it, so it can't size to them */
+.story-kid { position: absolute; }
+.story-kid .story-print { --print-h: calc(var(--stop-h) * 0.72); }
+.story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
+.story-kid-him { left: 0; top: 2%; z-index: 2; }
+.story-kid-him .story-print { --tilt: 4deg; }
+.story-kid-her { right: 0; top: 14%; z-index: 3; }
+.story-kid-her .story-print { --tape-x: 50%; --tape-w: 38%; --tape-turn: -2.5deg; }
+.story-kid-her .story-print { --tilt: -5deg; }
+/* Phones: the pile staggers down the stop's full height (his top left, hers lower right over his corner, taped there,
+   his first day tucked under his, peeking out at the bottom left), so both faces stay clear and there's no empty band */
+@media (max-width: 767px) {
+  /* The pile takes all the height the story's track gives the stop (at least 1.45 stops), and the prints size from the
+     pile's own height (cqh), never wider than its width allows (cqw), so it fills down to the arrows at every phone */
+  .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.45); container-type: size; }
+  .story-kids { height: 100%; }
+  /* Run 25: two prints, his top left and hers bottom right, overlapping at his lower corner */
+  /* Run 25 (Jehan): a little smaller and more tilted, so they still overlap at the corners but neither covers a face */
+  .story-kid .story-print { --print-h: min(43cqh, 64cqw); }
+  .story-kid-him .story-print { --tilt: -7deg; }
+  .story-kid-her .story-print { --tilt: 8deg; }
+  .story-kid-him { left: 2%; top: 2%; }
+  .story-kid-her { right: 2%; top: auto; bottom: 2%; }
+}
+
 
 /* Their picks: compact rows, the whole row is the link */
 .stay-pick { min-height: 48px; padding-block: var(--space-2); }
@@ -1249,6 +1303,16 @@ svg.lucide { stroke-width: 1.5; }
 /* Typing on a phone (18g, src/lib/keyboard.ts): nothing changes size. The keyboard overlays the page; the sheet's
    Back / Next lift just above it (a transform), and the scrolling card and the sheet's body get the keyboard's height
    as extra room at the bottom, so the field can scroll above it */
+/* The reply sheet on phones (run 25): as tall as what's on it (no empty band above Next), sitting at the bottom. While
+   typing it's the full keyboard-down height from the top, as every sheet is (18g), so the field has room above the
+   keyboard; it settles back when the keyboard goes */
+@media (max-width: 767px) {
+  .sheet.rsvp-sheet { top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); height: auto; }
+  :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); } /* no deep band above the footer */
+  /* The song step too: its results open and close under the field and chosen songs land above it, so it keeps the
+     full height and the field never moves */
+  [data-typing] .sheet.rsvp-sheet, .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { top: calc(var(--vv-top, 0px) + 12px); bottom: auto; height: calc(100svh - 24px - env(safe-area-inset-bottom)); }
+}
 [data-typing] .rsvp-actions { transform: translateY(calc(-1 * var(--kb-lift, 0px))); position: relative; z-index: 3; }
 [data-typing] .sheet-body { padding-bottom: calc(var(--space-7) + var(--kb, 0px)); }
 [data-typing] .letter-scroll { padding-bottom: calc(var(--letter-pad) + var(--kb, 0px)); }
@@ -1281,6 +1345,12 @@ svg.lucide { stroke-width: 1.5; }
 .story-lead { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: pretty; }
 /* Laptops under 960 tall: three lines, so the stop with their words still fits the frame (1440 × 900) */
 @media (min-width: 1024px) and (max-height: 960px) { .story-lead { -webkit-line-clamp: 3; line-clamp: 3; } }
+/* Phones up to 900 tall (run 25): the print, the title, the start of their words, the arrows and dots and See as a list
+   all fit at 390 × 844 without scrolling: three lines of lead and a slightly smaller print */
+@media (max-width: 767px) and (max-height: 900px) {
+  .story-lead { -webkit-line-clamp: 3; line-clamp: 3; }
+  .story-slide { --print-h: min(22svh, 260px); }
+}
 /* The whole chapter (the Keep reading sheet and the list): a calm reading measure, paragraphs whole, their sign-off
    as a signature */
 .story-read { display: flex; flex-direction: column; gap: var(--space-4); max-width: 65ch; text-wrap: pretty; }
@@ -1297,23 +1367,42 @@ svg.lucide { stroke-width: 1.5; }
 .story-print > div { height: var(--print-h); width: auto; }
 .story-print[data-frame="landscape"] > div { width: var(--print-h); height: auto; }
 .story-print-blank { display: block; width: calc(var(--print-h) * 0.75); height: var(--print-h); margin: var(--space-2); border: var(--space-2) solid var(--brand-paper-bright); border-bottom-width: var(--space-3); border-radius: var(--radius-control); background: var(--surface-alt); box-shadow: var(--elevation-paper); transform: rotate(-1deg); }
-.story-slide .story-kids .photo-print > div { height: calc(var(--print-h) * 1.1); width: auto; aspect-ratio: 2 / 3 !important; max-width: 100%; }
+
 /* The journey map, once, as the last stop */
 /* Its lines wait until the stop is showing (no drawing off screen, and they draw in as you arrive) */
 .story-slide[inert] .journey, .story-slide[inert] .journey * { animation-play-state: paused !important; }
 .story-slide-map .story-media { width: 100%; max-width: 360px; }
 /* The map fits the same box: the Globe / Flat switch (about 56px with its gap) and the map under it */
 .story-slide-map .journey-mini { max-height: calc(var(--stop-h) - 56px); }
-.story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 56px)); }
+.story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 84px)); } /* room for the switch above and the key under */
 /* The flat map in the same box (run 19 globe: its height token) */
-.story-slide-map { --flat-h: calc(var(--stop-h) - 56px); }
+.story-slide-map { --flat-h: calc(var(--stop-h) - 84px); }
 /* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */
 .letter[data-page="story"] .letter-body { flex: 1 0 auto; }
 .letter[data-page="story"] .story { flex: 1 0 auto; justify-content: center; }
-/* The list: a 48px thumbnail beside each chapter */
-.story-thumb { flex: none; width: 48px; height: 48px; border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); }
+/* The list (run 25, a sheet): a line runs down the stops like The day's timeline, through a 56px thumbnail on each
+   (tap to open it full screen), a small moss dot where a stop has no photo */
+.story-timeline { --thumb: 56px; position: relative; display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-2); }
+.story-timeline::before { content: ""; position: absolute; top: var(--space-4); bottom: var(--space-4); left: calc(var(--thumb) / 2 - 1px); width: 2px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--ink-moss) 55%, transparent); }
+.story-timeline-row { position: relative; display: flex; align-items: flex-start; gap: var(--space-4); }
+.story-thumb { position: relative; z-index: 1; flex: none; width: var(--thumb, 48px); height: var(--thumb, 48px); border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); box-shadow: 0 0 0 4px var(--letter-bg); }
 .story-thumb figcaption { display: none; }
-.story-thumb > div { width: 48px; height: 48px; aspect-ratio: auto !important; border-radius: 0 !important; }
+.story-thumb :is(figure, div) { width: 100%; height: 100%; aspect-ratio: auto !important; border-radius: 0 !important; }
+.story-thumb-dot { width: 14px; height: 14px; margin: var(--space-2) calc((var(--thumb) - 14px) / 2) 0; border-radius: 50%; background: var(--ink-moss); }
+/* A print or thumbnail that opens full screen (run 25) */
+.photo-open { display: block; padding: 0; border: 0; background: none; color: inherit; cursor: zoom-in; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; -webkit-tap-highlight-color: transparent; }
+.photo-open:focus-visible { outline-color: var(--input-focus); }
+/* The photo full screen: the whole photo, uncropped, on a dark ground, at every width */
+.sheet.photo-viewer { top: 0; left: 0; right: 0; bottom: 0; translate: none; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0;
+  display: grid; place-items: center; padding: 56px var(--space-3) var(--space-5); background: rgb(18 11 7 / 0.94); box-shadow: none; }
+.sheet.photo-viewer::before, .sheet.photo-viewer::after { display: none; }
+.sheet.photo-viewer .sheet-close { color: #f6eee0; }
+.photo-viewer-frame { width: min(94vw, calc((100dvh - 96px) * var(--r)), 1100px); }
+.photo-viewer-frame figcaption { display: none; }
+.photo-viewer-frame img { object-fit: contain; }
+/* Straight and borderless here: the print's tilt, border, tape and shadow are for the story, not the full view */
+.photo-viewer-frame figure { transform: none !important; rotate: none !important; padding: 0 !important; background: none !important; box-shadow: none !important; }
+.photo-viewer-frame figure::before, .photo-viewer-frame figure::after { display: none !important; }
 .story-controls { display: flex; align-items: center; justify-content: space-between; }
 .story-controls .utility-btn:disabled { opacity: 0.4; }
 /* Reduced motion: stops fade straight to the next (opacity only, never a move); the one exception to the site's
@@ -1372,9 +1461,8 @@ svg.lucide { stroke-width: 1.5; }
 .radio-group { display: flex; flex-direction: column; gap: var(--space-2); padding-block: var(--space-2); outline: none; }
 .radio-group-label { font-family: var(--font-label); font-weight: 500; color: var(--ink); }
 .radio-group-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-@media (max-width: 359px) { .radio-group-options { grid-template-columns: 1fr; } }
 .radio-option {
-  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding-inline: var(--space-6); white-space: nowrap;
+  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: var(--space-2) var(--space-3) var(--space-2) var(--space-6); text-wrap: balance; /* side by side at every width (run 25): a long label wraps */
   border: 1px solid var(--line-strong); border-radius: var(--input-radius); background: var(--input-bg); color: var(--ink-soft); /* line-strong: 3:1 or more on the paper in both modes */
   font-family: var(--font-label); font-size: var(--type-ui-size); font-weight: 500; text-align: center; cursor: pointer;
   outline: 2px solid transparent; outline-offset: 2px; -webkit-tap-highlight-color: transparent; user-select: none;
@@ -1425,13 +1513,25 @@ svg.lucide { stroke-width: 1.5; }
 }
 /* The slip: bright paper in both modes, folded in three before it was drawn, so two faint creases cross it (a
    shadowed side, a lit side) */
+/* Run 25: washi. One tone in both themes, a touch see-through (the card shows faintly behind), long fibres and a fine
+   grain (an inline SVG noise, no download), the two creases of the three-fold clearly there (a shadowed side and a lit
+   side), and the red bands printed on: inset from the paper's edges, broken up by the fibres over them, not border bars */
 .omikuji-slip.paper-feel {
   --tint-shadow: 66 26 5;
   background-image:
-    linear-gradient(to bottom, transparent calc(33.33% - 3px), rgb(var(--tint-shadow) / 0.05) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 3px)),
-    linear-gradient(to bottom, transparent calc(66.66% - 3px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.05) calc(66.66% + 0.5px), transparent calc(66.66% + 3px));
-  background-size: 100% 100%, 100% 100%;
+    var(--washi-fibre),
+    linear-gradient(to bottom, transparent calc(33.33% - 4px), rgb(var(--tint-shadow) / 0.08) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 4px)),
+    linear-gradient(to bottom, transparent calc(66.66% - 4px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.08) calc(66.66% + 0.5px), transparent calc(66.66% + 4px));
+  background-size: 220px 220px, 100% 100%, 100% 100%;
+  background-repeat: repeat, no-repeat, no-repeat;
 }
+/* The printed parts are inked like the 寿 stamp (the hanko utility's ink): the red bands, 第七番 and the tier, with the
+   ink's soft bleed and dry specks, sinking into the paper. Their line stays crisp to read. */
+.omikuji-slip { position: relative; }
+.omikuji-slip::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; border-radius: inherit;
+  background: var(--washi-band-top) center top 8px / calc(100% - 20px) 6px no-repeat, var(--washi-band-bottom) center bottom 8px / calc(100% - 20px) 6px no-repeat; }
+.omikuji-slip::before, .omikuji-slip .omikuji-no, .omikuji-slip .omikuji-kichi {
+  filter: url(#ink-bleed); -webkit-mask: var(--texture-ink) 0 0 / 96px; mask: var(--texture-ink) 0 0 / 96px; mix-blend-mode: multiply; }
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
 /* Ask us (final run): "Is this it?" rows, and the field only a bot fills in */
@@ -1471,20 +1571,14 @@ svg.lucide { stroke-width: 1.5; }
 }
 @media (pointer: coarse) and (prefers-reduced-motion: no-preference) { .story-print:active { transform: translateY(-8px) scale(1.02) rotate(calc(var(--tilt, -3deg) * 0.8)); transition-duration: 200ms; } }
 @media (prefers-reduced-motion: reduce) { .story-print { transition: filter var(--duration-fast) linear; } .story-print:hover { filter: brightness(1.04); } }
-.story-print[data-tape]::before { content: ""; position: absolute; z-index: 2; top: -9px; left: var(--tape-x, 50%); width: var(--tape-w, 38%); height: 20px; translate: -50% 0; rotate: var(--tape-turn, calc(var(--lean, 1) * 3deg)); opacity: 0.82;
+/* Run 25: the kid opener's tape is this one too, on Nadia's print (the same width, colour, angle and place as any taped print) */
+.story-print[data-tape]::before, .story-kid-her .story-print::before { content: ""; position: absolute; z-index: 2; top: -9px; left: var(--tape-x, 50%); width: var(--tape-w, 38%); height: 20px; translate: -50% 0; rotate: var(--tape-turn, calc(var(--lean, 1) * 3deg)); opacity: 0.82;
   background: var(--tape, color-mix(in oklab, var(--brand-sage) 70%, white)); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
   -webkit-mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent), repeating-linear-gradient(0deg, #000 0 2px, rgb(0 0 0 / 0.6) 2px 3px);
   mask: linear-gradient(90deg, transparent, #000 4px calc(100% - 4px), transparent), repeating-linear-gradient(0deg, #000 0 2px, rgb(0 0 0 / 0.6) 2px 3px);
   -webkit-mask-composite: source-in; mask-composite: intersect; }
 .story-print[data-tape="1"] { --tape: color-mix(in oklab, var(--brand-hachimitsu) 60%, white); }
 .story-print[data-tape="2"] { --tape: color-mix(in oklab, var(--brand-sabi) 45%, white); }
-/* "Where are you flying from?" quick chips (final run): wrap, never clip; the picked one marked */
-.fly-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.fly-chip-group { display: flex; flex-direction: column; gap: var(--space-1); }
-.fly-chip { min-height: 44px; padding-inline: var(--space-3); border: 1px solid var(--line-hairline); border-radius: var(--radius-pill); background: var(--surface-raised); color: var(--ink); font: 500 var(--type-small-size) / 1.2 var(--font-label); outline: 2px solid transparent; outline-offset: 2px; transition: background-color var(--duration-fast) var(--ease-paper), border-color var(--duration-fast) var(--ease-paper); }
-.fly-chip:focus-visible { outline-color: var(--input-focus); }
-@media (hover: hover) { .fly-chip:hover { border-color: var(--line-strong); } }
-.fly-chip[aria-pressed="true"] { background: var(--input-selected-bg); border-color: var(--input-selected-line); }
 /* The painted globe (final run): a square that fits the story's map stop */
 .journey-globe { position: relative; width: min(100%, 340px, 40svh); aspect-ratio: 1; }
 /* The globe itself: the drag surface (the corner control stays a plain control) */
@@ -1502,17 +1596,86 @@ svg.lucide { stroke-width: 1.5; }
 .globe-pin[data-back="true"] .globe-pin-body { opacity: 0.5; }
 @media (prefers-reduced-motion: reduce) { .globe-pin-body { transition: none; } }
 /* The map and its Globe / Flat control in the bottom corner, over the map's empty corner, never on top of it */
-.segmented.journey-mode { position: absolute; right: var(--space-1); bottom: var(--space-1); display: inline-flex; margin: 0; gap: 0; padding: 2px; background: color-mix(in oklab, var(--surface-raised) 90%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+/* Run 24: Globe / Flat centred above the map, the same place in both views */
+.journey-mode-bar { display: flex; justify-content: center; width: 100%; min-height: 34px; }
+.segmented.journey-mode { position: relative; display: inline-flex; margin: 0; gap: 0; padding: 2px; background: color-mix(in oklab, var(--surface-raised) 90%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+/* The globe's always-on names (Brisbane, Victoria), a guest city's name on hover or tap, and + and − */
+.globe-place, .globe-tip { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; white-space: nowrap; font: 500 11px / 1.2 var(--font-label); color: var(--ink); text-shadow: 0 0 3px var(--letter-bg), 0 0 6px var(--letter-bg); translate: 6px -50%; transition: opacity var(--duration-fast) linear; }
+.globe-place[data-back="true"] { opacity: 0.25; }
+.globe-tip { padding: 2px var(--space-2); border-radius: var(--radius-control); background: var(--letter-bg); box-shadow: 0 1px 3px rgb(var(--tint-shadow) / 0.25); text-shadow: none; translate: -50% calc(-100% - 8px); }
+.globe-zoom { position: absolute; right: -44px; bottom: 0; z-index: 3; display: flex; flex-direction: column; gap: 2px; }
+.globe-zoom .utility-btn { width: 32px; height: 32px; font: 500 18px / 1 var(--font-label); background: color-mix(in oklab, var(--surface-raised) 88%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
+.globe-zoom .utility-btn::after { content: ""; position: absolute; inset: -6px; } /* a 44px target */
+.globe-zoom .utility-btn { position: relative; }
+/* A bundle of one country's lines: one, a little thicker */
+.journey-guest-bundle { stroke-width: 2.4; opacity: 0.75; }
+.journey-flat-hit { cursor: default; }
+.journey-flat-dot { fill: var(--ink-soft); opacity: 0.6; }
+.journey-flat-tip { paint-order: stroke; stroke: var(--letter-bg); stroke-width: 3px; }
 .journey-mode .segmented-mark { top: 2px; bottom: 2px; }
 .segmented.journey-mode .segmented-item { min-height: 28px; padding-inline: var(--space-2); gap: 0; font-size: 12px; }
 .journey-mode .segmented-item::after, .journey-mode .segmented-tick { display: none; }
 /* The flat map: the globe's painting cut to the Pacific, the lines over it (5:4, the 400 × 320 viewBox) */
-.journey-flat { position: relative; width: min(100%, calc(var(--flat-h, 36svh) * 1.25)); aspect-ratio: 5 / 4; border-radius: var(--radius-section); overflow: hidden; background: var(--surface-alt); }
+.journey-flat.is-picking { cursor: crosshair; outline: 2px dashed color-mix(in oklab, var(--ink-moss) 60%, transparent); outline-offset: 2px; } /* run 25: dropping a pin */
+.journey-flat { position: relative; width: min(100%, calc(var(--flat-h, 36svh) * 1.25)); aspect-ratio: 5 / 4; border-radius: var(--radius-section); overflow: hidden; background: #2f3428; box-shadow: 0 0 0 1px var(--line-hairline); } /* run 25 (Jehan): the dark sage ground in both themes, the painting's own */
 .journey-flat-art, .journey-flat-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
 .journey-flat-lines.journey-map { background: none; }
 .journey-flat-seal { font-size: 13px; }
 .journey-flat-kyoto { font-size: 11px; font-weight: 500; fill: var(--ink); paint-order: stroke; stroke: var(--surface-raised); stroke-width: 3px; stroke-linejoin: round; }
 .journey-you-edge { stroke: var(--ink); stroke-width: 6; opacity: 0.22; }
+
+/* Run 25: the flat map's names, dots, seal and lines keep their screen size when it's drawn bigger (--k, set by
+   journey-flat.tsx: viewBox units per px, at most 1) */
+.journey-flat-lines .journey-place { font-size: calc(11px * var(--k, 1)); }
+.journey-flat-lines .journey-flat-kyoto, .journey-flat-lines .journey-flat-pin .journey-place { font-size: 11px; }
+.journey-flat-lines .journey-route { stroke-width: calc(2px * var(--k, 1)); }
+.journey-flat-lines .journey-guest { stroke-width: calc(1.2px * var(--k, 1)); stroke-dasharray: calc(2px * var(--k, 1)) calc(3px * var(--k, 1)); }
+.journey-flat-lines .journey-guest-bundle { stroke-width: calc(2.4px * var(--k, 1)); }
+.journey-flat-lines .journey-you { stroke-width: calc(3px * var(--k, 1)); }
+.journey-flat-lines .journey-you-edge { stroke-width: calc(6px * var(--k, 1)); }
+.journey-flat-lines .journey-flat-tip { stroke-width: calc(3px * var(--k, 1)); }
+/* The legend on the stop in one line, "Your line" included, at 390 */
+.story-slide-map .journey-legend { gap: var(--space-1) var(--space-3); font-size: 12px; }
+.story-slide-map .journey-key { width: 14px; }
+/* Run 25: the globe's place before its first frame, a very faint still disc (no darker than the globe's own sea) the globe's own size (78.9% of the square at
+   the camera's fitted distance), and the globe fading in over it. A fade only, so reduced motion keeps it. */
+.journey-globe::before { content: ""; position: absolute; inset: 10.5%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 40% 35%, color-mix(in oklab, var(--ink-moss) 4%, transparent), color-mix(in oklab, var(--ink-moss) 10%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ink-moss) 16%, transparent); transition: opacity var(--duration-base) linear; }
+.journey-globe[data-ready]::before { opacity: 0; }
+.journey-globe-art canvas { opacity: 0; transition: opacity var(--duration-base) linear; }
+.journey-globe[data-ready] .journey-globe-art canvas { opacity: 1; }
+/* The Full screen control above the stop's map, where the Globe / Flat switch was: a small pill, a 44px target */
+.journey-open { position: relative; display: inline-flex; align-items: center; gap: var(--space-1); min-height: 32px; padding: 0 var(--space-3); border-radius: var(--radius-pill);
+  background: color-mix(in oklab, var(--surface-raised) 90%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); color: var(--ink); font: 500 12px / 1 var(--font-label); outline: 2px solid transparent; outline-offset: 2px; }
+.journey-open::after { content: ""; position: absolute; inset: -6px -2px; }
+.journey-open:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .journey-open:hover { box-shadow: 0 0 0 1px var(--line-strong); } }
+/* The map full screen (like a photo): the toggle in a fixed row at the top, the map filling the middle, the key under */
+.sheet.journey-viewer { top: 0; left: 0; right: 0; bottom: 0; translate: none; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0;
+  display: grid; grid-template-rows: 64px minmax(0, 1fr) auto; justify-items: center; padding: 0 var(--space-3) var(--space-4); --flat-h: calc(100dvh - 140px); }
+.journey-viewer-bar { display: flex; align-items: center; justify-content: center; height: 64px; }
+.journey-viewer .segmented.journey-mode .segmented-item { min-height: 40px; padding-inline: var(--space-4); font-size: 14px; }
+.journey-viewer-stage { position: relative; display: grid; place-items: center; width: 100%; min-height: 0; }
+.journey-viewer .journey-globe { width: min(100%, calc(100dvh - 140px), 960px); }
+.journey-viewer .journey-flat { width: min(100%, calc(var(--flat-h) * 1.25), 1200px); }
+.journey-viewer .globe-zoom { right: 0; bottom: 0; gap: var(--space-2); }
+.journey-viewer .globe-zoom .utility-btn { width: 44px; height: 44px; }
+.journey-viewer .globe-zoom .utility-btn::after { display: none; }
+.journey-viewer-foot { padding-top: var(--space-2); }
+/* Chapter pins (run 25, the lab's stamp): a paper disc with an ink ring and the chapter's number, 20px, a 44px target */
+.chapter-pins { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.chapter-pin-at { position: absolute; left: var(--x); top: var(--y); width: 0; height: 0; transition: opacity var(--duration-fast) linear; }
+.journey-globe .chapter-pin-at:not([data-back]) { visibility: hidden; } /* until the globe has placed it */
+.chapter-pin { position: absolute; left: var(--dx); top: var(--dy); translate: -50% -50%; display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--letter-bg); box-shadow: 0 0 0 1.5px var(--ink), 0 1px 2px rgb(var(--tint-shadow) / 0.25); color: var(--ink); font: 600 11px / 1 var(--font-label); pointer-events: auto; cursor: pointer; outline: 2px solid transparent; outline-offset: 2px; }
+.chapter-pin::after { content: ""; position: absolute; inset: -12px; border-radius: 50%; } /* a 44px target */
+.chapter-pin:empty::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ink); }
+.chapter-pin:focus-visible { outline-color: var(--input-focus); }
+@media (hover: hover) { .chapter-pin:hover { background: var(--surface-raised); } }
+.chapter-pin-leader { position: absolute; left: 0; top: 0; height: 1px; background: var(--ink); opacity: 0.5; transform-origin: 0 50%; pointer-events: none; }
+.chapter-pin-at[data-back="true"] { opacity: 0.3; }
+.chapter-pin-at[data-back="true"] .chapter-pin { pointer-events: none; }
 
 /* Review links (run 21): a small paper banner, top centre under the bar, above the card's top edge. Never on a guest's link. */
 .preview-banner { position: fixed; z-index: 45; top: calc(var(--bar-h, 56px) + var(--space-1)); left: 50%; translate: -50% 0; display: flex; align-items: center; gap: var(--space-3); max-width: calc(100vw - 24px); padding: 0 var(--space-2) 0 var(--space-4); border: 1px solid var(--line-hairline); border-radius: var(--radius-pill); background: var(--letter-bg); color: var(--ink); box-shadow: var(--shadow-paper); font-family: var(--font-label); font-size: var(--type-small-size); font-weight: 500; }
@@ -1522,21 +1685,57 @@ svg.lucide { stroke-width: 1.5; }
 /* Nadia's venue map (run 22). Her art at its own ratio; the route, the ring and the buttons over it in % so they scale
    with it. Light: on the card's cream, no frame (the art is flattened onto that cream). Lantern: a cream print framed
    with a soft shadow and rounded corners (her dark ink can't sit on walnut, and no filters on her art). */
+/* Run 25: the map full screen (VenueMapOpen): the whole screen on phones, a wide sheet on laptops; the map as large as
+   fits above its key and card */
+.sheet.venue-modal { top: 0; left: 0; right: 0; bottom: 0; translate: none; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border-radius: 0; }
+@media (min-width: 768px) { .sheet.venue-modal { top: 50%; left: 50%; translate: -50% -50%; width: min(1100px, calc(100vw - 48px)); height: calc(100dvh - 48px); border-radius: var(--letter-radius); } }
+.venue-modal .vmap { width: min(100%, calc((100dvh - 260px) * 1.2)); margin-inline: auto; }
 .vmap { position: relative; overflow: hidden; aspect-ratio: 1800 / 1500; border-radius: var(--radius-control); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 .vmap[data-zoomed] { touch-action: none; }
 [data-theme="lantern"] .vmap { border: 10px solid var(--brand-shiro-kinari); border-radius: 14px; box-shadow: var(--elevation-paper); }
-.vmap-art { position: absolute; inset: 0; transform-origin: 0 0; }
+.vmap-art { position: absolute; inset: 0; transform-origin: 0 0; container-type: inline-size; }
 .vmap-art img { display: block; width: 100%; height: 100%; }
 .vmap-route { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.vmap-route path { fill: none; stroke: #a43108; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 18 18; opacity: 0.6; animation: vmap-march 1.4s linear infinite; }
+.vmap-route path { fill: none; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: 0.7; }
+.vmap-taxi { stroke: #a43108; stroke-dasharray: 18 18; animation: vmap-march 1.4s linear infinite; }
+.vmap-walk { stroke: #5f6b2e; stroke-dasharray: 2 16; }
 @keyframes vmap-march { to { stroke-dashoffset: -36; } }
-/* Each place: a round button over her dot. 28px, as several dots sit close together; the list under the map has every
-   place as a full-size button too */
-.vmap-spot { position: absolute; width: 28px; height: 28px; translate: -50% -50%; border-radius: 50%; outline: 2px solid transparent; outline-offset: 2px; }
-.vmap-spot:focus-visible { outline-color: var(--input-focus); }
-.vmap-spot.is-on::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; box-shadow: 0 0 0 2.5px rgb(164 49 8 / 0.75), 0 0 0 9px rgb(164 49 8 / 0.16); animation: vmap-ring 1.8s var(--ease-paper) infinite alternate; }
-@keyframes vmap-ring { from { scale: 0.92; } to { scale: 1.08; } }
-@media (prefers-reduced-motion: reduce) { .vmap-route path, .vmap-spot.is-on::after { animation: none; } }
+/* Run 24b: the old map's pins on her art. A 44px button centred on each of her dots, a ring round the dot (her red dot
+   shows through), filled rust with a soft ring when chosen. One gentle pulse when the map first comes into view. The
+   chosen place's chip (Japanese over English) sits on the side away from her painted label (data-chip) */
+.vmap-pin { position: absolute; width: 44px; height: 44px; translate: -50% -50%; display: grid; place-items: center; border-radius: 50%; outline: 2px solid transparent; outline-offset: -4px; -webkit-tap-highlight-color: transparent; }
+.vmap-pin:focus-visible { outline-color: var(--input-focus); }
+.vmap-dot { --d: 2.4cqw; width: max(10px, var(--d)); height: max(10px, var(--d)); border-radius: 50%; border: max(1.5px, 0.25cqw) solid #4a2a16; box-shadow: 0 0 0 1.5px rgb(255 252 244 / 0.85), 0 1px 2px rgb(0 0 0 / 0.2); transition: transform var(--duration-fast) var(--ease-paper), background-color var(--duration-fast) var(--ease-paper); }
+/* Run 25: each ring is her dot's own size, as a share of the map's width (cqw), so it sits right over her red dots
+   (2.4%), the green station rings (3%) and Kyoto Station's orange ring (3.5%) at every width */
+.vmap-pin[data-kind="station"] .vmap-dot { --d: 3cqw; }
+.vmap-pin[data-kind="jr"] .vmap-dot { --d: 3.5cqw; }
+.vmap-pin.is-on .vmap-dot { background: #a43108; border-color: #fff8ee; transform: scale(1.15); box-shadow: 0 0 0 7px rgb(164 49 8 / 0.18), 0 1px 3px rgb(0 0 0 / 0.25); }
+@media (hover: hover) { .vmap-pin:hover .vmap-dot { transform: scale(1.12); } }
+@keyframes vmap-pulse { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.35); } }
+@media (prefers-reduced-motion: no-preference) { .vmap[data-seen] .vmap-pin:not(.is-on) .vmap-dot { animation: vmap-pulse 900ms var(--ease-paper) 200ms 1; } }
+.vmap-chip { position: absolute; top: 50%; left: 36px; translate: 0 -50%; pointer-events: none; display: flex; flex-direction: column; padding: 3px var(--space-2); border-radius: var(--radius-control); background: #fffaf0; box-shadow: inset 0 0 0 1.5px #a43108, 0 1px 3px rgb(0 0 0 / 0.18); font: 500 11px / 1.25 var(--font-label); color: #3a1f0f; white-space: nowrap; text-align: left; }
+.vmap-chip .font-ja { font-size: 12px; color: #6b4a33; }
+.vmap-pin[data-chip="left"] .vmap-chip { left: auto; right: 36px; text-align: right; align-items: flex-end; }
+.vmap-pin[data-chip="low"] .vmap-chip { translate: 0 8px; } /* right of the dot but starting below it: The Sodoh's own lettering is just above */
+.vmap-pin[data-chip="above"] .vmap-chip { top: auto; bottom: 36px; left: 50%; translate: -50% 0; align-items: center; text-align: center; }
+/* Phones: a smaller ring (the map is small; the 44px target stays) and a smaller chip, on the side away from her label */
+@media (max-width: 599px) {
+  .vmap-pin.is-on .vmap-dot { box-shadow: 0 0 0 5px rgb(164 49 8 / 0.2), 0 1px 2px rgb(0 0 0 / 0.25); }
+  /* Run 25: the chosen place's chip shows on phones too, smaller and closer to the smaller ring */
+  .vmap-chip { left: 26px; padding: 2px 6px; font-size: 10px; white-space: normal; width: max-content; max-width: 8.5rem; }
+  .vmap-chip .font-ja { font-size: 11px; }
+  .vmap-pin[data-chip="left"] .vmap-chip { right: 26px; }
+  .vmap-pin[data-chip="above"] .vmap-chip { bottom: 26px; }
+}
+/* The key under the map: the two routes */
+.vmap-key { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: var(--type-small-size); color: var(--ink-soft); }
+.vmap-key li { display: inline-flex; align-items: center; gap: var(--space-2); }
+.vmap-swatch { width: 28px; height: 0; border-top: 3px dashed #a43108; }
+.vmap-swatch-walk { border-top: 3px dotted #5f6b2e; }
+[data-theme="lantern"] .vmap-swatch-taxi { border-top-color: var(--brand-sabi); }
+[data-theme="lantern"] .vmap-swatch-walk { border-top-color: var(--brand-sage); }
+@media (prefers-reduced-motion: reduce) { .vmap-taxi { animation: none; } }
 @media (hover: hover) and (pointer: fine) { .vmap-hint { display: none; } }
 .vmap-list summary { cursor: pointer; list-style: none; }
 .vmap-list summary::-webkit-details-marker { display: none; }

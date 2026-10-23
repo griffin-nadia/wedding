@@ -1,17 +1,21 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Maximize2, MapPin } from "lucide-react"
+import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useLang } from "@/lib/lang"
 import { config } from "@/lib/config"
 import { cn } from "@/lib/utils"
-import { Segmented } from "@/components/segmented"
 
 const base = import.meta.env.BASE_URL
-/** The two ways from Kyoto Station, traced over her roads in the map's own pixels (1800 × 1500; r22-routes.mjs) */
+/** The old map's two routes, traced over her roads in the map's own pixels (1800 × 1500; r22-routes.mjs): the taxi
+ *  from Kyoto Station, and the walk from Gion-Shijo along Shijo-dori and down the east road */
 const ROUTES = {
   taxi: "M492 1156 L492 1010 L1156 1010 L1156 690 L1254 668",
-  train: "M492 1156 L780 1140 L914 1352 L864 962 L864 694 L1156 690 L1254 668",
+  walk: "M1006 330 L1156 330 L1156 690 L1254 668",
 } as const
-type Route = keyof typeof ROUTES
+
+/** Run 25: which of her dots each ring sits on (her red place dots, the green Keihan station rings, Kyoto Station's
+ *  orange ring), so each ring is her dot's own size */
+const DOT: Record<string, "station" | "jr"> = { station: "jr", gojo: "station", gion: "station", sanjo: "station", shichijo: "station", tofukuji: "station" }
 
 /** Nadia's map shows when config.venueMap is on, or with ?preview in the address (to try it before it's switched on) */
 export function venueMapOn() {
@@ -26,40 +30,61 @@ export function venueMapOn() {
  * card's own cream. Lantern: the same art as a framed print (her dark ink doesn't read on walnut; no filters).
  * Phones: pinch to zoom from 1x to 2.5x and drag to look around. Reduced motion: the route still, no glide.
  */
-export function VenueMap() {
+export function VenueMap({ inModal = false }: { inModal?: boolean }) {
   const { t } = useLang()
-  const m = t.venueMap
+  const m = t.venueMap, k = t.kyotoMap
   const [on, setOn] = useState("venue")
-  const [route, setRoute] = useState<Route>("taxi")
   const place = m.places.find((p) => p.id === on) ?? m.places[0]
   const zoom = usePinch()
+  // One gentle pulse of the dots the first time the map scrolls into view (run 24b), so it's clear they can be tapped
+  const [seen, setSeen] = useState(false)
+  useEffect(() => {
+    const el = zoom.box.current
+    if (!el || seen) return
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen(true); io.disconnect() } }, { threshold: 0.5 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [zoom.box, seen])
   return (
     <section aria-label={m.title} className="flex flex-col gap-4">
-      <p className="text-small text-muted-foreground">{m.intro}</p>
-      <Segmented label={m.routes.label} items={[{ value: "taxi", label: m.routes.taxi }, { value: "train", label: m.routes.train }]} value={route} onChange={setRoute} size="sm" />
-      <p className="text-small">{m.routeNotes[route]}</p>
-      <div className="vmap" ref={zoom.box} data-zoomed={zoom.s > 1 || undefined} {...zoom.handlers}>
+      <p className="text-small text-muted-foreground">{k.intro}</p>
+      <div className="vmap" ref={zoom.box} data-zoomed={zoom.s > 1 || undefined} data-seen={seen || undefined} {...zoom.handlers}>
         <div className="vmap-art" style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` }}>
           <picture>
             <source type="image/avif" srcSet={`${base}art/map/venue-map-800.avif 800w, ${base}art/map/venue-map-1600.avif 1600w`} sizes="(min-width: 768px) 652px, 92vw" />
             <img src={`${base}art/map/venue-map-800.webp`} srcSet={`${base}art/map/venue-map-800.webp 800w, ${base}art/map/venue-map-1600.webp 1600w`} sizes="(min-width: 768px) 652px, 92vw"
               width={1800} height={1500} alt={m.alt} draggable={false} decoding="async" loading="lazy" />
           </picture>
-          <svg aria-hidden viewBox="0 0 1800 1500" className="vmap-route"><path key={route} d={ROUTES[route]} /></svg>
+          <svg aria-hidden viewBox="0 0 1800 1500" className="vmap-route">
+            <path className="vmap-taxi" d={ROUTES.taxi} />
+            <path className="vmap-walk" d={ROUTES.walk} />
+          </svg>
+          {/* The old map's pins on her dots: a ring on each, filled when chosen, and the chosen one's label chip (Japanese
+              over English) on the side away from her own painted label, so it never covers it */}
           {m.places.map((p) => (
             <button key={p.id} type="button" aria-pressed={on === p.id} aria-label={`${p.name}, ${p.ja}`} onClick={() => setOn(p.id)}
-              className={cn("vmap-spot", on === p.id && "is-on")} style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%` }} />
+              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={p.chip} data-kind={DOT[p.id] ?? "place"} style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%` }}>
+              <span aria-hidden className="vmap-dot" />
+              {on === p.id && <span aria-hidden className="vmap-chip"><span lang="ja" className="font-ja">{p.ja}</span><span>{p.name}</span></span>}
+            </button>
           ))}
         </div>
       </div>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <ul className="vmap-key" aria-label={m.title}>
+          <li><span aria-hidden className="vmap-swatch vmap-swatch-taxi" />{k.taxiRoute}</li>
+          <li><span aria-hidden className="vmap-swatch vmap-swatch-walk" />{k.walkRoute}</li>
+        </ul>
+        <span className="text-small text-muted-foreground">{k.notToScale}</span>
+      </div>
       <div className="flex flex-wrap items-center justify-between gap-x-4">
-        <a href={`${base}art/map/venue-map-full.webp`} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center gap-2"><Maximize2 className="size-4" aria-hidden />{m.full}<span className="sr-only">, {m.fullOpens}</span></a>
+        {inModal ? <span /> : <VenueMapOpen />}
         <span className="text-small text-muted-foreground vmap-hint">{m.zoomHint}</span>
       </div>
       <div key={place.id} className="kmap-card" aria-live="polite">
         <p className="font-medium text-foreground">{place.name} <span lang="ja" className="font-ja text-muted-foreground">{place.ja}</span></p>
         <p>{place.body}</p>
-        <a href={place.maps} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center gap-1 self-start"><MapPin className="size-4" aria-hidden />{m.directions}</a>
+        <a href={place.maps} target="_blank" rel="noreferrer" className="btn-text inline-flex min-h-11 items-center gap-1 self-start"><MapPin className="size-4" aria-hidden />{k.directions}</a>
       </div>
       <details className="vmap-list">
         <summary className="btn-text min-h-11 inline-flex items-center">{m.listTitle}</summary>
@@ -68,6 +93,25 @@ export function VenueMap() {
         </ul>
       </details>
     </section>
+  )
+}
+
+/**
+ * Run 25: "Open the map": the same map, places, card and routes full screen, from Travel (under the map) and The day
+ * (beside How to get there, where there's no map inline). A dialog: focus stays in it, Escape and the close button
+ * close it and focus goes back to the link. One component, so both pages show the same thing.
+ */
+export function VenueMapOpen({ className }: { className?: string }) {
+  const { t } = useLang()
+  const m = t.venueMap
+  return (
+    <Sheet>
+      <SheetTrigger asChild><button type="button" className={cn("btn-text inline-flex min-h-11 items-center gap-2 self-start", className)}><Maximize2 className="size-4" aria-hidden />{m.open}</button></SheetTrigger>
+      <SheetContent className="venue-modal" closeLabel={m.close} aria-describedby={undefined}>
+        <SheetHead><SheetTitle className="heading">{m.title}</SheetTitle></SheetHead>
+        <SheetBody><VenueMap inModal /></SheetBody>
+      </SheetContent>
+    </Sheet>
   )
 }
 

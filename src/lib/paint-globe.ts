@@ -12,7 +12,7 @@ import NUMERIC from "@/data/country-numeric.json"
  * same each time; one painting per look, shared by the globe and the flat map. One slot for Nadia's painted land
  * later: if ART.globeLand points to a 2:1 painting, the globe uses that instead.
  */
-type Colours = { sea: string; seaDeep: string; land: string; landEdge: string; bloom: string; grain: number }
+type Colours = { sea: string; seaDeep: string; land: string; landEdge: string; bloom: string; grain: number; ground?: string }
 type Geometry = { type: string; coordinates: number[][][] | number[][][][] }
 let seed = 11
 const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647)
@@ -41,7 +41,11 @@ async function paint(colours: Colours, width: number, guestCountries: string[]):
   // Sea: a pale wash at half strength, a touch deeper towards the poles
   const sea = g.createLinearGradient(0, 0, 0, H)
   sea.addColorStop(0, colours.seaDeep); sea.addColorStop(0.5, colours.sea); sea.addColorStop(1, colours.seaDeep)
-  g.globalAlpha = 0.5; g.fillStyle = sea; g.fillRect(0, 0, W, H); g.globalAlpha = 1
+  // Run 25 (Jehan): the ground is solid dark sage, the same in both themes (the flying-from map's), and only the land is
+  // see-through over it
+  if (colours.ground) { g.fillStyle = colours.ground; g.fillRect(0, 0, W, H) }
+  // Run 25: a little more see-through (0.5 to 0.42, land 0.62 to 0.48)
+  g.globalAlpha = 0.42; g.fillStyle = sea; g.fillRect(0, 0, W, H); g.globalAlpha = 1
   // Each country as a path, its rings broken where they cross the date line
   const X = (lon: number) => ((lon + 180) / 360) * W, Y = (lat: number) => ((90 - lat) / 180) * H
   const trace = (path: Path2D, geo: Geometry) => {
@@ -66,7 +70,7 @@ async function paint(colours: Colours, width: number, guestCountries: string[]):
   }
   // Every country a soft wash; the ones with guests (and the home four) a touch stronger
   g.fillStyle = colours.land
-  g.globalAlpha = 0.62; g.fill(all)
+  g.globalAlpha = 0.48; g.fill(all)
   g.globalAlpha = 0.2; g.fill(edges); g.fill(strong)
   // Blooms: soft, uneven patches of a slightly different wash, on the land only
   g.save(); g.clip(all)
@@ -100,4 +104,7 @@ async function paint(colours: Colours, width: number, guestCountries: string[]):
 export const GLOBE_LOOK = {
   night: { sea: "#3a3a36", seaDeep: "#2c2b27", land: "#76744f", landEdge: "#26241a", bloom: "#8a7a52", grain: 10 },
   day: { sea: "#e6e6dc", seaDeep: "#d8dbd2", land: "#c4bb90", landEdge: "#6f673f", bloom: "#b5a77a", grain: 12 },
+  /** Run 25: the journey's maps in both themes (the globe, the flat map, full screen and flying from): the night
+   *  painting on a solid dark sage ground, its lines and names in their Lantern colours (data-theme on the map) */
+  map: { sea: "#3a3a36", seaDeep: "#2c2b27", land: "#76744f", landEdge: "#26241a", bloom: "#8a7a52", grain: 10, ground: "#2f3428" },
 }

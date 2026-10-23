@@ -11,16 +11,18 @@ import { onMap } from "@/lib/map-land"
 import { pending } from "@/content/pending"
 
 /**
- * The opener (Figma 3b): one kid photo each, Griffin then Nadia, as the first slide. Little Griffin is his pick, his
- * first day of school (run 23).
+ * The opener (run 24): Griffin's 1998 school portrait and Nadia's home photo as instant prints, tilted opposite ways,
+ * hers leaning into his and over his corner, with a strip of washi tape across her top edge like the other taped prints. Sized to fill the spread. Run 25: two prints only;
+ * his first day of school (kid-griffin, his own pick) is out of the opener for now, the file stays in photos.json.
  */
 function Opener() {
   const has = (name: string) => name in photos
-  if (!has("kid-nadia") || !has("kid-griffin")) return null
+  if (!has("kid-griffin-1998") || !has("kid-nadia-home")) return null
+  const sizes = "(min-width: 1024px) 240px, 46vw"
   return (
     <div className="story-kids">
-      <Photo name="kid-griffin" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
-      <Photo name="kid-nadia" treatment="print" sizes="(min-width: 768px) 200px, 40vw" />
+      <div className="story-kid story-kid-him"><Photo name="kid-griffin-1998" treatment="print" sizes={sizes} className="story-print" /></div>
+      <div className="story-kid story-kid-her"><Photo name="kid-nadia-home" treatment="print" sizes={sizes} className="story-print" /></div>
     </div>
   )
 }
@@ -35,8 +37,10 @@ const AT: Record<string, [number, number]> = {
   "Kansai Gaidai, Hirakata": onMap("JP", 34.81, 135.65), Japan: PLACES.japan, Canada: PLACES.canada,
   Australia: onMap("AU", -25.5, 134), "Australia (Brisbane)": PLACES.brisbane, Kyoto: KYOTO,
 }
-/** Photos with no words of their own (run 23): STORY_PLAN's Back to Japan (after chapter 3, Australia, 2018–2019) and
- *  the 2024 Canada visit (after chapter 5), as photo-only stops between chapters, in date order */
+/** Photos with no words of their own (run 23): STORY_PLAN's Back to Japan (after chapter 3, Australia) and the Canada
+ *  visit (after chapter 5), as photo-only stops between chapters, in date order. Run 25, lined up with Griffin's words:
+ *  Japan is December 2018 ("In 2018 we were in Japan after my first internship"); the Canada visit's year isn't in
+ *  his story, so it shows none until they confirm it */
 const PHOTO_STOPS: Record<string, Chapter> = {
   "3": { ...STORY_PLAN.find((c) => c.photo === "story-4")!, key: "photo-4", body: [] },
   "5": { ...STORY_PLAN.find((c) => c.photo === "story-8")!, key: "photo-8", body: [] },

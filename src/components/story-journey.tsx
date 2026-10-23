@@ -1,19 +1,24 @@
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import type React from "react"
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
+import { ART } from "@/lib/art"
+import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { cn } from "@/lib/utils"
 import { readFlying } from "@/lib/journey"
 import { getFlying, getJourneys, type Journey } from "@/lib/api"
 import { Segmented } from "@/components/segmented"
-import { pending } from "@/content/pending"
 import { startsFlat } from "@/lib/globe-mode"
+import { chapterPins, type ChapterPin } from "@/lib/journey-names"
 import { JourneyLegend, usePlaceName } from "@/components/journey-mini"
 import { JourneyFlat } from "@/components/journey-flat"
 import { Photo } from "@/components/photo"
 import { loop } from "@/lib/frame"
-import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetBody, SheetClose, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
+import photos from "@/content/photos.json"
 import { Lettering } from "@/components/lettering"
 
 /** Run 24: what's written on a print's bottom border, lowercase and casual: the year and the place's own name
@@ -46,10 +51,42 @@ function ReadOn({ c, meta }: { c: Chapter; meta: string }) {
   const { t } = useLang()
   return (
     <Sheet>
-      <SheetTrigger asChild><button type="button" className="btn-text -my-2 min-h-11 self-center" aria-label={t.story.keepReadingLabel(c.title)}>{t.story.keepReading}</button></SheetTrigger>
+      <SheetTrigger asChild><button type="button" className="story-link btn-text min-h-11 self-center" aria-label={t.story.keepReadingLabel(c.title)}>{t.story.keepReading}</button></SheetTrigger>
       <SheetContent aria-describedby={undefined}>
         <SheetHead><p className="text-small text-muted-foreground">{meta}</p><SheetTitle lang="en" className="heading">{c.title}</SheetTitle></SheetHead>
         <SheetBody><div className="story-read"><Paragraphs body={c.body} /></div></SheetBody>
+        <BackToStory />
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+/** Run 25: the chapter and list sheets end in a sticky "Back to the story" (the reply sheet's footer), always in reach */
+function BackToStory() {
+  const { t } = useLang()
+  return <footer className="rsvp-actions"><SheetClose asChild><Button variant="secondary" size="md" className="flex-1">{t.story.backToStory}</Button></SheetClose></footer>
+}
+
+/**
+ * Run 25: tap a print (or a list thumbnail) and it opens full screen, the whole photo uncropped on a dark ground, with
+ * a close button; Escape closes it and focus goes back to the print. A swipe that starts on the print still moves the
+ * story (the drag marks the track, and the click that follows a drag is ignored).
+ */
+type Dims = Record<string, { width: number; height: number }>
+function PhotoOpen({ name, label, className, children }: { name: string; label: string; className?: string; children: ReactNode }) {
+  const { t } = useLang()
+  const p = (photos as Dims)[name]
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <button type="button" className={cn("photo-open", className)} aria-label={t.story.openPhoto(label)}
+          onClick={(e) => { if ((e.currentTarget as HTMLElement).closest("[data-dragged]")) e.preventDefault() }}>{children}</button>
+      </SheetTrigger>
+      <SheetContent className="photo-viewer" closeLabel={t.story.closePhoto} aria-describedby={undefined}>
+        <SheetTitle className="sr-only">{label}</SheetTitle>
+        <div className="photo-viewer-frame" style={{ "--r": p ? p.width / p.height : 0.8 } as React.CSSProperties}>
+          <Photo name={name} treatment="print" sizes="94vw" alt={label} />
+        </div>
       </SheetContent>
     </Sheet>
   )
@@ -61,39 +98,98 @@ const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matche
 const SPRING = { k: 170, c: 20 }
 
 // Three.js and the painted globe load only when the journey stop is showing
-const JourneyGlobe = lazy(() => import("@/components/journey-globe").then((m) => ({ default: m.JourneyGlobe })))
-const MODE = "ng-map"
+const JourneyGlobe = lazy(() => loadGlobe().then((m) => ({ default: m.JourneyGlobe })))
+
+/** Run 25: the globe's place before it's drawn, a still disc the globe's own size (never an empty square) */
+const GlobeWaiting = () => <div className="journey-globe" aria-hidden />
 
 /**
- * The journey to Kyoto, once, as the last stop (final run): the painted globe, or the flat map (a small toggle,
- * remembered on this device; no WebGL or a low-end phone starts flat). Nadia's and Griffin's lines, then the guests'
- * (one per city, never who), then this household's own when they've said. The globe only runs while this stop shows.
+ * The journey to Kyoto, once, as the last stop (final run): Nadia's and Griffin's lines, then the guests' (one per
+ * city, never who), then this household's own when they've said. The globe only runs while this stop shows.
+ * Run 25, one view per screen: the stop shows the painted globe (the flat map on a phone that starts flat: no WebGL,
+ * little memory or Save-Data) and a small Full screen control above it. That opens the map full screen like a photo
+ * (a dialog: focus kept inside, Escape or the X closes it, focus goes back to the control), with Globe / Map in a
+ * fixed spot at the top that never moves when you switch, and + and − on the globe. Each chapter's place is a pin on
+ * both; tapping one goes to that chapter's stop.
  */
-function JourneyMap({ active }: { active: boolean }) {
-  const { t, lang } = useLang()
+/** Run 24: the globe's code warms one stop early, and the globe itself starts once the spring has settled on its stop,
+ *  so building it (Three.js, painting the land) never lands mid-slide. Before and after: .brief/docs/runs/2026-10-24.md */
+const loadGlobe = () => import("@/components/journey-globe")
+type View = "globe" | "flat"
+function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: boolean; pins: ChapterPin[]; onPin: (key: string) => void }) {
+  const { t } = useLang()
   const { household } = useHousehold()
-  const you = readFlying(household?.token)
+  // Read once per household (run 25): a new object every render rebuilt the globe on every re-render
+  const you = useMemo(() => readFlying(household?.token), [household?.token])
   const [flying, setFlying] = useState<Awaited<ReturnType<typeof getFlying>>>(null)
-  const [journeys, setJourneys] = useState<Journey[]>([])
+  // null until the back end answers, so the globe is built once with its lines rather than again when they arrive
+  const [journeys, setJourneys] = useState<Journey[] | null>(null)
   useEffect(() => { void getFlying().then(setFlying); void getJourneys(household?.token).then(setJourneys) }, [household?.token])
-  const [mode, setMode] = useState<"globe" | "flat">(() => { try { const m = localStorage.getItem(MODE); if (m === "globe" || m === "flat") return m } catch { /* fine */ } return startsFlat() ? "flat" : "globe" })
-  const pick = (m: "globe" | "flat") => { setMode(m); try { localStorage.setItem(MODE, m) } catch { /* private mode */ } }
+  const [base] = useState<View>(() => (startsFlat() ? "flat" : "globe"))
+  const [open, setOpen] = useState(false)
+  const [view, setView] = useState<View>(base)
+  const jumped = useRef(false)
+  // One stop early, while they read: the globe's code, then its land painted in idle time (paintGlobe keeps it, so the
+  // globe mounts on a ready painting; the same look, size and countries as journey-globe.tsx asks for)
+  const { theme } = useTheme()
+  useEffect(() => {
+    if (!near || base !== "globe" || ART.globeLand || !journeys) return
+    let alive = true
+    // After this stop's own slide has settled (about 550 ms), then when the phone is idle, never mid-spring
+    const idle = (f: () => void) => window.setTimeout(() => (typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(f) : f()), still() ? 0 : 700)
+    void loadGlobe().then(() => idle(() => {
+      if (!alive) return
+      const countries = [...journeys.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
+      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(GLOBE_LOOK.map, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries))
+    }))
+    return () => { alive = false }
+  }, [near, base, theme, journeys, you])
+  const [settled, setSettled] = useState(false)
+  useEffect(() => {
+    if (!active) return setSettled(false)
+    const id = window.setTimeout(() => setSettled(true), still() ? 0 : 550)
+    return () => window.clearTimeout(id)
+  }, [active])
   const nameOf = usePlaceName()
   const name = you ? nameOf(you.name) : null
   const label = t.journey.map(name, you?.id === "jp" || you?.country === "JP" ? "Already in Japan" : undefined)
   const told = flying && flying.households > 0 ? flying : null
-  const toggle = <Segmented label={pending("journey.mapMode", lang)} size="sm" className="journey-mode" value={mode} onChange={pick} items={[{ value: "globe", label: pending("journey.globe", lang) }, { value: "flat", label: pending("journey.flat", lang) }]} />
+  const cities = journeys ?? NONE
+  const show = (v: View, where: "stop" | "full") => {
+    const go = where === "full" ? (key: string) => { jumped.current = true; setOpen(false); onPin(key) } : onPin
+    if (v === "flat") return <JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} />
+    // The stop's globe waits for its stop to settle and for the lines; the full-screen one builds straight away
+    if (where === "stop" && !(active && settled && journeys)) return <GlobeWaiting />
+    return <Suspense fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable={where === "full"} held={where === "stop" && open} /></Suspense>
+  }
+  const legend = <JourneyLegend you={Boolean(you && you.id !== "jp")} />
   return (
     <div className="flex w-full flex-col items-center gap-2">
-      {/* Globe / Flat map: a small segmented control in the map's own bottom corner (run 19), remembered on this device */}
-      {mode === "globe" && active
-        ? <Suspense fallback={<div className="journey-globe">{toggle}</div>}><JourneyGlobe you={you} cities={journeys} label={label}>{toggle}</JourneyGlobe></Suspense>
-        : mode === "globe" ? <div className="journey-globe">{toggle}</div> : <JourneyFlat you={you} cities={journeys} label={label}>{toggle}</JourneyFlat>}
-      {mode === "flat" && <JourneyLegend you={Boolean(you && you.id !== "jp")} />}
+      <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (o) { jumped.current = false; setView(base) } }}>
+        {/* The control sits where the Globe / Flat switch was, centred above the map */}
+        <div className="journey-mode-bar">
+          <SheetTrigger asChild>
+            <button type="button" className="journey-open" aria-label={t.journey.openLabel}><Maximize2 className="size-4" aria-hidden />{t.journey.open}</button>
+          </SheetTrigger>
+        </div>
+        {show(base, "stop")}
+        <SheetContent className="journey-viewer" closeLabel={t.journey.close} aria-describedby={undefined}
+          onCloseAutoFocus={(e) => { if (jumped.current) e.preventDefault() }}>
+          <SheetTitle className="sr-only">{t.journey.title}</SheetTitle>
+          {/* Globe / Map in one fixed spot at the top, the same in both views */}
+          <div className="journey-viewer-bar">
+            <Segmented label={t.journey.view} size="sm" className="journey-mode" value={view} onChange={setView} items={[{ value: "globe", label: t.journey.globe }, { value: "flat", label: t.journey.flat }]} />
+          </div>
+          <div className="journey-viewer-stage" data-view={view}>{show(view, "full")}</div>
+          <div className="journey-viewer-foot">{legend}</div>
+        </SheetContent>
+      </Sheet>
+      {legend}
       {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )
 }
+const NONE: Journey[] = []
 
 /**
  * Our story, one stop at a time (APG carousel): the kid-photo opener when there is one, a stop per chapter, then the
@@ -110,7 +206,6 @@ function JourneyMap({ active }: { active: boolean }) {
 export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener?: ReactNode }) {
   const { t } = useLang()
   const [at, setAt] = useState(0)
-  const [list, setList] = useState(false)
   const track = useRef<HTMLDivElement>(null)
   // The planner's last stop (Kyoto, no photo) carries the map; otherwise the map is a stop of its own after the chapters
   const last = chapters[chapters.length - 1]
@@ -178,7 +273,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     if (!el || typeof ResizeObserver === "undefined") return
     const ro = new ResizeObserver(paint); ro.observe(el)
     return () => { ro.disconnect(); running.current?.() }
-  }, [paint, list])
+  }, [paint])
 
   // Dragging: sideways moves follow the finger; up and down stay the page's
   useEffect(() => {
@@ -186,7 +281,8 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     if (!el) return
     let start: { x: number; y: number; p: number; id: number } | null = null, dragging = false, samples: [number, number][] = []
     const down = (e: PointerEvent) => {
-      if (e.button !== 0 || (e.target as Element).closest("button, a, input, .journey-globe")) return // the globe turns, it doesn't swipe
+      // The globe turns, it doesn't swipe; a print (run 25: a button that opens it) still swipes
+      if (e.button !== 0 || (e.target as Element).closest("button:not(.photo-open), a, input, .journey-globe")) return
       start = { x: e.clientX, y: e.clientY, p: pos.current, id: e.pointerId }; dragging = false; samples = [[e.timeStamp, e.clientX]]
     }
     const move = (e: PointerEvent) => {
@@ -209,6 +305,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
       const was = dragging, s = start
       start = null; dragging = false; delete el.dataset.dragging
       if (!was) return
+      el.dataset.dragged = ""; window.setTimeout(() => delete el.dataset.dragged, 0) // the click after a drag isn't a tap
       const [t0, x0] = samples[0], [t1, x1] = samples[samples.length - 1]
       const v = (x1 - x0) / Math.max(1, t1 - t0) // px per ms, + is rightwards
       const dx = e.clientX - s.x
@@ -238,33 +335,29 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up)
     return () => { window.clearTimeout(quiet); el.removeEventListener("wheel", wheel); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list, total, paint])
-  if (list) return (
-    <div className="flex flex-col gap-4">
-      <button type="button" className="btn-text min-h-11 self-start" onClick={() => setList(false)}>{t.story.seeMap}</button>
-      <ol className="flex flex-col gap-4">
-        {chapters.map((ch) => (
-          <li key={ch.key} className="flex items-start gap-3">
-            {ch.photo ? <Photo name={ch.photo} treatment="split" sizes="96px" alt="" className="story-thumb" /> : <span aria-hidden className="story-thumb" />}
-            <div className="story-read flex min-w-0 flex-col gap-2"><p className="text-small text-muted-foreground">{ch.year}{ch.place ? ` · ${ch.place}` : ""}</p><p lang="en" className="font-medium text-foreground">{ch.title}</p><Paragraphs body={ch.body} /></div>
-          </li>
-        ))}
-      </ol>
-    </div>
-  )
+  }, [total, paint])
   const slide = (i: number, media: ReactNode, words: ReactNode, key: string, className?: string) => (
     <section key={key} className={cn("story-slide", className)} role="group" aria-roledescription="slide" aria-label={t.story.slide(i + 1, total)} inert={i !== at || undefined}>
       <div className="story-media">{media}</div>
       {words && <div className="story-words">{words}</div>}
     </section>
   )
+  // Run 25: a chapter's pin on the map goes to its stop, and the carousel takes focus (the map's stop goes inert)
+  const pins = chapterPins(chapters)
+  const toChapter = (key: string) => {
+    const i = ends?.key === key ? total - 1 : stops.findIndex((c) => c.key === key) + lead
+    if (i < lead && ends?.key !== key) return
+    go(i)
+    requestAnimationFrame(() => track.current?.focus({ preventScroll: true }))
+  }
   // Chapters are counted without the photo-only stops between them (run 23)
   const told = chapters.filter((c) => c.body.length)
   const words = (c: Chapter) => {
-    const n = told.indexOf(c), meta = `${n < 0 ? c.year : `${t.story.page(n + 1, told.length)}, ${c.year}`}${c.place ? ` · ${c.place}` : ""}`
+    const n = told.indexOf(c), meta = `${n < 0 ? c.year : `${t.story.page(n + 1, told.length)}, ${c.year}`}${c.place ? ` · ${c.place}` : ""}`.replace(/^, /, "")
     const more = c.body.length > 1 || (c.body[0]?.length ?? 0) > 220
     return <>
-      <p className="text-small text-muted-foreground">{meta}</p>
+      {/* Run 25: the chapter line is for screen readers only (the print's note says the year and place) */}
+      <p className="sr-only">{meta}</p>
       <h2 lang="en" className="font-display text-heading text-foreground">{c.title}</h2>
       {c.body.length > 0 && <p lang="en" className={cn(more && "story-lead")}>{c.body[0]}</p>}
       {more && <ReadOn c={c} meta={meta} />}
@@ -276,9 +369,9 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         onKeyDown={(e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(target.current + 1) } if (e.key === "ArrowLeft") { e.preventDefault(); go(target.current - 1) } }}>
         {opener && slide(0, opener, null, "opener", "story-slide-opener")}
         {stops.map((c, i) => slide(i + lead, c.photo
-          ? <Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={`${c.title}, ${c.year}`} className="story-print" note={printNote(c)} />
+          ? <PhotoOpen name={c.photo} label={[c.title, c.year].filter(Boolean).join(", ")}><Photo name={c.photo} treatment="print" vary sizes="(min-width: 1024px) 320px, 70vw" alt={[c.title, c.year].filter(Boolean).join(", ")} className="story-print" note={printNote(c)} /></PhotoOpen>
           : <span aria-hidden className="story-print-blank" />, words(c), c.key))}
-        {slide(total - 1, <JourneyMap active={at === total - 1} />, ends ? words(ends) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
+        {slide(total - 1, <JourneyMap active={at === total - 1} near={at >= total - 2} pins={pins} onPin={toChapter} />, ends ? words(ends) : <h2 className="font-display text-heading text-foreground">{t.story.kyoto}</h2>, "journey", "story-slide-map")}
       </div>
 
       <div className="story-controls">
@@ -286,7 +379,37 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
         <span aria-hidden className="journey-dots">{Array.from({ length: total }, (_, i) => <span key={i} className={cn(i === at && "is-on")} />)}</span>
         <button type="button" className="utility-btn" onClick={() => go(target.current + 1)} disabled={at >= total - 1} aria-label={t.story.nextChapter}><ChevronRight className="size-5" aria-hidden /></button>
       </div>
-      <button type="button" className="btn-text min-h-11 self-center" onClick={() => setList(true)}>{t.story.seeList}</button>
+      <StoryList chapters={chapters} />
     </div>
+  )
+}
+
+/** Run 25: "See as a list" opens the whole story as a sheet over it, like Keep reading: a line runs down past each
+ *  stop (The day's timeline), each with its thumbnail (tap to open it full screen), year and place, title and words */
+function StoryList({ chapters }: { chapters: Chapter[] }) {
+  const { t } = useLang()
+  return (
+    <Sheet>
+      <SheetTrigger asChild><button type="button" className="story-link btn-text min-h-11 self-center">{t.story.seeList}</button></SheetTrigger>
+      <SheetContent aria-describedby={undefined}>
+        <SheetHead><SheetTitle className="heading">{t.story.title}</SheetTitle></SheetHead>
+        <SheetBody>
+          <ol className="story-timeline">
+            {chapters.map((ch) => {
+              const label = [ch.title, ch.year].filter(Boolean).join(", ")
+              return (
+                <li key={ch.key} className="story-timeline-row">
+                  {ch.photo
+                    ? <PhotoOpen name={ch.photo} label={label} className="story-thumb"><Photo name={ch.photo} treatment="split" sizes="96px" alt="" /></PhotoOpen>
+                    : <span aria-hidden className="story-thumb story-thumb-dot" />}
+                  <div className="story-read flex min-w-0 flex-col gap-2"><p className="text-small text-muted-foreground">{[ch.year, ch.place].filter(Boolean).join(" · ")}</p><p lang="en" className="font-medium text-foreground">{ch.title}</p><Paragraphs body={ch.body} /></div>
+                </li>
+              )
+            })}
+          </ol>
+        </SheetBody>
+        <BackToStory />
+      </SheetContent>
+    </Sheet>
   )
 }

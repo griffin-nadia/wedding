@@ -7,6 +7,8 @@ import { useEffect, useState } from "react"
 import { useLocation } from "react-router-dom"
 import { AskUs } from "@/components/ask-us"
 import { getQuestions, type Asked } from "@/lib/api"
+import { ART } from "@/lib/art"
+import { config } from "@/lib/config"
 
 /** FAQs: one numbered accordion (numbers help guests point to a question when they message). Answers are body.
  * Who to contact on the day appears once Griffin and Nadia fill contact_day in the Content tab. */
@@ -31,7 +33,7 @@ export function FaqsPage() {
                 <span><span className="sr-only">{i + 1}. </span>{item.q}</span>
               </span>
             </AccordionTrigger>
-            <AccordionContent><p className="pl-10">{item.a}</p></AccordionContent>
+            <AccordionContent><p className="pl-10">{withMusicLink(item.a)}</p></AccordionContent>
           </AccordionItem>
         ))}
       </Disclosure>
@@ -54,4 +56,11 @@ export function FaqsPage() {
       <p className="text-small">{contactDay ? `${t.qa.onTheDay} ${contactDay}` : pending("faqs.contactDay", lang)}</p>
     </>
   )
+}
+
+/** Run 25: in the "Who made this site?" answer, the pianist's name links to the track (config.links.music) */
+function withMusicLink(a: string) {
+  const name = ART.music.artist, at = a.indexOf(name)
+  if (at < 0 || !config.links.music) return a
+  return <>{a.slice(0, at)}<a href={config.links.music} target="_blank" rel="noreferrer" className="btn-text">{name}</a>{a.slice(at + name.length)}</>
 }
