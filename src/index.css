@@ -1306,30 +1306,38 @@ svg.lucide { stroke-width: 1.5; }
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
 /* The kid opener (run 24): three instant prints in a small pile that fills the spread's media box. Each print is the
    story's instant print (4:5) at about 1.05 × --print-h tall; positions in % of the pile so it scales */
-.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 1.4)); /* run 25: two prints, overlapping as on phones */ height: calc(var(--stop-h) - var(--space-2)); }
+.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 2.2)); /* run 26: three prints again */ height: calc(var(--stop-h) - var(--space-2)); }
 .story-slide-opener .story-media { width: 100%; } /* the pile's prints are placed in it, so it can't size to them */
 .story-kid { position: absolute; }
 .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.72); }
 .story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
-.story-kid-him { left: 0; top: 2%; z-index: 2; }
+/* Run 26: his first day (kid-griffin, his own pick) back in, tucked under his portrait. The scan is his whole front
+   step, so the print crops in on his face: --crop-at is his face in the photo, --crop-zoom how far in */
+.story-kid-behind { left: 0; top: 16%; z-index: 1; }
+.story-kid-behind .story-print { --tilt: -6deg; --print-h: calc(var(--stop-h) * 0.6); }
+.story-kid-behind img { --crop-at: 51% 25%; --crop-zoom: 2.6; object-position: 51% 24%; transform: scale(var(--crop-zoom)); transform-origin: var(--crop-at); }
+.story-kid-him { left: 27%; top: 2%; z-index: 2; }
 .story-kid-him .story-print { --tilt: 4deg; }
-.story-kid-her { right: 0; top: 14%; z-index: 3; }
+/* Nadia's print pulled back a little (run 26) so her face and his meet in the middle */
+.story-kid-her { right: 3%; top: 12%; z-index: 3; }
 .story-kid-her .story-print { --tape-x: 50%; --tape-w: 38%; --tape-turn: -2.5deg; }
 .story-kid-her .story-print { --tilt: -5deg; }
-/* Phones: the pile staggers down the stop's full height (his top left, hers lower right over his corner, taped there,
-   his first day tucked under his, peeking out at the bottom left), so both faces stay clear and there's no empty band */
+/* Phones: the pile staggers down the stop's full height: his portrait top left, his first day under it at the bottom
+   left, and Nadia's over both on the right, pulled back towards the middle, so all three faces stay clear and there's
+   no empty band */
 @media (max-width: 767px) {
   /* The pile takes all the height the story's track gives the stop (at least 1.45 stops), and the prints size from the
      pile's own height (cqh), never wider than its width allows (cqw), so it fills down to the arrows at every phone */
   .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.45); container-type: size; }
   .story-kids { height: 100%; }
-  /* Run 25: two prints, his top left and hers bottom right, overlapping at his lower corner */
-  /* Run 25 (Jehan): a little smaller and more tilted, so they still overlap at the corners but neither covers a face */
-  .story-kid .story-print { --print-h: min(43cqh, 64cqw); }
+  /* Run 25 (Jehan): a little smaller and more tilted, so they overlap at the corners but no print covers a face */
+  .story-kid .story-print { --print-h: min(40cqh, 60cqw); }
+  .story-kid-behind .story-print { --print-h: min(33cqh, 50cqw); --tilt: 5deg; }
   .story-kid-him .story-print { --tilt: -7deg; }
   .story-kid-her .story-print { --tilt: 8deg; }
-  .story-kid-him { left: 2%; top: 2%; }
-  .story-kid-her { right: 2%; top: auto; bottom: 2%; }
+  .story-kid-him { left: 3%; top: 1%; }
+  .story-kid-behind { left: 1%; top: auto; bottom: 3%; }
+  .story-kid-her { right: 2%; top: 39%; }
 }
 
 
@@ -1404,6 +1412,9 @@ svg.lucide { stroke-width: 1.5; }
 .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { place-items: end center; }
 /* (every stop starts at the top, so a two-line title under it never moves the photo up) */
 
+/* Run 26: a chapter's print a little smaller (8%), shrunk from its bottom edge so it stays on the stops' shared line and
+   only gains room above the title; the box (and the map stop, which sizes from it) keep their size */
+.story-slide:not(.story-slide-opener) .story-media > .photo-open { scale: 0.92; transform-origin: 50% 100%; }
 .story-print figcaption { min-height: 1.25rem; }
 /* Portrait prints stand --print-h tall; landscape ones lie --print-h wide; a margin leaves room for the tilted corners */
 .story-print { margin: var(--space-2); }
@@ -1431,6 +1442,8 @@ svg.lucide { stroke-width: 1.5; }
 .story-thumb { position: relative; z-index: 1; flex: none; width: var(--thumb, 48px); height: var(--thumb, 48px); border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); box-shadow: 0 0 0 4px var(--letter-bg); }
 .story-thumb figcaption { display: none; }
 .story-thumb :is(figure, div) { width: 100%; height: 100%; aspect-ratio: auto !important; border-radius: 0 !important; }
+/* Run 26: the Globe button at the top of the list (the journey stop's Full screen control, opening the same view) */
+.story-list-globe { align-self: flex-start; margin-bottom: var(--space-4); min-height: 44px; }
 .story-thumb-dot { width: 14px; height: 14px; margin: var(--space-2) calc((var(--thumb) - 14px) / 2) 0; border-radius: 50%; background: var(--ink-moss); }
 /* A print or thumbnail that opens full screen (run 25) */
 .photo-open { display: block; padding: 0; border: 0; background: none; color: inherit; cursor: zoom-in; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; -webkit-tap-highlight-color: transparent; }
