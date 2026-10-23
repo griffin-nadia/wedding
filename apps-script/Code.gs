@@ -136,6 +136,7 @@ function onOpen() {
     .addSeparator()
     .addItem("Set up the Emails tab", "setupEmailsTab")
     .addItem("Set up the Content tab (fortunes)", "setupContentTab")
+    .addItem("Add the Japanese fortunes (drafts) to the Fortunes tab", "addFortunesJapanese")
     .addItem("Make two review links (Preview tab)", "makeReviewLinks")
     .addItem("Check song search", "checkSongSearch")
     .addItem("Turn on the fast email queue", "setupQueue")
@@ -1361,7 +1362,7 @@ function fortunes_() {
   let out = []
   if (ss_().getSheetByName("Fortunes")) {
     out = rows_("Fortunes")
-      .map((r) => Object.assign({ no: Number(r.No) || 0, tier: String(r.Tier || "").trim().slice(0, 40), tierJa: String(r["Tier (ja)"] || "").trim().slice(0, 10), category: String(r.Category || "").trim().slice(0, 20), text: String(r.Text || "").trim().slice(0, 400) }, isDraft_(r.Draft) ? { draft: true } : {}))
+      .map((r) => Object.assign({ no: Number(r.No) || 0, tier: String(r.Tier || "").trim().slice(0, 40), tierJa: String(r["Tier (ja)"] || "").trim().slice(0, 10), category: String(r.Category || "").trim().slice(0, 20), text: String(r.Text || "").trim().slice(0, 400) }, isDraft_(r.Draft) ? { draft: true } : {}, String(r.Japanese || "").trim() ? { textJa: String(r.Japanese).trim().slice(0, 400) } : {}))
       .filter((f) => f.no > 0 && f.text)
       .sort((a, b) => a.no - b.no)
   }
@@ -1376,6 +1377,60 @@ function fortunes_() {
  */
 function isDraft_(v) {
   return v === true || /^(y|yes|true|draft)$/i.test(String(v == null ? "" : v).trim())
+}
+
+/**
+ * Run 26: the Japanese for Nadia's 25, by No., drafts for Mitsumi's read. 2, 7 and 22 tell their story (Nijō Castle,
+ * Kiyomizu-dera, Kyoto Tower): Draft until Nadia checks them, so they're never drawn as final.
+ */
+const FORTUNES_JA = {
+  1: "グリフィンとナディアの好物はメロンパン。日本にいる間に、ぜひ一つ見つけるべし。",
+  2: "二条城は庭園と堀で名高く、ナディアとグリフィンが初めて日帰り旅をした地なり。",
+  3: "「乾杯」は英語の「Cheers!」。披露宴で初めて会う人と、声を合わせて言うべし。",
+  4: "ドン・キホーテは何でもそろう店なり。京都で立ち寄り、ペンギンのマスコットと写真を撮るべし。",
+  5: "気の向くままに電車に乗り、知らない駅で降りて町を歩くべし。コンビニでおやつを買い、日本でのんびりとした時を楽しめ。",
+  6: "卓を囲めば札が配られる。勝ち手は、回る皿の上の寿司なり。滞在中に回転寿司へ行くべし。",
+  7: "清水寺は千年を超える古寺にして、釘を一本も使わずに建てられている。時あらば訪れ、千年前の僧になった心地を味わうべし。グリフィンならきっとそうする。",
+  8: "居酒屋は、おいしい料理とたくさんのお酒がそろう昔ながらの酒場なり。友と集い、飲みゲームに興じるべし。",
+  9: "河原町は鴨川の西にある、にぎやかなアーケードの商店街。店をめぐり、すてきなお土産を見つけるべし。",
+  10: "日本の店は商品に英語を載せるのが好きだが、文法が正しいとは限らない。思わず笑顔になる言葉を探すべし。",
+  11: "日本は新鮮な魚介で名高い。トロ、うなぎ、うになど、新しい味に挑むべし。",
+  12: "多くの寺では、さまざまな香りと意味をもつお香が売られている。お土産に一つ探すべし。",
+  13: "カラオケは日本で愛される遊びなり。滞在中に友と集い、心ゆくまで歌うべし。",
+  14: "ブックオフ スーパーバザーには、あらゆる中古品がとても手頃な値で並ぶ。トレカ、レコード、ギター、革ジャンなど、思いきり楽しむべし。",
+  15: "チームラボ バイオヴォルテックス 京都は体験型のアート。時間があれば、午後をそこで過ごすべし。",
+  16: "焼肉の店では、卓の網で自ら肉を焼く。滞在中に一度は味わうべし。",
+  17: "京都には、今の建物の間に史跡がひっそりと隠れている。散策しながら一つ見つけるべし。",
+  18: "奈良へ日帰りの旅に出て、土地の者、すなわち鹿と親しくなるべし。公園で売られる鹿せんべいを差し出せば、お辞儀を返してくれる。",
+  19: "伏見は酒蔵の多さで知られる。滞在中に一本、いや四本ほど手に入れるべし。",
+  20: "ゲームセンターは友と過ごし、景品を勝ち取るのにうってつけ。クレーンゲームでぬいぐるみを取るべし。",
+  21: "安く食べたければ、夕方六時過ぎにスーパーへ行くべし。イカ天、ご飯と豆、パン、ビールを買い、留学生になった気分で味わえ。川辺で食べればなお良し。",
+  22: "京都タワーの展望台から、京都を一望すべし。おや、ここから式場が見える。",
+  23: "猫カフェを訪れ、小さくてふわふわの新しい友をたくさん作るべし。",
+  24: "日本は自販機であふれている。ポケモンの飲み物、温かいコーンスープ、カップ酒など、珍しいものを一つ買ってみるべし。",
+  25: "大阪で一夜を過ごすべし。遊びの都で、たこ焼きを食べ、道頓堀で自撮りをし、にぎわいを楽しめ。",
+}
+const FORTUNES_STORY = [2, 7, 22]
+
+/**
+ * Menu, run once as the wedding account: adds Japanese and Draft columns at the end of the Fortunes tab (if missing),
+ * fills an empty Japanese cell from FORTUNES_JA by No., and marks 2, 7 and 22 Draft where Draft is empty. Never
+ * changes the English, and never overwrites a cell that already has something in it.
+ */
+function addFortunesJapanese() {
+  const ui = SpreadsheetApp.getUi()
+  const s = ss_().getSheetByName("Fortunes")
+  if (!s) return ui.alert("There's no Fortunes tab.")
+  const head = ensureColumns_(s, ["Japanese", "Draft"])
+  const data = s.getDataRange().getValues()
+  let ja = 0, drafts = 0
+  for (let i = 1; i < data.length; i++) {
+    const no = Number(data[i][head.No]) || 0
+    if (FORTUNES_JA[no] && !String(data[i][head.Japanese] || "").trim()) { s.getRange(i + 1, head.Japanese + 1).setValue("'" + FORTUNES_JA[no]); ja++ }
+    if (FORTUNES_STORY.indexOf(no) >= 0 && !String(data[i][head.Draft] || "").trim()) { s.getRange(i + 1, head.Draft + 1).setValue("yes"); drafts++ }
+  }
+  CacheService.getScriptCache().remove("fortunes")
+  ui.alert("Added " + ja + " Japanese lines (drafts for Mitsumi) and marked " + drafts + " story fortunes Draft (2, 7, 22: for Nadia to check).")
 }
 
 // ---------- omikuji draws (run 26) ----------

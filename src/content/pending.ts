@@ -13,15 +13,6 @@ export const PENDING = {
     en: "A photo to come",
     ja: "写真は準備中です",
   },
-  // The omikuji (run 26): redraw under the slip, and Home's card after a reply
-  "fortune.again": {
-    en: "Draw another",
-    ja: "もう一度ひく",
-  },
-  "fortune.homeTitle": {
-    en: "Draw your fortune",
-    ja: "おみくじをひく",
-  },
   // Home's next step once they've replied (18e): the one thing worth doing next, as a button
   "home.nextDates": {
     en: "Add your travel dates",

@@ -41,10 +41,12 @@ test("the slip's number in kanji, 1 to 25", () => {
 })
 
 // Run 26: the Draft column, and draws kept per household, append only
-test("a Fortunes row marked Draft carries draft: true; the rest are unchanged", () => {
-  const out = fortunesFrom([["No", "Tier", "Tier (ja)", "Category", "Text", "Draft"], [1, "Great Blessing", "大吉", "Food", "Theirs", ""], [2, "Great Blessing", "大吉", "Fun", "Jehan's", "yes"]]) as { draft?: boolean }[]
+test("a Fortunes row marked Draft carries draft: true, and the Japanese column textJa; the rest are unchanged", () => {
+  const out = fortunesFrom([["No", "Tier", "Tier (ja)", "Category", "Text", "Draft", "Japanese"], [1, "Great Blessing", "大吉", "Food", "Theirs", "", "日本語"], [2, "Great Blessing", "大吉", "Fun", "A story line", "yes", ""]]) as { draft?: boolean; textJa?: string }[]
   assert.equal(out[0].draft, undefined)
+  assert.equal(out[0].textJa, "日本語")
   assert.equal(out[1].draft, true)
+  assert.equal(out[1].textJa, undefined)
 })
 
 test("draws: the first is the household's own, a redraw is never the one before, and drafts stay out", async () => {
