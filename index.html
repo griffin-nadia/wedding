@@ -9,11 +9,11 @@
     <meta name="theme-color" content="#f3e7d3" />
     <script>
       // Lantern mode: pick the theme before first paint so there's no flash.
-      // A saved choice wins; otherwise follow the device's light or dark setting.
+      // Day (autumn) is the default and night (Lantern) the switch (run 26): only a saved choice of Lantern opens dark.
       (function () {
         var saved = null
         try { saved = localStorage.getItem("ng-theme") } catch (e) {}
-        var dark = saved ? saved === "lantern" : window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches
+        var dark = saved === "lantern"
         document.documentElement.setAttribute("data-theme", dark ? "lantern" : "autumn")
         document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#2e1b12" : "#f3e7d3")
         // Their photo is the largest paint on every page: start fetching this mode's one now, not after the app script

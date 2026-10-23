@@ -109,24 +109,14 @@ export const PENDING = {
     en: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding.",
     ja: "お返事は私たちにだけ届き、ほかの人が見ることはありません。結婚式の数か月後に削除します。",
   },
-  // Run 25: warmer, in Griffin's voice (Jehan asked for it to read like him)
-  "faqs.whoMade.a": {
-    en: "A proper family effort! Griffin wrote the words, Nadia drew every little thing you see, and Nadia's brother Jehan designed and built the whole thing.",
-    ja: "家族みんなで作りました！文はグリフィン、絵はぜんぶナディア、デザインと制作はナディアの兄のジェハンです。",
-  },
-  // {song} is the music credit (src/lib/art.ts) and {artist} who plays it, said here only
-  "faqs.whoMade.song": {
-    en: "And the music? That's {song}, played on piano by {artist}.",
-    ja: "流れている曲は{song}、ピアノ演奏は{artist}です。",
-  },
   // Their Time (Inv details, column E, 22 Oct): the planner still has to confirm it
   "day.arrival": {
     en: "Arrival time: to be confirmed by the wedding planner",
     ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします",
   },
   "faqs.contactDay": {
-    en: "On the day, call Jehan or Noya. We'll add their numbers closer to the time.",
-    ja: "当日は、ジェハンかノヤにご連絡ください。電話番号は日が近づいたらここに載せます。",
+    en: "On the day we'll let you know who to contact, with numbers added closer to the time.",
+    ja: "当日の連絡先は改めてお知らせします。電話番号は日が近づいたらここに載せます。",
   },
 } as const
 
@@ -160,8 +150,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.visa.q", ja: "ビザは必要ですか？" },
   { key: "faqs.visa.a", ja: "オーストラリア国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。" },
   { key: "faqs.whoMade.q", ja: "このサイトはどなたが作ったのですか？" },
-  { key: "faqs.whoMade.a", ja: "家族みんなで作りました！文はグリフィン、絵はぜんぶナディア、デザインと制作はナディアの兄のジェハンです。" },
-  { key: "faqs.whoMade.song", ja: "流れている曲は{song}、ピアノ演奏は{artist}です。" },
+  { key: "faqs.whoMade.a", ja: "家族みんなで作りました。文はグリフィン、目に見える絵はぜんぶナディア、サイトはまるごとジェハンが作りました。音楽は久石譲の「A Town With an Ocean View」、ピアノ演奏はPiano ZeroLです。" },
   { key: "travel.flyingBody.haruka", ja: "外国のパスポートで入国する方は、JR西日本の「HARUKA One-way Ticket」（京都まで2,200円）を出発前にオンラインで購入できます。日本国内では販売されておらず、JRの駅でパスポートを見せて受け取ります。" },
   { key: "home.pills.replied", ja: "お返事ありがとうございます" },
   { key: "preview.banner", ja: "プレビュー：お返事は保存されません。読みにくいところがあれば、メモしてください。" },
@@ -180,6 +169,8 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "faqs.food.a", ja: "食事の制限やアレルギーを教えてください！結婚式の昼食はケータリングで、メニューは式の数か月前に決まります。" },
   { key: "faqs.gifts.a", ja: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
   { key: "qa.contact", ja: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！" },
+  { key: "stay.picks.airbnbsAbout", ja: "わたしたちが見つけたAirbnbと、1泊あたりのおおよその料金です。料金は変わることがあるので、ほかの予約サイトもぜひ見てみてください。みんなで一緒に泊まるのがおすすめです！人数が多いほど1人あたりは安くなることが多く、2人より4人のほうがお得です！" },
+  { key: "faqs.contactDay", ja: "当日の連絡先は改めてお知らせします。電話番号は日が近づいたらここに載せます。" },
   { key: "day.arrival", ja: "受付開始の時間：ウェディングプランナーが確定しだいお知らせします" },
   { key: "story.keepReading", ja: "続きを読む" },
   { key: "photos.kid-griffin-1998.alt", ja: "1998年の学校写真の幼いグリフィン。赤いTシャツでほほえんでいる" },
@@ -204,7 +195,7 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
 export const WAITING: { key: string; what: string }[] = [
   { key: "art.mapleLeaf", what: "Nadia's maple leaf on its own (it's only on the closed envelope so far), for wherever a leaf shows alone" },
   { key: "day.arrivalTime", what: "What time guests should arrive on the day (The day and the invite email; nothing says it yet)" },
-  { key: "contact.dayDetails", what: "Jehan's and Noya's numbers for the day (the Content tab's contact_day replaces the FAQs line)" },
+  { key: "contact.dayDetails", what: "Who to contact on the day, and their numbers (the Content tab's contact_day replaces the FAQs line)" },
 ]
 
 export type PendingKey = keyof typeof PENDING
