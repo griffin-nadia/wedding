@@ -246,8 +246,8 @@ export const en = {
     intro: "Tap a place to see where it is and how to get there.",
     alt: "Nadia's painted map of Higashiyama, Kyoto. Kyoto Station is at the bottom left on the JR line. The Kamo River and the Keihan line run north past Tofukuji, Shichijo, Kiyomizu Gojo, Gion Shijo and Sanjo stations, with Kawaramachi Shopping Street to the west. To the east are Yasaka Shrine, the Yasaka Pagoda, The Sodoh and, up the hill, Kiyomizu-dera.",
     listTitle: "The places on the map",
-    full: "View the full map",
-    fullOpens: "opens the map on its own",
+    // Run 25: the same map full screen, from Travel (under the map) and The day (beside How to get there)
+    open: "Open the map", close: "Close the map",
     zoomHint: "Pinch to zoom",
     directions: "Directions in Google Maps",
     places: [
