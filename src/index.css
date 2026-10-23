@@ -1261,9 +1261,7 @@ svg.lucide { stroke-width: 1.5; }
 .story-kid { position: absolute; }
 .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.72); }
 .story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
-.story-kid-behind { left: 0; top: 14%; z-index: 1; }
-.story-kid-behind .story-print { --tilt: -7deg; --print-h: calc(var(--stop-h) * 0.6); }
-.story-kid-him { left: 16%; top: 2%; z-index: 2; }
+.story-kid-him { left: 10%; top: 2%; z-index: 2; }
 .story-kid-him .story-print { --tilt: 4deg; }
 .story-kid-her { right: 0; top: 9%; z-index: 3; }
 .story-kid-her .story-print { --tilt: -5deg; }
@@ -1274,12 +1272,11 @@ svg.lucide { stroke-width: 1.5; }
      pile's own height (cqh), never wider than its width allows (cqw), so it fills down to the arrows at every phone */
   .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.45); container-type: size; }
   .story-kids { height: 100%; }
-  .story-kid .story-print { --print-h: min(44cqh, 70cqw); }
-  .story-kid-behind .story-print { --print-h: min(36cqh, 56cqw); }
-  .story-kid-him { left: 6%; top: 1%; }
-  .story-kid-her { right: 6%; top: 41%; }
-  .story-kid-behind { left: 0; top: 50%; z-index: 1; }
-  .story-kids-tape { left: 37%; top: 39%; width: 24%; rotate: -34deg; }
+  /* Run 25: two prints, his top left and hers bottom right, overlapping at his lower corner */
+  .story-kid .story-print { --print-h: min(50cqh, 76cqw); }
+  .story-kid-him { left: 3%; top: 1%; }
+  .story-kid-her { right: 3%; top: auto; bottom: 1%; }
+  .story-kids-tape { left: 44%; top: 47%; width: 24%; rotate: -34deg; }
 }
 /* Tape across where hers overlaps his */
 .story-kids-tape { position: absolute; z-index: 4; left: 52%; top: 10%; width: 22%; height: 22px; rotate: 58deg; opacity: 0.82; background: color-mix(in oklab, var(--brand-sage) 70%, white); box-shadow: 0 1px 1px rgb(var(--tint-shadow) / 0.12);
@@ -1330,6 +1327,12 @@ svg.lucide { stroke-width: 1.5; }
 .story-lead { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; overflow: hidden; text-wrap: pretty; }
 /* Laptops under 960 tall: three lines, so the stop with their words still fits the frame (1440 × 900) */
 @media (min-width: 1024px) and (max-height: 960px) { .story-lead { -webkit-line-clamp: 3; line-clamp: 3; } }
+/* Phones up to 900 tall (run 25): the print, the title, the start of their words, the arrows and dots and See as a list
+   all fit at 390 × 844 without scrolling: three lines of lead and a slightly smaller print */
+@media (max-width: 767px) and (max-height: 900px) {
+  .story-lead { -webkit-line-clamp: 3; line-clamp: 3; }
+  .story-slide { --print-h: min(22svh, 260px); }
+}
 /* The whole chapter (the Keep reading sheet and the list): a calm reading measure, paragraphs whole, their sign-off
    as a signature */
 .story-read { display: flex; flex-direction: column; gap: var(--space-4); max-width: 65ch; text-wrap: pretty; }
@@ -1359,10 +1362,29 @@ svg.lucide { stroke-width: 1.5; }
 /* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */
 .letter[data-page="story"] .letter-body { flex: 1 0 auto; }
 .letter[data-page="story"] .story { flex: 1 0 auto; justify-content: center; }
-/* The list: a 48px thumbnail beside each chapter */
-.story-thumb { flex: none; width: 48px; height: 48px; border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); }
+/* The list (run 25, a sheet): a line runs down the stops like The day's timeline, through a 56px thumbnail on each
+   (tap to open it full screen), a small moss dot where a stop has no photo */
+.story-timeline { --thumb: 56px; position: relative; display: flex; flex-direction: column; gap: var(--space-6); padding-block: var(--space-2); }
+.story-timeline::before { content: ""; position: absolute; top: var(--space-4); bottom: var(--space-4); left: calc(var(--thumb) / 2 - 1px); width: 2px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--ink-moss) 55%, transparent); }
+.story-timeline-row { position: relative; display: flex; align-items: flex-start; gap: var(--space-4); }
+.story-thumb { position: relative; z-index: 1; flex: none; width: var(--thumb, 48px); height: var(--thumb, 48px); border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); box-shadow: 0 0 0 4px var(--letter-bg); }
 .story-thumb figcaption { display: none; }
-.story-thumb > div { width: 48px; height: 48px; aspect-ratio: auto !important; border-radius: 0 !important; }
+.story-thumb :is(figure, div) { width: 100%; height: 100%; aspect-ratio: auto !important; border-radius: 0 !important; }
+.story-thumb-dot { width: 14px; height: 14px; margin: var(--space-2) calc((var(--thumb) - 14px) / 2) 0; border-radius: 50%; background: var(--ink-moss); }
+/* A print or thumbnail that opens full screen (run 25) */
+.photo-open { display: block; padding: 0; border: 0; background: none; color: inherit; cursor: zoom-in; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; -webkit-tap-highlight-color: transparent; }
+.photo-open:focus-visible { outline-color: var(--input-focus); }
+/* The photo full screen: the whole photo, uncropped, on a dark ground, at every width */
+.sheet.photo-viewer { top: 0; left: 0; right: 0; bottom: 0; translate: none; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0;
+  display: grid; place-items: center; padding: 56px var(--space-3) var(--space-5); background: rgb(18 11 7 / 0.94); box-shadow: none; }
+.sheet.photo-viewer::before, .sheet.photo-viewer::after { display: none; }
+.sheet.photo-viewer .sheet-close { color: #f6eee0; }
+.photo-viewer-frame { width: min(94vw, calc((100dvh - 96px) * var(--r)), 1100px); }
+.photo-viewer-frame figcaption { display: none; }
+.photo-viewer-frame img { object-fit: contain; }
+/* Straight and borderless here: the print's tilt, border, tape and shadow are for the story, not the full view */
+.photo-viewer-frame figure { transform: none !important; rotate: none !important; padding: 0 !important; background: none !important; box-shadow: none !important; }
+.photo-viewer-frame figure::before, .photo-viewer-frame figure::after { display: none !important; }
 .story-controls { display: flex; align-items: center; justify-content: space-between; }
 .story-controls .utility-btn:disabled { opacity: 0.4; }
 /* Reduced motion: stops fade straight to the next (opacity only, never a move); the one exception to the site's
