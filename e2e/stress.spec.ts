@@ -82,7 +82,7 @@ test("the reply form by keyboard alone, with every step clean in axe", async ({ 
     await page.keyboard.press("Space")
     await expect(dialog.getByRole("radiogroup", { name: who }).getByRole("radio", { checked: true })).toHaveCount(1)
   }
-  for (const step of ["food", "song", "travel", "check"]) {
+  for (const step of ["food", "song", "travel", "from", "map", "check"]) {
     await tabTo(`(e) => e?.textContent?.trim() === "Next" && e.offsetParent !== null`)
     await page.keyboard.press("Enter")
     await page.waitForTimeout(400)

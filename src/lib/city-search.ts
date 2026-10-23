@@ -67,6 +67,12 @@ export function searchCities(index: CityIndex, typed: string, limit = 6): City[]
     const sorted = [...inRegion].sort((a, b) => Number(b.capital) - Number(a.capital) || b.pop - a.pop)
     sorted.slice(0, 4).forEach((e, i) => put(e, -0.9 + i * 0.1)) // after a city of that very name, capital first
   }
+  // Run 26: a country on its own ("fiji" found only Fuji): its capital, then its biggest towns
+  const named = Object.keys(index.countries).filter((cc) => norm(index.countries[cc]) === q)
+  if (named.length) {
+    const sorted = index.entries.filter((e) => named.includes(e.country)).sort((a, b) => Number(b.capital) - Number(a.capital) || b.pop - a.pop)
+    sorted.slice(0, 4).forEach((e, i) => put(e, -0.9 + i * 0.1))
+  }
   for (const e of index.entries) {
     let s = Infinity
     for (const k of e.keys) {
@@ -98,5 +104,8 @@ export function searchCities(index: CityIndex, typed: string, limit = 6): City[]
     .map(([e]) => ({ id: e.id, name: e.name, region: e.region, country: e.country, countryName: e.countryName, lat: e.lat, lon: e.lon }))
 }
 
+/** Run 26: worth a search from three letters; two in Japanese (京都 is a whole name) */
+export const searchable = (typed: string) => { const q = typed.trim(); return q.length >= 3 || (q.length >= 2 && /\P{ASCII}/u.test(q)) }
+
 /** "Victoria, British Columbia, Canada": always the region and the country, so two places of one name never mix */
-export const cityLabel = (c: City) => [c.name, c.region, c.countryName ?? c.country].filter(Boolean).join(", ")
+export const cityLabel = (c: City) => { const land = c.countryName ?? c.country; return [c.name, c.region, land === c.name ? "" : land].filter(Boolean).join(", ") } // a country found as itself: "Fiji", not "Fiji, Fiji"

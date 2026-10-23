@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test"
 
-// The reply form (docs/quality.md). Five steps of one question each (18f): who's coming, food, a song, travel dates
-// and anything else, then the check; nobody coming goes straight to a note. Every step can be finished with every
+// The reply form (docs/quality.md). Steps of one question each (18f): who's coming, food, a song, travel dates and
+// anything else, where you're flying from, then its map (run 26), then the check; nobody coming goes straight to a note. Every step can be finished with every
 // mix of answers, with the keyboard down or up (a phone keyboard is a shorter screen with a field in focus): Back /
 // Next stay on screen just above it, and the focused field sits above them. Enter in a field only moves to the next
 // field. Who's coming is a real radio group. The song search searches as you type, and picking a song closes the
@@ -37,7 +37,7 @@ async function keyboard(page: Page, up: boolean) {
 /** Next until the check step */
 async function toCheck(page: Page) {
   const send = page.getByRole("dialog").getByRole("button", { name: /^Send our reply$/ })
-  for (let i = 0; i < 5 && !(await send.isVisible()); i++) await press(page, /^Next$/)
+  for (let i = 0; i < 8 && !(await send.isVisible()); i++) await press(page, /^Next$/)
 }
 /** With the keyboard up: Back / Next on screen, and the field fully above them */
 async function aboveKeyboard(page: Page) {
@@ -68,7 +68,7 @@ for (const sam of ["yes", "no"] as const) for (const alex of ["yes", "no"] as co
       await press(page, /^Next$/)
       if (typing) await keyboard(page, false)
       const anyone = sam === "yes" || alex === "yes" || plus
-      await expect(dialog.getByText(`Step 2 of ${anyone ? 5 : 3}`)).toBeVisible()
+      await expect(dialog.getByText(`Step 2 of ${anyone ? 7 : 3}`)).toBeVisible()
       // Food: dietary for the first person coming, then the keyboard up in the field touched
       if (anyone) {
         await expect(dialog.getByRole("heading", { name: "Any dietary needs?" })).toBeVisible()
@@ -90,6 +90,13 @@ for (const sam of ["yes", "no"] as const) for (const alex of ["yes", "no"] as co
       if (typing) { await dialog.getByLabel(/Anything else/).focus(); await keyboard(page, true); await aboveKeyboard(page) }
       await press(page, /^Next$/)
       if (typing) await keyboard(page, false)
+      // Run 26: where you're flying from, then the map on its own step, both optional
+      if (anyone) {
+        await expect(dialog.getByRole("heading", { name: "Where are you flying from?" })).toBeVisible()
+        await press(page, /^Next$/)
+        await expect(dialog.getByRole("heading", { name: "Your journey" })).toBeVisible()
+        await press(page, /^Next$/)
+      }
       // The check, and the review shows the Other words
       if (diet === "other+words") await expect(dialog.getByText(/Other: No kiwi/)).toBeVisible()
       await press(page, /^Send our reply$/)
@@ -176,10 +183,10 @@ test("Enter in a field goes to the next field, never the next step", async ({ pa
   const [a, b] = [dialog.getByLabel(/Tell us more/).nth(0), dialog.getByLabel(/Tell us more/).nth(1)]
   await a.fill("No kiwi"); await a.press("Enter")
   await expect(b).toBeFocused()
-  await expect(dialog.getByText("Step 2 of 5")).toBeVisible()
+  await expect(dialog.getByText("Step 2 of 7")).toBeVisible()
   await b.press("Enter")
   await expect(b).not.toBeFocused() // the last field: the keyboard goes
-  await expect(dialog.getByText("Step 2 of 5")).toBeVisible()
+  await expect(dialog.getByText("Step 2 of 7")).toBeVisible()
   // The note: Enter is a new line, and it grows to four lines, then scrolls inside
   await press(page, /^Next$/); await press(page, /^Next$/)
   const note = dialog.getByLabel(/Anything else/)
@@ -190,23 +197,27 @@ test("Enter in a field goes to the next field, never the next step", async ({ pa
   expect(h).toBeGreaterThan(h0)
   expect(h).toBeLessThanOrEqual(121)
   expect(sh).toBeGreaterThan(h)
-  await expect(dialog.getByText("Step 4 of 5")).toBeVisible()
+  await expect(dialog.getByText("Step 4 of 7")).toBeVisible()
 })
 
 // Run 25: one field, any city or town. With a back end the geocoder answers (checked live with curl after the deploy);
-// this plain build has none, so the site's own list of cities answers, the same way
+// this plain build has none, so the site's own list of cities answers, the same way. Run 26: its own step after the
+// travel dates, then the map on the next step, both before the check (and the fortune after it)
 test("where are you flying from: one field for any city or town, or a pin on the map", async ({ page }) => {
   await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
   await openForm(page)
   const dialog = page.getByRole("dialog")
   await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
   await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
-  await toCheck(page); await press(page, /^Send our reply$/)
+  for (const step of ["food", "song", "travel"]) { await press(page, /^Next$/); await expect(dialog.locator(`[data-step=${step}]`)).toBeVisible() }
+  await press(page, /^Next$/)
+  await expect(dialog.getByText("Step 5 of 7")).toBeVisible()
+  await expect(dialog.getByRole("heading", { name: "Where are you flying from?" })).toBeFocused()
+  await expect(dialog.locator(".journey-flat")).toHaveCount(0) // the map is the next step
   // No chips any more, and no "Already in Japan"
   await expect(dialog.locator(".fly-chip")).toHaveCount(0)
   await expect(dialog.getByText("Already in Japan")).toHaveCount(0)
-  const city = dialog.getByRole("combobox", { name: "Where are you flying from?" })
-  await expect(city).toHaveAttribute("placeholder", "Type your city or town")
+  const city = dialog.getByRole("combobox", { name: "Type your city or town" })
   for (const [typed, first] of [["Melborne", "Melbourne"], ["Vancover", "Vancouver"], ["Montreal", "Montréal"]] as const) {
     await city.fill(typed)
     await expect(dialog.getByRole("option").first()).toContainText(first)
@@ -214,18 +225,47 @@ test("where are you flying from: one field for any city or town, or a pin on the
   await city.fill("Victoria")
   await expect(dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ })).toBeVisible()
   await dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ }).click()
-  await expect(city).toHaveValue("Victoria, British Columbia, Canada")
+  // Run 26: saved as the city and its country only, and it stays in the field once the list has closed
+  await expect(city).toHaveValue("Victoria, Canada")
+  await page.waitForTimeout(300)
+  await expect(city).toHaveValue("Victoria, Canada")
   await expect(dialog.getByText("From Victoria")).toBeVisible()
-  await expect(dialog.locator(".journey-end .journey-you-dot")).toHaveCount(1) // their line on the journey stop's flat map
-  // Nothing matches: drop a pin instead, and the tap on the map puts them there
+  // Run 26 live bug: "Sydney" typed and Enter (the keyboard's Done) straight away, while the last search's list is still
+  // up, saved that list's first place (Victoria, Canada). Enter only picks from the answer to what's in the field
+  await city.fill("Victoria"); await expect(dialog.getByRole("option").first()).toBeVisible()
+  await city.fill("Sydney"); await city.press("Enter")
+  await expect(dialog.getByRole("option", { name: /Sydney.*New South Wales/ })).toBeVisible()
+  await city.press("Enter")
+  await expect(city).toHaveValue("Sydney, Australia")
+  await expect(dialog.getByText("From Sydney")).toBeVisible()
+  // The map, its own step: their line from Sydney (Australia, low on the map), not Victoria (Canada, top right)
+  await press(page, /^Next$/)
+  await expect(dialog.getByText("Step 6 of 7")).toBeVisible()
+  await expect(dialog.getByRole("heading", { name: "Your journey" })).toBeFocused()
+  const dot = dialog.locator(".journey-end .journey-you-dot")
+  expect(await dot.evaluate((c) => [Math.round(+c.getAttribute("cx")!), Math.round(+c.getAttribute("cy")!)])).toEqual([144, 249])
+  await press(page, /^Back$/)
+  // Run 26 live bug: "fiji" found nothing (the back end) or only Fuji (the site's list): the country's towns now
+  await city.fill("fiji")
+  await expect(dialog.getByRole("option").first()).toContainText("Suva")
+  // Nothing matches: drop a pin instead (never under the list), and the tap on the map puts them there
   await city.fill("zzzzqq")
-  await dialog.getByRole("button", { name: "Can't find it? Drop a pin instead" }).click()
+  await expect(dialog.getByText("Nothing found for that.")).toBeVisible()
+  const pinButton = dialog.getByRole("button", { name: "Can't find it? Drop a pin instead" })
+  expect(await pinButton.evaluate((el) => { const r = el.getBoundingClientRect(), top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return el === top || el.contains(top) })).toBe(true)
+  // The pin is dropped on the map's step
+  await pinButton.click()
+  await expect(dialog.getByText("Step 6 of 7")).toBeVisible()
   await expect(dialog.getByText("Tap the map where you're flying from.")).toBeVisible()
-  await page.waitForTimeout(600) // the map scrolls into view
   const map = (await dialog.locator(".journey-end .journey-flat svg").boundingBox())!
   await page.mouse.click(map.x + map.width * 0.55, map.y + map.height * 0.75)
   await expect(dialog.getByText("Tap the map where you're flying from.")).toHaveCount(0)
   await expect(dialog.locator(".journey-end .journey-you-dot")).toHaveCount(1)
+  // Then the check (with where they're flying from), and the fortune only after it's sent
+  await expect(dialog.locator(".omikuji-tin")).toHaveCount(0)
+  await press(page, /^Next$/)
+  await expect(dialog.getByRole("button", { name: /^Send our reply$/ })).toBeVisible()
+  await expect(dialog.getByText("Flying from")).toBeVisible()
 })
 
 test("the sent letter under reduced motion: plain paper (no paper made), no canvas, the hanko's ink", async ({ page }) => {
@@ -308,6 +348,24 @@ test("the fortune folds open, centred, then settles", async ({ page }) => {
   const slip = (await dialog.locator(".omikuji-slip").boundingBox())!, col = (await dialog.locator(".done-column").boundingBox())!
   expect(Math.abs(slip.x + slip.width / 2 - (col.x + col.width / 2))).toBeLessThan(2)
   await expect(dialog.getByRole("group", { name: /Great blessing/i })).toHaveCount(1) // the copies are hidden from screen readers
+})
+
+// Run 26: Draw another gives a new fortune and saves it as the next draw; the first stays saved as it was
+test("draw another adds draw 2 and keeps draw 1", async ({ page }) => {
+  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
+  await openForm(page)
+  const dialog = page.getByRole("dialog")
+  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
+  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
+  await toCheck(page); await press(page, /^Send our reply$/)
+  await dialog.getByRole("button", { name: "Draw one" }).click()
+  const words = dialog.locator(".omikuji-slip .omikuji-text")
+  const first = await words.textContent()
+  await dialog.getByRole("button", { name: "Draw another" }).click()
+  await expect(words).not.toHaveText(first!)
+  await expect(dialog.locator(".omikuji-slip")).toBeFocused()
+  const draws = await page.evaluate(() => JSON.parse(localStorage.getItem("ng-draws-sample") ?? "[]"))
+  expect(draws.map((d: { draw: number }) => d.draw)).toEqual([1, 2])
 })
 
 // Run 25: a fortune drawn on an earlier visit no longer opens already unfolded for good (why it never folded after an

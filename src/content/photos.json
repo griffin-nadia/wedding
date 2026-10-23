@@ -289,33 +289,33 @@
   "formats": {
    "avif": [
     400,
-    648
+    800
    ],
    "webp": [
     400,
-    648
+    800
    ]
   },
   "wide": {},
   "lqip": "story-2-lqip.webp",
-  "width": 648,
-  "height": 486
+  "width": 800,
+  "height": 1067
  },
  "story-3": {
   "formats": {
    "avif": [
     400,
-    800
+    648
    ],
    "webp": [
     400,
-    800
+    648
    ]
   },
   "wide": {},
   "lqip": "story-3-lqip.webp",
-  "width": 800,
-  "height": 1067
+  "width": 648,
+  "height": 486
  },
  "story-4": {
   "formats": {
@@ -460,5 +460,21 @@
   "lqip": "yasaka-gate-shijo-lqip.webp",
   "width": 1600,
   "height": 2133
+ },
+ "story-taiwan": {
+  "formats": {
+   "avif": [
+    400,
+    800
+   ],
+   "webp": [
+    400,
+    800
+   ]
+  },
+  "wide": {},
+  "lqip": "story-taiwan-lqip.webp",
+  "width": 800,
+  "height": 1067
  }
 }

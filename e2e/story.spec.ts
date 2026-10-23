@@ -144,4 +144,11 @@ test("a print opens full screen; the list is a sheet with Back to the story", as
   await expect(list.locator(".story-timeline li").first()).toBeVisible()
   await list.getByRole("button", { name: "Back to the story" }).click()
   await expect(page.getByRole("dialog")).toHaveCount(0)
+  // Run 26: the list's Globe button opens the journey stop's own full-screen view, Globe / Map toggle and all
+  await page.getByRole("button", { name: "See as a list" }).click()
+  await page.getByRole("dialog").getByRole("button", { name: "Open the map full screen" }).click()
+  const map = page.getByRole("dialog", { name: "Your journey" })
+  await expect(map.getByRole("radio", { name: "Map" })).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(page.getByRole("dialog")).toHaveCount(0)
 })

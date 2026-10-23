@@ -2,23 +2,23 @@ import { Hanko } from "@/components/hanko"
 import { useEffect, useRef, useState } from "react"
 import { nextFrame } from "@/lib/frame"
 import { FORTUNES } from "@/content/en"
-import { getFortunes, type Fortune } from "@/lib/api"
+import { getFortunes, saveDraw, type Fortune } from "@/lib/api"
 import { useLang } from "@/lib/lang"
-import { canShake, drawnKey, saveFortune } from "@/lib/fortune"
+import { canShake, draftsOn, drawnKey, FORTUNE_EVENT, keepDraws, localDraws, saveFortune } from "@/lib/fortune"
+import { fortuneFor, fortuneIndex, lastDraw, mergeDraws, pickFor, type Draw } from "@/lib/draws"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { kanjiNumber } from "@/lib/kanji"
 
-/** The drafts (all 大吉) as fortunes: what shows until the sheet's Fortunes tab answers, or if it's empty */
+/** The first travel tips (all 大吉) as fortunes: what shows until the sheet's Fortunes tab answers, or if it's empty.
+ *  (Not the story-based drafts: those are Fortunes tab rows marked Draft, see config.storyFortunes.) */
 export const DRAFT_FORTUNES: Fortune[] = FORTUNES.map((text, i) => ({ no: i + 1, tier: "Great Blessing", tierJa: "大吉", category: "", text }))
 
-/** The same fortune for a household on any device: picked from its token, over however many there are. */
-export function fortuneIndex(token: string, of: number) {
-  let h = 0
-  for (const c of token) h = (h * 31 + c.charCodeAt(0)) >>> 0
-  return h % of
-}
+export { fortuneIndex } // the lab's slips import it from here
 
+/** Run 26: each tier's colour on the slip (tokens.css --tier-*), by the Fortunes tab's tier names; anything else 大吉 */
+const TIERS: Record<string, string> = { "Good Blessing": "good", "Great Blessing": "great", "Special Blessing": "special", "Grand Blessing": "grand", "Super Blessing": "super", 良い吉: "good", 大吉: "great", 特別吉: "special", 素晴吉: "grand", メガ吉: "super" }
+const tierOf = (f: Fortune) => TIERS[f.tier] ?? TIERS[f.tierJa] ?? "great"
 
 /** The box: a hexagonal 御籤 tin in rust with a cream label; its stick rises as the fortune comes out. */
 export function Box({ drawing }: { drawing: boolean }) {
@@ -45,12 +45,15 @@ export function Box({ drawing }: { drawing: boolean }) {
  * slip fades in. The fortune is the household's for good, on any device. Run 25: the tin comes back on each visit, so
  * the fold plays on a first reply and after an update (once per visit; within a visit it opens on the slip). Before,
  * a slip drawn once opened already unfolded for ever after, which is why it never folded after an update on Jehan's
- * Android phone.
+ * Android phone. Run 26: "Draw another" under the slip. Each draw is saved with its number (lib/draws.ts), never over
+ * an earlier one; the slip shows the latest. No bad luck still: every tier is a blessing, and drafts aren't drawn.
  */
 const FOLD_MS = 1100
-export function FortuneCard({ token, className }: { token: string; className?: string }) {
-  const { t } = useLang()
+export function FortuneCard({ token, className, title }: { token: string; className?: string; title?: string }) {
+  const { t, lang } = useLang()
   const [tips, setTips] = useState(DRAFT_FORTUNES)
+  // Run 26: every draw, numbered, append only (this device's list, merged with the back end's Draws tab)
+  const [draws, setDraws] = useState<Draw[]>(() => localDraws(token))
   const [state, setState] = useState<"closed" | "drawing" | "open">(() => {
     try { return sessionStorage.getItem(drawnKey(token)) ? "open" : "closed" } catch { return "closed" }
   })
@@ -59,21 +62,69 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   // its creases easing out; null: a slip opened before, or reduced motion
   const [fold, setFold] = useState<"folding" | "settling" | null>(null)
   const shaky = useRef(canShake())
-  useEffect(() => { getFortunes(token).then((f) => f && f.length && setTips(f)) }, [token])
-  const i = fortuneIndex(token, tips.length)
-  const fortune = tips[i]
+  const live = useRef(true)
+  const keeps = useRef(false) // the back end keeps draws (an older one doesn't: nothing is sent to it)
+  useEffect(() => {
+    live.current = true
+    document.fonts?.load("500 20px Caveat").catch(() => {}) // the slip's hand, fetched while the tin is still closed
+    getFortunes(token).then((r) => {
+      if (!live.current || !r) return
+      if (r.fortunes.length) setTips(r.fortunes)
+      if (!r.draws) return // an older back end: this device's list is the record
+      keeps.current = true
+      // Draws made here but not in the sheet yet (before its Draws tab, or offline) go up; nothing there is rewritten
+      for (const d of localDraws(token)) if (!r.draws.some((x) => x.draw === d.draw)) saveDraw(token, d)
+      setDraws((now) => mergeDraws(now, keepDraws(token, r.draws!)))
+    })
+    // The other card on the page (the reply sheet's, or Home's) drew or opened one: show the same
+    const sync = () => {
+      setDraws((now) => mergeDraws(now, localDraws(token)))
+      setState((s) => { try { return s === "closed" && sessionStorage.getItem(drawnKey(token)) ? "open" : s } catch { return s } })
+    }
+    window.addEventListener(FORTUNE_EVENT, sync)
+    return () => { live.current = false; window.removeEventListener(FORTUNE_EVENT, sync) }
+  }, [token])
+  // The whole numbered pool, drafts included, so every household's pick is the same as before run 26; a draft is
+  // stepped past while the switch is off (all drafts: the built-in tips)
+  const drafts = draftsOn()
+  const pool = tips.some((f) => drafts || !f.draft) ? tips : DRAFT_FORTUNES
+  const n = Math.max(1, lastDraw(draws)) // a slip opened before run 26 kept no list: that was draw 1
+  // The latest draw's saved fortune where there is one (so a later change to the pool never changes a saved slip),
+  // otherwise its pick
+  const savedNo = draws.find((d) => d.draw === n)?.no
+  const saved = savedNo ? pool.findIndex((f) => f.no === savedNo && (drafts || !f.draft)) : -1
+  const i = saved >= 0 ? saved : fortuneFor(token, n, pool, drafts)
+  const fortune = pool[i]
 
+  function record(draw: number) {
+    const k = pickFor(token, draw, pool, drafts, draw > 1 ? fortune.no : undefined) // a redraw is always a new slip
+    const d = { draw, no: pool[k].no }
+    setDraws((now) => mergeDraws(now, [d]))
+    keepDraws(token, [d])
+    if (keeps.current) saveDraw(token, d) // before the back end answers, the load above sends it up instead
+  }
+  function unfold(still: boolean) {
+    if (!still) { setFold("folding"); window.setTimeout(() => setFold("settling"), FOLD_MS) }
+    nextFrame(() => slip.current?.focus())
+  }
   function draw() {
     if (state !== "closed") return
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (!lastDraw(draws)) record(1) // the first draw is saved too; a later visit's reveal shows the latest, no new draw
     setState("drawing")
     if (!still) navigator.vibrate?.(8) // a tiny tick on Android (iPhones have no vibrate); none under reduced motion
     window.setTimeout(() => {
       setState("open")
-      if (!still) { setFold("folding"); window.setTimeout(() => setFold("settling"), FOLD_MS) }
       try { sessionStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ }
-      nextFrame(() => slip.current?.focus())
+      window.dispatchEvent(new Event(FORTUNE_EVENT))
+      unfold(still)
     }, still ? 0 : 900)
+  }
+  // Run 26: draw another. The next number, saved as a new draw (the ones before stay as they were), and the new slip
+  // folds open in place (fades under reduced motion)
+  function again() {
+    record(n + 1)
+    unfold(window.matchMedia("(prefers-reduced-motion: reduce)").matches)
   }
   // Shake to draw (Android): a firm shake, not a wobble while reading
   useEffect(() => {
@@ -85,16 +136,16 @@ export function FortuneCard({ token, className }: { token: string; className?: s
     window.addEventListener("devicemotion", on)
     return () => window.removeEventListener("devicemotion", on)
   })
-  const save = () => saveFortune(t, fortune)
+  const save = () => saveFortune(t, lang === "ja" && fortune.textJa ? { ...fortune, text: fortune.textJa } : fortune)
 
   if (state !== "open") {
     return (
-      <section aria-labelledby="fortune" className={cn("omikuji paper-feel flex items-center gap-6 rounded-md border bg-card p-4", className)}>
+      <section aria-labelledby={`fortune-${token}`} className={cn("omikuji paper-feel flex items-center gap-6 rounded-md border bg-card p-4", className)}>
         <button type="button" onClick={draw} disabled={state === "drawing"} aria-label={t.fortune.boxLabel} className="omikuji-hit">
           <Box drawing={state === "drawing"} />
         </button>
         <div className="flex flex-1 flex-col items-start gap-2">
-          <h3 id="fortune" className="text-body font-medium text-foreground">{t.fortune.title}</h3>
+          <h3 id={`fortune-${token}`} className="text-body font-medium text-foreground">{title ?? t.fortune.title}</h3>
           <p className="text-small text-muted-foreground" aria-live="polite">{state === "drawing" ? t.fortune.drawing : shaky.current ? t.fortune.hintShake : t.fortune.hint}</p>
           <Button variant="secondary" onClick={draw} disabled={state === "drawing"} aria-busy={state === "drawing"}>{t.fortune.draw}</Button>
         </div>
@@ -103,12 +154,16 @@ export function FortuneCard({ token, className }: { token: string; className?: s
   }
   return (
     <div className={cn("omikuji-stage", className)}>
-      <div ref={slip} tabIndex={-1} role="group" aria-labelledby="fortune-head" className={cn("omikuji-slip paper-feel", fold === "folding" && "is-folded", fold === "settling" && "is-fresh")}>
-        <span aria-hidden className="omikuji-creases" />
-        <SlipWords i={i} of={tips.length} fortune={fortune} />
-        <Button variant="link" onClick={save} className="omikuji-save">{t.fortune.save}</Button>
+      <div className="omikuji-paper">
+        <div key={n} ref={slip} data-tier={tierOf(fortune)} tabIndex={-1} role="group" aria-labelledby={`fortune-head-${token}`} className={cn("omikuji-slip paper-feel", fold === "folding" && "is-folded", fold === "settling" && "is-fresh")}>
+          <span aria-hidden className="omikuji-creases" />
+          <SlipWords i={i} of={pool.length} fortune={fortune} headId={`fortune-head-${token}`} />
+          <Button variant="link" onClick={save} className="omikuji-save">{t.fortune.save}</Button>
+        </div>
+        {fold === "folding" && <Fold key={n} i={i} of={pool.length} fortune={fortune} />}
       </div>
-      {fold === "folding" && <Fold i={i} of={tips.length} fortune={fortune} />}
+      {/* The same washi and ink as the slip, with a soft glow: the one thing to do next */}
+      <button type="button" onClick={again} disabled={fold === "folding"} className="omikuji-again">{t.fortune.again}</button>
     </div>
   )
 }
@@ -121,7 +176,7 @@ export function FortuneCard({ token, className }: { token: string; className?: s
 function Fold({ i, of, fortune }: { i: number; of: number; fortune: Fortune }) {
   const { t } = useLang()
   const copy = (part: number) => (
-    <div className={`omikuji-slip paper-feel omikuji-copy omikuji-part-${part}`}>
+    <div data-tier={tierOf(fortune)} className={`omikuji-slip paper-feel omikuji-copy omikuji-part-${part}`}>
       <span className="omikuji-creases" />
       <SlipWords i={i} of={of} fortune={fortune} copy />
       <Button variant="link" tabIndex={-1} className="omikuji-save">{t.fortune.save}</Button>
@@ -140,20 +195,22 @@ function Fold({ i, of, fortune }: { i: number; of: number; fortune: Fortune }) {
 }
 
 /** The words on the slip: 第七番, its tier (素晴吉 large, Grand Blessing in small caps), its category, the line, No. 7 of
- *  25. Their words stay in English on the Japanese site too, marked lang="en". Shared by both reveals. */
-export function SlipWords({ i, of, fortune, copy = false }: { i: number; of: number; fortune: Fortune; copy?: boolean }) {
-  const { t } = useLang()
+ *  25. Run 26: with Japanese on, the line in Japanese where the Fortunes tab has it, otherwise their English, marked
+ *  lang="en". Shared by both reveals. */
+export function SlipWords({ i, of, fortune, copy = false, headId = "fortune-head" }: { i: number; of: number; fortune: Fortune; copy?: boolean; headId?: string }) {
+  const { t, lang } = useLang()
+  const ja = lang === "ja" ? fortune.textJa : ""
   return (
     <>
       <p lang="ja" className="omikuji-no font-ja" aria-hidden>第{kanjiNumber(fortune.no || i + 1)}番</p>
-      <p id={copy ? undefined : "fortune-head"} className="flex flex-col items-center gap-1">
+      <p id={copy ? undefined : headId} className="flex flex-col items-center gap-1">
         <span lang="ja" className="omikuji-kichi font-ja">{fortune.tierJa}</span>
-        <span lang="en" className="label-caps">{fortune.tier}</span>
+        <span lang="en" className="omikuji-hand omikuji-tier">{fortune.tier}</span>
       </p>
-      {fortune.category && <p lang="en" className="label-caps omikuji-category">{fortune.category}</p>}
-      <p lang="en" className="omikuji-text">{fortune.text}</p>
+      {fortune.category && <p lang="en" className="omikuji-hand omikuji-category">{fortune.category}</p>}
+      <p lang={ja ? "ja" : "en"} className="omikuji-text">{ja || fortune.text}</p>
       {/* The fortune's own number from the Fortunes tab (the slip's place in the list only for the drafts) */}
-      <p className="label-caps omikuji-count">{t.fortune.number(fortune.no || i + 1, of)}</p>
+      <p className="omikuji-hand omikuji-count">{t.fortune.number(fortune.no || i + 1, of)}</p>
       {/* The same hand-cut 寿 seal as the confirmation's head, small, as if stamped on the slip */}
       <Hanko size="sm" className="omikuji-seal" />
     </>

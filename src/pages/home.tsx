@@ -1,6 +1,6 @@
 import { ART } from "@/lib/art"
 import { NamesArt } from "@/components/names-art"
-import { lazy, Suspense, useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Check, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,8 @@ import { AskUs } from "@/components/ask-us"
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
+// Run 26: the fortune on Home after a yes (its own chunk, shared with the reply sheet's)
+const FortuneCard = lazy(() => import("@/components/fortune-card").then((m) => ({ default: m.FortuneCard })))
 
 // The names reveal once, letter by letter, the first time the letter is opened (v3 L). Never again.
 const REVEAL_NAMES = (() => {
@@ -102,10 +104,22 @@ function NextStep({ h, open, locked }: { h: Household; open: (step: StepId) => v
 export function HomePage() {
   const { t } = useLang()
   const { household } = useHousehold()
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const [tapped, setTapped] = useState(params.get("rsvp") === "1")
   const [request, setRequest] = useState<{ at: number; step: StepId } | undefined>()
-  useEffect(() => { if (params.get("rsvp") === "1") setTapped(true) }, [params])
+  // ?rsvp=1 (the top bar's RSVP, /rsvp) opens the sheet, then comes off the address. Kept on, a second press went to
+  // the same address, nothing changed and the sheet stayed shut (run 26). Once the sheet has been opened, a later
+  // press asks it to open again at the first step.
+  const mounted = useRef(false)
+  useEffect(() => {
+    const later = mounted.current
+    mounted.current = true
+    if (params.get("rsvp") !== "1") return
+    if (later && tapped) setRequest({ at: Date.now(), step: "who" })
+    else setTapped(true)
+    setParams((p) => { p.delete("rsvp"); return p }, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params])
   const done = Boolean(household?.respondedAt)
   const locked = isLocked()
   // v3 P: first names in the sheet's order; a plus one without a name yet is "your plus one"
@@ -172,6 +186,10 @@ export function HomePage() {
         </div>
       )}
       {mode === "invite" && household && locked && done && <NextStep h={household} open={openAt} locked />}
+      {/* Run 26: after a yes, their fortune on the invite too: draw one, see the latest again, or draw another */}
+      {mode === "invite" && household && done && household.guests.some((g) => g.attending === "yes") && (
+        <Suspense fallback={null}><FortuneCard token={household.token} title={t.fortune.homeTitle} className="home-fortune" /></Suspense>
+      )}
       <HomeCountdown />
     </>
   )

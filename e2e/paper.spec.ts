@@ -1,38 +1,62 @@
 import { test, expect } from "@playwright/test"
 
-// 18g: the paper is made in the browser after the page has settled and fades in over the cards and sheets; it keeps
-// text AA on its darkest spot; under reduced motion or Save-Data it stays plain. WebGL here is software (SwiftShader).
-test.use({ reducedMotion: "no-preference", launchOptions: { args: ["--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } })
-test.describe.configure({ timeout: 90_000 })
+// Run 26: the paper is a sheet exported ahead (scripts/paper-export.mjs), the size this screen shows it, asked for from
+// the first paint and laid over the cards and sheets once it has decoded, keeping text AA on its darkest spot. On a
+// first visit a plain veil covers the page until it's in (1.5 s at most once shown); not again once it's been seen. Reduced
+// motion: the same paper and veil, each a short plain fade (opacity only, the seal still). Save-Data: plain paper, nothing fetched. (Automated browsers skip it
+// unless a test asks, ng-paper=on, as these do.)
+test.use({ reducedMotion: "no-preference" })
 test.beforeEach(async ({ page }) => { await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-paper", "on") }) })
 
-for (const theme of ["autumn", "lantern"] as const) test(`the paper is made, fades in over the card, and keeps text AA (${theme})`, async ({ page }) => {
+for (const theme of ["autumn", "lantern"] as const) test(`the sheet for this screen is laid over the card, keeping text AA, the veil goes (${theme})`, async ({ page }, info) => {
   await page.addInitScript((t) => localStorage.setItem("ng-theme", t), theme)
   await page.goto("?h=sample")
-  test.skip(!(await page.evaluate(() => Boolean(document.createElement("canvas").getContext("webgl2")))), "no WebGL in this browser: the paper stays plain (by design)")
-  await page.waitForFunction(() => document.documentElement.hasAttribute("data-paper"), null, { timeout: 45_000 })
+  await page.waitForFunction(() => document.documentElement.hasAttribute("data-paper"), null, { timeout: 10_000 })
+  await expect(page.locator("#paper-veil")).toHaveCount(0)
   await page.waitForTimeout(600) // the 400 ms fade
   const r = await page.evaluate(() => {
     const a = getComputedStyle(document.querySelector("#letter")!, "::after")
-    return { opacity: parseFloat(a.opacity), on: parseFloat(document.documentElement.style.getPropertyValue("--paper-on")), image: a.backgroundImage.startsWith("url(\"blob:"), blend: a.mixBlendMode, canvases: document.querySelectorAll("canvas").length }
+    return { opacity: parseFloat(a.opacity), on: parseFloat(document.documentElement.style.getPropertyValue("--paper-on")), image: a.backgroundImage, blend: a.mixBlendMode, canvases: document.querySelectorAll("canvas").length }
   })
-  expect(r.image).toBe(true)
+  expect(r.image).toContain(`/paper/paper-${theme}-${info.project.name === "phone" ? "p800" : "l1600"}.avif`)
   expect(r.blend).toBe(theme === "lantern" ? "screen" : "multiply")
   expect(r.opacity).toBeCloseTo(r.on, 2)
   expect(r.on).toBeGreaterThan(0)
-  expect(r.canvases).toBe(0) // the WebGL context is gone once it's made
+  expect(r.canvases).toBe(0) // no WebGL any more
+  // Seen once: no veil the next time
+  await page.reload()
+  expect(await page.evaluate(() => document.getElementById("paper-veil"))).toBeNull()
 })
 
-test("reduced motion or Save-Data: plain paper, nothing made", async ({ browser }) => {
+test("first visit: the veil covers the page until the sheet is in, never past 1.5 s", async ({ page }) => {
+  // The sheet held back, so the cap is what takes the veil away
+  await page.route(/\/paper\/.*\.avif$/, async (r) => { await new Promise((res) => setTimeout(res, 4000)); await r.continue() })
+  await page.goto("?h=sample", { waitUntil: "commit" }) // the load event waits for the held sheet
+  const veil = page.locator("#paper-veil")
+  await expect(veil).toBeVisible()
+  await expect(veil).toHaveCount(0, { timeout: 2500 })
+})
+
+test("reduced motion: the same paper and veil, a plain opacity fade; Save-Data: plain, nothing fetched", async ({ browser }) => {
   for (const opts of [{ reducedMotion: "reduce" as const }, {}]) {
     const c = await browser.newContext(opts)
-    if (!("reducedMotion" in opts)) await c.addInitScript(() => Object.defineProperty(navigator, "connection", { value: { saveData: true } }))
+    const save = !("reducedMotion" in opts)
+    if (save) await c.addInitScript(() => Object.defineProperty(navigator, "connection", { value: { saveData: true } }))
     await c.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-paper", "on") })
-    const p = await c.newPage()
-    await p.goto("?h=sample")
-    await p.locator("#letter").click()
-    await p.waitForTimeout(6000)
-    expect(await p.evaluate(() => document.documentElement.hasAttribute("data-paper"))).toBe(false)
+    const p = await c.newPage(), sheets: string[] = []
+    p.on("request", (r) => { if (/\/paper\//.test(r.url())) sheets.push(r.url()) })
+    await p.goto("?h=sample", { waitUntil: "commit" })
+    // Reduced motion (Jehan): the veil fades, opacity only, and its seal is still
+    if (!save) {
+      await p.locator("#paper-veil").waitFor({ state: "visible" })
+      const v = await p.locator("#paper-veil").evaluate((el) => { const a = getComputedStyle(el), i = getComputedStyle(el.querySelector("img")!); return { prop: a.transitionProperty, dur: parseFloat(a.transitionDuration), transform: a.transform, anim: i.animationName, seal: i.transform } })
+      expect(v).toEqual({ prop: "opacity", dur: 0.25, transform: "none", anim: "none", seal: "none" })
+    }
+    await p.waitForTimeout(3000)
+    expect(await p.evaluate(() => document.documentElement.hasAttribute("data-paper"))).toBe(!save)
+    expect(sheets.length > 0).toBe(!save)
+    // The paper itself fades in too, opacity only (an exception to the site's 0.01 ms reduced-motion rule)
+    if (!save) expect(await p.evaluate(() => { const a = getComputedStyle(document.querySelector("#letter")!, "::after"); return { prop: a.transitionProperty, dur: parseFloat(a.transitionDuration), transform: a.transform } })).toEqual({ prop: "opacity", dur: 0.25, transform: "none" })
     await c.close()
   }
 })
