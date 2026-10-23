@@ -98,5 +98,8 @@ export function searchCities(index: CityIndex, typed: string, limit = 6): City[]
     .map(([e]) => ({ id: e.id, name: e.name, region: e.region, country: e.country, countryName: e.countryName, lat: e.lat, lon: e.lon }))
 }
 
+/** Run 26: worth a search from three letters; two in Japanese (京都 is a whole name) */
+export const searchable = (typed: string) => { const q = typed.trim(); return q.length >= 3 || (q.length >= 2 && /\P{ASCII}/u.test(q)) }
+
 /** "Victoria, British Columbia, Canada": always the region and the country, so two places of one name never mix */
 export const cityLabel = (c: City) => [c.name, c.region, c.countryName ?? c.country].filter(Boolean).join(", ")
