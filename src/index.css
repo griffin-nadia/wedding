@@ -298,7 +298,7 @@
 
 /* Lantern mode: photos sit a touch dimmer so they don't glare. */
 /* Lantern letter (the default; "Letter in Lantern" = cream turns the letter into paper under a lamp instead) */
-:root[data-theme="lantern"] .letter::before { background:
+:root[data-theme="lantern"] :is(.letter, .letter-fade)::before { background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-hachimitsu) 8%, transparent), transparent 60%),
     radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-ai) 30%, transparent), transparent 55%); }
 :root[data-theme="lantern"] .letter .photo-img { filter: saturate(0.95) brightness(0.92); }
@@ -323,7 +323,7 @@
   .letter-wrap { padding: 0 !important; min-height: 0 !important; height: auto !important; overflow: visible !important; }
   .letter, .letter-scroll { overflow: visible !important; -webkit-mask-image: none !important; mask-image: none !important; }
   .letter { max-width: var(--letter-width) !important; margin: 0 auto !important; box-shadow: none !important; border: 0 !important; background: #fff !important; padding: 0 !important; }
-  .letter::before { display: none !important; }
+  .letter::before, .letter-fade { display: none !important; }
   .timeline-row { break-inside: avoid; }
 }
 
@@ -518,18 +518,21 @@
   flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: var(--letter-gap);
   padding: var(--letter-pad); overflow-y: auto; overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges; /* a mouse's scrollbar never narrows the words when a page grows past the card (run 19) */
-  /* A soft 16px fade where the words meet the card's top and bottom edges */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
-  mask-image: linear-gradient(to bottom, transparent, #000 16px, #000 calc(100% - 16px), transparent);
   scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent;
 }
 /* Touch: no scrollbar at all; a mouse gets the thin one */
 @media (pointer: coarse) { .letter-scroll { scrollbar-width: none; } .letter-scroll::-webkit-scrollbar { display: none; } }
+/* A soft 16px fade where the words meet the card's top and bottom edges: a still layer of the card's own paper (its
+   colour and glow) over the words, under the grain. Run 26c: it was a mask on the scroller, which made the phone
+   re-mask the whole card on every frame of a fling (half the GPU work on The day); a layer that never moves is free. */
+.letter-fade { position: absolute; inset: 0; z-index: 29; border-radius: inherit; pointer-events: none; background: var(--letter-bg); box-shadow: inherit; /* its 1px light inset; the drop shadow outside is clipped */
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 16px, transparent calc(100% - 16px), #000);
+  mask-image: linear-gradient(to bottom, #000, transparent 16px, transparent calc(100% - 16px), #000); }
 /* Travel's jump links once stuck sit flush at the card's top edge, so the top fade steps aside for them */
-.letter-scroll:has(.jump-links[data-stuck]) { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent); }
-/* A warm glow top left and a cool shade bottom right, under the words */
+.letter:has(.jump-links[data-stuck]) .letter-fade { -webkit-mask-image: linear-gradient(to bottom, transparent calc(100% - 16px), #000); mask-image: linear-gradient(to bottom, transparent calc(100% - 16px), #000); }
+/* A warm glow top left and a cool shade bottom right, under the words (and in the fade, so it matches the card) */
 .letter { isolation: isolate; }
-.letter::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background:
+.letter::before, .letter-fade::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background:
     radial-gradient(120% 80% at 0% 0%, color-mix(in oklab, var(--brand-mitsu) 14%, transparent), transparent 60%),
     radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--brand-sage) 12%, transparent), transparent 55%); }
 /* The paper itself (18f), over everything on it, like Paper's printed example: one sheet made in the browser at the
