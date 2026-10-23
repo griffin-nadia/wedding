@@ -179,9 +179,9 @@ try {
       const next = page.getByRole("button", { name: /next chapter/i })
       while (await next.isEnabled()) { await next.click(); await page.waitForTimeout(150) }
       await page.waitForTimeout(1500)
-      // Run 25: the stop shows the globe; the flat map is in the full-screen view (Globe / Map)
-      if (mode === "flat") { await page.getByRole("button", { name: "Open the map full screen" }).click(); await page.getByRole("radio", { name: "Map", exact: true }).click(); await page.waitForTimeout(800) }
-      const ok = mode === "flat" ? (await page.getByRole("dialog").locator(".journey-flat").isVisible()) : await page.locator(".journey-globe").isVisible()
+      // Run 26: the stop shows the flat map; the globe is in the full-screen view (Globe / Map), which opens on it
+      if (mode === "globe") { await page.getByRole("button", { name: "Open the map full screen" }).click(); await page.waitForTimeout(3000) }
+      const ok = mode === "flat" ? (await page.locator(".story-slide-map .journey-flat").isVisible()) : await page.getByRole("dialog").locator(".journey-globe").isVisible()
       check(`journeys: 99 cities, ${mode === "flat" ? "the flat map" : "the globe"} at 320`, ok && !(await spill(page)))
       await b.close()
     }

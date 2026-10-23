@@ -3,7 +3,6 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRe
 import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
-import { ART } from "@/lib/art"
 import { useTheme } from "@/lib/theme"
 import { useHousehold } from "@/lib/household"
 import { cn } from "@/lib/utils"
@@ -97,7 +96,7 @@ const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matche
 // comes back (about 450 ms)
 const SPRING = { k: 170, c: 20 }
 
-// Three.js and the painted globe load only when the journey stop is showing
+// Three.js and the globe load only when the globe is first opened full screen (run 26): the stop shows the flat map
 const JourneyGlobe = lazy(() => loadGlobe().then((m) => ({ default: m.JourneyGlobe })))
 
 /** Run 25: the globe's place before it's drawn, a still disc the globe's own size (never an empty square) */
@@ -105,15 +104,15 @@ const GlobeWaiting = () => <div className="journey-globe" aria-hidden />
 
 /**
  * The journey to Kyoto, once, as the last stop (final run): Nadia's and Griffin's lines, then the guests' (one per
- * city, never who), then this household's own when they've said. The globe only runs while this stop shows.
- * Run 25, one view per screen: the stop shows the painted globe (the flat map on a phone that starts flat: no WebGL,
- * little memory or Save-Data) and a small Full screen control above it. That opens the map full screen like a photo
+ * city, never who), then this household's own when they've said.
+ * Run 25, one view per screen; run 26: the stop shows the flat map (the globe's painting, cut to the Pacific, no
+ * three.js) and a small Full screen control above it. That opens on the globe (the flat map on a phone that starts
+ * flat: no WebGL, little memory or Save-Data), full screen like a photo
  * (a dialog: focus kept inside, Escape or the X closes it, focus goes back to the control), with Globe / Map in a
  * fixed spot at the top that never moves when you switch, and + and − on the globe. Each chapter's place is a pin on
  * both; tapping one goes to that chapter's stop.
  */
-/** Run 24: the globe's code warms one stop early, and the globe itself starts once the spring has settled on its stop,
- *  so building it (Three.js, painting the land) never lands mid-slide. Before and after: .brief/docs/runs/2026-10-24.md */
+/** The globe's code (Three.js and its line modules), fetched when the full-screen view first opens on it (run 26) */
 const loadGlobe = () => import("@/components/journey-globe")
 type View = "globe" | "flat"
 function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: boolean; pins: ChapterPin[]; onPin: (key: string) => void }) {
@@ -129,21 +128,21 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
   const [open, setOpen] = useState(false)
   const [view, setView] = useState<View>(base)
   const jumped = useRef(false)
-  // One stop early, while they read: the globe's code, then its land painted in idle time (paintGlobe keeps it, so the
-  // globe mounts on a ready painting; the same look, size and countries as journey-globe.tsx asks for)
+  // One stop early, while they read: the stop's flat map painted in idle time (paintGlobe keeps it, so the map mounts on
+  // a ready painting; the same look, size and countries as journey-flat.tsx asks for). Run 26: no globe code here
   const { theme } = useTheme()
   useEffect(() => {
-    if (!near || base !== "globe" || ART.globeLand || !journeys) return
+    if (!near || !journeys) return
     let alive = true
     // After this stop's own slide has settled (about 550 ms), then when the phone is idle, never mid-spring
     const idle = (f: () => void) => window.setTimeout(() => (typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(f) : f()), still() ? 0 : 700)
-    void loadGlobe().then(() => idle(() => {
+    idle(() => {
       if (!alive) return
       const countries = [...journeys.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
-      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(GLOBE_LOOK.map, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries))
-    }))
+      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(GLOBE_LOOK.map, 2048, countries))
+    })
     return () => { alive = false }
-  }, [near, base, theme, journeys, you])
+  }, [near, theme, journeys, you])
   const [settled, setSettled] = useState(false)
   useEffect(() => {
     if (!active) return setSettled(false)
@@ -172,7 +171,10 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
             <button type="button" className="journey-open" aria-label={t.journey.openLabel}><Maximize2 className="size-4" aria-hidden />{t.journey.open}</button>
           </SheetTrigger>
         </div>
-        {show(base, "stop")}
+        {/* Run 26: the stop always shows the flat map (no three.js on the stop); full screen opens on the globe. Built
+            one stop early, or once the stop has settled when the story opens on it; until then the faint disc, so
+            the page's first paint is never held up by the map (the map's own box there cost 300 ms of LCP) */}
+        {(near && !active) || settled ? show("flat", "stop") : <GlobeWaiting />}
         <SheetContent className="journey-viewer" closeLabel={t.journey.close} aria-describedby={undefined}
           onCloseAutoFocus={(e) => { if (jumped.current) e.preventDefault() }}>
           <SheetTitle className="sr-only">{t.journey.title}</SheetTitle>

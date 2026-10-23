@@ -52,12 +52,11 @@ export function Gate() {
 
 // Load the other pages once the first one has painted, so moving between them never flashes blank (v3 S)
 if (typeof window !== "undefined") {
-  // Our story's globe too (218 KB gzipped), unless the guest has Save-Data on, so it's there when they reach it: the
-  // component, and what it loads when it mounts (three and its line modules, the paint and the land)
+  // Our story's map paint and land too (42 KB gzipped), unless the guest has Save-Data on. Not three.js (run 26): the
+  // globe's 190 KB load only when it's first opened full screen, so they never compete with a page's own photo
   const go = () => warm(navigator,
     [() => import("@/pages/day"), () => import("@/pages/travel"), () => import("@/pages/faqs"), () => import("@/pages/our-story")],
-    [() => import("@/components/journey-globe"), () => import("three"), () => import("three/examples/jsm/lines/Line2.js"), () => import("three/examples/jsm/lines/LineMaterial.js"),
-      () => import("three/examples/jsm/lines/LineGeometry.js"), () => import("@/lib/paint-globe"), () => import("world-atlas/countries-110m.json")])
+    [() => import("@/lib/paint-globe"), () => import("world-atlas/countries-110m.json")])
   window.addEventListener("load", () => ("requestIdleCallback" in window ? (window as unknown as { requestIdleCallback: (f: () => void) => void }).requestIdleCallback(go) : setTimeout(go, 1500)), { once: true })
 }
 
