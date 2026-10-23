@@ -4,7 +4,6 @@
 
 import { DATES } from "@/lib/wedding-dates"
 import { fmtDay } from "@/lib/dates"
-import { ART } from "@/lib/art"
 import { pending } from "./pending"
 
 const DAY = fmtDay(DATES.ceremonyDay) // "Fri 15 Oct 2027"
@@ -359,7 +358,8 @@ export const en = {
       { q: "Gifts?", a: "NO GIFTS! We understand the travel is a big ask in itself, so your presence is the present!" },
       { q: "Do I need a visa?", a: pending("faqs.visa.a", "en") },
       { q: "What happens to my details?", a: pending("faqs.details.a", "en") },
-      { q: "Who made this site?", a: `${pending("faqs.whoMade.a", "en")} ${pending("faqs.whoMade.song", "en").replace("{song}", ART.music.credit.en).replace("{artist}", ART.music.artist)}` },
+      // Run 26: Jehan's wording, as written. The song title (ART.music.title) is the link to the track
+      { q: "Who made this site?", a: "A proper family effort. Griffin wrote the words, Nadia drew everything you can see, and Jehan built the whole site. The music is A Town With an Ocean View by Joe Hisaishi, played on piano by Piano ZeroL." },
     ],
     onTheDay: "On the day, contact",
     // Their Questions (column E, 22 Oct): the line above Ask us at the end of FAQs
