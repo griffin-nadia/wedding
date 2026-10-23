@@ -132,7 +132,7 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
               className={cn("vmap-pin", on === p.id && "is-on")} data-chip={on === p.id ? side : p.chip} data-kind={DOT[p.id] ?? "place"}
               style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%`, "--tilt": `${(i * 67) % 360}deg` } as React.CSSProperties}>
               <span aria-hidden className="vmap-dot" />
-              {on === p.id && <span aria-hidden className="vmap-chip"><span lang="ja" className="font-ja">{p.ja}</span><span>{p.name}</span></span>}
+              {on === p.id && <span aria-hidden className="vmap-chip"><span>{p.name}</span><span lang="ja" className="font-ja">{p.ja}</span></span>}
             </button>
           ))}
           </div>
