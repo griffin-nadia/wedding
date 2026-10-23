@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react"
 import { getJourneys, SAMPLE_JOURNEYS, type Journey } from "@/lib/api"
 import { Segmented } from "@/components/segmented"
-import { pending } from "@/content/pending"
 import { loop } from "@/lib/frame"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
@@ -405,8 +404,8 @@ export function GlobeLab({ look }: { look: Look }) {
     <Stage hint="Drag to turn it. Globe and Flat curl the same paper.">
       <style>{css}{look.css ?? ""}</style>
       <div className={P} onKeyDown={(e) => { if (e.key === "Escape") setOpen(null) }}>
-        <Segmented className={`${P}-toggle`} label={pending("journey.mapMode", lang)} size="sm" value={mode as "globe" | "flat"} onChange={setMode}
-          items={[{ value: "globe", label: pending("journey.globe", lang) }, { value: "flat", label: pending("journey.flat", lang) }]} />
+        <Segmented className={`${P}-toggle`} label={(lang === "ja" ? "地図" : "Map")} size="sm" value={mode as "globe" | "flat"} onChange={setMode}
+          items={[{ value: "globe", label: (lang === "ja" ? "地球儀" : "Globe") }, { value: "flat", label: (lang === "ja" ? "平面の地図" : "Flat map") }]} />
         <div ref={box} className={`${P}-box`} tabIndex={0} role="group" aria-roledescription="map" aria-label={`${t.journey.title}. Drag, or use the arrow keys, to turn it.`}>
           <div ref={art} className={`${P}-art`}><canvas ref={layer} aria-hidden /></div>
           {look.decor}

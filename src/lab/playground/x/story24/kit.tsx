@@ -270,7 +270,7 @@ export function JourneyStop({ active }: { active: boolean }) {
   const nameOf = usePlaceName()
   const label = t.journey.map(you ? nameOf(you.name) : null, you?.id === "jp" || you?.country === "JP" ? "Already in Japan" : undefined)
   const told = flying && flying.households > 0 ? flying : null
-  const toggle = <Segmented label={pending("journey.mapMode", lang)} size="sm" className="journey-mode" value={mode} onChange={pick} items={[{ value: "globe", label: pending("journey.globe", lang) }, { value: "flat", label: pending("journey.flat", lang) }]} />
+  const toggle = <Segmented label={(lang === "ja" ? "地図" : "Map")} size="sm" className="journey-mode" value={mode} onChange={pick} items={[{ value: "globe", label: (lang === "ja" ? "地球儀" : "Globe") }, { value: "flat", label: (lang === "ja" ? "平面の地図" : "Flat map") }]} />
   return (
     <div className="x-s24-journey">
       {mode === "globe" && active
