@@ -166,7 +166,10 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
     // The painting is heavy (the whole world at 2048): only once the map is on screen, so a story opened on its
     // first stop with the flat map remembered isn't held up by a map four stops away
     const paint = () => void import("@/lib/paint-globe").then(async ({ paintGlobe, GLOBE_LOOK }) => {
-      const src = await paintGlobe(GLOBE_LOOK.map, 2048, countries)
+      // Run 26: the globe's own painting at the globe's size (1024 on phones), so on a phone the map reuses the one
+      // the globe has already painted instead of painting the world again at 2048 (on CI's software GL phone that
+      // second paint held the page for about 15 s; on a phone it's the same picture, so the same assets in both views)
+      const src = await paintGlobe(GLOBE_LOOK.map, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries)
       const c = art.current
       if (!alive || !c) return
       // The painting runs -180° to 180°; the frame crosses the date line, so it's drawn twice, a world apart
