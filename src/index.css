@@ -709,6 +709,12 @@
   .sheet.rsvp-sheet { --sheet-gap: 12px; height: auto; }
   :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); }
   .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { height: calc(100dvh - 64px - 2 * var(--sheet-gap)); }
+  /* Run 26 review: every step is at least as tall as "All good?" hugs for a household of two (805px at 1440), so the
+     sheet stays put from step to step; it still grows past that when a list opens. The done screen hugs as before */
+  .sheet.rsvp-sheet:has(.rsvp-step) { min-height: min(805px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
+  /* The map step sits in the middle of the sheet, both ways */
+  .rsvp-sheet .sheet-body:has(> .rsvp-step[data-step="map"]) { display: flex; flex-direction: column; justify-content: center; }
+  .rsvp-step[data-step="map"] .journey-end { align-items: center; text-align: center; }
 }
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
 /* "All good?": who sees the reply, a small note just above Back and Send (run 25) */
@@ -716,6 +722,9 @@
 /* "All good?" rows: the label, the answer, and Edit in one column on the right for every row, the message too (run 25) */
 .review-row { display: grid; grid-template-columns: minmax(5.5rem, 32%) minmax(0, 1fr); column-gap: var(--space-3); align-items: start; padding: var(--space-3) var(--space-4); }
 .review-row > dd { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-2); align-items: start; }
+/* Run 26 review: Edit sits at the bottom right of its row, its text right-aligned */
+.review-row > dd { align-self: stretch; }
+.review-row > dd > button { align-self: end; justify-self: end; text-align: right; }
 .review-row > dt, .review-row > dd > span { padding-top: 2px; }
 .review-row[data-block] { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-1); }
 /* Steps slide the way you're going (300 ms); a fade only under reduced motion */
@@ -768,7 +777,7 @@
 @media (hover: hover) { .combo-option:hover { box-shadow: inset 0 0 0 1px var(--line-strong); } }
 /* Run 26: flying from is a short step that hugs its field, so its list is in the page (the sheet grows to show it)
    rather than floating, where the step's edge cut it off after one row */
-.journey-from .combo-list { position: static; }
+.journey-from .combo-list, .song-picker .combo-list { position: static; }
 .combo-note { padding: var(--space-3) var(--space-2); font-family: var(--font-label); font-size: var(--type-ui-small-size); color: var(--ink-muted); }
 /* Chip: 36 tall, 44 tap area, Inter 14, wraps with 8px gaps */
 /* One chip shape (date, status, Replied, reply and choice chips): --chip-height tall, hairline, control radius.
@@ -910,6 +919,9 @@ svg.lucide { stroke-width: 1.5; }
 /* Song versions (v3 Q3): the "N versions" row reads as a link under its song; versions sit indented under it */
 .combo-option-more { min-height: 44px; padding-left: calc(var(--space-3) + 32px + var(--space-3)); color: var(--link); font-size: var(--type-small-size); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
 .combo-option-version { padding-left: calc(var(--space-3) + 32px + var(--space-3)); }
+/* "Use what I typed" with what was typed under it (the song search, run 26 review): only the label is a link */
+.combo-option-more:has(.text-small) { text-decoration: none; }
+.combo-option-more:has(.text-small) > span > span:first-child { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
 /* Home countdown (v3 Q6): five 48px paper tiles under the card, outside the letter */
 /* Segmented choice: the tick in its reserved slot (v3 R) */
 .segmented[role="radiogroup"] .segmented-item { display: inline-flex; align-items: center; gap: var(--space-1); padding-left: var(--space-3); }
@@ -1358,9 +1370,16 @@ svg.lucide { stroke-width: 1.5; }
 @media (max-width: 767px) {
   .sheet.rsvp-sheet { top: auto; bottom: calc(12px + env(safe-area-inset-bottom)); height: auto; }
   :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); } /* no deep band above the footer */
+  /* Run 26 review: no step is shorter than the travel dates step (step 4) at this width, so the sheet doesn't jump
+     between steps; it still grows when a list opens */
+  .sheet.rsvp-sheet:has(.rsvp-step) { min-height: min(567px, calc(100svh - 24px - env(safe-area-inset-bottom))); }
   /* The song step too: its results open and close under the field and chosen songs land above it, so it keeps the
      full height and the field never moves */
   [data-typing] .sheet.rsvp-sheet, .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { top: calc(var(--vv-top, 0px) + 12px); bottom: auto; height: calc(100svh - 24px - env(safe-area-inset-bottom)); }
+}
+@media (min-width: 400px) and (max-width: 767px) {
+  /* From 400px the dates sit side by side, so step 4 is shorter */
+  .sheet.rsvp-sheet:has(.rsvp-step) { min-height: min(467px, calc(100svh - 24px - env(safe-area-inset-bottom))); }
 }
 [data-typing] .rsvp-actions { transform: translateY(calc(-1 * var(--kb-lift, 0px))); position: relative; z-index: 3; }
 [data-typing] .sheet-body { padding-bottom: calc(var(--space-7) + var(--kb, 0px)); }

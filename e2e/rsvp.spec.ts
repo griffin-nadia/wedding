@@ -122,7 +122,7 @@ test("Who's coming is a radio group: Tab lands on it, the arrow keys choose", as
   await expect(page.getByRole("radiogroup", { name: "Alex" }).getByRole("radio").first()).toBeFocused()
 })
 
-test("the song search: as you type, pick one and the list closes, up to two, artwork kept", async ({ page }) => {
+test("the song search: the same combobox as flying from, as you type, keyboard and pointer, up to two, artwork kept", async ({ page }) => {
   let calls = 0
   await page.route("https://itunes.apple.com/**", (r) => { calls++; return r.fulfill({ json: { results: [
     { trackName: "September", artistName: "Earth, Wind & Fire", trackViewUrl: "", artworkUrl100: "data:image/gif;base64,R0lGODlhAQABAAAAACw=" },
@@ -133,31 +133,40 @@ test("the song search: as you type, pick one and the list closes, up to two, art
   await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
   await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
   await press(page, /^Next$/); await press(page, /^Next$/)
-  const field = dialog.getByRole("searchbox", { name: "Search for a song" })
+  const field = dialog.getByRole("combobox", { name: "Search for a song" })
+  const list = dialog.getByRole("listbox", { name: "Search for a song" })
   await field.fill("S")
   await page.waitForTimeout(600)
   expect(calls).toBe(0) // one letter never searches
   await field.fill("Septem")
-  const row = dialog.getByRole("button", { name: /September/ }).first()
+  const row = list.getByRole("option", { name: /September/ }).first()
   await expect(row).toBeVisible() // 300 ms after the last key
   expect(calls).toBe(1)
   await expect(field).toBeFocused() // typing keeps the keyboard
+  await expect(field).toHaveAttribute("aria-expanded", "true")
   // "Use what I typed" is the last row
-  await expect(dialog.locator(".song-results li").last()).toContainText("Use what I typed")
+  await expect(list.getByRole("option").last()).toContainText("Use what I typed")
+  // Keyboard: Down highlights the first row (aria-activedescendant), Escape closes the list and keeps the sheet
+  await field.press("ArrowDown")
+  await expect(field).toHaveAttribute("aria-activedescendant", "song-search-o0")
+  await field.press("Escape")
+  await expect(field).toHaveAttribute("aria-expanded", "false")
+  await expect(dialog).toBeVisible()
+  await field.press("ArrowDown")
   const top = await field.evaluate((e) => e.getBoundingClientRect().top)
+  // Pointer: tap a row. The list closes, the field empties, the song is a row with its artwork, and nothing jumped
   await row.click()
-  // The list closes, the field empties, the song is a row with its artwork, and nothing jumped
-  await expect(dialog.locator(".song-results")).toHaveCount(0)
+  await expect(field).toHaveAttribute("aria-expanded", "false")
   await expect(field).toHaveValue("")
   expect(await field.evaluate((e) => e.getBoundingClientRect().top)).toBe(top)
   const card = dialog.getByRole("list", { name: "Your songs" }).getByRole("listitem")
   await expect(card).toHaveCount(1)
   await expect(card.locator("img.song-art")).toHaveCount(1)
-  // The button searches too, and what was typed can be used as it is: two songs, then the field goes
+  // What was typed can be used as it is (arrow to the last row, Enter): two songs, then the field goes
   await field.fill("Our own song")
-  await dialog.getByRole("button", { name: "Search", exact: true }).click()
-  await expect(field).not.toBeFocused() // the button puts the keyboard away
-  await dialog.getByRole("button", { name: /Use what I typed/ }).click()
+  await expect(list.getByRole("option").last()).toContainText("Use what I typed")
+  for (let i = await list.getByRole("option").count(); i > 0; i--) await field.press("ArrowDown")
+  await field.press("Enter")
   await expect(card).toHaveCount(2)
   await expect(dialog.getByText("2 songs added. Remove one to change it.")).toBeVisible()
   // Reset: remove one and the search is back
@@ -382,8 +391,9 @@ test("the fortune folds again on a later visit, after an update, then stays open
   await dialog.getByRole("button", { name: "Draw one" }).click()
   await expect(dialog.locator(".omikuji-fold .omikuji-leaf")).toHaveCount(2)
   await expect(dialog.locator(".omikuji-fold")).toHaveCount(0, { timeout: 4000 })
-  // An update in the same visit: straight to the slip
-  await dialog.getByRole("button", { name: "Change my reply" }).click()
+  // An update in the same visit: straight to the slip (from the invite: Change my reply is phones only on the done screen)
+  await page.keyboard.press("Escape")
+  await page.locator("#letter").getByRole("button", { name: /Change my reply/ }).first().click()
   await toCheck(page); await press(page, /^Send our reply$/)
   await expect(dialog.locator(".omikuji-slip")).toBeVisible()
   await expect(dialog.getByRole("button", { name: "Draw one" })).toHaveCount(0)
