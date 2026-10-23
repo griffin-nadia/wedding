@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test"
 
-// Final run: Our story's last stop is the painted globe. Run 25: one view per screen. Run 26: the stop shows the flat
-// map (no three.js until the globe opens) and a Full screen control above it; that opens a dialog with Globe / Map in a fixed spot, + and
+// Final run: Our story's last stop is the painted globe. Run 25: one view per screen. The stop shows the globe (the
+// flat map with no WebGL) and a Full screen control above it; that opens a dialog with Globe / Map in a fixed spot, + and
 // − on the globe, Escape and the X back to the story. Chapter pins on both views go to their stop.
 test.use({ launchOptions: { args: ["--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } })
 test.describe.configure({ timeout: 90_000 })
@@ -14,36 +14,36 @@ const toEnd = async (page: Page) => {
 const webgl = (page: Page) => page.evaluate(() => Boolean(document.createElement("canvas").getContext("webgl2")))
 test.beforeEach(async ({ page }) => { await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") }) })
 
-test("the stop shows the flat map and no three.js; Full screen opens the globe with Globe / Map, and closes back to the story", async ({ page }) => {
-  // Run 26: three.js is fetched only when the globe first opens full screen, never on the stop
-  const three: string[] = []
-  page.on("request", (r) => { if (/three\.module/.test(r.url())) three.push(r.url()) })
+test("the stop shows the globe; Full screen opens it with Globe / Map, and closes back to the story", async ({ page }) => {
   await toEnd(page)
   test.skip(!(await webgl(page)), "no WebGL here")
   const stop = page.locator(".story-slide-map")
-  await expect(stop.locator(".journey-flat")).toBeVisible({ timeout: 15_000 })
-  // Brisbane and Victoria always named; one visual, no switch and no zoom on the stop
-  await expect(stop.locator(".journey-flat-names .journey-place")).toHaveText(["Brisbane", "Victoria"])
-  await expect(stop.locator(".journey-globe")).toHaveCount(0)
+  await expect(stop.locator(".journey-globe canvas")).toHaveCount(1, { timeout: 30_000 })
+  await expect(stop.locator(".journey-globe")).toHaveAttribute("data-ready", "true")
+  // Kyoto pinned with its date; Brisbane and Victoria always named; one visual, no switch and no zoom on the stop
+  await expect(stop.locator(".globe-pin")).toContainText("Kyoto, 15 Oct 2027")
+  await expect(stop.locator(".globe-place")).toHaveText(["Brisbane", "Victoria"])
+  await expect(stop.locator(".journey-flat")).toHaveCount(0)
   await expect(stop.getByRole("radio")).toHaveCount(0)
   await expect(stop.getByRole("button", { name: "Zoom in" })).toHaveCount(0)
   await expect(stop.locator(".journey-legend")).toBeVisible()
-  // The control centred above the map
+  // The control centred above the globe
   const open = page.getByRole("button", { name: "Open the map full screen" })
-  const map = (await stop.locator(".journey-flat").boundingBox())!, ctl = (await open.boundingBox())!
+  const map = (await stop.locator(".journey-globe").boundingBox())!, ctl = (await open.boundingBox())!
   expect(ctl.y + ctl.height).toBeLessThanOrEqual(map.y + 1)
   expect(Math.abs(ctl.x + ctl.width / 2 - (map.x + map.width / 2))).toBeLessThan(2)
-  await page.waitForTimeout(1500)
-  expect(three).toEqual([])
+  // Dragging sideways turns the globe, never the story
+  const art = (await stop.locator(".journey-globe-art").boundingBox())!
+  await page.mouse.move(art.x + art.width * 0.7, art.y + art.height / 2); await page.mouse.down()
+  for (let i = 1; i <= 8; i++) await page.mouse.move(art.x + art.width * (0.7 - i * 0.06), art.y + art.height / 2)
+  await page.mouse.up()
+  await expect(page.getByRole("button", { name: /next chapter/i })).toBeDisabled()
 
   await open.click()
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
   await expect(dialog.getByRole("radio", { name: "Globe" })).toBeChecked()
   await expect(dialog.locator(".journey-globe canvas")).toHaveCount(1, { timeout: 30_000 })
-  await expect(dialog.locator(".journey-globe")).toHaveAttribute("data-ready", "true")
-  await expect(dialog.locator(".globe-pin")).toContainText("Kyoto, 15 Oct 2027")
-  expect(three.length).toBeGreaterThan(0)
   await expect(dialog.getByRole("button", { name: "Zoom in" })).toBeVisible()
   await expect(dialog.getByRole("button", { name: "Zoom out" })).toBeVisible()
   await expect(dialog.locator(".journey-legend")).toBeVisible()

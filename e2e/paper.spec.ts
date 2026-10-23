@@ -45,7 +45,14 @@ test("reduced motion: the same paper, nothing fades; Save-Data: plain, nothing f
     await c.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-paper", "on") })
     const p = await c.newPage(), sheets: string[] = []
     p.on("request", (r) => { if (/\/paper\//.test(r.url())) sheets.push(r.url()) })
-    await p.goto("?h=sample")
+    await p.goto("?h=sample", { waitUntil: "commit" })
+    // Reduced motion: the veil's seal is still and the veil goes without a fade
+    if (!save) {
+      await p.locator("#paper-veil").waitFor({ state: "visible" })
+      const [anim, fade] = await p.locator("#paper-veil").evaluate((v) => [getComputedStyle(v.querySelector("img")!).animationName, getComputedStyle(v).transitionDuration])
+      expect(anim).toBe("none")
+      expect(parseFloat(fade)).toBeLessThan(0.01) // 0s, or the site's 0.01 ms reduced-motion rule
+    }
     await p.waitForTimeout(3000)
     expect(await p.evaluate(() => document.documentElement.hasAttribute("data-paper"))).toBe(!save)
     expect(sheets.length > 0).toBe(!save)
