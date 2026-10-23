@@ -46,7 +46,7 @@ export function DriverCard() {
             </div>
         </div>
       </section>
-        <SheetContent tone="bright" className="sheet-driver" aria-describedby={undefined} closeLabel={t.driver.done}>
+        <SheetContent tone="bright" className="sheet-driver takeover" aria-describedby={undefined} closeLabel={t.driver.done}>
           <div className="driver-body" lang="ja">
             <SheetTitle className="driver-please font-ja">{VENUE.please}</SheetTitle>
             <p className="driver-name font-ja">{VENUE.nameJa}</p>
