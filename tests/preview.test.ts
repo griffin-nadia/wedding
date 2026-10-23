@@ -12,7 +12,7 @@ function backEnd() {
     RSVPs: [["Token", "Responded at"]], Songs: [["Token", "Song"]], Log: [["Time", "Token"]],
     Preview: [["Token", "Name", "Language", "Notes"], ["pjapanese2", "Japanese review", "ja", ""], ["pdesign234", "Design review", "en", ""]],
   }
-  const sent: unknown[] = [], cache: Record<string, string> = {}, props: Record<string, string> = {}
+  const sent: unknown[] = [], cache: Record<string, string> = {}, props: Record<string, string> = { REPLY_TO: "wedding@example.com" }
   const sheet = (name: string) => tabs[name] && {
     getDataRange: () => ({ getValues: () => tabs[name] }),
     appendRow: (r: unknown[]) => tabs[name].push(r), setFrozenRows() {}, getLastRow: () => tabs[name].length,
@@ -24,7 +24,7 @@ function backEnd() {
     CacheService: { getScriptCache: () => ({ get: (k: string) => cache[k] ?? null, put: (k: string, v: string) => { cache[k] = v }, remove: (k: string) => { delete cache[k] } }) },
     MailApp: { getRemainingDailyQuota: () => 97, sendEmail: (m: unknown) => sent.push(m) },
     LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }), getUserLock: () => ({ tryLock: () => true, releaseLock() {} }) },
-    Session: { getEffectiveUser: () => ({ getEmail: () => "griffinandnadia@gmail.com" }) },
+    Session: { getEffectiveUser: () => ({ getEmail: () => "wedding@example.com" }) },
     SpreadsheetApp: { getActive: () => ({ getSheetByName: sheet, insertSheet: (n: string) => { tabs[n] = []; return sheet(n) } }), flush() {} },
     ContentService: { MimeType: { JSON: "json" }, createTextOutput: (t: string) => ({ setMimeType: () => ({ getContent: () => t }) }) },
     ScriptApp: { getProjectTriggers: () => [] },

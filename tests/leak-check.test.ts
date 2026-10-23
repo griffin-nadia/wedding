@@ -9,8 +9,8 @@ test("emails, Google ids, test tokens and private/ paths are caught", () => {
 test("the calendar id, the /exec address and package versions are fine", () => {
   assert.deepEqual(textLeaks("UID:nadia-griffin-2027@griffin-nadia.github.io https://script.google.com/macros/s/AKfyc_x-1/exec react@18.3.1 /__private/song.mp3"), [])
 })
-test("run 26: the wedding account's own address is caught too (no email address on the site)", () => {
-  assert.deepEqual(textLeaks("mailto:griffinandnadia@gmail.com"), ["email griffinandnadia@gmail.com"])
+test("run 26: any address is caught, the wedding account's too (no email address on the site)", () => {
+  assert.deepEqual(textLeaks("mailto:wedding.account@gmail.com"), ["email wedding.account@gmail.com"])
 })
 test("image headers: size and metadata read without an image library", () => {
   const png = Buffer.alloc(64); png.write("\x89PNG\r\n\x1a\n", 0, "latin1"); png.writeUInt32BE(13, 8); png.write("IHDR", 12); png.writeUInt32BE(3000, 16); png.writeUInt32BE(2000, 20)
