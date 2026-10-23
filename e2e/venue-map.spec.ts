@@ -85,3 +85,38 @@ for (const path of ["travel?h=sample&preview#around", "the-day?h=sample&preview"
   await expect(dialog).toHaveCount(0)
   await expect(open).toBeFocused()
 })
+
+// Run 26: no two dots closer than the minimum gap (edge to edge, the chosen one with its soft ring) at 390, 1440 and
+// 2560, every one on its spot in the art, and the chosen place's chip never over another dot, for every place
+const MIN_GAP = 3
+test("dots keep the minimum gap, sit on their spots, and no chip covers a dot", async ({ page }, info) => {
+  test.skip(info.project.name !== "laptop", "sizes set here")
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  for (const [w, h] of [[390, 844], [1440, 900], [2560, 1440]]) {
+    await page.setViewportSize({ width: w, height: h })
+    await page.goto("travel?h=sample&preview#around")
+    const map = page.locator(".vmap"); await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(300)
+    const pins = map.locator(".vmap-pin")
+    for (let i = 0; i < await pins.count(); i++) {
+      await pins.nth(i).evaluate((el: HTMLElement) => el.click())
+      const r = await map.evaluate((m) => {
+        const img = m.querySelector("img")!.getBoundingClientRect()
+        const dots = [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((pin) => {
+          const d = pin.querySelector<HTMLElement>(".vmap-dot")!, b = d.getBoundingClientRect(), cs = getComputedStyle(d)
+          const halo = pin.classList.contains("is-on") ? Math.max(0, ...[...cs.boxShadow.matchAll(/0px 0px 0px ([\d.]+)px/g)].map((x) => +x[1])) : 0
+          const scale = pin.classList.contains("is-on") ? new DOMMatrix(cs.transform).a : 1
+          return { x: b.left + b.width / 2, y: b.top + b.height / 2, r: (d.offsetWidth / 2) * scale + halo, b,
+            at: Math.hypot(b.left + b.width / 2 - (img.left + (parseFloat(pin.style.left) / 100) * img.width), b.top + b.height / 2 - (img.top + (parseFloat(pin.style.top) / 100) * img.height)) }
+        })
+        let gap = Infinity
+        for (let a = 0; a < dots.length; a++) for (let b = a + 1; b < dots.length; b++) gap = Math.min(gap, Math.hypot(dots[a].x - dots[b].x, dots[a].y - dots[b].y) - dots[a].r - dots[b].r)
+        const c = m.querySelector(".vmap-chip")!.getBoundingClientRect(), on = m.querySelector(".vmap-pin.is-on")!
+        const covered = [...m.querySelectorAll(".vmap-pin")].filter((p) => p !== on).some((p) => { const d = p.querySelector(".vmap-dot")!.getBoundingClientRect(); return d.left < c.right && d.right > c.left && d.top < c.bottom && d.bottom > c.top })
+        return { gap: Math.round(gap * 10) / 10, off: Math.max(...dots.map((d) => d.at)), covered }
+      })
+      expect(r.gap, `${w}: place ${i}: two dots too close`).toBeGreaterThanOrEqual(MIN_GAP)
+      expect(r.off, `${w}: a dot off its spot`).toBeLessThanOrEqual(2)
+      expect(r.covered, `${w}: place ${i}: its chip covers a dot`).toBe(false)
+    }
+  }
+})

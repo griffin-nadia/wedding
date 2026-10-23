@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { Maximize2, MapPin } from "lucide-react"
 import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useLang } from "@/lib/lang"
@@ -16,6 +16,15 @@ const ROUTES = {
 /** Run 25: which of her dots each ring sits on (her red place dots, the green Keihan station rings, Kyoto Station's
  *  orange ring), so each ring is her dot's own size */
 const DOT: Record<string, "station" | "jr"> = { station: "jr", gojo: "station", gion: "station", sanjo: "station", shichijo: "station", tofukuji: "station" }
+
+/** Run 26: where the chip may go when its own place (away from her painted label) would cover another dot or run off the
+ *  map: its own side nudged lower or higher, then the other side, then above or below. The dot never moves. Words in
+ *  data-chip: left (else right), low or high (else centred), above, below. */
+const sides = (own: string) => {
+  const h = own === "left" ? "left" : "right", o = h === "left" ? "right" : "left", n = own === "low" ? ["low", "", "high"] : ["", "low", "high"]
+  const row = (x: string) => n.map((y) => `${x} ${y}`.trim())
+  return [...new Set([...(own === "above" ? ["above"] : []), ...row(h), ...row(o), "above", "below"])]
+}
 
 /** Nadia's map shows when config.venueMap is on, or with ?preview in the address (to try it before it's switched on) */
 export function venueMapOn() {
@@ -36,6 +45,38 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
   const [on, setOn] = useState("venue")
   const place = m.places.find((p) => p.id === on) ?? m.places[0]
   const zoom = usePinch()
+  const art = useRef<HTMLDivElement>(null)
+  // Run 26: the chosen place's chip goes in the first place (its own first) where it stays on the map and covers no
+  // other dot; if there's none, where it covers least. Tried on the real chip before paint, and again on a resize.
+  const [side, setSide] = useState<string>(place.chip)
+  useLayoutEffect(() => {
+    const box = zoom.box.current
+    const fit = () => {
+      const pin = art.current?.querySelector<HTMLElement>(".vmap-pin.is-on"), chip = pin?.querySelector<HTMLElement>(".vmap-chip")
+      if (!box || !pin || !chip) return
+      // Each other dot's box from its pin's centre (the pin never animates; the dot can be mid-pulse)
+      const b = box.getBoundingClientRect(), dots = [...art.current!.querySelectorAll<HTMLElement>(".vmap-pin:not(.is-on)")].map((p) => {
+        const r = p.getBoundingClientRect(), d = p.querySelector<HTMLElement>(".vmap-dot")!.offsetWidth / 2 + 2
+        return { l: r.left + r.width / 2 - d, r: r.left + r.width / 2 + d, t: r.top + r.height / 2 - d, b: r.top + r.height / 2 + d }
+      })
+      const cost = () => {
+        const c = chip.getBoundingClientRect()
+        const out = Math.max(0, b.left - c.left) + Math.max(0, c.right - b.right) + Math.max(0, b.top - c.top) + Math.max(0, c.bottom - b.bottom)
+        return dots.filter((d) => d.l < c.right && d.r > c.left && d.t < c.bottom && d.b > c.top).length * 1000 + out
+      }
+      // No transition while trying (reduced motion's 0.01ms transitions would otherwise report the old place)
+      let best = place.chip as string, least = Infinity
+      chip.style.setProperty("transition", "none", "important")
+      for (const s of sides(place.chip)) { pin.dataset.chip = s; const c = cost(); if (c < least) { least = c; best = s } if (!c) break }
+      pin.dataset.chip = best
+      chip.style.transition = ""
+      setSide(best)
+    }
+    fit()
+    if (!box) return
+    const ro = new ResizeObserver(fit); ro.observe(box)
+    return () => ro.disconnect()
+  }, [place, zoom.box])
   // One gentle pulse of the dots the first time the map scrolls into view (run 24b), so it's clear they can be tapped
   const [seen, setSeen] = useState(false)
   useEffect(() => {
@@ -49,7 +90,7 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
     <section aria-label={m.title} className="flex flex-col gap-4">
       <p className="text-small text-muted-foreground">{k.intro}</p>
       <div className="vmap" ref={zoom.box} data-zoomed={zoom.s > 1 || undefined} data-seen={seen || undefined} {...zoom.handlers}>
-        <div className="vmap-art" style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` }}>
+        <div className="vmap-art" ref={art} style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` }}>
           <picture>
             <source type="image/avif" srcSet={`${base}art/map/venue-map-800.avif 800w, ${base}art/map/venue-map-1600.avif 1600w`} sizes="(min-width: 768px) 652px, 92vw" />
             <img src={`${base}art/map/venue-map-800.webp`} srcSet={`${base}art/map/venue-map-800.webp 800w, ${base}art/map/venue-map-1600.webp 1600w`} sizes="(min-width: 768px) 652px, 92vw"
@@ -61,9 +102,10 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
           </svg>
           {/* The old map's pins on her dots: a ring on each, filled when chosen, and the chosen one's label chip (Japanese
               over English) on the side away from her own painted label, so it never covers it */}
-          {m.places.map((p) => (
+          {m.places.map((p, i) => (
             <button key={p.id} type="button" aria-pressed={on === p.id} aria-label={`${p.name}, ${p.ja}`} onClick={() => setOn(p.id)}
-              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={p.chip} data-kind={DOT[p.id] ?? "place"} style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%` }}>
+              className={cn("vmap-pin", on === p.id && "is-on")} data-chip={on === p.id ? side : p.chip} data-kind={DOT[p.id] ?? "place"}
+              style={{ left: `${p.at[0]}%`, top: `${p.at[1]}%`, "--tilt": `${(i * 67) % 360}deg` } as React.CSSProperties}>
               <span aria-hidden className="vmap-dot" />
               {on === p.id && <span aria-hidden className="vmap-chip"><span lang="ja" className="font-ja">{p.ja}</span><span>{p.name}</span></span>}
             </button>
