@@ -82,20 +82,26 @@ for (const path of ["travel?h=sample&preview#around", "the-day?h=sample&preview"
   await expect(open).toBeFocused()
 })
 
-// Run 26: no two dots closer than the minimum gap (edge to edge, the chosen one with its soft ring) at 390, 1440 and
-// 2560, every one on its spot in the art, and the chosen place's chip never over another dot, for every place
+// Run 26: no two dots closer than the minimum gap (edge to edge, the chosen one with its soft ring) at 390, 430, 1440
+// and 2560, inline and full screen, every one on its spot in the art; and for every place, its chip stays on the map,
+// over no other dot and none of her painted lettering (LABELS: the same boxes as venue-map.tsx, % of the art)
 const MIN_GAP = 3
-test("dots keep the minimum gap, sit on their spots, and no chip covers a dot", async ({ page }, info) => {
+const LABELS = [[60.6, 34.2, 79.7, 42.5], [58.8, 51.6, 73.6, 55.5], [61.4, 25, 76.2, 28.8], [77.6, 66, 93.7, 73], [19, 80.4, 35.4, 83.6],
+  [32.6, 10.9, 48.1, 16.9], [58.1, 4.6, 63.8, 8.6], [46.6, 19.5, 54, 23.3], [35.2, 44.6, 46.4, 48.5], [39.8, 62.6, 45.9, 66.7], [52.5, 88, 59.4, 92.2]]
+test("dots keep the minimum gap and their spots; chips stay clear of dots and her lettering", async ({ page }, info) => {
   test.skip(info.project.name !== "laptop", "sizes set here")
+  test.setTimeout(90_000)
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
-  for (const [w, h] of [[390, 844], [1440, 900], [2560, 1440]]) {
+  for (const [w, h] of [[390, 844], [430, 932], [1440, 900], [2560, 1440]]) for (const full of [false, true]) {
     await page.setViewportSize({ width: w, height: h })
-    await page.goto("travel?h=sample&preview#around")
-    const map = page.locator(".vmap"); await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(300)
-    const pins = map.locator(".vmap-pin")
+    await page.goto(`travel?h=sample&w=${w}${full ? "f" : ""}#around`) // a new address each time, so the page reloads
+    if (full) await page.getByRole("button", { name: "Open the map" }).click()
+    const map = full ? page.getByRole("dialog").locator(".vmap") : page.locator(".vmap")
+    await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(300)
+    const pins = map.locator(".vmap-pin"), where = `${w}${full ? " full screen" : ""}`
     for (let i = 0; i < await pins.count(); i++) {
-      await pins.nth(i).evaluate((el: HTMLElement) => el.click())
-      const r = await map.evaluate((m) => {
+      await pins.nth(i).evaluate((el: HTMLElement) => el.click()); await page.waitForTimeout(30)
+      const r = await map.evaluate((m, labels) => {
         const img = m.querySelector("img")!.getBoundingClientRect()
         const dots = [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((pin) => {
           const d = pin.querySelector<HTMLElement>(".vmap-dot")!, b = d.getBoundingClientRect(), cs = getComputedStyle(d)
@@ -107,13 +113,19 @@ test("dots keep the minimum gap, sit on their spots, and no chip covers a dot", 
         })
         let gap = Infinity
         for (let a = 0; a < dots.length; a++) for (let b = a + 1; b < dots.length; b++) gap = Math.min(gap, Math.hypot(dots[a].x - dots[b].x, dots[a].y - dots[b].y) - dots[a].r - dots[b].r)
-        const c = m.querySelector(".vmap-chip")!.getBoundingClientRect(), on = m.querySelector(".vmap-pin.is-on")!
-        const covered = [...m.querySelectorAll(".vmap-pin")].filter((p) => p !== on).some((p) => { const d = p.querySelector(".vmap-dot")!.getBoundingClientRect(); return d.left < c.right && d.right > c.left && d.top < c.bottom && d.bottom > c.top })
-        return { gap: Math.round(gap * 10) / 10, off: Math.max(...dots.map((d) => d.at)), covered }
-      })
-      expect(r.gap, `${w}: place ${i}: two dots too close`).toBeGreaterThanOrEqual(MIN_GAP)
-      expect(r.off, `${w}: a dot off its spot`).toBeLessThanOrEqual(2)
-      expect(r.covered, `${w}: place ${i}: its chip covers a dot`).toBe(false)
+        const c = m.querySelector(".vmap-chip")!.getBoundingClientRect(), on = m.querySelector(".vmap-pin.is-on")!, box = m.getBoundingClientRect()
+        const hit = (l: number, t: number, rr: number, bb: number) => l < c.right && rr > c.left && t < c.bottom && bb > c.top
+        const covered = [...m.querySelectorAll(".vmap-pin")].filter((p) => p !== on).some((p) => { const d = p.querySelector(".vmap-dot")!.getBoundingClientRect(); return hit(d.left, d.top, d.right, d.bottom) })
+        const lettering = labels.filter(([x1, y1, x2, y2]) => hit(img.left + x1 / 100 * img.width, img.top + y1 / 100 * img.height, img.left + x2 / 100 * img.width, img.top + y2 / 100 * img.height)).length
+        const inside = c.left >= box.left - 0.5 && c.right <= box.right + 0.5 && c.top >= box.top - 0.5 && c.bottom <= box.bottom + 0.5
+        return { gap: Math.round(gap * 10) / 10, off: Math.max(...dots.map((d) => d.at)), covered, lettering, inside, side: (on as HTMLElement).dataset.chip }
+      }, LABELS)
+      expect(r.gap, `${where}: place ${i}: two dots too close`).toBeGreaterThanOrEqual(MIN_GAP)
+      expect(r.off, `${where}: a dot off its spot`).toBeLessThanOrEqual(2)
+      expect({ covered: r.covered, inside: r.inside }, `${where}: place ${i}'s chip (${r.side})`).toEqual({ covered: false, inside: true })
+      // The Sodoh's chip clears all her lettering at every size. Elsewhere on a phone-sized map a chip can have nowhere
+      // free of every painted label; it takes the place that covers least (no dot, on the map), so that's not asserted
+      if (await pins.nth(i).getAttribute("data-id") === "venue") expect(r.lettering, `${where}: The Sodoh's chip (${r.side}) over her lettering`).toBe(0)
     }
   }
 })

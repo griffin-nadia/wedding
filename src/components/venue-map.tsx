@@ -18,14 +18,17 @@ const ROUTES = {
  *  orange ring), so each ring is her dot's own size */
 const DOT: Record<string, "station" | "jr"> = { station: "jr", gojo: "station", gion: "station", sanjo: "station", shichijo: "station", tofukuji: "station" }
 
-/** Run 26: where the chip may go when its own place (away from her painted label) would cover another dot or run off the
- *  map: its own side nudged lower or higher, then the other side, then above or below. The dot never moves. Words in
- *  data-chip: left (else right), low or high (else centred), above, below. */
+/** Run 26: where the chip may go when its own place would cover another dot, run off the map or cover her painted
+ *  lettering: its own side nudged lower or higher, the same a little further out, then the other side, then above or
+ *  below. The dot never moves. Words in data-chip: left (else right), far, low or high (else centred), above, below. */
 const sides = (own: string) => {
   const h = own === "left" ? "left" : "right", o = h === "left" ? "right" : "left", n = own === "low" ? ["low", "", "high"] : ["", "low", "high"]
   const row = (x: string) => n.map((y) => `${x} ${y}`.trim())
-  return [...new Set([...(own === "above" ? ["above"] : []), ...row(h), ...row(o), "above", "below"])]
+  return [...new Set([...(own === "above" ? ["above"] : []), ...row(h), ...row(`${h} far`), ...row(o), ...row(`${o} far`), "above", "below"])]
 }
+/** Her painted labels on the map, as boxes in % of the art (x1, y1, x2, y2; the dark ink, .brief/tools/r26-labels.mjs) */
+const LABELS = [[60.6, 34.2, 79.7, 42.5], [58.8, 51.6, 73.6, 55.5], [61.4, 25, 76.2, 28.8], [77.6, 66, 93.7, 73], [19, 80.4, 35.4, 83.6],
+  [32.6, 10.9, 48.1, 16.9], [58.1, 4.6, 63.8, 8.6], [46.6, 19.5, 54, 23.3], [35.2, 44.6, 46.4, 48.5], [39.8, 62.6, 45.9, 66.7], [52.5, 88, 59.4, 92.2]]
 
 /** Nadia's map shows when config.venueMap is on, or with ?preview in the address (to try it before it's switched on) */
 export function venueMapOn() {
@@ -60,10 +63,13 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
         const r = p.getBoundingClientRect(), d = p.querySelector<HTMLElement>(".vmap-dot")!.offsetWidth / 2 + 2
         return { l: r.left + r.width / 2 - d, r: r.left + r.width / 2 + d, t: r.top + r.height / 2 - d, b: r.top + r.height / 2 + d }
       })
+      const img = art.current!.querySelector("img")!.getBoundingClientRect()
+      const labels = LABELS.map(([x1, y1, x2, y2]) => ({ l: img.left + (x1 / 100) * img.width, r: img.left + (x2 / 100) * img.width, t: img.top + (y1 / 100) * img.height, b: img.top + (y2 / 100) * img.height }))
+      // Worst to least bad: over a dot, off the map (per px), over her lettering
       const cost = () => {
-        const c = chip.getBoundingClientRect()
+        const c = chip.getBoundingClientRect(), hit = (d: { l: number; r: number; t: number; b: number }) => d.l < c.right && d.r > c.left && d.t < c.bottom && d.b > c.top
         const out = Math.max(0, b.left - c.left) + Math.max(0, c.right - b.right) + Math.max(0, b.top - c.top) + Math.max(0, c.bottom - b.bottom)
-        return dots.filter((d) => d.l < c.right && d.r > c.left && d.t < c.bottom && d.b > c.top).length * 1000 + out
+        return dots.filter(hit).length * 10000 + out * 100 + labels.filter(hit).length * 50
       }
       // No transition while trying (reduced motion's 0.01ms transitions would otherwise report the old place)
       let best = place.chip as string, least = Infinity

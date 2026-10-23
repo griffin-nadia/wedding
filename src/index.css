@@ -1731,6 +1731,8 @@ svg.lucide { stroke-width: 1.5; }
 .vmap-chip { position: absolute; top: 50%; left: 36px; translate: 0 -50%; pointer-events: none; display: flex; padding: 3px var(--space-2); border-radius: var(--radius-control); background: #fffaf0; box-shadow: inset 0 0 0 1.5px #a43108, 0 1px 3px rgb(0 0 0 / 0.18); font: 500 11px / 1.25 var(--font-label); color: #3a1f0f; white-space: nowrap; text-align: left; flex-direction: column-reverse; /* Japanese shown over English, English first in the text so it matches the button's name */ animation: fade-in 200ms var(--ease-paper) both; }
 .vmap-chip .font-ja { font-size: 12px; color: #6b4a33; }
 .vmap-pin[data-chip~="left"] .vmap-chip { left: auto; right: 36px; text-align: right; align-items: flex-end; }
+.vmap-pin[data-chip~="far"] .vmap-chip { left: calc(22px + 5cqw); } /* clear of her lettering beside the dot (run 26) */
+.vmap-pin[data-chip~="left"][data-chip~="far"] .vmap-chip { left: auto; right: calc(22px + 5cqw); }
 .vmap-pin[data-chip~="low"] .vmap-chip { translate: 0 8px; } /* beside the dot but starting below it (The Sodoh: her lettering is just above) */
 .vmap-pin[data-chip~="high"] .vmap-chip { translate: 0 calc(-100% - 8px); } /* beside the dot, ending above it (run 26) */
 .vmap-pin[data-chip="above"] .vmap-chip { top: auto; bottom: 36px; left: 50%; translate: -50% 0; align-items: center; text-align: center; }
