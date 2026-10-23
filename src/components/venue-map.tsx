@@ -69,7 +69,9 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
       let best = place.chip as string, least = Infinity
       chip.style.setProperty("transition", "none", "important")
       for (const s of sides(place.chip)) { pin.dataset.chip = s; const c = cost(); if (c < least) { least = c; best = s } if (!c) break }
+      // Settle on the best before the transition comes back (a layout read in between), so it doesn't slide over a dot
       pin.dataset.chip = best
+      void chip.offsetWidth
       chip.style.transition = ""
       setSide(best)
     }
