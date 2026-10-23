@@ -39,9 +39,10 @@ test("the music credit is only in FAQs, in the last answer", async ({ page }) =>
   const last = page.locator("#letter [data-slot=accordion-item]").last()
   await last.locator("[data-slot=accordion-trigger]").click()
   await expect(last).toContainText("Who made this site?")
-  await expect(last).toContainText("Griffin wrote the words, Nadia drew every little thing you see")
-  await expect(last).toContainText("And the music? That's “A Town With an Ocean View” (Joe Hisaishi), played on piano by Piano ZeroL.")
-  await expect(last.getByRole("link", { name: "Piano ZeroL" })).toHaveAttribute("href", "https://open.spotify.com/track/53StnIsGVxhcKaSwcJiY0Y")
+  await expect(last).toContainText("A proper family effort. Griffin wrote the words, Nadia drew everything you can see, and Jehan built the whole site. The music is A Town With an Ocean View by Joe Hisaishi, played on piano by Piano ZeroL.")
+  // The link is on the song's title only; the pianist is plain text
+  await expect(last.getByRole("link")).toHaveCount(1)
+  await expect(last.getByRole("link", { name: "A Town With an Ocean View" })).toHaveAttribute("href", "https://open.spotify.com/track/53StnIsGVxhcKaSwcJiY0Y")
 })
 
 // Coming back to the tab: it carries on from where it stopped and is back at 20% within a second, not a slow restart.
