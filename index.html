@@ -25,6 +25,17 @@
         else { l.setAttribute("imagesrcset", b + "800.avif 800w, " + b + "1200.avif 1200w, " + b + "1600.avif 1600w, " + b + "2000.avif 2000w, " + b + "2400.avif 2400w"); l.setAttribute("imagesizes", "max(100vw, 75vh)") }
         document.head.appendChild(l)
         window.__ngScene = { n: n, b: b }
+        // The paper (run 26): a sheet exported ahead at the size this screen shows it (scripts/paper-export.mjs,
+        // src/lib/paper-sheet.ts), asked for now so it arrives with the page. Off under Save-Data, and in automated
+        // browsers unless a test asks for it (ng-paper=on), so the screenshot tests stay as they are.
+        var pOn = !(navigator.connection && navigator.connection.saveData)
+        try { if (navigator.webdriver && localStorage.getItem("ng-paper") !== "on") pOn = false } catch (e) { if (navigator.webdriver) pOn = false }
+        var pAt = function (night) {
+          var land = innerWidth > innerHeight, px = innerWidth * Math.min(3, devicePixelRatio || 1)
+          return "%BASE_URL%paper/paper-" + (night ? "lantern" : "autumn") + "-" + (land ? (px > 1600 ? "l2400" : "l1600") : (px > 800 ? "p1200" : "p800")) + ".avif"
+        }
+        window.__ngPaper = { on: pOn, at: pAt, done: function () {} }
+        if (pOn) { var pl = document.createElement("link"); pl.rel = "preload"; pl.as = "image"; pl.type = "image/avif"; pl.href = pAt(dark); document.head.appendChild(pl) }
         // The day (run 22): Nadia's Sodoh lettering is that page's largest paint, so its small mask starts now too
         if (/\/the-day\/?$/.test(location.pathname)) {
           var v = document.createElement("link"); v.rel = "preload"; v.as = "image"; v.type = "image/webp"; v.crossOrigin = "anonymous"; v.setAttribute("fetchpriority", "high") // masks load in CORS mode
@@ -36,7 +47,7 @@
       // The safety net against a blank page (run 19). If the app's script, or a piece of it, fails to load (most often
       // an old copy of this page asking for files a newer deploy replaced), load the page again once, past the cache:
       // never twice within a minute, so never a loop. If that can't help, or the app breaks while it runs, a plain
-      // paper card says so, with a way to ask Griffin & Nadia. Plain HTML here, so it works with nothing else loaded.
+      // paper card says so, with a Refresh button (no email address on the site, run 26). Plain HTML here, so it works with nothing else loaded.
       (function () {
         window.__ngReload = function () {
           if (window.__ngReloading) return true
@@ -57,8 +68,8 @@
           var night = document.documentElement.getAttribute("data-theme") === "lantern"
           var bg = night ? "#2e1b12" : "#f3e7d3", ink = night ? "#f3e7d3" : "#421a05"
           var c = ja
-            ? ["問題が発生しました。ページを再読み込みしてください。", "それでも直らないときは、お気軽にご連絡ください。", "再読み込み", "質問する"]
-            : ["Something went wrong, try refreshing", "If it keeps happening, let us know.", "Refresh", "Ask us"]
+            ? ["問題が発生しました。ページを再読み込みしてください。", "それでも直らないときは、少し時間をおいてもう一度お試しください。", "再読み込み"]
+            : ["Something went wrong, try refreshing", "If it keeps happening, try again a little later.", "Refresh"]
           var tap = "display:inline-flex;align-items:center;min-height:44px;font:inherit;"
           var d = document.createElement("div")
           d.id = "crash"
@@ -68,7 +79,7 @@
             + '<p style="margin:0 0 24px">' + c[1] + '</p>'
             + '<div style="display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center">'
             + '<button type="button" style="' + tap + 'padding:0 20px;border:0;border-radius:999px;cursor:pointer;background:var(--action,' + ink + ');color:var(--action-ink,' + bg + ')">' + c[2] + '</button>'
-            + '<a href="mailto:griffinandnadia@gmail.com" style="' + tap + 'color:inherit;text-decoration:underline;text-underline-offset:3px">' + c[3] + '</a></div></main>'
+            + '</div></main>'
           d.querySelector("button").onclick = function () { var u = new URL(location.href); u.searchParams.set("fresh", Date.now().toString(36)); location.replace(u.href) }
           document.body.appendChild(d)
           d.querySelector("h1").focus()
@@ -83,6 +94,15 @@
     </script>
     <!-- Paper behind everything from the first paint, in the mode just picked: never a white frame -->
     <style>html{background:#f3e7d3}html[data-theme="lantern"]{background:#2e1b12;color-scheme:dark}</style>
+    <style>
+      #paper-veil{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#f3e7d3;transition:opacity 300ms ease-out}
+      html[data-theme="lantern"] #paper-veil{background:#2e1b12}
+      #paper-veil[hidden]{display:none}
+      #paper-veil[data-gone]{opacity:0;pointer-events:none}
+      #paper-veil img{opacity:.5;animation:paper-veil 1.2s ease-in-out infinite alternate}
+      @keyframes paper-veil{to{opacity:.85;transform:scale(1.04)}}
+      @media (prefers-reduced-motion:reduce){#paper-veil{transition-duration:250ms}#paper-veil img{animation:none;opacity:.7}}
+    </style>
     <meta property="og:title" content="Griffin & Nadia · Kyoto, 15 October 2027" />
     <meta property="og:description" content="You're invited." />
     <meta property="og:type" content="website" />
@@ -149,6 +169,24 @@
             document.head.appendChild(e)
           }
         } catch (e) {}
+      })()
+    </script>
+    <!-- The paper's veil (run 26): on a first visit, plain paper and her seal over the page until the paper sheet is in
+         (src/lib/paper-sheet.ts), so it never pops in halfway through; never longer than 1.5 s once it shows. The seal breathes;
+         under reduced motion it's still and the veil only fades (250 ms, opacity). Not over the sealed envelope. -->
+    <div id="paper-veil" aria-hidden="true" hidden><img src="%BASE_URL%brand/seal.svg" alt="" width="56" height="56"></div>
+    <script>
+      (function () {
+        var p = window.__ngPaper, v = document.getElementById("paper-veil"), seen = null
+        try { seen = localStorage.getItem("ng-paper-seen") } catch (e) {}
+        var src = p && p.on && p.at(document.documentElement.getAttribute("data-theme") === "lantern")
+        var gone = function () { if (!v.isConnected) return; v.setAttribute("data-gone", ""); setTimeout(function () { v.remove() }, 350) }
+        if (p) p.done = function (s, ok) { if (ok) { try { localStorage.setItem("ng-paper-seen", s) } catch (e) {} } gone() }
+        if (!src || seen === src || document.documentElement.hasAttribute("data-sealed")) return v.remove()
+        v.hidden = false
+        // 1.5 s from the veil's first paint (two frames on), not from here: on a slow phone the first paint is seconds
+        // after this runs, and the veil would be gone before it was ever seen
+        requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(gone, 1500) }) })
       })()
     </script>
     <div id="root"></div>

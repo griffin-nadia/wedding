@@ -188,7 +188,7 @@ export function HomePage() {
       {mode === "invite" && household && locked && done && <NextStep h={household} open={openAt} locked />}
       {/* Run 26: after a yes, their fortune on the invite too: draw one, see the latest again, or draw another */}
       {mode === "invite" && household && done && household.guests.some((g) => g.attending === "yes") && (
-        <Suspense fallback={null}><FortuneCard token={household.token} title={pending("fortune.homeTitle", lang)} className="home-fortune" /></Suspense>
+        <Suspense fallback={null}><FortuneCard token={household.token} title={t.fortune.homeTitle} className="home-fortune" /></Suspense>
       )}
       <HomeCountdown />
     </>

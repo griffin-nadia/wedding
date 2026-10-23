@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react"
 import { ART } from "@/lib/art"
 import { loop } from "@/lib/frame"
 import { useLang } from "@/lib/lang"
@@ -28,19 +28,30 @@ import { ChapterPins } from "@/components/chapter-pins"
  * was only worked out once, from the first size), reduced motion redraws on a resize too, and the globe fades in over a
  * still disc of the same size once its first frame is drawn (data-ready), never an empty square.
  * Chapter pins (run 25): each chapter's place as a small numbered stamp, moved with the globe like the names.
+ * Run 26: one line weight per kind, in screen px whatever the zoom, the same as the flat map's (home 2 dotted, guests
+ * 1.2 dashed, a bundle 2.4, theirs 3 solid); a paper plane flies each line once, at the tip of the line as it draws
+ * (none under reduced motion); zoom is the camera's own zoom (1x to 3x, the picture magnified, the lines' weight kept),
+ * and only on the full-screen globe, whose box is the whole stage, so a zoomed globe never shows as a square.
  */
 type Line = { from: [number, number]; kind: "nadia" | "griffin" | "guest" | "you"; bundled?: boolean; low?: boolean }
 // Run 24: Griffin's line starts at Victoria (the brief: Kyoto, Brisbane and Victoria always labelled)
 const KYOTO: [number, number] = [35.01, 135.77], BRISBANE: [number, number] = [-27.47, 153.03], VICTORIA: [number, number] = [48.43, -123.37]
 /** Zoom range and the step for the + and − buttons (run 24) */
-const ZOOM = { min: 1, max: 3, step: 1.4 }
+const ZOOM = { min: 1, max: 3 } // the step for + and − is the viewer's (story-journey.tsx STEP)
+/** Run 26: each kind's line on screen, in px, shared with the flat map's CSS (index.css, .journey-flat-lines) */
+const WEIGHT = { home: 2, guest: 1.2, bundle: 2.4, you: 3, edge: 6 }
+const DASH = { home: [3, 3], guest: [2, 3] } as const
+/** A paper plane pointing right (+x), 24 × 24, folded down the middle */
+const PLANE = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M2 11.5 22 3l-6.5 18-4-7.5z" fill="currentColor" stroke="var(--plane-edge)" stroke-width="1.3" stroke-linejoin="round"/><path d="M22 3 11.5 13.5" stroke="var(--plane-edge)" stroke-width="1.1"/></svg>'
 /** The turn's feel: degrees a second on its own, the wait after a touch, the follow and the glide */
 const TURN = { auto: 5, wait: 3000, easeIn: 1500, follow: 16, glide: 2.4, tilt: 55 }
 
-export function JourneyGlobe({ you, cities, label, children, zoomable = false, held = false, pins = [], onPin }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string; name?: string }[]; label: string; children?: ReactNode; zoomable?: boolean; held?: boolean; pins?: ChapterPin[]; onPin?: (key: string) => void }) {
+export function JourneyGlobe({ you, cities, label, children, zoomable = false, held = false, pins = [], onPin, zoomRef }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string; name?: string }[]; label: string; children?: ReactNode; zoomable?: boolean; held?: boolean; pins?: ChapterPin[]; onPin?: (key: string) => void
+  /** Run 26: the full-screen view's + and − (one pair for both views, in one spot): zoom by a factor */
+  zoomRef?: RefObject<((f: number) => void) | null> }) {
   const { t, lang } = useLang()
   const brisbane = useRef<HTMLSpanElement>(null), victoria = useRef<HTMLSpanElement>(null), tip = useRef<HTMLSpanElement>(null)
-  const zoomBy = useRef<(f: number) => void>(() => {})
+  const own = useRef<((f: number) => void) | null>(null), zoomBy = zoomRef ?? own
   const { theme } = useTheme()
   const box = useRef<HTMLDivElement>(null)
   const pin = useRef<HTMLDivElement>(null)
@@ -98,10 +109,10 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
             v.setLength(1.004 + (low ? 0.05 : 0.09) * om * Math.sin(Math.PI * s)); pts.push(v.x, v.y, v.z)
           }
           const g = new LineGeometry(); g.setPositions(pts)
-          const dotted = kind === "guest", mine = kind === "you"
-          const parts = [new LineMaterial({ color: new THREE.Color(colour[kind]).getHex(), linewidth: mine ? 3.4 : dotted ? (bundled ? 2.6 : 1.4) : 2.4, transparent: true, opacity: dotted ? (bundled ? 0.7 : 0.5) : 1, dashed: dotted, dashSize: 0.018, gapSize: 0.014 })]
+          const dotted = kind === "guest", mine = kind === "you", dash = dotted ? DASH.guest : mine ? null : DASH.home
+          const parts = [new LineMaterial({ color: new THREE.Color(colour[kind]).getHex(), linewidth: mine ? WEIGHT.you : dotted ? (bundled ? WEIGHT.bundle : WEIGHT.guest) : WEIGHT.home, transparent: true, opacity: dotted ? (bundled ? 0.7 : 0.5) : 1, dashed: Boolean(dash) })]
           // Their own line gets a soft darker edge under it, so the gold holds on pale land and in Lantern
-          if (mine) parts.unshift(new LineMaterial({ color: new THREE.Color(colour.edge).getHex(), linewidth: 6.5, transparent: true, opacity: 0.18, depthWrite: false }))
+          if (mine) parts.unshift(new LineMaterial({ color: new THREE.Color(colour.edge).getHex(), linewidth: WEIGHT.edge, transparent: true, opacity: 0.18, depthWrite: false }))
           const lines = parts.map((m, i) => {
             m.resolution.set(w, h)
             const line = new Line2(g, m); line.computeLineDistances(); line.renderOrder = mine ? 2 + i * 0.1 : 1
@@ -109,7 +120,11 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
             return line
           })
           g.instanceCount = reduce ? N - 1 : 0
-          return { g, ms: lines.map((l) => l.material as InstanceType<typeof LineMaterial>), draw: (p: number) => { g.instanceCount = Math.max(0, Math.round(p * (N - 1))) } }
+          const ms = lines.map((l) => l.material as InstanceType<typeof LineMaterial>)
+          // Dashes are set in px on screen (dashPx), worked out from the globe's size on screen
+          const dashPx = (r: number) => { if (dash) for (const m of ms) { m.dashSize = dash[0] / r; m.gapSize = dash[1] / r } }
+          const at = (i: number) => new THREE.Vector3(pts[i * 3], pts[i * 3 + 1], pts[i * 3 + 2])
+          return { g, ms, dashPx, at, draw: (p: number) => { g.instanceCount = Math.max(0, Math.round(p * (N - 1))) } }
         }
         // Home lines first, then everyone else's (one per city), then theirs, last
         const lines: Line[] = [{ from: BRISBANE, kind: "nadia" }, { from: VICTORIA, kind: "griffin" }, ...guests.map((c) => ({ from: [c.lat, c.lon] as [number, number], kind: "guest" as const, bundled: c.bundled }))]
@@ -128,7 +143,15 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         const view = { lat: KYOTO[0] - 12, lon: KYOTO[1] + 4 }
         const kyoto = toV(...KYOTO, 1.004)
         // Zoomed in, the camera comes closer (never inside the globe's glow: 1.3 at 3x)
-        const setCam = () => { camera.position.copy(toV(view.lat, view.lon).normalize().multiplyScalar(Math.max(1.3, dist / zoom.v))); camera.lookAt(0, 0, 0) }
+        // Run 26: zoom magnifies (the camera's zoom), the camera stays where it fits the globe
+        let radiusPx = 0
+        const setCam = () => {
+          camera.position.copy(toV(view.lat, view.lon).normalize().multiplyScalar(dist)); camera.lookAt(0, 0, 0)
+          if (camera.zoom !== zoom.v) { camera.zoom = zoom.v; camera.updateProjectionMatrix() }
+          // The globe's radius on screen (about 0.39 of the box's shorter side at 1x): the dashes keep their px size
+          const r = 0.39 * Math.min(w, h) * zoom.v
+          if (Math.abs(r - radiusPx) > 0.5) { radiusPx = r; arcs.forEach(({ arc }) => arc.dashPx(r)) }
+        }
         // Kyoto's label, pinned: an upright HTML label moved to wherever Kyoto is on screen, on whichever side keeps
         // it inside the globe's square, dimmed while Kyoto is round the back
         // Brisbane and Victoria are always named (run 24), small, wherever they are, dimmed round the back
@@ -165,15 +188,29 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         }
         el.prepend(renderer.domElement)
         const cv = renderer.domElement
+        // Run 26: a paper plane per line, flown once along it as it draws (not under reduced motion)
+        const planes = reduce ? [] : arcs.map(({ kind }) => {
+          const p = document.createElement("span"); p.className = `journey-plane journey-plane-${kind}`; p.innerHTML = PLANE; p.hidden = true; el.append(p); return p
+        })
+        const fly = (i: number, prog: number) => {
+          const p = planes[i]
+          if (!p) return
+          if (prog <= 0 || prog >= 1) { if (!p.hidden) p.hidden = true; return }
+          const { arc } = arcs[i], k = Math.round(prog * (N - 1)), a = toScreen(arc.at(Math.max(0, k - 1))), b = toScreen(arc.at(k))
+          p.hidden = false; p.dataset.back = String(b.back)
+          p.style.transform = `translate3d(${b.x.toFixed(1)}px, ${b.y.toFixed(1)}px, 0) rotate(${Math.atan2(b.y - a.y, b.x - a.x).toFixed(3)}rad)`
+        }
         // Zoom (run 24): Ctrl or Cmd with the scroll wheel (a trackpad pinch sends that too) while on the globe; a plain
         // scroll always scrolls the page. Pinch with two fingers on phones. The + and − buttons. 1x to 3x, eased.
         const wheel = (e: WheelEvent) => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); zoom.t = clampZoom(zoom.t * Math.exp(-e.deltaY * 0.01)) }
-        cv.addEventListener("wheel", wheel, { passive: false })
+        // Run 26: only the full-screen globe zooms (the stop's is a small square: zoomed, it showed as one)
+        if (zoomable) cv.addEventListener("wheel", wheel, { passive: false })
         const resize = () => {
           w = el.clientWidth; h = el.clientHeight
           if (!w || !h) return
           renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); dist = fit()
           arcs.forEach(({ arc }) => arc.ms.forEach((m) => m.resolution.set(w, h)))
+          radiusPx = 0 // the dashes again, for the new size
         }
         const ro = new ResizeObserver(() => { resize(); if (reduce) draw() })
         let shown = false
@@ -181,7 +218,7 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         const draw = () => { zoom.v = zoom.t; setCam(); renderer.render(scene, camera); placePin(); first() }
         if (reduce) {
           zoomBy.current = (f) => { zoom.t = clampZoom(zoom.t * f); draw() }
-          cv.addEventListener("wheel", () => requestAnimationFrame(draw))
+          if (zoomable) cv.addEventListener("wheel", () => requestAnimationFrame(draw))
           cv.addEventListener("pointermove", (e) => e.pointerType === "mouse" && showTip(e.clientX, e.clientY))
           cv.addEventListener("pointerup", (e) => showTip(e.clientX, e.clientY, 2500))
           draw(); ro.observe(el)
@@ -200,7 +237,7 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         const spread = () => { const [a, b] = [...fingers.values()]; return Math.hypot(a.x - b.x, a.y - b.y) }
         const perPx = () => 180 / Math.max(160, el.clientWidth) // a drag across the globe turns it half way
         const down = (e: PointerEvent) => {
-          if (e.pointerType === "touch") fingers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+          if (e.pointerType === "touch" && zoomable) fingers.set(e.pointerId, { x: e.clientX, y: e.clientY })
           if (fingers.size === 2) { pinch = { d: spread(), z: zoom.t }; dragging = null; intro = false; return }
           if (dragging || (e.pointerType === "mouse" && e.button !== 0)) return
           e.stopPropagation()
@@ -240,7 +277,8 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
           // 0 to 1.2 s the home lines, 1.2 to 2.6 s everyone else's, then theirs, last
           arcs.forEach(({ kind, arc }, i) => {
             const at = kind === "nadia" ? 0 : kind === "griffin" ? 0.25 : kind === "guest" ? 1.2 + (i % 8) * 0.12 : 2.6
-            arc.draw(Math.min(1, Math.max(0, (s - at) / 1.1)))
+            const prog = Math.min(1, Math.max(0, (s - at) / 1.1))
+            arc.draw(prog); fly(i, prog)
           })
           if (intro) {
             // The turn to Kyoto over 3 s; then it holds on Kyoto for the wait before turning on its own
@@ -265,13 +303,13 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
           return true
         })
         ro.observe(el)
-        stop = () => { cancel(); io.disconnect(); ro.disconnect(); cv.removeEventListener("wheel", wheel); renderer.dispose(); renderer.domElement.remove() }
+        stop = () => { cancel(); io.disconnect(); ro.disconnect(); cv.removeEventListener("wheel", wheel); planes.forEach((p) => p.remove()); renderer.dispose(); renderer.domElement.remove() }
       })
       .catch(() => setFailed(true))
     return () => { alive = false; stop() }
     // pinKey stands for pins (the same places, the same pins)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [you, cities, theme, lang, t.journey.households, pinKey])
+  }, [you, cities, theme, lang, t.journey.households, pinKey, zoomable])
   if (failed) return null
   return (
     <div className="journey-globe" data-theme="lantern" data-ready={ready || undefined}>
@@ -282,11 +320,8 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         <span ref={tip} className="globe-tip" aria-hidden hidden />
         <span className="sr-only">{t.journey.title}</span>
       </div>
+      {!ready && <span className="journey-globe-wait" aria-hidden>{t.journey.loading}</span>}
       <ChapterPins pins={pins} onPin={onPin} refs={pinEls} />
-      {zoomable && <div className="globe-zoom">
-        <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoomBy.current(ZOOM.step)}>+</button>
-        <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoomBy.current(1 / ZOOM.step)}>−</button>
-      </div>}
       {children}
     </div>
   )

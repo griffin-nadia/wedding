@@ -41,23 +41,45 @@ test("the slip's number in kanji, 1 to 25", () => {
 })
 
 // Run 26: the Draft column, and draws kept per household, append only
-test("a Fortunes row marked Draft carries draft: true; the rest are unchanged", () => {
-  const out = fortunesFrom([["No", "Tier", "Tier (ja)", "Category", "Text", "Draft"], [1, "Great Blessing", "大吉", "Food", "Theirs", ""], [2, "Great Blessing", "大吉", "Fun", "Jehan's", "yes"]]) as { draft?: boolean }[]
+test("a Fortunes row marked Draft carries draft: true, and the Japanese column textJa; the rest are unchanged", () => {
+  const out = fortunesFrom([["No", "Tier", "Tier (ja)", "Category", "Text", "Draft", "Japanese"], [1, "Great Blessing", "大吉", "Food", "Theirs", "", "日本語"], [2, "Great Blessing", "大吉", "Fun", "A story line", "yes", ""]]) as { draft?: boolean; textJa?: string }[]
   assert.equal(out[0].draft, undefined)
+  assert.equal(out[0].textJa, "日本語")
   assert.equal(out[1].draft, true)
+  assert.equal(out[1].textJa, undefined)
 })
 
-test("draws: the first is the household's own, a redraw is never the one before, and drafts stay out", async () => {
-  const { fortuneFor, fortuneIndex, livePool, mergeDraws, lastDraw } = await import("../src/lib/draws.ts")
-  assert.equal(fortuneFor("abc123", 1, 25), fortuneIndex("abc123", 25)) // nobody's first fortune changes
-  for (const token of ["abc123", "sample", "zz9", "t-0"]) for (let n = 2; n < 40; n++) assert.notEqual(fortuneFor(token, n, 25), fortuneFor(token, n - 1, 25))
-  assert.equal(fortuneFor("abc123", 7, 25), fortuneFor("abc123", 7, 25)) // the same on every device
-  const pool = [{ no: 1 }, { no: 2, draft: true }, { no: 3 }]
-  assert.deepEqual(livePool(pool, false).map((f) => f.no), [1, 3])
-  assert.equal(livePool(pool, true).length, 3)
+test("draws: the first is main's pick over all 25; a redraw is never a draft or the one before", async () => {
+  const { fortuneFor, fortuneIndex, mergeDraws, lastDraw } = await import("../src/lib/draws.ts")
+  const pool = Array.from({ length: 25 }, (_, i) => ({ no: i + 1, draft: [2, 7, 22].includes(i + 1) }))
+  for (const token of ["abc123", "sample", "zz9", "t-0"]) for (let n = 2; n < 40; n++) {
+    const i = fortuneFor(token, n, pool, false)
+    assert.ok(!pool[i].draft)
+    assert.notEqual(i, fortuneFor(token, n - 1, pool, false))
+  }
+  assert.equal(fortuneFor("abc123", 7, pool, false), fortuneFor("abc123", 7, pool, false)) // the same on every device
   const saved = [{ draw: 1, no: 4 }, { draw: 2, no: 9 }]
   assert.deepEqual(mergeDraws(saved, [{ draw: 2, no: 11 }, { draw: 3, no: 5 }]), [{ draw: 1, no: 4 }, { draw: 2, no: 9 }, { draw: 3, no: 5 }])
   assert.equal(lastDraw([]), 0)
+  assert.equal(fortuneIndex("abc123", 25), fortuneFor("abc123", 1, pool.map((f) => ({ no: f.no })), false))
+})
+
+// Invites went out on 15 Oct, so guests have seen their fortune: marking 2, 7 and 22 Draft may only move the
+// households whose fortune was one of those three; everyone else keeps main's, still "of 25"
+test("marking the story lines Draft moves only the households who had them", async () => {
+  const { fortuneFor, fortuneIndex } = await import("../src/lib/draws.ts")
+  const plain = Array.from({ length: 25 }, (_, i) => ({ no: i + 1 }))
+  const marked = plain.map((f) => ({ ...f, draft: [2, 7, 22].includes(f.no) }))
+  const tokens = Array.from({ length: 2000 }, (_, i) => `h${(i * 7919).toString(36)}x${i}`)
+  let moved = 0
+  for (const t of tokens) {
+    const main = fortuneIndex(t, 25) // main today: FORTUNES[fortuneIndex(token, 25)]
+    assert.equal(fortuneFor(t, 1, plain, false), main)
+    const now = fortuneFor(t, 1, marked, false)
+    if ([2, 7, 22].includes(main + 1)) { moved++; assert.ok(!marked[now].draft) } else assert.equal(now, main, t)
+  }
+  assert.ok(moved > 0 && moved < tokens.length / 4)
+  console.log(`  ${moved} of ${tokens.length} sample tokens move (their fortune was 2, 7 or 22)`)
 })
 
 test("the back end appends each draw and never rewrites one", () => {
