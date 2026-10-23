@@ -58,6 +58,11 @@ export const ART = {
    */
   globeLand: "",
   /**
+   * Nadia's landscape drawing for The day (run 26, a slot only): shows under the venue details once config.dayLandscape
+   * is on. Empty until it lands, and nothing shows meanwhile. Put the file in public/art/ (e.g. "art/day-landscape.webp").
+   */
+  dayLandscape: "",
+  /**
    * Nadia's hand lettering for the page headings and the G&N mark (run 21, slots only). One word per file, a
    * transparent PNG in any single colour (it's used as a mask and filled with the ink colour), exported by
    * scripts/art-export.mjs to public/art/lettering/<name>.png. Set src (e.g. "art/lettering/the-day.png") and ratio
