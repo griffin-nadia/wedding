@@ -118,7 +118,7 @@ test("dots keep the minimum gap and their spots; chips stay clear of dots and he
         const covered = [...m.querySelectorAll(".vmap-pin")].filter((p) => p !== on).some((p) => { const d = p.querySelector(".vmap-dot")!.getBoundingClientRect(); return hit(d.left, d.top, d.right, d.bottom) })
         const lettering = labels.filter(([x1, y1, x2, y2]) => hit(img.left + x1 / 100 * img.width, img.top + y1 / 100 * img.height, img.left + x2 / 100 * img.width, img.top + y2 / 100 * img.height)).length
         const inside = c.left >= box.left - 0.5 && c.right <= box.right + 0.5 && c.top >= box.top - 0.5 && c.bottom <= box.bottom + 0.5
-        return { gap: Math.round(gap * 10) / 10, off: Math.max(...dots.map((d) => d.at)), covered, lettering, inside, side: `${Math.round(c.left - box.left)},${Math.round(c.top - box.top)}` }
+        return { gap: Math.round(gap * 10) / 10, off: Math.max(...dots.map((d) => d.at)), covered, lettering, inside, side: `at ${Math.round(c.left - box.left)},${Math.round(c.top - box.top)}, ${Math.round(c.width)}x${Math.round(c.height)} on a ${Math.round(box.width)}px map` }
       }, LABELS)
       expect(r.gap, `${where}: place ${i}: two dots too close`).toBeGreaterThanOrEqual(MIN_GAP)
       expect(r.off, `${where}: a dot off its spot`).toBeLessThanOrEqual(2)

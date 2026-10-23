@@ -70,7 +70,7 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
   const place = m.places.find((p) => p.id === on) ?? m.places[0]
   const zoom = usePinch()
   const art = useRef<HTMLDivElement>(null)
-  // Run 26: the chosen place's chip goes where placeChip finds room, before paint, and again when the map changes size
+  // Run 26: the chosen place's chip goes where placeChip finds room, before paint
   const [spot, setSpot] = useState<{ x: number; y: number } | null>(null)
   useLayoutEffect(() => {
     const box = zoom.box.current
@@ -88,7 +88,9 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
     }
     fit()
     if (!box) return
-    const ro = new ResizeObserver(fit); ro.observe(box)
+    // Again when the map or the chip changes size (a font arriving late makes the chip wider)
+    const ro = new ResizeObserver(fit), chip = art.current?.querySelector(".vmap-chip")
+    ro.observe(box); if (chip) ro.observe(chip)
     return () => ro.disconnect()
   }, [place, zoom.box])
   // One gentle pulse of the dots the first time the map scrolls into view (run 24b), so it's clear they can be tapped.
