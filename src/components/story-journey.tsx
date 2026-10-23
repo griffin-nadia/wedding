@@ -122,7 +122,8 @@ const loadGlobe = () => import("@/components/journey-globe")
  *  front it sat on Our story's first load: a few ms later and the page lost a race with the music button's own reveal,
  *  which React then holds 300 ms behind (its Suspense reveal throttle), pushing the first stop from 2.3 s to 2.6 s on a
  *  throttled phone. Its place while it loads is the map's own dark ground, the same size, so nothing moves. */
-const JourneyFlat = lazy(() => import("@/components/journey-flat").then((m) => ({ default: m.JourneyFlat })))
+const loadFlat = () => import("@/components/journey-flat")
+const JourneyFlat = lazy(() => loadFlat().then((m) => ({ default: m.JourneyFlat })))
 const FlatWaiting = () => <div className="journey-flat" data-theme="lantern" aria-hidden />
 type View = "globe" | "flat"
 const STEP = 1.4 // the + and − (journey-globe.tsx ZOOM.step), 1x to 3x on both views
@@ -171,7 +172,7 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
   const cities = journeys ?? NONE
   const go = (key: string) => { jumped.current = true; setOpen(false); onOpenChange?.(false); onPin(key) }
   return (
-    <Sheet open={open} onOpenChange={(o) => { setOpen(o); onOpenChange?.(o); if (o) { jumped.current = false; setView(base) } }}>
+    <Sheet open={open} onOpenChange={(o) => { setOpen(o); onOpenChange?.(o); if (o) { jumped.current = false; setView(base); void loadFlat() } }}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent className="journey-viewer" closeLabel={t.journey.close} aria-describedby={undefined}
         onCloseAutoFocus={(e) => { if (jumped.current) e.preventDefault() }}>
@@ -182,8 +183,8 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
         </div>
         <div className="journey-viewer-stage" data-view={view}>
           {view === "flat"
-            ? <Suspense fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>
-            : <Suspense fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>}
+            ? <Suspense key="flat" fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>
+            : <Suspense key="globe" fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>}
           <div className="globe-zoom">
             <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}>+</button>
             <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}>−</button>
