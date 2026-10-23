@@ -428,6 +428,12 @@ function doGet(e) {
       return json_({ ok: true, household: h || previewHousehold_(p.token) })
     }
     if (action === "flying") return json_(flyingCounts_())
+    // Run 25: "Where are you flying from?" finds any city or town (Savusavu too); only for a real link, and not hammered
+    if (action === "geocode") {
+      if (!token || over_("geo:" + token.slice(0, 40), 60)) return fail_("busy")
+      if (!cachedHousehold_(token) && !previewHousehold_(token)) return fail_("not_found")
+      return json_(geocode_(p))
+    }
     if (action === "questions") return json_(publishedQuestions_())
     if (action === "journeys") return json_(journeys_())
     // Run 23: the story (now their own words, with visas, cities and work in it) and the fortunes only for a real
@@ -1479,6 +1485,37 @@ function setStamps_(token, stamps) {
 
 // ---------- "Flying from" (anonymous counts for the journey map) ----------
 
+/**
+ * Run 25: any city or town, through the Maps service's geocoder (no key, no extra scope). q finds up to five places;
+ * lat and lon (a pin dropped on the map) find the place there. Each comes back as its city or town, region and
+ * country with the city's centre (for the line), never a street address. Answers are cached for 6 hours.
+ */
+function geocode_(p) {
+  const q = String(p.q || "").trim().slice(0, 80), lat = Number(p.lat), lon = Number(p.lon)
+  const pin = p.lat !== undefined && isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180
+  if (!pin && q.length < 2) return { ok: true, places: [] }
+  const key = "geo:" + (pin ? lat.toFixed(2) + "," + lon.toFixed(2) : q.toLowerCase())
+  const cache = CacheService.getScriptCache(), hit = cache.get(key)
+  if (hit) return { ok: true, places: JSON.parse(hit) }
+  const g = Maps.newGeocoder().setLanguage("en")
+  const res = pin ? g.reverseGeocode(lat, lon) : g.geocode(q)
+  const places = [], seen = {}
+  ;(res.results || []).forEach(function (r) {
+    const part = function (type) { return (r.address_components || []).filter(function (c) { return c.types.indexOf(type) >= 0 })[0] }
+    const town = part("locality") || part("postal_town") || part("administrative_area_level_3") || part("colloquial_area") || part("administrative_area_level_2") || part("natural_feature")
+    const country = part("country"), region = part("administrative_area_level_1")
+    if (!town || !country || places.length >= 5) return
+    const at = r.geometry && r.geometry.location
+    const place = { name: town.long_name, region: region ? region.long_name : "", country: country.short_name, countryName: country.long_name,
+      lat: at ? Math.round(at.lat * 100) / 100 : null, lon: at ? Math.round(at.lng * 100) / 100 : null }
+    const k = place.name + "|" + place.region + "|" + place.country
+    if (seen[k]) return
+    seen[k] = true; places.push(place)
+  })
+  cache.put(key, JSON.stringify(places), 21600)
+  return { ok: true, places: places }
+}
+
 const FLYING = ["Brisbane", "Melbourne", "Sydney", "Perth", "Adelaide", "Elsewhere in Australia", "Canada", "Already in Japan", "Somewhere else"]
 
 // Where the old fixed answers are (18f and before), so their rows still draw a line (final run): a row with only an
@@ -1491,7 +1528,8 @@ const FLYING_AT = {
 
 /**
  * Saves where the household is flying from (final run): the city they picked from the site's list of real cities
- * (its GeoNames id, name, region, country and coordinates), or one of the older fixed answers. Never free text: the
+ * (its GeoNames id, name, region, country and coordinates), or one of the older fixed answers. Run 25: or a place the
+ * geocoder found (id "geo") or a pin they dropped (id "pin"): the city or town and its country, with the city's centre. Never free text: the
  * site only sends a picked city, and everything is checked here too. In Guests columns at the end.
  */
 function setFlying_(token, city) {
@@ -1504,7 +1542,7 @@ function setFlying_(token, city) {
   } else if (city && typeof city === "object") {
     const id = String(city.id || ""), name = String(city.name || "").trim(), country = String(city.country || "").trim().toUpperCase()
     const lat = city.lat === null ? null : Number(city.lat), lon = city.lon === null ? null : Number(city.lon)
-    const okId = /^(\d{1,10}|jp|else)$/.test(id), okName = name.length > 0 && name.length <= 80
+    const okId = /^(\d{1,10}|jp|else|geo|pin)$/.test(id), okName = name.length > 0 && name.length <= 80
     const okCountry = country === "" || /^[A-Z]{2}$/.test(country)
     const okAt = (lat === null && lon === null) || (isFinite(lat) && isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180)
     if (!okId || !okName || !okCountry || !okAt) return { ok: false, code: "bad_request", error: ERRORS.bad_request }

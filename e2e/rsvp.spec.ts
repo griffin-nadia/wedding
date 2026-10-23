@@ -193,39 +193,39 @@ test("Enter in a field goes to the next field, never the next step", async ({ pa
   await expect(dialog.getByText("Step 4 of 5")).toBeVisible()
 })
 
-test("where are you flying from: chips, then real cities as you type, all on this device", async ({ page }) => {
+// Run 25: one field, any city or town. With a back end the geocoder answers (checked live with curl after the deploy);
+// this plain build has none, so the site's own list of cities answers, the same way
+test("where are you flying from: one field for any city or town, or a pin on the map", async ({ page }) => {
   await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
   await openForm(page)
   const dialog = page.getByRole("dialog")
   await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
   await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
   await toCheck(page); await press(page, /^Send our reply$/)
-  // Quick chips: one tap picks the city, and the line draws
-  await dialog.getByRole("button", { name: "Melbourne", exact: true }).click()
-  await expect(dialog.getByRole("button", { name: "Melbourne", exact: true })).toHaveAttribute("aria-pressed", "true")
-  await expect(dialog.getByText("From Melbourne")).toBeVisible()
-  await expect(dialog.locator(".journey-end .journey-you")).toHaveCount(1)
-  // Typing: the index loads on focus; from then on nothing is fetched while typing
-  const city = dialog.getByRole("combobox", { name: "Or type your city" })
-  const loaded = page.waitForResponse((r) => r.url().endsWith("data/cities.json"))
-  await city.focus()
-  await loaded
-  const asked: string[] = []
-  page.on("request", (r) => asked.push(r.url()))
-  for (const [typed, first] of [["Melborne", "Melbourne"], ["Vancover", "Vancouver"], ["North Melbourne", "Melbourne"], ["東京", "Tokyo"], ["Montreal", "Montréal"]] as const) {
+  // No chips any more, and no "Already in Japan"
+  await expect(dialog.locator(".fly-chip")).toHaveCount(0)
+  await expect(dialog.getByText("Already in Japan")).toHaveCount(0)
+  const city = dialog.getByRole("combobox", { name: "Where are you flying from?" })
+  await expect(city).toHaveAttribute("placeholder", "Type your city or town")
+  for (const [typed, first] of [["Melborne", "Melbourne"], ["Vancover", "Vancouver"], ["Montreal", "Montréal"]] as const) {
     await city.fill(typed)
     await expect(dialog.getByRole("option").first()).toContainText(first)
   }
-  // Ambiguous: the region says which
   await city.fill("Victoria")
   await expect(dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ })).toBeVisible()
-  await city.press("Enter")
-  expect(asked.filter((u) => !u.startsWith("data:"))).toEqual([]) // no network while typing or picking
-  await expect(city).toHaveValue(/^Victoria, British Columbia, Canada$|^Melbourne, Victoria, Australia$/)
-  // Free text that matches nothing keeps the last real choice
-  const before = await city.inputValue()
-  await city.fill("zzzzqq"); await city.blur()
-  await expect(city).toHaveValue(before)
+  await dialog.getByRole("option", { name: /Victoria.*British Columbia, Canada/ }).click()
+  await expect(city).toHaveValue("Victoria, British Columbia, Canada")
+  await expect(dialog.getByText("From Victoria")).toBeVisible()
+  await expect(dialog.locator(".journey-end .journey-you-dot")).toHaveCount(1) // their line on the journey stop's flat map
+  // Nothing matches: drop a pin instead, and the tap on the map puts them there
+  await city.fill("zzzzqq")
+  await dialog.getByRole("button", { name: "Can't find it? Drop a pin instead" }).click()
+  await expect(dialog.getByText("Tap the map where you're flying from.")).toBeVisible()
+  await page.waitForTimeout(600) // the map scrolls into view
+  const map = (await dialog.locator(".journey-end .journey-flat svg").boundingBox())!
+  await page.mouse.click(map.x + map.width * 0.55, map.y + map.height * 0.75)
+  await expect(dialog.getByText("Tap the map where you're flying from.")).toHaveCount(0)
+  await expect(dialog.locator(".journey-end .journey-you-dot")).toHaveCount(1)
 })
 
 test("the sent letter under reduced motion: plain paper (no paper made), no canvas, the hanko's ink", async ({ page }) => {
@@ -239,7 +239,7 @@ test("the sent letter under reduced motion: plain paper (no paper made), no canv
   await expect(dialog.locator(".omikuji-slip")).toBeVisible()
   await page.waitForTimeout(1500)
   const paper = await page.evaluate(() => ({
-    canvases: document.querySelectorAll("canvas").length,
+    canvases: document.querySelectorAll("canvas:not(.journey-flat-art)").length, // run 25: the flying-from map is the journey's flat map, a plain 2D painting
     live: document.documentElement.style.getPropertyValue("--paper-live"),
     ink: (() => { const h = getComputedStyle(document.querySelector(".hanko")!); return [h.filter.includes("ink-bleed"), (h.maskImage || h.webkitMaskImage).includes("texture-ink")] })(),
   }))
