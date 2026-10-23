@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test"
 
 // Final run: Our story's last stop is the painted globe. Run 25: one view per screen. The stop shows the globe (the
 // flat map with no WebGL) and a Full screen control above it; that opens a dialog with Globe / Map in a fixed spot, + and
-// − on the globe, Escape and the X back to the story. Chapter pins on both views go to their stop.
+// − on the globe, Escape and the X back to the story. Run 26c: no chapter pins; G and N mark Victoria and Brisbane.
 test.use({ launchOptions: { args: ["--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } })
 test.describe.configure({ timeout: 90_000 })
 test.use({ trace: "retain-on-failure" }) // run 26: a trace when the full-screen map is slow on CI
@@ -23,7 +23,7 @@ test("the stop shows the globe; Full screen opens it with Globe / Map, and close
   await expect(stop.locator(".journey-globe")).toHaveAttribute("data-ready", "true")
   // Kyoto pinned with its date; Brisbane and Victoria always named; one visual, no switch and no zoom on the stop
   await expect(stop.locator(".globe-pin")).toContainText("Kyoto, 15 Oct 2027")
-  await expect(stop.locator(".globe-place")).toHaveText(["Brisbane", "Victoria"])
+  await expect(stop.locator(".globe-place")).toHaveText(["NBrisbane", "GVictoria, Canada"]) // run 26c: N and G beside their places
   await expect(stop.locator(".journey-flat")).toHaveCount(0)
   await expect(stop.getByRole("radio")).toHaveCount(0)
   await expect(stop.getByRole("button", { name: "Zoom in" })).toHaveCount(0)
@@ -51,8 +51,9 @@ test("the stop shows the globe; Full screen opens it with Globe / Map, and close
   // Run 26: the full-screen globe's box is the whole stage, so zoomed in it never shows as a square; + zooms it
   const vw = page.viewportSize()!.width
   expect((await dialog.locator(".journey-globe").boundingBox())!.width).toBeGreaterThanOrEqual(vw - 1)
-  // Each chapter pin carries the kotobuki stamp
-  await expect(dialog.locator(".chapter-pin-seal").first()).toHaveText("寿")
+  // Run 26c: no numbered chapter pins (Nadia's review); G and N beside Victoria and Brisbane instead
+  await expect(dialog.locator(".chapter-pin")).toHaveCount(0)
+  await expect(dialog.locator(".globe-place .home-mark")).toHaveText(["N", "G"])
   // The globe fits its box after a resize (the camera's distance is worked out again): the buffer has the box's shape
   const vp = page.viewportSize()!
   await page.setViewportSize({ width: 700, height: 500 }); await page.waitForTimeout(400)
@@ -67,7 +68,8 @@ test("the stop shows the globe; Full screen opens it with Globe / Map, and close
   // The sample's 8 cities: Australia's 4 are one bundle, so 5 lines; the same pins as the globe
   await expect(dialog.locator(".journey-flat .journey-guest")).toHaveCount(5)
   await expect(dialog.locator(".journey-flat .journey-guest-bundle")).toHaveCount(1)
-  await expect(dialog.locator(".journey-flat .chapter-pin")).toHaveCount(await stop.locator(".chapter-pin").count())
+  await expect(dialog.locator(".journey-flat .chapter-pin")).toHaveCount(0)
+  await expect(dialog.locator(".journey-flat .home-mark-letter")).toHaveText(["N", "G"])
   // Run 26: no paper planes under reduced motion (the lines are already drawn); + and − zoom the map too, 1x to 3x
   await expect(dialog.locator(".journey-plane")).toHaveCount(0)
   const viewBox = () => dialog.locator("svg.journey-flat-lines").getAttribute("viewBox")
@@ -81,19 +83,6 @@ test("the stop shows the globe; Full screen opens it with Globe / Map, and close
   await expect(dialog).toHaveCount(0)
   await expect(open).toBeFocused()
   await expect(page.getByRole("button", { name: /next chapter/i })).toBeDisabled()
-})
-
-test("a chapter's pin goes to its stop", async ({ page }) => {
-  await toEnd(page)
-  await page.getByRole("button", { name: "Open the map full screen" }).click()
-  const dialog = page.getByRole("dialog")
-  await dialog.getByRole("radio", { name: "Map" }).click()
-  const pin = dialog.getByRole("button", { name: /Became friends/ })
-  await expect(pin).toBeVisible()
-  await pin.click()
-  await expect(dialog).toHaveCount(0)
-  await expect(page.locator(".story-slide:not([inert]) h2")).toHaveText("Became friends")
-  await expect(page.locator(".story-track")).toBeFocused()
 })
 
 test("no WebGL: the stop shows the flat map, and Full screen opens on the map", async ({ page }) => {

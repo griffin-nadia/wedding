@@ -17,8 +17,11 @@ export type Treatment = "full" | "print" | "split"
  * Until Nadia says photos can be public (PUBLIC_PHOTOS), the same frame shows a paper placeholder with
  * the caption, so nothing jumps when real photos arrive.
  */
-export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, vary = false, className, children, alt, note }: {
+export function Photo({ name, treatment, sizes = "100vw", priority = false, wide = false, vary = false, full = false, className, children, alt, note }: {
   name: string; treatment: Treatment; alt?: string; sizes?: string; priority?: boolean; wide?: boolean; vary?: boolean; className?: string; children?: ReactNode
+  /** Run 26c: a print or thumbnail stops at the 800 file (a 3x phone never fetches a 1600 for a 270px print); the
+   *  full-screen view sets this to ask for the bigger originals too */
+  full?: boolean
   /** Run 24: a few words written on a print's bottom border ("2017 · hirakata"); decorative, the alt says the rest */
   note?: string
 }) {
@@ -30,7 +33,7 @@ export function Photo({ name, treatment, sizes = "100vw", priority = false, wide
   const varied = vary && treatment === "print" ? printFrame(name) : null
   const ratio = treatment === "split" ? "1 / 1" : treatment === "full" ? undefined : varied ? varied.ratio : `${p.width} / ${p.height}`
   const set = (fmt: string, useWide = false) => {
-    const w = (useWide ? p.wide[fmt] : p.formats[fmt]) || []
+    const w = ((useWide ? p.wide[fmt] : p.formats[fmt]) || []).filter((x) => full || treatment === "full" || x <= 800)
     return w.map((x) => `${src(`${name}-${useWide ? "wide-" : ""}${x}.${fmt}`)} ${x}w`).join(", ")
   }
   const last = (a: number[] | undefined) => (a && a.length ? a[a.length - 1] : 800)

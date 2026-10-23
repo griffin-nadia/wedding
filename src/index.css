@@ -1326,40 +1326,32 @@ svg.lucide { stroke-width: 1.5; }
 
 
 /* Our story opener (Figma 3b): a kid photo each, two prints side by side; an empty slot is a paper frame */
-/* The kid opener (run 24): three instant prints in a small pile that fills the spread's media box. Each print is the
-   story's instant print (4:5) at about 1.05 × --print-h tall; positions in % of the pile so it scales */
-.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 2.2)); /* run 26: three prints again */ height: calc(var(--stop-h) - var(--space-2)); }
+/* The kid opener (run 24): instant prints in a small pile that fills the spread's media box. Each print is the
+   story's instant print (4:5) at about 1.05 × --print-h tall; positions in % of the pile so it scales.
+   Run 26c: one print each, his first day of school (the yellow jumper, the whole photo) and Nadia's home photo,
+   tilted opposite ways, hers leaning into his and over his corner */
+.story-kids { position: relative; width: min(100%, calc(var(--print-h) * 1.75)); height: calc(var(--stop-h) - var(--space-2)); }
 .story-slide-opener .story-media { width: 100%; } /* the pile's prints are placed in it, so it can't size to them */
 .story-kid { position: absolute; }
-.story-kid .story-print { --print-h: calc(var(--stop-h) * 0.72); }
+.story-kid .story-print { --print-h: calc(var(--stop-h) * 0.74); }
 .story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
-/* Run 26: his first day (kid-griffin, his own pick) back in, tucked under his portrait. The scan is his whole front
-   step, so the print crops in on his face: --crop-at is his face in the photo, --crop-zoom how far in */
-.story-kid-behind { left: 0; top: 16%; z-index: 1; }
-.story-kid-behind .story-print { --tilt: -6deg; --print-h: calc(var(--stop-h) * 0.6); }
-.story-kid-behind img { --crop-at: 51% 25%; --crop-zoom: 2.6; object-position: 51% 24%; transform: scale(var(--crop-zoom)); transform-origin: var(--crop-at); }
-.story-kid-him { left: 27%; top: 2%; z-index: 2; }
-.story-kid-him .story-print { --tilt: 4deg; }
-/* Nadia's print pulled back a little (run 26) so her face and his meet in the middle */
-.story-kid-her { right: 3%; top: 12%; z-index: 3; }
+.story-kid-him { left: 2%; top: 2%; z-index: 2; }
+.story-kid-him .story-print { --tilt: -4deg; }
+.story-kid-her { right: 2%; top: 12%; z-index: 3; }
 .story-kid-her .story-print { --tape-x: 50%; --tape-w: 38%; --tape-turn: -2.5deg; }
-.story-kid-her .story-print { --tilt: -5deg; }
-/* Phones: the pile staggers down the stop's full height: his portrait top left, his first day under it at the bottom
-   left, and Nadia's over both on the right, pulled back towards the middle, so all three faces stay clear and there's
-   no empty band */
+.story-kid-her .story-print { --tilt: 5deg; }
+/* Phones: the pair staggers down the stop's full height, his top left and hers bottom right over his corner, so both
+   faces stay clear and there's no empty band */
 @media (max-width: 767px) {
   /* The pile takes all the height the story's track gives the stop (at least 1.45 stops), and the prints size from the
      pile's own height (cqh), never wider than its width allows (cqw), so it fills down to the arrows at every phone */
   .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.45); container-type: size; }
   .story-kids { height: 100%; }
-  /* Run 25 (Jehan): a little smaller and more tilted, so they overlap at the corners but no print covers a face */
-  .story-kid .story-print { --print-h: min(40cqh, 60cqw); }
-  .story-kid-behind .story-print { --print-h: min(33cqh, 50cqw); --tilt: 5deg; }
-  .story-kid-him .story-print { --tilt: -7deg; }
-  .story-kid-her .story-print { --tilt: 8deg; }
-  .story-kid-him { left: 3%; top: 1%; }
-  .story-kid-behind { left: 1%; top: auto; bottom: 3%; }
-  .story-kid-her { right: 2%; top: 39%; }
+  .story-kid .story-print { --print-h: min(45cqh, 60cqw); }
+  .story-kid-him .story-print { --tilt: -6deg; }
+  .story-kid-her .story-print { --tilt: 6deg; }
+  .story-kid-him { left: 2%; top: 0; }
+  .story-kid-her { right: 2%; top: auto; bottom: 2%; }
 }
 
 
@@ -1469,7 +1461,11 @@ svg.lucide { stroke-width: 1.5; }
 .story-thumb figcaption { display: none; }
 .story-thumb :is(figure, div) { width: 100%; height: 100%; aspect-ratio: auto !important; border-radius: 0 !important; }
 /* Run 26: the Globe button at the top of the list (the journey stop's Full screen control, opening the same view) */
-.story-list-globe { align-self: flex-start; margin-bottom: var(--space-4); min-height: 44px; }
+.story-list-globe { flex: none; min-height: 44px; } /* run 26c: in the head (its padding keeps it clear of the X) */
+/* Run 26c: Keep reading's head keeps the chapter's photo beside its title; the list's head has a reading progress line */
+.story-read-head { flex-direction: row; align-items: center; gap: var(--space-4); }
+.story-read-head .story-thumb { --thumb: 56px; box-shadow: none; }
+.story-progress { --p: 0; display: block; height: 3px; margin-top: var(--space-1); border-radius: var(--radius-pill); background: linear-gradient(var(--action), var(--action)) no-repeat 0 0 / calc(var(--p) * 100%) 100%, color-mix(in oklab, var(--line-strong) 45%, transparent); }
 .story-thumb-dot { width: 14px; height: 14px; margin: var(--space-2) calc((var(--thumb) - 14px) / 2) 0; border-radius: 50%; background: var(--ink-moss); }
 /* A print or thumbnail that opens full screen (run 25) */
 .photo-open { display: block; padding: 0; border: 0; background: none; color: inherit; cursor: zoom-in; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 4px; -webkit-tap-highlight-color: transparent; }
@@ -1485,6 +1481,14 @@ svg.lucide { stroke-width: 1.5; }
 /* Straight and borderless here: the print's tilt, border, tape and shadow are for the story, not the full view */
 .photo-viewer-frame figure { transform: none !important; rotate: none !important; padding: 0 !important; background: none !important; box-shadow: none !important; }
 .photo-viewer-frame figure::before, .photo-viewer-frame figure::after { display: none !important; }
+/* Run 26c: the print grows into the full view and back (PhotoOpen, a view transition like the venue map's): the photo
+   is one group, cropped to its box as it changes shape, the page fades under it. Reduced motion (photo-fade): the fade
+   only. The viewer doesn't rise as well. */
+:root[data-vt="photo"] .photo-viewer-frame > figure > div { view-transition-name: vphoto; }
+::view-transition-group(vphoto) { animation-duration: var(--duration-slow); animation-timing-function: var(--ease-paper); overflow: clip; border-radius: 2px; }
+::view-transition-old(vphoto), ::view-transition-new(vphoto) { height: 100%; object-fit: cover; animation-duration: var(--duration-slow); }
+:root[data-vt^="photo"]::view-transition-new(root) { animation: fade-in 200ms var(--ease-paper) both; }
+.sheet.photo-viewer[data-vt][data-state="open"] { animation: none; }
 .story-controls { display: flex; align-items: center; justify-content: space-between; }
 .story-controls .utility-btn:disabled { opacity: 0.4; }
 /* Reduced motion: stops fade straight to the next (opacity only, never a move); the one exception to the site's
@@ -1498,6 +1502,9 @@ svg.lucide { stroke-width: 1.5; }
      under it, smaller, so the page isn't so tall (a small map beside the words was tried and left out) */
   .story-slide { --print-h: min(32svh, 260px); gap: var(--space-4); }
   .story-slide-map .story-media { flex: 0 0 auto; }
+  /* Run 26c (the review): a tilted print's low corner reached its own title on a big laptop; the print stands a little
+     higher, by its tilt's drop, so it never covers the words */
+  .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { margin-bottom: calc(var(--print-h) * 0.08); }
   .story-controls { justify-content: center; gap: var(--space-5); }
 }
 /* Big screens (run 21, 1920 to 2560): the spread grows with the screen, prints and words together, up to two prints
@@ -1694,6 +1701,12 @@ svg.lucide { stroke-width: 1.5; }
 /* The globe's always-on names (Brisbane, Victoria), a guest city's name on hover or tap, and + and − */
 .globe-place, .globe-tip { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; white-space: nowrap; font: 500 11px / 1.2 var(--font-label); color: var(--ink); text-shadow: 0 0 3px var(--letter-bg), 0 0 6px var(--letter-bg); translate: 6px -50%; transition: opacity var(--duration-fast) linear; }
 .globe-place[data-back="true"] { opacity: 0.25; }
+/* Run 26c: G (Griffin, Victoria) and N (Nadia, Brisbane) in their lines' colours, beside the place, on both views */
+.home-mark { display: inline-grid; place-items: center; width: 15px; height: 15px; margin-right: 4px; border-radius: 4px; font-size: 10px; font-weight: 700; line-height: 1; vertical-align: -3px; color: #fff; text-shadow: none; }
+.home-mark-griffin { background: var(--ink-moss); fill: var(--ink-moss); }
+.home-mark-nadia { background: var(--ink-story); fill: var(--ink-story); }
+.home-mark-letter { fill: #fff; font: 700 10px var(--font-label); }
+.journey-flat-lines .journey-flat-home { font-size: 11px; }
 .globe-tip { padding: 2px var(--space-2); border-radius: var(--radius-control); background: var(--letter-bg); box-shadow: 0 1px 3px rgb(var(--tint-shadow) / 0.25); text-shadow: none; translate: -50% calc(-100% - 8px); }
 .globe-zoom { position: absolute; right: -44px; bottom: 0; z-index: 3; display: flex; flex-direction: column; gap: 2px; }
 .globe-zoom .utility-btn { width: 32px; height: 32px; font: 500 18px / 1 var(--font-label); background: color-mix(in oklab, var(--surface-raised) 88%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }

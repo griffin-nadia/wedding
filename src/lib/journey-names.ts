@@ -18,6 +18,9 @@ export function placeLabel(p: Pick<Place, "name" | "country" | "n">, lang = "en"
 }
 
 /** Bundles: from BUNDLE_AT lines in one country, they become one line from the households' weighted middle */
+/** Run 26c (the review: "slow the journey animation"): every line's draw, plane and the globe's turn to Kyoto take
+ *  this many times as long as run 26's (the home lines in about 2 s, everyone else's by about 4.5 s) */
+export const PACE = 1.7
 export const BUNDLE_AT = 4
 export function bundle(places: Place[], lang = "en", households = (n: number) => `${n} households`): Bundled[] {
   const byCountry = new Map<string, Place[]>()
