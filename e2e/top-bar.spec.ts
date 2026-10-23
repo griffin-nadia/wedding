@@ -41,3 +41,29 @@ test("Travel: the header scrolls away, the jump links stay flush with the card's
   })
   expect(m).toEqual({ flush: 1, slim: true, headGone: true, mask: true, sticky: 1 })
 })
+
+// Run 26 live bug: the top bar's RSVP (laptops) opened the sheet once; after closing it, pressing it again did nothing
+// (the address was already /?rsvp=1, so nothing changed). It opens every time, from Home and from another page.
+test("the top bar's RSVP opens the reply every time it's pressed", async ({ page }, info) => {
+  test.skip(info.project.name === "phone", "the top bar's RSVP shows from 768")
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto("travel?h=sample")
+  for (let i = 0; i < 3; i++) {
+    await page.locator(".site-rsvp").click()
+    await expect(page.getByRole("dialog")).toBeVisible()
+    await page.keyboard.press("Escape")
+    await expect(page.getByRole("dialog")).toBeHidden()
+  }
+})
+
+// Run 26 live bug: a faint line ran right above the nav tabs (the dock's edge: laptops in Lantern, phones in both).
+// The tabs have no line above them, in either theme, on phones and laptops
+test("no line above the nav tabs, day or night", async ({ page }) => {
+  for (const theme of ["autumn", "lantern"]) {
+    await page.addInitScript((t) => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t) }, theme)
+    await page.goto("travel?h=sample")
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme)
+    const edge = await page.locator(".site-nav").evaluate((e) => { const s = getComputedStyle(e); return { line: s.borderTopWidth === "0px" || /rgba\(.*, 0\)$|transparent/.test(s.borderTopColor), shadow: s.boxShadow } })
+    expect(edge, theme).toEqual({ line: true, shadow: "none" })
+  }
+})

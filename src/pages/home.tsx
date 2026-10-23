@@ -1,6 +1,6 @@
 import { ART } from "@/lib/art"
 import { NamesArt } from "@/components/names-art"
-import { lazy, Suspense, useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Check, Minus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -104,10 +104,22 @@ function NextStep({ h, open, locked }: { h: Household; open: (step: StepId) => v
 export function HomePage() {
   const { t } = useLang()
   const { household } = useHousehold()
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const [tapped, setTapped] = useState(params.get("rsvp") === "1")
   const [request, setRequest] = useState<{ at: number; step: StepId } | undefined>()
-  useEffect(() => { if (params.get("rsvp") === "1") setTapped(true) }, [params])
+  // ?rsvp=1 (the top bar's RSVP, /rsvp) opens the sheet, then comes off the address. Kept on, a second press went to
+  // the same address, nothing changed and the sheet stayed shut (run 26). Once the sheet has been opened, a later
+  // press asks it to open again at the first step.
+  const mounted = useRef(false)
+  useEffect(() => {
+    const later = mounted.current
+    mounted.current = true
+    if (params.get("rsvp") !== "1") return
+    if (later && tapped) setRequest({ at: Date.now(), step: "who" })
+    else setTapped(true)
+    setParams((p) => { p.delete("rsvp"); return p }, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params])
   const done = Boolean(household?.respondedAt)
   const locked = isLocked()
   // v3 P: first names in the sheet's order; a plus one without a name yet is "your plus one"
