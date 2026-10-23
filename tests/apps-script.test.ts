@@ -79,8 +79,8 @@ function backEnd(props: Record<string, string>, opts: { sheet?: boolean; me?: st
     ScriptApp: { getProjectTriggers: () => [] },
   }
   vm.createContext(g)
-  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_, watchHealth, flushQueue, doGet, foldSmall_ }", g)
-  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void; watchHealth: () => void; flushQueue: () => void; doGet: (e: object) => { getContent: () => string }; foldSmall_: (c: object[], min: number) => { name: string; n: number }[] } }
+  vm.runInContext(fs.readFileSync("apps-script/Code.gs", "utf8") + "\n;globalThis.__f = { health_, alert_, queueOut_, flushOut_, watchHealth, flushQueue, doGet, foldSmall_, ask_ }", g)
+  return g as typeof g & { __f: { health_: () => Record<string, unknown>; alert_: (c: string, e: unknown) => void; queueOut_: (m: object, t?: string) => void; flushOut_: () => void; watchHealth: () => void; flushQueue: () => void; doGet: (e: object) => { getContent: () => string }; foldSmall_: (c: object[], min: number) => { name: string; n: number }[]; ask_: (b: object) => { ok: boolean; code?: string } } }
 }
 test("?action=health: ok only when the sheet opens and the queue is moving; counts, no guest data", () => {
   assert.deepEqual(Object.keys(backEnd({}).__f.health_()).sort(), ["at", "emailQuota", "ok", "pending", "queueMoving", "service", "sheet"])
@@ -110,6 +110,19 @@ test("outbox emails carry their household's token (so test ones can be cleared) 
   b.__f.flushOut_()
   assert.equal(b.__sent.length, 2)
   assert.ok(b.__sent.every((m) => !("token" in (m as object))))
+})
+
+// Run 26: Ask us without an invite has no token to rate limit on, so all of those share one 10 minute budget too
+test("no-invite asks: honeypot kept out, user text stored as plain text, 10 in 10 minutes from everyone", () => {
+  const props: Record<string, string> = {}, b = backEnd(props), rows: unknown[][] = []
+  vm.runInContext("questionsSheet_ = () => ({ appendRow: (r) => __rows.push(r) })", Object.assign(b, { __rows: rows }))
+  assert.deepEqual({ ...b.__f.ask_({ website: "x", name: "Bot", email: "b@example.com", question: "hi" }) }, { ok: true })
+  assert.equal(rows.length, 0)
+  for (let i = 0; i < 10; i++) assert.equal(b.__f.ask_({ name: "=Sam" + i, email: `s${i}@example.com`, question: "=1+1" }).ok, true)
+  assert.equal(b.__f.ask_({ name: "Kim", email: "kim@example.com", question: "hello" }).code, "busy")
+  assert.equal(rows.length, 10)
+  assert.equal(rows[0][1], "'=Sam0"); assert.equal(rows[0][4], "'=1+1")
+  assert.ok(Object.values(props).every((v) => !/"to":"[^"]*example\.com"/.test(v))) // the email goes to REPLY_TO, never to them
 })
 
 test("two songs at most (run 19): the back end keeps the first two, like the form", () => {

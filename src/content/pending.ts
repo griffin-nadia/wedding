@@ -61,13 +61,19 @@ export const PENDING = {
     en: "Sent. We'll get back to you soon.",
     ja: "送りました。近いうちにお返事します。",
   },
+  // Run 26: no email address on the site, so no fallback to one
   "ask.failed": {
-    en: "We couldn't send that just now. Try again, or email us at",
-    ja: "今は送れませんでした。もう一度お試しいただくか、こちらへメールしてください：",
+    en: "Ask us isn't working right now, please try again later.",
+    ja: "ただいま「質問する」がご利用いただけません。しばらくしてからもう一度お試しください。",
   },
   "ask.busy": {
     en: "That's a few questions in a row. Try again in a little while.",
     ja: "続けてのご質問が多いようです。少し時間をおいてお試しください。",
+  },
+  // Run 26: without an invite it's a message, not only a question
+  "ask.message": {
+    en: "Your message",
+    ja: "メッセージ",
   },
   "ask.name": {
     en: "Your name",
@@ -84,12 +90,6 @@ export const PENDING = {
   "ask.youAsked": {
     en: "You asked",
     ja: "いただいたご質問",
-  },
-  // A way to actually message them where the copy says to (18e journey map): the wedding address already used on the
-  // no-invite page
-  "contact.emailUs": {
-    en: "Email Griffin & Nadia",
-    ja: "グリフィンとナディアにメールする",
   },
   // The FAQ answers (run 19): shorter, in their voice, for Griffin and Nadia to tweak (the questions are in en.ts)
   // Run 25: their last sentence (the planner's Q&A tab, 16 Oct), pointing at Ask us rather than an email address
@@ -143,6 +143,8 @@ export const JA_TO_READ: { key: string; ja: string }[] = [
   { key: "flying.pinHint", ja: "出発地を地図でタップしてください。" },
   { key: "flying.pinCancel", ja: "やめる" },
   { key: "ask.button", ja: "質問する" },
+  { key: "ask.failed", ja: "ただいま「質問する」がご利用いただけません。しばらくしてからもう一度お試しください。" },
+  { key: "ask.message", ja: "メッセージ" },
   { key: "faqs.bring.a", ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下の「質問する」からお気軽にメッセージをどうぞ。" },
   { key: "faqs.style.a", ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。" },
   { key: "faqs.visa.q", ja: "ビザは必要ですか？" },

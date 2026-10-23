@@ -12,7 +12,6 @@ import { useLang } from "@/lib/lang"
 import { pending } from "@/content/pending"
 
 const ASK_MAX = 500, FEEDBACK_MAX = 1000
-const ADDRESS = "griffinandnadia@gmail.com"
 
 /**
  * Ask us (final run): everywhere the site used to say "email Griffin & Nadia". One sheet with one question (500
@@ -58,7 +57,12 @@ export function AskUs({ children, feedback = false }: { children: ReactNode; fee
         <SheetBody>
           {state === "sent" ? <p role="status" className="rounded-md bg-section-alt p-4">{feedback ? t.preview.feedbackSent : pending("ask.sent", lang)}</p> : (
             <form onSubmit={send} noValidate className="flex flex-col gap-(--form-group-gap)">
-              <FormField id="ask-q" label={feedback ? t.preview.feedbackLabel : pending("ask.label", lang)} help={`${feedback ? t.preview.feedbackHelp : pending("ask.help", lang)} ${question.length}/${MAX}`}>
+              {/* No invite: who they are first, then the message (run 26) */}
+              {anonymous && <>
+                <FormField id="ask-name" label={pending("ask.name", lang)}><Input id="ask-name" value={name} maxLength={60} autoComplete="name" onChange={(e) => setName(e.target.value)} /></FormField>
+                <FormField id="ask-email" label={pending("ask.email", lang)} help={pending("ask.emailHelp", lang)}><Input id="ask-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false} maxLength={120} value={email} aria-describedby="ask-email-help" onChange={(e) => setEmail(e.target.value)} /></FormField>
+              </>}
+              <FormField id="ask-q" label={feedback ? t.preview.feedbackLabel : pending(anonymous ? "ask.message" : "ask.label", lang)} help={`${feedback ? t.preview.feedbackHelp : pending("ask.help", lang)} ${question.length}/${MAX}`}>
                 <Textarea id="ask-q" rows={3} maxLength={MAX} value={question} autoCapitalize="sentences" aria-describedby="ask-q-help" data-filled={Boolean(question.trim())} onChange={(e) => { setQuestion(e.target.value); if (state !== "sending") setState("idle") }} />
               </FormField>
               {matches.length > 0 && (
@@ -69,15 +73,11 @@ export function AskUs({ children, feedback = false }: { children: ReactNode; fee
                   </ul>
                 </section>
               )}
-              {anonymous && <>
-                <FormField id="ask-name" label={pending("ask.name", lang)}><Input id="ask-name" value={name} maxLength={60} autoComplete="name" onChange={(e) => setName(e.target.value)} /></FormField>
-                <FormField id="ask-email" label={pending("ask.email", lang)} help={pending("ask.emailHelp", lang)}><Input id="ask-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false} maxLength={120} value={email} aria-describedby="ask-email-help" onChange={(e) => setEmail(e.target.value)} /></FormField>
-              </>}
               {/* Only a bot fills this in (it's off screen and out of the tab order) */}
               <label className="ask-pot" aria-hidden>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} /></label>
               {state === "bad" && <p role="alert" className="text-small text-destructive">{t.notFound.badEmail}</p>}
               {state === "busy" && <p role="alert" className="text-small text-destructive">{pending("ask.busy", lang)}</p>}
-              {state === "failed" && <p role="alert" className="text-small text-destructive">{pending("ask.failed", lang)} <a href={`mailto:${ADDRESS}`} className="btn-text">{ADDRESS}</a></p>}
+              {state === "failed" && <p role="alert" className="text-small text-destructive">{pending("ask.failed", lang)}</p>}
               <Button type="submit" size="md" className="self-start" disabled={state === "sending" || !question.trim()}>{state === "sending" ? t.notFound.sending : pending("ask.send", lang)}</Button>
             </form>
           )}
