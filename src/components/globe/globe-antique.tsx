@@ -36,7 +36,12 @@ export const look: Look = {
   // Run 27 (Jehan): see-through, so a line going round the back still shows faintly through the paper
   seeThrough: 0.3,
   farLines: 0.4,
-  inks: (night) => ({ guest: night ? "#d9c49a" : "#6e4f2c", ink: night ? "#efdfbf" : "#3d2a18" }),
+  // Run 27 (Jehan): the routes stronger against the faded paper, each mode its own (3:1 or more on the sea and the land,
+  // the household's gold too; tokens.css --journey-* keep the key the same)
+  inks: (night) => night
+    ? { nadia: "#f08c5c", griffin: "#b3cf8f", guest: "#e3cfa2", you: "#f4c55a", ink: "#efdfbf" }
+    : { nadia: "#a23a1c", griffin: "#3e5a2a", guest: "#5b4126", you: "#8f5800", ink: "#3d2a18" },
+  weight: 1.15,
   decor: rose,
   css,
   paint: async ({ night, width: W }) => {

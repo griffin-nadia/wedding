@@ -639,9 +639,12 @@
 .utility-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--ink-muted); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-fast), background-color var(--duration-fast); }
 /* The sun/moon is a switch, not a tab: no filled "on" chip in Lantern (6 Oct), just full-strength ink */
 .utility-btn:focus-visible { outline-color: var(--input-focus); }
+/* Run 27 (Jehan): one icon set across the site. Every icon is Lucide's (the omikuji drawn in its style): 1.75 stroke,
+   round caps and joins, currentColor; 20px in the top bar and on controls, 24px in the bottom nav */
+svg.lucide { stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 /* Run 27: the bar's one text icon (あ / A) set to sit with the 20px Lucide icons: the same box, a medium weight close to
    their 2px stroke, centred on the same line */
-.utility-glyph { font: 500 19px / 1 var(--font-label); }
+.utility-glyph { font: 400 19px / 1 var(--font-label); } /* run 27: 400, the weight that matches the icons' 1.75 stroke */
 .utility-glyph > span { display: block; height: 20px; line-height: 20px; }
 @media (hover: hover) { .utility-btn:hover { color: var(--ink); } }
 /* A light sage circle only while the pointer is on it (laptops); nothing stays filled to look switched on */
@@ -1137,10 +1140,10 @@ svg.lucide { stroke-width: 1.5; }
 .journey-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin: 0; padding: 0; list-style: none; font-size: var(--type-small-size); color: var(--ink-soft); }
 .journey-legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
 .journey-key { display: inline-block; width: 18px; height: 0; border-top: 2px solid; border-radius: 1px; } /* run 27: the antique globe's lines are solid inked routes */
-.journey-key-nadia { border-color: var(--ink-story); }
-.journey-key-griffin { border-color: var(--ink-moss); }
+.journey-key-nadia { border-color: var(--journey-nadia); }
+.journey-key-griffin { border-color: var(--journey-griffin); }
 .journey-key-guests { border-color: var(--journey-guest); opacity: 0.8; }
-.journey-key-you { border-top-style: solid; border-top-width: 2px; border-color: var(--journey-you); }
+.journey-key-you { border-top-style: solid; border-top-width: 2px; border-color: var(--journey-line-you); }
 [data-theme="lantern"] .journey-hifi :is(.journey-route, .journey-guest, .journey-you) { filter: drop-shadow(0 0 2.5px currentColor); }
 [data-theme="lantern"] .journey-hifi .journey-route-nadia { color: var(--ink-story); }
 [data-theme="lantern"] .journey-hifi .journey-route-griffin { color: var(--ink-moss); }
@@ -1377,9 +1380,9 @@ svg.lucide { stroke-width: 1.5; }
   .story-kid .story-print { --print-h: min(45cqh, 60cqw); }
   .story-kid-him .story-print { --tilt: -6deg; }
   .story-kid-her .story-print { --tilt: 6deg; }
-  .story-kid-him { left: 2%; top: 0; }
+  .story-kid-him { left: 2%; top: -2%; } /* run 27 (Jehan): both a little higher, so hers clears the dots (30px at 390) */
   /* Run 27 (Nadia): hers sits lower and further right, so "griffin" on his print's border shows */
-  .story-kid-her { right: 0; top: auto; bottom: -3%; }
+  .story-kid-her { right: 0; top: auto; bottom: 3%; }
   .story-kid .story-print { --print-h: min(43cqh, 57cqw); }
 }
 
@@ -1480,6 +1483,10 @@ svg.lucide { stroke-width: 1.5; }
    as the old square globe on the stop; full screen it fills the stage */
 .journey-look { position: relative; width: min(100%, 425px, calc((var(--stop-h, 400px) - 36px) * 1.25)); aspect-ratio: 5 / 4; }
 .journey-look > .x-g24-box { width: 100%; }
+/* Run 27 (Jehan): the paper faded back (less colour and contrast) so the routes and marks stand out; Lantern a touch
+   darker as well. The lines and marks are on their own layer, so they keep their full strength */
+.journey-look .x-g24-art > canvas:first-child { filter: saturate(0.6) contrast(0.82) brightness(1.04); }
+[data-theme="lantern"] .journey-look .x-g24-art > canvas:first-child { filter: saturate(0.6) contrast(0.85) brightness(0.88); }
 /* Run 27: while the globe loads, its own shape: a disc of the antique paper (the globe is 4/5 of the box's height) with
    its ink rim, breathing softly, the words in it; still under reduced motion */
 .journey-look-wait, .journey-look .x-g24-wait { display: grid; place-items: center; container-type: size; isolation: isolate; }
