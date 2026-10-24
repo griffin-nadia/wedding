@@ -118,7 +118,9 @@ export function FortuneCard({ token, className, title }: { token: string; classN
   }
   function unfold(still: boolean) {
     if (!still) { setFold("folding"); window.setTimeout(() => setFold("settling"), FOLD_MS) }
-    nextFrame(() => slip.current?.focus())
+    // Run 27 (Jehan's recording): focus without the browser's own scroll, which jumped the sheet about on Draw another;
+    // only if the slip isn't fully in view, the least scroll that shows it
+    nextFrame(() => { const el = slip.current; if (!el) return; el.focus({ preventScroll: true }); el.scrollIntoView({ block: "nearest" }) })
   }
   function draw() {
     if (state !== "closed") return
