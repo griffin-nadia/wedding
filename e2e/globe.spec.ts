@@ -1,8 +1,7 @@
 import { test, expect, type Page } from "@playwright/test"
 
-// Final run: Our story's last stop is the painted globe. Run 25: one view per screen. The stop shows the globe (the
-// flat map with no WebGL) and a Full screen control above it; that opens a dialog with Globe / Map in a fixed spot, + and
-// − on the globe, Escape and the X back to the story. Run 26c: no chapter pins; G and N mark Victoria and Brisbane.
+// Final run: Our story's last stop is the painted globe (the flat map with no WebGL), with a Full screen control above
+// it that opens a dialog with Globe / Map in a fixed spot, + and −, Escape and the X back to the story.
 test.use({ launchOptions: { args: ["--hide-scrollbars", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } })
 test.describe.configure({ timeout: 90_000 })
 test.use({ trace: "retain-on-failure" }) // run 26: a trace when the full-screen map is slow on CI
@@ -15,69 +14,66 @@ const toEnd = async (page: Page) => {
 const webgl = (page: Page) => page.evaluate(() => Boolean(document.createElement("canvas").getContext("webgl2")))
 test.beforeEach(async ({ page }) => { await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") }) })
 
+// Run 27: the antique globe (journey-look.tsx, the looks picker's own view): one box whose paper curls between the globe
+// and a map you drag round the world. The stop shows just the globe (no key, no count); full screen adds Globe / Map,
+// + and − (0.6x to 3x), the key and the count.
 test("the stop shows the globe; Full screen opens it with Globe / Map, and closes back to the story", async ({ page }) => {
   await toEnd(page)
   test.skip(!(await webgl(page)), "no WebGL here")
   const stop = page.locator(".story-slide-map")
-  await expect(stop.locator(".journey-globe canvas")).toHaveCount(1, { timeout: 30_000 })
-  await expect(stop.locator(".journey-globe")).toHaveAttribute("data-ready", "true")
-  // Kyoto pinned with its date; Brisbane and Victoria always named; one visual, no switch and no zoom on the stop
-  await expect(stop.locator(".globe-pin")).toContainText("Kyoto, 15 Oct 2027")
-  await expect(stop.locator(".globe-place")).toHaveText(["NBrisbane", "GVictoria, Canada"]) // run 26c: N and G beside their places
-  await expect(stop.locator(".journey-flat")).toHaveCount(0)
+  const box = stop.locator(".journey-look .x-g24-box")
+  await expect(box).toBeVisible({ timeout: 30_000 })
+  await expect(box.locator(".x-g24-wait")).toHaveCount(0, { timeout: 30_000 }) // painted
+  await expect(box.locator("canvas")).toHaveCount(2) // the paper and the lines
+  // Kyoto's seal with its date; N at Brisbane and G at Victoria; one view, no switch, no zoom, no key on the stop
+  await expect(box.locator(".x-g24-kyoto")).toContainText("Kyoto, 15 Oct 2027")
+  await expect(box.locator(".x-g24-badge")).toHaveText(["N", "G"])
   await expect(stop.getByRole("radio")).toHaveCount(0)
   await expect(stop.getByRole("button", { name: "Zoom in" })).toHaveCount(0)
-  await expect(stop.locator(".journey-legend")).toBeVisible()
+  await expect(stop.locator(".journey-legend")).toHaveCount(0)
   // The control centred above the globe
   const open = page.getByRole("button", { name: "Open the map full screen" })
-  const map = (await stop.locator(".journey-globe").boundingBox())!, ctl = (await open.boundingBox())!
+  const map = (await box.boundingBox())!, ctl = (await open.boundingBox())!
   expect(ctl.y + ctl.height).toBeLessThanOrEqual(map.y + 1)
   expect(Math.abs(ctl.x + ctl.width / 2 - (map.x + map.width / 2))).toBeLessThan(2)
-  // Dragging sideways turns the globe, never the story
-  const art = (await stop.locator(".journey-globe-art").boundingBox())!
-  await page.mouse.move(art.x + art.width * 0.7, art.y + art.height / 2); await page.mouse.down()
-  for (let i = 1; i <= 8; i++) await page.mouse.move(art.x + art.width * (0.7 - i * 0.06), art.y + art.height / 2)
+  // Dragging sideways turns the globe (Kyoto's seal moves), never the story
+  const kyoto = () => box.locator(".x-g24-mark").first().evaluate((e) => (e as HTMLElement).style.transform)
+  const before = await kyoto()
+  await page.mouse.move(map.x + map.width * 0.7, map.y + map.height / 2); await page.mouse.down()
+  for (let i = 1; i <= 8; i++) await page.mouse.move(map.x + map.width * (0.7 - i * 0.04), map.y + map.height / 2)
   await page.mouse.up()
+  await expect.poll(kyoto).not.toBe(before)
   await expect(page.getByRole("button", { name: /next chapter/i })).toBeDisabled()
 
   await open.click()
   const dialog = page.getByRole("dialog")
   await expect(dialog).toBeVisible()
   await expect(dialog.getByRole("radio", { name: "Globe" })).toBeChecked()
-  await expect(dialog.locator(".journey-globe canvas")).toHaveCount(1, { timeout: 30_000 })
+  const full = dialog.locator(".journey-look .x-g24-box")
+  await expect(full.locator(".x-g24-wait")).toHaveCount(0, { timeout: 30_000 })
   await expect(dialog.getByRole("button", { name: "Zoom in" })).toBeVisible()
   await expect(dialog.getByRole("button", { name: "Zoom out" })).toBeVisible()
   await expect(dialog.locator(".journey-legend")).toBeVisible()
-  // Run 26: the full-screen globe's box is the whole stage, so zoomed in it never shows as a square; + zooms it
-  const vw = page.viewportSize()!.width
-  expect((await dialog.locator(".journey-globe").boundingBox())!.width).toBeGreaterThanOrEqual(vw - 1)
-  // Run 26c: no numbered chapter pins (Nadia's review); G and N beside Victoria and Brisbane instead
   await expect(dialog.locator(".chapter-pin")).toHaveCount(0)
-  await expect(dialog.locator(".globe-place .home-mark")).toHaveText(["N", "G"])
-  // The globe fits its box after a resize (the camera's distance is worked out again): the buffer has the box's shape
-  const vp = page.viewportSize()!
-  await page.setViewportSize({ width: 700, height: 500 }); await page.waitForTimeout(400)
-  const fits = await dialog.locator(".journey-globe").evaluate((g) => { const c = g.querySelector("canvas")!; return Math.abs(c.width / c.height - g.clientWidth / g.clientHeight) < 0.02 })
-  expect(fits).toBe(true)
-  await page.setViewportSize(vp); await page.waitForTimeout(400)
+  // The sample's 8 cities: Australia's 4 are one bundle, so 5 guest dots, each a button named for where it is
+  await expect(full.locator(".x-g24-dot")).toHaveCount(5)
+  // + magnifies (the seal moves away from the middle), − goes below where it opened
+  const seal = () => full.locator(".x-g24-mark").first().evaluate((e) => { const m = new DOMMatrix(getComputedStyle(e).transform); return [m.e, m.f] })
+  const box0 = (await full.boundingBox())!, mid = [box0.width / 2, box0.height / 2]
+  const dist = async () => { const [x, y] = await seal(); return Math.hypot(x - mid[0], y - mid[1]) }
+  const d0 = await dist()
+  await dialog.getByRole("button", { name: "Zoom in" }).click(); await page.waitForTimeout(300)
+  expect(await dist()).toBeGreaterThan(d0 * 1.2)
+  for (let i = 0; i < 4; i++) await dialog.getByRole("button", { name: "Zoom out" }).click()
+  await page.waitForTimeout(300)
+  expect(await dist()).toBeLessThan(d0)
+  // Globe / Map in one fixed spot; Map opens the same paper out flat
   const toggle = (await dialog.locator(".journey-mode").boundingBox())!
   await dialog.getByRole("radio", { name: "Map" }).click()
-  await expect(dialog.locator(".journey-flat")).toBeVisible()
-  await expect(dialog.locator(".journey-globe")).toHaveCount(0)
-  expect(await dialog.locator(".journey-mode").boundingBox()).toEqual(toggle) // the switch didn't move
-  // The sample's 8 cities: Australia's 4 are one bundle, so 5 lines; the same pins as the globe
-  await expect(dialog.locator(".journey-flat .journey-guest")).toHaveCount(5)
-  await expect(dialog.locator(".journey-flat .journey-guest-bundle")).toHaveCount(1)
-  await expect(dialog.locator(".journey-flat .chapter-pin")).toHaveCount(0)
-  await expect(dialog.locator(".journey-flat .home-mark-letter")).toHaveText(["N", "G"])
-  // Run 26: no paper planes under reduced motion (the lines are already drawn); + and − zoom the map too, 1x to 3x
+  await expect(full).toHaveAttribute("data-mode", "flat")
+  expect(await dialog.locator(".journey-mode").boundingBox()).toEqual(toggle)
+  // No paper planes under reduced motion (the lines are already drawn)
   await expect(dialog.locator(".journey-plane")).toHaveCount(0)
-  const viewBox = () => dialog.locator("svg.journey-flat-lines").getAttribute("viewBox")
-  for (let i = 0; i < 5; i++) await dialog.getByRole("button", { name: "Zoom in" }).click()
-  await expect.poll(viewBox).toMatch(/ 133\.33\d* 106\.66\d*$/) // 3x at most: a third of 400 × 320
-  await expect(dialog.locator(".journey-flat")).toHaveAttribute("data-zoomed", "true")
-  for (let i = 0; i < 5; i++) await dialog.getByRole("button", { name: "Zoom out" }).click()
-  await expect.poll(viewBox).toBe("0 0 400 320")
   // Escape closes it, focus back on the control, the story where it was
   await page.keyboard.press("Escape")
   await expect(dialog).toHaveCount(0)

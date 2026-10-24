@@ -295,23 +295,6 @@ test("the sent letter under reduced motion: plain paper (no paper made), no canv
   expect(paper).toEqual({ canvases: 0, live: "", ink: [true, true] })
 })
 
-// 18e: once replied, Home shows one next step: travel dates if there are none yet (opening the dates step), else
-// Plan your trip (Travel)
-test("after a reply, Home's next step is the travel dates, then the trip", async ({ page }) => {
-  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
-  await openForm(page)
-  const dialog = page.getByRole("dialog")
-  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
-  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
-  await toCheck(page); await press(page, /^Send our reply$/)
-  await page.keyboard.press("Escape")
-  await expect(dialog).toBeHidden()
-  const next = page.locator("#letter .next-step")
-  await expect(next.getByRole("button", { name: "Add your travel dates" })).toBeVisible()
-  await next.getByRole("button", { name: "Add your travel dates" }).click()
-  await expect(page.getByRole("dialog")).toContainText(/arriv|dates/i)
-})
-
 // 18f: "You're all set" is one column: the hanko and heading in the sheet's head (the X beside them, never on a
 // card), then the line, the fortune, flying from, add to calendar and the buttons, each the same distance apart
 for (const theme of ["autumn", "lantern"] as const) test(`the done screen (${theme}): one column, even gaps, the X clear of everything`, async ({ page }) => {

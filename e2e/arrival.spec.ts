@@ -92,7 +92,8 @@ const at = (page: Page, f: number) => page.evaluate((f) => {
 }, f)
 const done = (page: Page) => page.evaluate(() => { for (const a of (window as unknown as { __seq: Animation[] }).__seq) a.finish() })
 
-test("open, seal, open, seal: one step at a time, held at 0, 25, 50, 75 and 100%", async ({ page }, info) => {
+// Run 27: Seal it again is gone, so only the opening is stepped through
+test("open: one step at a time, held at 0, 25, 50, 75 and 100%", async ({ page }, info) => {
   await page.addInitScript(() => localStorage.setItem("ng-music", "off"))
   await page.goto("?h=sample")
   await expect(open(page)).toBeVisible()
@@ -117,32 +118,6 @@ test("open, seal, open, seal: one step at a time, held at 0, 25, 50, 75 and 100%
   await done(page)
   await expect(page.locator("#letter")).toBeFocused({ timeout: 3000 })
   await expect.poll(bar, { message: "open: the bar's paper is back" }).not.toEqual(["0", "0"])
-
-  // Seal
-  const reseal = page.getByRole("button", { name: "Seal it again" })
-  expect(await hold(page, () => reseal.click())).toBeGreaterThan(5)
-  const sealing = []
-  for (const pct of [0, 25, 50, 75, 100]) {
-    const f = await at(page, pct / 100); check(f, pct, "sealing"); sealing.push(f)
-    if (info.project.name === "phone") await info.attach(`seal-${pct}`, { body: await page.screenshot({ animations: "allow", mask: [page.locator(".count-boxes")] }), contentType: "image/png" })
-  }
-  expect(sealing[0]).toMatchObject({ card: 1, words: 1, envelope: 0 }) // the card as it was, nothing over it
-  expect(sealing[1]).toMatchObject({ card: 0, words: 0, sheet: 1 }) // its words gone, shrinking into the letter
-  expect(sealing[2]).toMatchObject({ sheet: 0, paper: 1, openShown: 1, envelope: 1 }) // the letter going into the pocket
-  expect(sealing[3].closed, "75%: the flap is closing").not.toBe("none")
-  expect(sealing[4]).toMatchObject({ closed: expect.stringMatching(/^inset\(0px( 0px 0%)?\)$/), press: 0, paper: 0 }) // closed, the seal on, the float next
-  expect((await at(page, 0.95)).press, "95%: the seal pressing on").toBe(1)
-  await done(page)
-  await expect(page.locator(".arrival-note-words")).toBeVisible({ timeout: 3000 })
-  await expect(open(page)).toBeVisible()
-
-  // Open and seal once more, straight through
-  await page.locator(".envelope").evaluate((e: HTMLElement) => e.click())
-  await expect(page.locator("#letter")).toBeFocused({ timeout: 4000 })
-  await reseal.click()
-  await expect(open(page)).toBeVisible({ timeout: 4000 })
-  await expect(page.locator(".arrival-sheet")).toHaveCSS("opacity", "0")
-  await expect(page.locator(".envelope-float")).toHaveCSS("animation-play-state", "running") // floating again
 })
 
 // Run 19: their faces stay clear of the envelope and its note, at every phone size standing and lying down and at
@@ -151,13 +126,12 @@ test("open, seal, open, seal: one step at a time, held at 0, 25, 50, 75 and 100%
 const phones = [[320, 568], [375, 667], [390, 844], [430, 932], [568, 320], [667, 375], [844, 390], [932, 430]] as const
 const laptops = [[1024, 768], [1280, 800], [1440, 900], [1920, 1080]] as const
 for (const theme of ["autumn", "lantern"] as const) test(`nothing covers their faces on the arrival (${theme})`, async ({ page }, info) => {
-  await page.emulateMedia({ reducedMotion: "reduce" })
   const scenes = JSON.parse(fs.readFileSync("src/content/scenes.json", "utf8")) as Record<string, { w: number; h: number; face?: number[]; wide?: { w: number; h: number; face?: number[] } }>
-  await page.addInitScript((t) => { localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t); localStorage.setItem("ng-opened", "1") }, theme)
+  await page.addInitScript((t) => { localStorage.setItem("ng-music", "off"); localStorage.setItem("ng-theme", t) }, theme)
+  // A first visit (run 27: Seal it again is gone), then still, so the float holds for the screenshots
   await page.goto("?h=sample")
-  // After "Seal it again" (still under reduced motion: it's just sealed), the same arrival as a first visit
-  await page.getByRole("button", { name: "Seal it again" }).click()
   await expect(open(page)).toBeVisible()
+  await page.emulateMedia({ reducedMotion: "reduce" })
   const sizes = info.project.name === "phone" ? phones : laptops
   for (const [w, h] of sizes) {
     await page.setViewportSize({ width: w, height: h })
