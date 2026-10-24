@@ -36,7 +36,7 @@ test("Travel: the header scrolls away, the jump links stay flush with the card's
   await expect(page.locator(".jump-links")).toHaveAttribute("data-stuck")
   const m = await page.evaluate(() => {
     const card = document.getElementById("letter")!.getBoundingClientRect(), links = document.querySelector(".jump-links")!.getBoundingClientRect()
-    const head = document.querySelector(".page-header")!.getBoundingClientRect(), s = getComputedStyle(document.querySelector(".letter-scroll")!)
+    const head = document.querySelector(".page-header")!.getBoundingClientRect(), s = getComputedStyle(document.querySelector(".letter-fade")!) // the edge fades: a still layer since the run 26 review (Day scroll), not a mask on the scroller
     return { flush: Math.round(links.top - card.top), slim: links.height <= 52, headGone: head.bottom < card.top, mask: (s.maskImage || s.webkitMaskImage).includes("16px"), sticky: [...document.querySelectorAll("#letter *")].filter((e) => getComputedStyle(e).position === "sticky").length }
   })
   expect(m).toEqual({ flush: 1, slim: true, headGone: true, mask: true, sticky: 1 })
