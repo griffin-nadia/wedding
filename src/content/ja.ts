@@ -41,7 +41,6 @@ export const ja: DeepPartial<Content> = {
     "trio-mountain-town": { alt: `山あいの町で家族と${A}と${B}`, caption: "家族との旅" },
     "torii-mist": { alt: "霧の中の赤い鳥居", caption: "道すがらの霧の鳥居" },
     "griffin-cedar-forest": { alt: `杉の大木の間に立つ${GRIFFIN}`, caption: `杉林の${GRIFFIN}` },
-    "kid-griffin-1998": { alt: "1998年の学校写真の幼いグリフィン。赤いTシャツでほほえんでいる", caption: "" },
     "kid-nadia-home": { alt: "家でにっこり笑う幼いナディア。髪をクリップで留めた二つ結びに、クリスマスツリーのTシャツ", caption: "" },
     "kid-griffin": { alt: "小学校の初日、黄色いセーターで玄関の前に立つ幼い頃のグリフィン", caption: "" },
     "kid-nadia": { alt: "幼い頃のナディア。帽子をかぶって車の後部座席で笑っている", caption: "" },

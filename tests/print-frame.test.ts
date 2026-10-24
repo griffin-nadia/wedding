@@ -9,7 +9,7 @@ test("deterministic, mixed, within two degrees", () => {
   for (const n of names) assert.deepEqual(printFrame(n), printFrame(n))
   for (const n of names) assert.equal(printFrame(n).ratio, "4 / 5")
   assert.deepEqual(names.slice(0, 6).map((n) => parseFloat(printFrame(n).tilt)), [-5, 4, -3, 6, -4, 3])
-  for (const n of [...names, "kid-nadia", "kid-griffin-1998"]) { const t = parseFloat(printFrame(n).tilt); assert.ok(Math.abs(t) <= 6 && Math.abs(t) >= 3, `${n} ${t}`) }
+  for (const n of [...names, "kid-nadia", "kid-griffin"]) { const t = parseFloat(printFrame(n).tilt); assert.ok(Math.abs(t) <= 6 && Math.abs(t) >= 3, `${n} ${t}`) }
   for (let i = 1; i < names.length; i++) assert.notEqual(Math.sign(parseFloat(printFrame(names[i]).tilt)), Math.sign(parseFloat(printFrame(names[i - 1]).tilt)))
 })
 

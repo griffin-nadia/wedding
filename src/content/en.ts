@@ -74,7 +74,6 @@ export const en = {
     "trio-mountain-town": { alt: `${A} and ${B} with family in a mountain town`, caption: "A trip with family" },
     "torii-mist": { alt: "A red torii gate in the mist", caption: "Misty torii on the way" },
     "griffin-cedar-forest": { alt: `${GRIFFIN} among tall cedar trees`, caption: `${GRIFFIN} in the cedars` },
-    "kid-griffin-1998": { alt: "Griffin as a little boy in his 1998 school photo, in a red T-shirt, smiling", caption: "" },
     "kid-nadia-home": { alt: "Nadia as a little girl at home, her hair in bunches with clips, grinning in a Christmas tree T-shirt", caption: "" },
     "kid-griffin": { alt: "Griffin as a little boy on his first day of school, in a yellow jumper, standing at the front door", caption: "" },
     "kid-nadia": { alt: "Nadia as a little girl in the back seat of a car, in a cap, smiling", caption: "" },
