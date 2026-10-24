@@ -503,11 +503,11 @@
 /* Except Home: its card is only as tall as what's on it (up to the frame) */
 :root .letter[data-page="home"] { flex-grow: 0; }
 .letter-wrap:has(.letter[data-page="home"]) .letter-sealed { flex-grow: 0; }
-/* Laptops: run 21 sized each card to its words and centred a short one, so its top and bottom edges moved from tab
-   to tab (2560 most of all). Run 26c: every tab's card fills the frame, Home's too, so its edges are the same on every
-   tab at any size: the standard gap under the bar's line above, and the same gap to the bottom of the screen below. */
-@media (min-width: 1024px) {
-  :root .letter:not(.sheet), :root .letter-sealed, .letter-wrap:has(.letter[data-page]) .letter-sealed { flex: 1 1 auto; min-height: 0; }
+/* Laptops and tablets: run 26c had every tab's card fill the frame. Run 27 (Jehan): each card hugs what's on it, from
+   one starting height that's the same on every tab (560px, or the frame if that's less), and grows to the frame when
+   its words need it (then scrolls inside). Its top edge is the same on every tab. */
+@media (min-width: 768px) {
+  :root .letter:not(.sheet), :root .letter-sealed, .letter-wrap:has(.letter[data-page]) .letter-sealed { flex: 0 1 auto; min-height: min(560px, 100%); }
 }
 /* Our story fills the frame like the other pages (run 19: its spread fits now, so the frame is no longer tall round a
    small print), and the spread is centred in it, so the card's bottom edge never moves between pages */
@@ -585,6 +585,9 @@
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* Run 27: the mark in Nadia's lettering (brand-mark.tsx), her G, "&" and N all in the one ink */
 .brand-mark { --mark-h: 36px; display: inline-flex; align-items: flex-start; gap: calc(var(--mark-h) * 0.02); height: var(--mark-h); vertical-align: middle; }
+/* The sign-off: "With love," then her G&N, a touch taller than the words, on their baseline */
+.signoff-art { display: inline-flex; align-items: flex-end; gap: 0.35em; }
+.signoff-art .brand-mark { --mark-h: 1.7em; vertical-align: baseline; translate: 0 0.28em; }
 .brand-mark-part { display: block; height: var(--mark-h); background: var(--ink); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
 
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
@@ -613,8 +616,13 @@
 }
 /* Run 26c: the bar lines up with the card under it. From 1024 the mark starts at the card's left edge; from 1280
    (room for the RSVP and the switches beside it) the tabs end at the card's right edge, at 1440 and 2560 alike */
-@media (min-width: 1024px) { .site-bar { padding-left: var(--letter-left); } .site-mark { position: absolute; left: var(--letter-left); } }
-@media (min-width: 1280px) { .site-nav { position: absolute; top: 0; bottom: 0; left: auto; right: calc(100% - var(--letter-left) - var(--letter-width)); display: flex; align-items: center; } }
+/* Run 27 (Jehan): the mark sits as far in from the left edge as the icons' glyphs sit from the right (the bar's 8px
+   padding plus half of a 44px button round a 20px icon, so 20px), on every width */
+.site-mark { margin-left: calc(var(--space-2) + 12px - max(var(--space-4), env(safe-area-inset-left))); }
+@media (min-width: 1024px) { .site-bar { padding-left: var(--letter-left); } .site-mark { position: absolute; left: calc(var(--space-2) + 12px); margin-left: 0; } }
+/* Run 27 (Jehan): the tabs sit on the right at every laptop width, beside the icons, with a hairline between the two,
+   so the bar reads mark, then tabs and icons, instead of tabs floating over the card's edge */
+@media (min-width: 768px) { .site-bar .mode-switches { display: flex; align-items: center; padding-left: var(--space-3); border-left: 1px solid var(--line-hairline); } }
 /* Top bar: the current page on a sage tint, hover a lighter one under the pointer (Jehan, 6 Oct: the pale marker was hard
    to see). Options → Nav pill → Paper brings back the old sage-paper marker. */
 @media (min-width: 768px) {
@@ -630,6 +638,10 @@
 .utility-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-pill); color: var(--ink-muted); outline: 2px solid transparent; outline-offset: 2px; transition: color var(--duration-fast), background-color var(--duration-fast); }
 /* The sun/moon is a switch, not a tab: no filled "on" chip in Lantern (6 Oct), just full-strength ink */
 .utility-btn:focus-visible { outline-color: var(--input-focus); }
+/* Run 27: the bar's one text icon (あ / A) set to sit with the 20px Lucide icons: the same box, a medium weight close to
+   their 2px stroke, centred on the same line */
+.utility-glyph { font: 500 19px / 1 var(--font-label); }
+.utility-glyph > span { display: block; height: 20px; line-height: 20px; }
 @media (hover: hover) { .utility-btn:hover { color: var(--ink); } }
 /* A light sage circle only while the pointer is on it (laptops); nothing stays filled to look switched on */
 @media (hover: hover) and (pointer: fine) { .utility-btn { transition: color var(--duration-fast), background-color var(--duration-fast) var(--ease-paper); } .utility-btn:hover { background: var(--nav-hover-bg); } }
@@ -719,10 +731,11 @@
 @media (min-width: 768px) {
   .sheet.rsvp-sheet { --sheet-gap: 12px; height: auto; }
   :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); }
-  .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { height: calc(100dvh - 64px - 2 * var(--sheet-gap)); }
+  /* Run 27 (Jehan): the song step hugs like the rest (it grows when its list opens) */
   /* Run 26 review: every step is at least as tall as "All good?" hugs for a household of two (805px at 1440), so the
-     sheet stays put from step to step; it still grows past that when a list opens. The done screen hugs as before */
-  .sheet.rsvp-sheet:has(.rsvp-step) { min-height: min(805px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
+     sheet stays put from step to step; it still grows past that when a list opens. Run 27: the done screen starts at the
+     same height too, and hugs from there */
+  .sheet.rsvp-sheet:is(:has(.rsvp-step), :has(.rsvp-done)) { min-height: min(805px, calc(100dvh - 64px - 2 * var(--sheet-gap))); }
   /* The map step sits in the middle of the sheet, both ways */
   .rsvp-sheet .sheet-body:has(> .rsvp-step[data-step="map"]) { display: flex; flex-direction: column; justify-content: center; }
   .rsvp-step[data-step="map"] .journey-end { align-items: center; text-align: center; }
@@ -1314,7 +1327,9 @@ svg.lucide { stroke-width: 1.5; }
    in its card right under the map (18f) */
 @media (max-width: 479px) { .kmap-tag { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; box-shadow: none !important; } } /* still each pin's name */
 @media (hover: hover) { .kmap-pin:hover .kmap-dot { transform: scale(1.15); } }
-.kmap-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-control); background: var(--section-alt); animation: toast-in var(--duration-fast) var(--ease-paper) both; }
+/* Run 27 (Jehan): the place's card in the map's own warm tones (a wash of the taxi route's rust over the paper), not
+   the sage, in both themes */
+.kmap-card { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border-radius: var(--radius-control); background: color-mix(in oklab, var(--brand-sabi) 8%, var(--letter-bg)); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--brand-sabi) 22%, transparent); animation: toast-in var(--duration-fast) var(--ease-paper) both; }
 .kmap-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
 .kmap-key { display: inline-block; width: 20px; border-top: 2px dashed; }
 .kmap-key-taxi { color: var(--brand-sabi); } .kmap-key-walk { color: var(--brand-sage-ink); margin-left: 8px; }
@@ -1328,14 +1343,25 @@ svg.lucide { stroke-width: 1.5; }
    tilted opposite ways, hers leaning into his and over his corner */
 .story-kids { position: relative; width: min(100%, calc(var(--print-h) * 1.75)); height: calc(var(--stop-h) - var(--space-2)); }
 .story-slide-opener .story-media { width: 100%; } /* the pile's prints are placed in it, so it can't size to them */
+/* Run 27 (Jehan): on laptops the opener's two prints are bigger and more of a pile (tilted further, hers lower), filling
+   the stop's height instead of sitting small at its top */
+@media (min-width: 768px) {
+  .story-slide-opener { justify-content: center; }
+  .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.5); container-type: size; }
+  .story-slide-opener .story-kids { height: 100%; width: min(100%, 52rem); }
+  .story-slide-opener .story-kid .story-print { --print-h: min(62cqh, 40cqw); }
+  .story-slide-opener .story-kid-him { left: 8%; top: 2%; }
+  .story-slide-opener .story-kid-her { right: 8%; top: auto; bottom: 0; }
+  .story-slide-opener .story-kid-him .story-print { --tilt: -7deg; }
+  .story-slide-opener .story-kid-her .story-print { --tilt: 6deg; }
+}
 .story-kid { position: absolute; }
 .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.74); }
-.story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
+/* Run 27 (Jehan): each print takes its photo's own shape (his is taller than 4:5), so neither photo is cut off */
+.story-kid .story-print > div { height: var(--print-h); width: auto; }
 .story-kid-him { left: 2%; top: 2%; z-index: 2; }
 .story-kid-him .story-print { --tilt: -4deg; }
-/* Run 26c (Jehan): on the print, closer in on him at the door (his first day, the yellow jumper); the full-screen view
-   still shows the whole photo */
-.story-kid-him .photo-img { object-position: 50% 0%; transform: scale(1.75); transform-origin: 57% 9%; } /* his face in the middle of the print */
+/* Run 27: the whole photo again, no zoom (it cut him off) */
 .story-kid-her { right: 2%; top: 12%; z-index: 3; }
 .story-kid-her .story-print { --tape-x: 50%; --tape-w: 38%; --tape-turn: -2.5deg; }
 .story-kid-her .story-print { --tilt: 5deg; }
@@ -1374,14 +1400,14 @@ svg.lucide { stroke-width: 1.5; }
   :root:not([data-typing]) .rsvp-sheet .sheet-body { padding-bottom: var(--space-4); } /* no deep band above the footer */
   /* Run 26 review: no step is shorter than the travel dates step (step 4) at this width, so the sheet doesn't jump
      between steps; it still grows when a list opens */
-  .sheet.rsvp-sheet:has(.rsvp-step) { min-height: min(567px, calc(100svh - 24px - env(safe-area-inset-bottom))); }
+  .sheet.rsvp-sheet:is(:has(.rsvp-step), :has(.rsvp-done)) { min-height: min(567px, calc(100svh - 24px - env(safe-area-inset-bottom))); }
   /* The song step too: its results open and close under the field and chosen songs land above it, so it keeps the
      full height and the field never moves */
-  [data-typing] .sheet.rsvp-sheet, .sheet.rsvp-sheet:has(.rsvp-step[data-step="song"]) { top: calc(var(--vv-top, 0px) + 12px); bottom: auto; height: calc(100svh - 24px - env(safe-area-inset-bottom)); }
+  [data-typing] .sheet.rsvp-sheet { top: calc(var(--vv-top, 0px) + 12px); bottom: auto; height: calc(100svh - 24px - env(safe-area-inset-bottom)); }
 }
 @media (min-width: 400px) and (max-width: 767px) {
   /* From 400px the dates sit side by side, so step 4 is shorter */
-  .sheet.rsvp-sheet:has(.rsvp-step) { min-height: min(467px, calc(100svh - 24px - env(safe-area-inset-bottom))); }
+  .sheet.rsvp-sheet:is(:has(.rsvp-step), :has(.rsvp-done)) { min-height: min(467px, calc(100svh - 24px - env(safe-area-inset-bottom))); }
 }
 [data-typing] .rsvp-actions { transform: translateY(calc(-1 * var(--kb-lift, 0px))); position: relative; z-index: 3; }
 [data-typing] .sheet-body { padding-bottom: calc(var(--space-7) + var(--kb, 0px)); }
@@ -1452,7 +1478,20 @@ svg.lucide { stroke-width: 1.5; }
    as the old square globe on the stop; full screen it fills the stage */
 .journey-look { position: relative; width: min(100%, 425px, calc((var(--stop-h, 400px) - 36px) * 1.25)); aspect-ratio: 5 / 4; }
 .journey-look > .x-g24-box { width: 100%; }
-.journey-look-wait { display: grid; place-items: center; }
+/* Run 27: while the globe loads, its own shape: a disc of the antique paper (the globe is 4/5 of the box's height) with
+   its ink rim, breathing softly, the words in it; still under reduced motion */
+.journey-look-wait, .journey-look .x-g24-wait { display: grid; place-items: center; container-type: size; isolation: isolate; }
+.journey-look .x-g24-wait { margin: 0; color: var(--journey-guest); font: 500 12px / 1.2 var(--font-label); }
+:is(.journey-look-wait, .journey-look .x-g24-wait)::before { content: ""; position: absolute; z-index: -1; inset: 0; margin: auto; width: 80cqh; height: 80cqh; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, color-mix(in oklab, var(--journey-sea) 92%, white), var(--journey-sea) 60%, color-mix(in oklab, var(--journey-sea) 80%, var(--ink)));
+  box-shadow: inset 0 0 0 1.2px color-mix(in oklab, var(--ink) 70%, transparent), 0 6px 18px -10px rgb(0 0 0 / 0.35); animation: look-wait 1.6s ease-in-out infinite alternate; }
+.journey-look-wait .journey-globe-wait { z-index: 1; color: var(--journey-guest); }
+.journey-look .x-g24-wait { z-index: 0; }
+@keyframes look-wait { from { opacity: 0.75; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { :is(.journey-look-wait, .journey-look .x-g24-wait)::before { animation: none; } }
+/* The globe arrives over its disc with a short fade */
+.journey-look .x-g24-art { animation: look-in var(--duration-base) var(--ease-paper) both; }
+@keyframes look-in { from { opacity: 0; } }
 /* Run 27 (Jehan): the stop keeps it simple; the compass rose (and the key) only in full screen */
 .journey-look[data-size="stop"] .x-gan-rose { display: none; }
 /* Run 27: full screen, the map as big as the screen allows: edge to edge on a phone, as tall as there's room for on a
@@ -1656,6 +1695,21 @@ svg.lucide { stroke-width: 1.5; }
   background: var(--washi-band-top) center top 8px / calc(100% - 20px) 6px no-repeat, var(--washi-band-bottom) center bottom 8px / calc(100% - 20px) 6px no-repeat; }
 .omikuji-slip::before, .omikuji-slip .omikuji-no, .omikuji-slip .omikuji-kichi {
   filter: url(#ink-bleed); -webkit-mask: var(--texture-ink) 0 0 / 96px; mask: var(--texture-ink) 0 0 / 96px; mix-blend-mode: multiply; }
+/* Run 27 (Jehan): the English printed in the same ink texture as the Japanese, the texture laid larger (no bleed) so
+   Caveat's thin strokes and the fortune's serif stay whole and easy to read */
+.omikuji-slip :is(.omikuji-hand, .omikuji-text) { -webkit-mask: var(--texture-ink) 0 0 / 180px; mask: var(--texture-ink) 0 0 / 180px; }
+/* Run 27 (Jehan): where there's room (the done screen and the fortune's sheet on laptops), the slip lies wide: the tier
+   on the left, the fortune and its number on the right, so it's half as tall and the buttons under it stay in view */
+.omikuji-paper { container-type: inline-size; }
+@container (min-width: 480px) {
+  .omikuji-slip { max-width: 560px; display: grid; grid-template-columns: 11rem minmax(0, 1fr); grid-template-areas: "no text" "head text" "head count" "head save";
+    column-gap: var(--space-6); row-gap: var(--space-1); align-items: center; text-align: left; padding-inline: var(--space-6); }
+  .omikuji-slip .omikuji-no { grid-area: no; justify-self: center; align-self: end; }
+  .omikuji-slip .omikuji-head { grid-area: head; align-self: start; }
+  .omikuji-slip .omikuji-text { grid-area: text; margin-top: 0; align-self: end; }
+  .omikuji-slip .omikuji-count { grid-area: count; margin-top: var(--space-2); }
+  .omikuji-slip .omikuji-save { grid-area: save; justify-self: start; }
+}
 /* Home's next step once replied (18e): one secondary button, the card itself (no frame round it) */
 .next-step { display: flex; }
 /* Run 26c: Jehan's name in the FAQs' credit, linked but quiet: the text's own colour, a faint dotted underline that

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { nextFrame } from "@/lib/frame"
 import { FORTUNES } from "@/content/en"
 import { getFortunes, saveDraw, type Fortune } from "@/lib/api"
+import { config } from "@/lib/config"
 import { useLang } from "@/lib/lang"
 import { canShake, draftsOn, drawnKey, FORTUNE_EVENT, keepDraws, localDraws, saveFortune } from "@/lib/fortune"
 import { fortuneFor, fortuneIndex, lastDraw, mergeDraws, pickFor, randomPick, type Draw } from "@/lib/draws"
@@ -50,9 +51,17 @@ export function Box({ drawing }: { drawing: boolean }) {
  * an earlier one; the slip shows the latest. No bad luck still: every tier is a blessing, and drafts aren't drawn.
  */
 const FOLD_MS = 1100
+/** Run 27: the Fortunes tab's list once it has answered, kept for the visit, so a second card (Home's after the reply
+ *  sheet's) starts on it instead of the built-in tips */
+const answered = new Map<string, Fortune[]>()
 export function FortuneCard({ token, className, title }: { token: string; className?: string; title?: string }) {
   const { t, lang } = useLang()
-  const [tips, setTips] = useState(DRAFT_FORTUNES)
+  const [tips, setTips] = useState(() => answered.get(token) ?? DRAFT_FORTUNES)
+  // Run 27 (Jehan: it showed a blue slip, then switched to another): no slip until the Fortunes tab has answered (or
+  // can't), so the built-in tips never show first and get swapped for the real fortune of the same number
+  const [ready, setReady] = useState(() => answered.has(token) || !config.apiUrl)
+  const readyRef = useRef(ready)
+  readyRef.current = ready
   // Run 26: every draw, numbered, append only (this device's list, merged with the back end's Draws tab)
   const [draws, setDraws] = useState<Draw[]>(() => localDraws(token))
   const [state, setState] = useState<"closed" | "drawing" | "open">(() => {
@@ -69,8 +78,10 @@ export function FortuneCard({ token, className, title }: { token: string; classN
     live.current = true
     document.fonts?.load("500 20px Caveat").catch(() => {}) // the slip's hand, fetched while the tin is still closed
     getFortunes(token).then((r) => {
-      if (!live.current || !r) return
-      if (r.fortunes.length) setTips(r.fortunes)
+      if (!live.current) return
+      if (r?.fortunes.length) { answered.set(token, r.fortunes); setTips(r.fortunes) }
+      setReady(true)
+      if (!r) return
       if (!r.draws) return // an older back end: this device's list is the record
       keeps.current = true
       // Draws made here but not in the sheet yet (before its Draws tab, or offline) go up; nothing there is rewritten
@@ -112,16 +123,27 @@ export function FortuneCard({ token, className, title }: { token: string; classN
   function draw() {
     if (state !== "closed") return
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (!lastDraw(draws)) record(1) // the first draw is saved too; a later visit's reveal shows the latest, no new draw
+    shakeUntil.current = Date.now() + (still ? 0 : 900)
     setState("drawing")
     if (!still) navigator.vibrate?.(8) // a tiny tick on Android (iPhones have no vibrate); none under reduced motion
-    window.setTimeout(() => {
+  }
+  // Run 27: the slip comes out once the shake is over and the Fortunes tab has answered, so the first draw is picked
+  // from the real list and never a built-in tip first (that showed one slip, then switched to another)
+  const shakeUntil = useRef(0)
+  useEffect(() => {
+    if (state !== "drawing" || !ready) return
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    const id = window.setTimeout(() => {
+      if (!lastDraw(draws)) record(1) // the first draw is saved too; a later visit's reveal shows the latest, no new draw
       setState("open")
       try { sessionStorage.setItem(drawnKey(token), "1") } catch { /* private mode */ }
       window.dispatchEvent(new Event(FORTUNE_EVENT))
       unfold(still)
-    }, still ? 0 : 900)
-  }
+    }, Math.max(0, shakeUntil.current - Date.now()))
+    return () => window.clearTimeout(id)
+    // record and unfold read this render's list, which is the real one once ready is true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, ready])
   // Run 26: draw another. The next number, saved as a new draw (the ones before stay as they were), and the new slip
   // folds open in place (fades under reduced motion)
   function again() {
@@ -140,16 +162,18 @@ export function FortuneCard({ token, className, title }: { token: string; classN
   })
   const save = () => saveFortune(t, lang === "ja" && fortune.textJa ? { ...fortune, text: fortune.textJa, tier: "" } : fortune)
 
-  if (state !== "open") {
+  // A slip opened earlier this visit waits for the real list too (the tin, still, until it answers)
+  if (state !== "open" || !ready) {
+    const busy = state !== "closed"
     return (
       <section aria-labelledby={`fortune-${token}`} className={cn("omikuji paper-feel flex items-center gap-6 rounded-md border bg-card p-4", className)}>
-        <button type="button" onClick={draw} disabled={state === "drawing"} aria-label={t.fortune.boxLabel} className="omikuji-hit">
-          <Box drawing={state === "drawing"} />
+        <button type="button" onClick={draw} disabled={busy} aria-label={t.fortune.boxLabel} className="omikuji-hit">
+          <Box drawing={busy} />
         </button>
         <div className="flex flex-1 flex-col items-start gap-2">
           <h3 id={`fortune-${token}`} className="text-body font-medium text-foreground">{title ?? t.fortune.title}</h3>
-          <p className="text-small text-muted-foreground" aria-live="polite">{state === "drawing" ? t.fortune.drawing : shaky.current ? t.fortune.hintShake : t.fortune.hint}</p>
-          <Button variant="secondary" onClick={draw} disabled={state === "drawing"} aria-busy={state === "drawing"}>{t.fortune.draw}</Button>
+          <p className="text-small text-muted-foreground" aria-live="polite">{busy ? t.fortune.drawing : shaky.current ? t.fortune.hintShake : t.fortune.hint}</p>
+          <Button variant="secondary" onClick={draw} disabled={busy} aria-busy={busy}>{t.fortune.draw}</Button>
         </div>
       </section>
     )
@@ -205,7 +229,7 @@ export function SlipWords({ i, of, fortune, copy = false, headId = "fortune-head
         {/* Run 27: with Japanese on, the tier is its Japanese name only (the kanji above), and no English category */}
         {!ja && <span lang="en" className="omikuji-hand omikuji-tier">{fortune.tier}</span>}
       </p>
-      {fortune.category && !ja && <p lang="en" className="omikuji-hand omikuji-category">{fortune.category}</p>}
+      {/* Run 27 (Jehan): no category line, the slip says less (the tier, the fortune, its number) */}
       <p lang={ja ? "ja" : "en"} className="omikuji-text">{ja || fortune.text}</p>
       {/* The fortune's own number from the Fortunes tab (the slip's place in the list only for the drafts) */}
       <p className="omikuji-hand omikuji-count">{t.fortune.number(fortune.no || i + 1, of)}</p>

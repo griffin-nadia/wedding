@@ -10,7 +10,7 @@ import { usePageTurn } from "@/lib/page-turn"
 import { ModeSwitches } from "@/components/lantern-toggle"
 import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
-import { Arrival, firstPhase } from "@/components/envelope"
+import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
 import { letterScroll } from "@/lib/frame"
 import { BrandMark } from "@/components/brand-mark"
 import { PreviewBanner } from "@/components/preview-banner"
@@ -84,12 +84,18 @@ export function Nav() {
  * the site's ease-out. On "Seal it again" they go first. Reduced motion: a 150 ms crossfade, no slide. CSS: index.css,
  * data-nav-in / data-nav-out. The attribute goes once its animation has ended.
  */
-const NAV_IN_MS = 350 + 80
+const NAV_IN_MS = 350 + 80, NAV_OUT_MS = 200 + 80
 const calm = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches
 function navIn() {
   const root = document.documentElement
   root.removeAttribute("data-nav-out"); root.setAttribute("data-nav-in", "")
   window.setTimeout(() => root.removeAttribute("data-nav-in"), calm() ? 150 : NAV_IN_MS)
+}
+
+function navOut(then: () => void) {
+  const root = document.documentElement
+  root.setAttribute("data-nav-out", "")
+  window.setTimeout(() => { then(); root.removeAttribute("data-nav-out") }, calm() ? 150 : NAV_OUT_MS)
 }
 
 export function Layout() {
@@ -108,6 +114,14 @@ export function Layout() {
   // Sealed envelope on a first visit: their photo behind it, the dock and top bar hidden until it opens
   const [sealed, setSealed] = useState(() => firstPhase(page === "home") === "sealed")
   usePageTurn(!sealed)
+  // "Seal it again" (Home): the card goes back into the envelope (the whole journey, envelope.tsx); tapping opens it as on the first visit
+  const [resealed, setResealed] = useState(0)
+  useEffect(() => {
+    // Run 23: the bar and the dock fade out first (200 ms, or a 150 ms crossfade under reduced motion), then the seal
+    const on = () => navOut(() => { resetArrival(); letterScroll()?.scrollTo(0, 0); setSealed(true); setResealed((n) => n + 1) })
+    window.addEventListener("ng-reseal", on)
+    return () => window.removeEventListener("ng-reseal", on)
+  }, [])
   // A new page starts at its top (the card scrolls, not the window), unless a link asked for a section (#hash)
   useLayoutEffect(() => { if (!location.hash) letterScroll()?.scrollTo(0, 0) }, [pathname])
   useEffect(() => {
@@ -126,7 +140,7 @@ export function Layout() {
       </header>
 
       <main className="letter-wrap">
-        <Arrival enabled={page === "home"} onOpened={() => { setSealed(false); navIn() }}>
+        <Arrival reseal={resealed} enabled={page === "home"} onOpened={() => { setSealed(false); navIn() }}>
           <Letter id="letter" tabIndex={-1} data-page={page}>
             {/* The card is a fixed frame between the bar and the dock; what's on it scrolls in here (18e) */}
             <div className="letter-scroll">
@@ -135,16 +149,18 @@ export function Layout() {
                 <Outlet />
               </div>
             </Suspense>
-            {/* Run 27: just "With love, G & N" (Seal it again is gone) */}
-            {page === "home" && <SignOff />}
+            {page === "home" && <SignOff action={page === "home" && !sealed
+              // A small delight (v3 S): fold the letter back into the envelope; tap it to open again
+              ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
+              : null} />}
             </div>
             <span aria-hidden className="letter-fade" />
           </Letter>
         </Arrival>
       </main>
       <Suspense><CreditMark /></Suspense>
-      {/* Run 27: the "Open on your phone" card on Home only */}
-      {!sealed && page === "home" && <Suspense><PhoneQr /></Suspense>}
+      {/* The same small card in the same corner on every page (run 19), not just Home: the link is theirs on any page */}
+      {!sealed && <Suspense><PhoneQr /></Suspense>}
       <PreviewBanner />
     </>
   )
