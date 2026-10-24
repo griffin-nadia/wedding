@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react"
 import { useContent } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { PhotoOpen, StoryJourney } from "@/components/story-journey"
@@ -15,17 +16,27 @@ import { onMap } from "@/lib/map-land"
  * first day of school (the yellow jumper, kid-griffin), shown whole, and Nadia's is her home photo; each print carries
  * just a name on its bottom border, and opens full screen.
  */
+/** The opener's prints' sizes, the same as index.html's preload for this page (so both pick the same file) */
+const OPENER_SIZES = "(min-width: 1024px) 260px, 56vw"
 function Opener() {
   const { t } = useLang()
+  const box = useRef<HTMLDivElement>(null)
+  // Run 27 (P1): the page's largest paint. Fetched first (index.html preloads them on this page), and once both are in,
+  // App.tsx's warm-up may start
+  useEffect(() => {
+    const imgs = [...(box.current?.querySelectorAll("img") ?? [])]
+    void Promise.all(imgs.map((i) => (i.complete ? null : new Promise((r) => { i.addEventListener("load", r, { once: true }); i.addEventListener("error", r, { once: true }) }))))
+      .then(() => { (window as { __ngStoryPhotos?: boolean }).__ngStoryPhotos = true; window.dispatchEvent(new Event("ng-story-photos")) })
+  }, [])
   const has = (name: string) => name in photos
   if (!has("kid-griffin") || !has("kid-nadia-home")) return null
   const print = (name: string, where: string, note: string) => (
     <div className={`story-kid story-kid-${where}`}>
-      <PhotoOpen name={name} label={t.photos[name]?.alt ?? ""}><Photo name={name} treatment="print" sizes="(min-width: 1024px) 260px, 56vw" className="story-print" note={note} /></PhotoOpen>
+      <PhotoOpen name={name} label={t.photos[name]?.alt ?? ""}><Photo name={name} treatment="print" sizes={OPENER_SIZES} priority className="story-print" note={note} /></PhotoOpen>
     </div>
   )
   return (
-    <div className="story-kids">
+    <div ref={box} className="story-kids">
       {print("kid-griffin", "him", "griffin")}
       {print("kid-nadia-home", "her", "nadia")}
     </div>

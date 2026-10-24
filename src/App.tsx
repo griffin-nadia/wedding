@@ -17,7 +17,10 @@ const NoInvitePage = lazy(() => import("@/pages/no-invite").then((m) => ({ defau
 const DayPage = lazy(() => import("@/pages/day").then((m) => ({ default: m.DayPage })))
 const TravelPage = lazy(() => import("@/pages/travel").then((m) => ({ default: m.TravelPage })))
 const FaqsPage = lazy(() => import("@/pages/faqs").then((m) => ({ default: m.FaqsPage })))
-const StoryPage = lazy(() => import("@/pages/our-story").then((m) => ({ default: m.StoryPage })))
+const loadStory = () => import("@/pages/our-story")
+// Run 27 (P1): opened on Our story, its code is asked for as this file runs, not once the app has rendered
+if (typeof location !== "undefined" && /\/our-story\/?$/.test(location.pathname)) void loadStory()
+const StoryPage = lazy(() => loadStory().then((m) => ({ default: m.StoryPage })))
 
 // Old links to The day's tabs (#getting-there, #stay, #faq) now go to their own pages.
 function OldTabs({ children }: { children: React.ReactNode }) {
@@ -57,7 +60,12 @@ if (typeof window !== "undefined") {
   const go = () => warm(navigator,
     [() => import("@/pages/day"), () => import("@/pages/travel"), () => import("@/pages/faqs"), () => import("@/pages/our-story")],
     [() => import("@/components/journey-look"), () => import("three"), () => import("@/components/globe/kit-three"), () => import("world-atlas/countries-110m.json")])
-  window.addEventListener("load", () => ("requestIdleCallback" in window ? (window as unknown as { requestIdleCallback: (f: () => void) => void }).requestIdleCallback(go) : setTimeout(go, 1500)), { once: true })
+  // Run 27 (P1): on Our story, not until the opener's two photos are in (the page's largest paint), so the warm-up
+  // (three.js alone is about 190 KB) never shares a slow phone's connection with them; at most 8 s
+  const photos = () => !/\/our-story\/?$/.test(location.pathname) || (window as { __ngStoryPhotos?: boolean }).__ngStoryPhotos ? Promise.resolve()
+    : new Promise<void>((r) => { window.addEventListener("ng-story-photos", () => r(), { once: true }); setTimeout(r, 8000) })
+  const idle = () => ("requestIdleCallback" in window ? (window as unknown as { requestIdleCallback: (f: () => void) => void }).requestIdleCallback(go) : setTimeout(go, 1500))
+  window.addEventListener("load", () => void photos().then(idle), { once: true })
 }
 
 export default function App() {

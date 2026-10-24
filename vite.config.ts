@@ -25,6 +25,25 @@ function preloadFonts(): Plugin {
   }
 }
 
+// Run 27 (P1): opened on Our story, its page's code (and what it imports, but not the app's own entry) starts
+// downloading with the HTML instead of after the app script has run, a round trip and more sooner on a slow phone
+function preloadStory(): Plugin {
+  let base = "/wedding/"
+  return {
+    name: "preload-story",
+    configResolved(c) { base = c.base },
+    transformIndexHtml(_html, ctx) {
+      if (!ctx.bundle) return
+      const chunks = Object.values(ctx.bundle).filter((c) => c.type === "chunk")
+      const page = chunks.find((c) => c.facadeModuleId?.endsWith("/src/pages/our-story.tsx"))
+      if (!page || page.type !== "chunk") return
+      const entry = new Set(chunks.filter((c) => c.type === "chunk" && c.isEntry).flatMap((c) => (c.type === "chunk" ? [c.fileName, ...c.imports] : [])))
+      const files = [page.fileName, ...page.imports].filter((f) => !entry.has(f)).map((f) => `${base}${f}`)
+      return [{ tag: "script", children: `if (/\\/our-story\\/?$/.test(location.pathname)) ${JSON.stringify(files)}.forEach(function (f) { var l = document.createElement("link"); l.rel = "modulepreload"; l.href = f; document.head.appendChild(l) })`, injectTo: "head" as const }]
+    },
+  }
+}
+
 // Couple photos live in public/photos (committed, the web sizes only; family-dinner and the originals stay in
 // photos-private/). PUBLIC_PHOTOS=1 (the Pages build) shows them; a plain build keeps the paper frames, so the
 // screenshot baselines don't change.
@@ -105,7 +124,7 @@ process.env.VITE_SITE_URL ||= "https://griffin-nadia.github.io/wedding"
 // Hosted at griffin-nadia.github.io/wedding (a project site), so base is the repo name.
 export default defineConfig(({ command, mode }) => ({
   base: mode === "lab" ? `/wedding/${LAB_PATH}/` : "/wedding/",
-  plugins: [react(), tailwindcss(), preloadFonts(), privateSong(), privatePictures(), noPrivateInBuild(mode === "lab")],
+  plugins: [react(), tailwindcss(), preloadFonts(), preloadStory(), privateSong(), privatePictures(), noPrivateInBuild(mode === "lab")],
   ...(mode === "lab" ? {
     publicDir: false,
     build: { outDir: `dist/${LAB_PATH}`, emptyOutDir: false, rollupOptions: { input: { lab: path.resolve(__dirname, "lab.html"), "lab-play": path.resolve(__dirname, "lab-play.html") } } } as BuildOptions,
