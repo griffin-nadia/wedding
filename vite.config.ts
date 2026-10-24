@@ -25,6 +25,33 @@ function preloadFonts(): Plugin {
   }
 }
 
+// Run 27 (P1): opened on Our story, its largest paint is the opener's two kid prints. With the photos on (the Pages
+// build, PUBLIC_PHOTOS=1) they're fetched first thing (the same srcset and sizes as their AVIF source, our-story.tsx
+// OPENER_SIZES, so the same file), and the page's code (and what it imports, but not the app's own entry) downloads
+// with the HTML instead of after the app script has run. Without photos (CI's build) nothing changes.
+function preloadStory(): Plugin {
+  let base = "/wedding/"
+  return {
+    name: "preload-story",
+    configResolved(c) { base = c.base },
+    transformIndexHtml(html, ctx) {
+      if (!ctx.bundle || process.env.PUBLIC_PHOTOS !== "1") return
+      const chunks = Object.values(ctx.bundle).filter((c) => c.type === "chunk")
+      const page = chunks.find((c) => c.facadeModuleId?.endsWith("/src/pages/our-story.tsx"))
+      if (!page || page.type !== "chunk") return
+      const entry = new Set(chunks.filter((c) => c.type === "chunk" && c.isEntry).flatMap((c) => (c.type === "chunk" ? [c.fileName, ...c.imports] : [])))
+      const files = [page.fileName, ...page.imports].filter((f) => !entry.has(f)).map((f) => `${base}${f}`)
+      const kids = ["kid-nadia-home", "kid-griffin"].map((k) => `${base}photos/${k}-400.avif 400w, ${base}photos/${k}-800.avif 800w`)
+      // The prints right after the viewport tag (before it, a phone sizes "56vw" against a 980px page and picks the bigger
+      // file); the page's code at the end of the head, so the prints get the line first
+      const story = `/\\/our-story\\/?$/.test(location.pathname)`
+      return html
+        .replace(/(<meta name="viewport"[^>]*>)/, `$1<script>if (${story}) ${JSON.stringify(kids)}.forEach(function (s) { var l = document.createElement("link"); l.rel = "preload"; l.as = "image"; l.type = "image/avif"; l.setAttribute("fetchpriority", "high"); l.setAttribute("imagesrcset", s); l.setAttribute("imagesizes", "(min-width: 1024px) 260px, 56vw"); document.head.appendChild(l) })</script>`)
+        .replace("</head>", `<script>if (${story}) ${JSON.stringify(files)}.forEach(function (f) { var l = document.createElement("link"); l.rel = "modulepreload"; l.href = f; document.head.appendChild(l) })</script></head>`)
+    },
+  }
+}
+
 // Couple photos live in public/photos (committed, the web sizes only; family-dinner and the originals stay in
 // photos-private/). PUBLIC_PHOTOS=1 (the Pages build) shows them; a plain build keeps the paper frames, so the
 // screenshot baselines don't change.
@@ -105,17 +132,10 @@ process.env.VITE_SITE_URL ||= "https://griffin-nadia.github.io/wedding"
 // Hosted at griffin-nadia.github.io/wedding (a project site), so base is the repo name.
 export default defineConfig(({ command, mode }) => ({
   base: mode === "lab" ? `/wedding/${LAB_PATH}/` : "/wedding/",
-  plugins: [react(), tailwindcss(), preloadFonts(), privateSong(), privatePictures(), noPrivateInBuild(mode === "lab")],
+  plugins: [react(), tailwindcss(), preloadFonts(), preloadStory(), privateSong(), privatePictures(), noPrivateInBuild(mode === "lab")],
   ...(mode === "lab" ? {
     publicDir: false,
     build: { outDir: `dist/${LAB_PATH}`, emptyOutDir: false, rollupOptions: { input: { lab: path.resolve(__dirname, "lab.html"), "lab-play": path.resolve(__dirname, "lab-play.html") } } } as BuildOptions,
-  } : mode === "looks" ? {
-    // Run 27: the globe looks picker (looks/qx26de88/, unlisted, noindex), the one lab-derived page that ships. Its own
-    // pass of `npm run build`, after the site's, into the same dist/ with its scripts in its own folder, so the guest
-    // site's chunks stay exactly as they are (as a second entry it split the site's shared code into more chunks and
-    // cost Travel 300 ms of LCP)
-    publicDir: false,
-    build: { outDir: "dist", emptyOutDir: false, sourcemap: false, assetsDir: "looks/qx26de88/assets", rollupOptions: { input: { looks: path.resolve(__dirname, "looks/qx26de88/index.html") } } } as BuildOptions,
   } : { build: { sourcemap: false } }), // run 20: never source maps on the guest site (scripts/leak-check.mjs checks the rest)
   define: {
     ...(mode === "lab" ? {

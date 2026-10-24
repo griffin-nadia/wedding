@@ -111,7 +111,7 @@ export const en = {
     from: { griffin: "Victoria, Canada", nadia: "Brisbane" },
     zoomIn: "Zoom in", zoomOut: "Zoom out", households: (n: number) => `${n} households`,
     // Run 25: the stop opens the map full screen, with Globe / Map inside; a chapter's pin goes to its stop
-    open: "Full screen", openLabel: "Open the map full screen", loading: "Drawing the map…", close: "Close the map", view: "Globe or map", globe: "Globe", flat: "Map",
+    open: "Full screen", openLabel: "Open the map full screen", loading: "Drawing the map…", drag: "Drag, or use the arrow keys, to move it.", guestsFrom: "Where guests are coming from", close: "Close the map", view: "Globe or map", globe: "Globe", flat: "Map",
     pin: (n: number, title: string, place: string) => `${n ? `Chapter ${n}: ` : ""}${title}, ${place}. Go to its stop`,
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "Guests", you: "Your line" },
     count: (n: number, of: number) => `${n} of ${of} lines drawn so far`,
@@ -164,7 +164,6 @@ export const en = {
     changeReply: "Change my reply",
     changeBy: CHANGE_BY,
     changeAfter: CHANGE_AFTER,
-    reseal: "Seal it again",
     week: { greeting: "it's nearly here. Everything for Friday is on The day, and the easiest way there is below. We can't wait to see you.", day: "The day", directions: "Directions in Google Maps" },
     keepsake: { badge: "Married, Fri 15 Oct 2027, Kyoto", greeting: "thank you for coming all this way and for being part of our day. We'll add photos from the day here soon.", story: "Read our story" },
   },
@@ -286,12 +285,12 @@ export const en = {
     seeOnMap: "See it on a map",
     seeStay: "See where to stay",
     flyingTitle: "Flying in",
-    flyingBody: "Osaka (Kansai, KIX) is the easiest way in. Jetstar flies direct from Brisbane in about 9 hours, or it's one stop from Melbourne. The Haruka train gets you to Kyoto Station in about 75 minutes. If you're on a foreign passport, you can buy JR West's HARUKA One-way Ticket (¥2,200 to Kyoto) online before you fly. You can't get it in Japan, so sort it first and pick it up at a JR station with your passport. Big bags? The limousine bus is about ¥2,800.",
+    flyingBody: "Fly into Osaka (Kansai, KIX): Jetstar flies direct from Brisbane in about 9 hours, or it's one stop from Melbourne. The Haruka train then takes about 75 minutes to Kyoto Station. On a foreign passport, buy the HARUKA One-way Ticket (¥2,200) online before you fly (it isn't sold in Japan) and pick it up at a JR station. Big bags? The limousine bus is about ¥2,800.",
     tokyoBody: "Coming from Tokyo? The bullet train takes about 2¼ hours. Book a Nozomi a month ahead in busy weeks, and sit on the E side for Mt Fuji.",
     walkingTitle: "Walking in",
     walkingBody: "About 15 minutes from Gion-Shijo, along old stone lanes with a few steps, or about 20 minutes from Kiyomizu-Gojo, mostly flat. Lovely, but take a taxi in nice shoes.",
     shuttleTitle: "Free taxi from the station",
-    shuttleBody: "The venue shuttle only runs on weekends, so instead the venue is giving us free MK Taxi tickets from Kyoto Station to The Sodoh. They only work in MK Taxis. We'll let you know how to get yours closer to the day.",
+    shuttleBody: "The venue's shuttle only runs on weekends, so they're giving us free MK Taxi tickets from Kyoto Station instead (MK Taxis only). We'll tell you how to get yours closer to the day.",
     earlyTitle: "Arriving early?",
     earlyBody: "Drop your bags at Kyoto Station (Hands Free Kyoto) and they'll be at your hotel by evening.",
     links: {
@@ -317,12 +316,12 @@ export const en = {
     // Their picks (planner, 7 to 11 Oct): rough prices per night
     picks: {
       title: "Our picks",
-      note: "The links go to each hotel's own site, but shop around on the booking sites too. Prices move, and some hotels don't open rooms until 6 months out. Bigger groups usually work out cheaper per person: even 4 beats 2.",
+      note: "Each link goes to the hotel's own site, but check the booking sites too. Prices move, and some hotels only open rooms 6 months out.",
       hotelsTitle: "Hotels",
       airbnbsTitle: "Airbnbs",
       airbnbsNote: "Cheaper per person when you split one.",
       // Run 26 (Jehan approved, in Griffin's voice): the top of the Airbnbs sheet, which had the hotels' note
-      airbnbsAbout: "A few Airbnbs we found, with rough prices a night. Prices may change, so have a look on other booking sites too. Teaming up is the way to go: bigger groups will most likely pay less per person, and even 4 people is better than 2!",
+      airbnbsAbout: "A few Airbnbs we found, with rough prices a night (they may change). Teaming up is the way to go: even 4 people works out cheaper each than 2!",
       perNight: (price: string) => `${price} a night`,
       sleeps: (n: string) => `Sleeps ${n}`,
       opensHotel: "opens the hotel's site",

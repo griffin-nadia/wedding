@@ -130,13 +130,13 @@ const still = () => window.matchMedia("(prefers-reduced-motion: reduce)").matche
 const SPRING = { k: 170, c: 20 }
 
 // Three.js and the painted globe load only when the journey stop is showing
-const JourneyGlobe = lazy(() => loadGlobe().then((m) => ({ default: m.JourneyGlobe })))
+const JourneyLook = lazy(() => loadGlobe().then((m) => ({ default: m.JourneyLook })))
 
 /** Run 25: the globe's place before it's drawn, a still disc the globe's own size (never an empty square). Run 26: with
  *  a quiet "Drawing the map…" on it after a moment, for a slow phone */
 function GlobeWaiting() {
   const { t } = useLang()
-  return <div className="journey-globe" aria-hidden><span className="journey-globe-wait">{t.journey.loading}</span></div>
+  return <div className="journey-look journey-look-wait" aria-hidden><span className="journey-globe-wait">{t.journey.loading}</span></div>
 }
 
 /**
@@ -150,14 +150,14 @@ function GlobeWaiting() {
  */
 /** Run 24: the globe's code warms one stop early, and the globe itself starts once the spring has settled on its stop,
  *  so building it (Three.js, painting the land) never lands mid-slide. Before and after: .brief/docs/runs/2026-10-24.md */
-const loadGlobe = () => import("@/components/journey-globe")
+const loadGlobe = () => import("@/components/journey-look")
 /** Run 26: the flat map loads only when it's shown (a phone that starts flat, or Map in full screen). Imported up
  *  front it sat on Our story's first load: a few ms later and the page lost a race with the music button's own reveal,
  *  which React then holds 300 ms behind (its Suspense reveal throttle), pushing the first stop from 2.3 s to 2.6 s on a
  *  throttled phone. Its place while it loads is the map's own dark ground, the same size, so nothing moves. */
 const loadFlat = () => import("@/components/journey-flat")
 const JourneyFlat = lazy(() => loadFlat().then((m) => ({ default: m.JourneyFlat })))
-const FlatWaiting = () => <div className="journey-flat" data-theme="lantern" aria-hidden />
+const FlatWaiting = () => <div className="journey-flat" aria-hidden />
 type View = "globe" | "flat"
 const STEP = 1.4 // the + and − (journey-globe.tsx ZOOM.step), 1x to 3x on both views
 
@@ -196,7 +196,8 @@ function useJourneyData() {
  */
 export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger: ReactElement; pins: ChapterPin[]; onPin: (key: string) => void; onOpenChange?: (open: boolean) => void }) {
   const { t } = useLang()
-  const { you, journeys, label } = useJourneyData()
+  const { you, flying, journeys, label } = useJourneyData()
+  const told = flying && flying.households > 0 ? flying : null
   const [base] = useState<View>(() => (startsFlat() ? "flat" : "globe"))
   const [open, setOpen] = useState(false)
   const [view, setView] = useState<View>(base)
@@ -215,15 +216,22 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
           <Segmented label={t.journey.view} size="sm" className="journey-mode" value={view} onChange={setView} items={[{ value: "globe", label: t.journey.globe }, { value: "flat", label: t.journey.flat }]} />
         </div>
         <div className="journey-viewer-stage" data-view={view}>
-          {view === "flat"
+          {/* Run 27: the antique globe, its paper curling between the globe and the map you drag round the world; a
+              phone that starts flat keeps the painted flat map with + and − */}
+          {view === "flat" && base === "flat"
             ? <Suspense key="flat" fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>
-            : <Suspense key="globe" fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>}
+            : <Suspense key="look" fallback={<GlobeWaiting />}><JourneyLook you={you} cities={cities} label={label} mode={view} size="full" zoomRef={zoom} /></Suspense>}
+          {/* + and − on both, smaller than it opens too (run 27); pinch and Ctrl or Cmd with the wheel as well */}
           <div className="globe-zoom">
             <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}>+</button>
             <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}>−</button>
           </div>
         </div>
-        <div className="journey-viewer-foot"><JourneyLegend you={Boolean(you && you.id !== "jp")} /></div>
+        {/* Run 27: the key and how many lines are drawn so far, together under the map */}
+        <div className="journey-viewer-foot">
+          <JourneyLegend you={Boolean(you && you.id !== "jp")} />
+          {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
+        </div>
       </SheetContent>
     </Sheet>
   )
@@ -231,11 +239,10 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
 
 function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: boolean; pins: ChapterPin[]; onPin: (key: string) => void }) {
   const { t } = useLang()
-  const { you, flying, journeys, label } = useJourneyData()
+  const { you, journeys, label } = useJourneyData()
   const [base] = useState<View>(() => (startsFlat() ? "flat" : "globe"))
-  const [open, setOpen] = useState(false)
-  // One stop early, while they read: the globe's code, then its land painted in idle time (paintGlobe keeps it, so the
-  // globe mounts on a ready painting; the same look, size and countries as journey-globe.tsx asks for)
+  // One stop early, while they read: the globe's code, then its paper painted in idle time (paintGlobe keeps it, so the
+  // globe mounts on a ready painting)
   const { theme } = useTheme()
   useEffect(() => {
     if (!near || base !== "globe" || ART.globeLand || !journeys) return
@@ -244,8 +251,7 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
     const idle = (f: () => void) => window.setTimeout(() => (typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(f) : f()), still() ? 0 : 700)
     void loadGlobe().then(() => idle(() => {
       if (!alive) return
-      const countries = [...journeys.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
-      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(GLOBE_LOOK.map, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries))
+      void import("@/lib/paint-globe").then(({ paintGlobe }) => paintGlobe(theme === "lantern", matchMedia("(pointer: coarse)").matches ? 1024 : 2048))
     }))
     return () => { alive = false }
   }, [near, base, theme, journeys, you])
@@ -255,22 +261,20 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
     const id = window.setTimeout(() => setSettled(true), still() ? 0 : 550)
     return () => window.clearTimeout(id)
   }, [active])
-  const told = flying && flying.households > 0 ? flying : null
   const cities = journeys ?? NONE
   // The stop's globe waits for its stop to settle and for the lines
   const stop = base === "flat" ? <Suspense fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={onPin} /></Suspense>
     : !(active && settled && journeys) ? <GlobeWaiting />
-    : <Suspense fallback={<GlobeWaiting />}><JourneyGlobe you={you} cities={cities} label={label} pins={pins} onPin={onPin} held={open} /></Suspense>
+    : <Suspense fallback={<GlobeWaiting />}><JourneyLook you={you} cities={cities} label={label} /></Suspense>
   return (
     <div className="flex w-full flex-col items-center gap-2">
       {/* The control sits where the Globe / Flat switch was, centred above the map */}
       <div className="journey-mode-bar">
-        <JourneyViewer pins={pins} onPin={onPin} onOpenChange={setOpen}
+        <JourneyViewer pins={pins} onPin={onPin}
           trigger={<button type="button" className="journey-open" aria-label={t.journey.openLabel}><Maximize2 className="size-4" aria-hidden />{t.journey.open}</button>} />
       </div>
+      {/* Run 27 (Jehan): the key and the count only in full screen, so the stop's globe has the room */}
       {stop}
-      <JourneyLegend you={Boolean(you && you.id !== "jp")} />
-      {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )
 }
@@ -352,14 +356,16 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     spring()
   }
 
-  // Placed before the first paint, and again whenever the size changes (stops are placed in px of the track's width)
+  // Placed before the first paint, and again whenever the size changes (stops are placed in px of the track's width).
+  // Run 27: and whenever the chapters change (the Content tab's arriving after the fallback gives new stops, which
+  // came in unplaced and all showed at once)
   useLayoutEffect(() => {
     paint()
     const el = track.current
     if (!el || typeof ResizeObserver === "undefined") return
     const ro = new ResizeObserver(paint); ro.observe(el)
     return () => { ro.disconnect(); running.current?.() }
-  }, [paint])
+  }, [paint, chapters])
 
   // Dragging: sideways moves follow the finger; up and down stay the page's
   useEffect(() => {
@@ -368,7 +374,7 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     let start: { x: number; y: number; p: number; id: number } | null = null, dragging = false, samples: [number, number][] = []
     const down = (e: PointerEvent) => {
       // The globe turns, it doesn't swipe; a print (run 25: a button that opens it) still swipes
-      if (e.button !== 0 || (e.target as Element).closest("button:not(.photo-open), a, input, .journey-globe")) return
+      if (e.button !== 0 || (e.target as Element).closest("button:not(.photo-open), a, input, .journey-globe, .journey-look")) return
       start = { x: e.clientX, y: e.clientY, p: pos.current, id: e.pointerId }; dragging = false; samples = [[e.timeStamp, e.clientX]]
     }
     const move = (e: PointerEvent) => {
@@ -491,7 +497,8 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
     const top = ol.getBoundingClientRect().top, read = el.getBoundingClientRect().top + el.clientHeight * 0.4
     const end = el.scrollTop >= el.scrollHeight - el.clientHeight - 2
     const fill = end ? ol.offsetHeight : Math.max(0, read - top)
-    ol.style.setProperty("--fill", `${Math.round(fill)}px`)
+    // Run 27: the fill is a scale of the full line (transform only, so it glides on the compositor)
+    ol.style.setProperty("--fill", String(Math.min(1, fill / Math.max(1, ol.offsetHeight)).toFixed(4)))
     for (const row of ol.children) (row as HTMLElement).toggleAttribute("data-passed", end || (row as HTMLElement).getBoundingClientRect().top + 28 <= read)
   }
   // Once open, before any scroll: the first photos above the reading line are already marked
@@ -518,12 +525,15 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
         </SheetHead>
         <SheetBody onScroll={onScroll}>
           <ol ref={list} className="story-timeline">
-            {chapters.map((ch) => {
+            {chapters.map((ch, i) => {
               const label = [ch.title, ch.year].filter(Boolean).join(", ")
+              // Run 27: the last stop (Kyoto, no photo) ends the line with the Kyoto seal, stamped as the line reaches it
+              const kyoto = i === chapters.length - 1 && !ch.photo
               return (
-                <li key={ch.key} className="story-timeline-row">
+                <li key={ch.key} className={cn("story-timeline-row", kyoto && "story-timeline-end")}>
                   {ch.photo
                     ? <PhotoOpen name={ch.photo} label={label} className="story-thumb"><Photo name={ch.photo} treatment="split" sizes="96px" alt="" /></PhotoOpen>
+                    : kyoto ? <span aria-hidden className="story-thumb story-thumb-seal font-ja">京</span>
                     : <span aria-hidden className="story-thumb story-thumb-dot" />}
                   <div className="story-read flex min-w-0 flex-col gap-2"><p className="text-small text-muted-foreground">{[ch.year, ch.place].filter(Boolean).join(" · ")}</p><p lang="en" className="font-medium text-foreground">{ch.title}</p><Paragraphs body={ch.body} /></div>
                 </li>

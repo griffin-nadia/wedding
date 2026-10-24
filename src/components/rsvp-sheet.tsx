@@ -15,7 +15,6 @@ import { SongPicker } from "@/components/song-picker"
 import { ReviewRow, StepProgress } from "@/components/blocks"
 import { FieldError } from "@/components/ui/field"
 import { CheckboxGroup } from "@/components/ui/checkbox-group"
-import { AddToCalendar } from "@/components/add-to-calendar"
 import { FortuneCard } from "@/components/fortune-card"
 import { FlyingField, FlyingMap, useFlying } from "@/components/journey-end"
 import { useSceneDim } from "@/components/letter/letter"
@@ -425,7 +424,6 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
         <div className="done-column">
           <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
           {answer !== "none" && <div className="sent-next"><FortuneCard token={h.token} /></div>}
-          {answer !== "none" && <AddToCalendar />}
           {/* Run 26 review: on laptops just Back to your invite, at the bottom right (Change my reply is off there for now) */}
           <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-6 md:justify-end">
             <Button size="md" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>

@@ -32,7 +32,7 @@ export const canShake = () => typeof window !== "undefined" && "DeviceMotionEven
 
 /** Save to my phone: the share sheet where there is one, otherwise copied for their notes. */
 export async function saveFortune(t: ReturnType<typeof useLang>["t"], f: Fortune) {
-  const words = `${f.tierJa} ${f.tier}. ${f.text}`
+  const words = `${[f.tierJa, f.tier].filter(Boolean).join(" ")}${f.tier ? "." : "。"} ${f.text}`
   try {
     if (navigator.share) await navigator.share({ title: t.fortune.title, text: words })
     else if (await copyText(words)) toast(t.fortune.copied)

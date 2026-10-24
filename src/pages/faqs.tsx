@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { pending } from "@/content/pending"
 import { useContent } from "@/lib/content"
 import { useEffect, useState, type ReactNode } from "react"
-import { useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { AskUs } from "@/components/ask-us"
 import { getQuestions, type Asked } from "@/lib/api"
 import { ART } from "@/lib/art"
@@ -33,7 +33,7 @@ export function FaqsPage() {
                 <span><span className="sr-only">{i + 1}. </span>{item.q}</span>
               </span>
             </AccordionTrigger>
-            <AccordionContent><p className="pl-10">{withMusicLink(item.a)}</p></AccordionContent>
+            <AccordionContent><p className="pl-10">{withLinks(item.a)}</p></AccordionContent>
           </AccordionItem>
         ))}
       </Disclosure>
@@ -58,18 +58,26 @@ export function FaqsPage() {
   )
 }
 
-/** In the "Who made this site?" answer, the song's title links to the track (config.links.music, run 26), and Jehan's
- *  name, quietly, to his LinkedIn (run 26c: the same link as the laptop's credit seal, config.links.jehan) */
-function withMusicLink(a: string) {
-  if (!a.includes(ART.music.title)) return a
-  const links: [string, string, string][] = [[ART.music.title, config.links.music, "btn-text"], [/ジェハン/.test(a) ? "ジェハン" : "Jehan", config.links.jehan, "credit-link"]]
+/** Links in the answers. In "Who made this site?" the song's title links to the track (config.links.music, run 26),
+ *  and Jehan's name, quietly, to his LinkedIn (run 26c: the same link as the laptop's credit seal). Run 27: a mention of
+ *  another part of the site goes there ("Travel"), and "Ask us" opens Ask us. */
+function withLinks(a: string) {
+  const music = a.includes(ART.music.title)
+  const links: [string, (name: string) => ReactNode][] = [
+    ...(music ? [
+      [ART.music.title, (n: string) => config.links.music && <a key={n} href={config.links.music} target="_blank" rel="noreferrer" className="btn-text">{n}</a>],
+      [/ジェハン/.test(a) ? "ジェハン" : "Jehan", (n: string) => config.links.jehan && <a key={n} href={config.links.jehan} target="_blank" rel="noreferrer" className="credit-link">{n}</a>],
+    ] as [string, (n: string) => ReactNode][] : []),
+    ...(["Travel", "アクセス"].map((n) => [n, () => <Link key={n} to="/travel" className="btn-text">{n}</Link>]) as [string, () => ReactNode][]),
+    ...(["Ask us", "質問する"].map((n) => [n, () => <AskUs key={n}><button type="button" className="btn-text">{n}</button></AskUs>]) as [string, () => ReactNode][]),
+  ]
   const parts: ReactNode[] = []
   let rest = a
-  for (const [name, href, cls] of links.map((l) => [a.indexOf(l[0]), l] as const).filter(([at]) => at >= 0).sort(([x], [y]) => x - y).map(([, l]) => l)) {
-    const at = rest.indexOf(name)
-    if (at < 0 || !href) continue
-    parts.push(rest.slice(0, at), <a key={name} href={href} target="_blank" rel="noreferrer" className={cls}>{name}</a>)
+  for (const [name, make] of links.map((l) => [a.indexOf(l[0]), l] as const).filter(([at]) => at >= 0).sort(([x], [y]) => x - y).map(([, l]) => l)) {
+    const at = rest.indexOf(name), node = at < 0 ? null : make(name)
+    if (!node) continue
+    parts.push(rest.slice(0, at), node)
     rest = rest.slice(at + name.length)
   }
-  return <>{parts}{rest}</>
+  return parts.length ? <>{parts}{rest}</> : a
 }

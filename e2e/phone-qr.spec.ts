@@ -5,7 +5,7 @@ import fs from "node:fs"
 // their faces (the face rect in scenes.json, placed the way object-fit: cover places the photo).
 const scenes = JSON.parse(fs.readFileSync("src/content/scenes.json", "utf8"))
 
-test("the QR card is laptop only, outside the letter, clear of their faces and the same on every page", async ({ page }, info) => {
+test("the QR card is laptop only, Home only, outside the letter and clear of their faces", async ({ page }, info) => {
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
   if (info.project.name === "phone") {
     for (const w of [390, 768]) { await page.setViewportSize({ width: w, height: 844 }); await page.goto("?h=sample"); await page.waitForLoadState("networkidle"); await expect(page.locator(".phone-qr")).toHaveCount(0) }
@@ -32,12 +32,10 @@ test("the QR card is laptop only, outside the letter, clear of their faces and t
     expect(r, `${w}x${h} ${theme}`).toMatchObject({ onFace: false, onLetter: false })
     expect(r.right).toBeLessThan(48); expect(r.bottom).toBeLessThan(48) // bottom right
   }
-  // Run 19: the same card, in the same place and the same size, on every page
-  const box = () => page.locator(".phone-qr").evaluate((e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round) })
-  const home = await box()
+  // Run 27: on Home only
   for (const path of ["the-day", "travel", "our-story", "faqs"]) {
     await page.goto(`${path}?h=sample`); await page.waitForLoadState("networkidle")
-    expect(await box(), path).toEqual(home)
+    await expect(page.locator(".phone-qr"), path).toHaveCount(0)
   }
 })
 

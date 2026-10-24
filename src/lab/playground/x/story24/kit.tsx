@@ -256,7 +256,7 @@ export function ListView({ s, onBack, className }: { s: Story; onBack: () => voi
 }
 
 // ---------- The journey stop ----------
-const JourneyGlobe = lazy(() => import("@/components/journey-globe").then((m) => ({ default: m.JourneyGlobe })))
+const JourneyGlobe = lazy(() => import("@/lab/playground/journey-globe").then((m) => ({ default: m.JourneyGlobe })))
 /** The live page's journey stop (story-journey.tsx's JourneyMap, read only): the globe or the flat map, the key, the count */
 export function JourneyStop({ active }: { active: boolean }) {
   const { t, lang } = useLang()

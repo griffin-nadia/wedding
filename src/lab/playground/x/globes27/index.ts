@@ -7,7 +7,7 @@ import { lookPage } from "../globes24/page"
  * now has the site's marks only (the Kyoto seal, G, N, the guests' dots and "You"), and the picker page
  * (/looks/qx26de88/) shows all of them, grouped, for Griffin and Nadia to choose from.
  */
-const DECIDING = "Griffin and Nadia pick one on the looks picker (/wedding/looks/qx26de88/), and send Jehan the pick from there."
+const DECIDING = "Picked: Griffin and Nadia chose Antique (run 27), now on the site. The picker page is gone."
 const KIT = "Ships on the run 24b kit (one bent Three.js plane, the lines and names on a 2D layer), as every look does."
 const REFS = [{ label: "Stripe, the globe", href: "https://stripe.com/blog/globe" }]
 

@@ -31,8 +31,8 @@ test("lab: the Shortlist has every open decision, each take pickable", async ({ 
 
 test("lab: a globe look shows both views under one switch, and its tuning panel keeps the sliders in the address", async ({ page }) => {
   await page.goto("lab/lab-play.html?x=globe-airmail")
-  await expect(page.getByRole("group", { name: /in the story\./ })).toBeVisible()
-  await expect(page.getByRole("group", { name: /full screen\./ })).toBeVisible()
+  await expect(page.getByRole("group", { name: /in the story\./i })).toBeVisible()
+  await expect(page.getByRole("group", { name: /full screen\./i })).toBeVisible()
   await page.getByRole("radio", { name: "Map" }).click()
   await expect(page).toHaveURL(/view=flat/)
   const tune = page.locator("details", { hasText: "Tune the look" })

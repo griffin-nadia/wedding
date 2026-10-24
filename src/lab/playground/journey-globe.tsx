@@ -10,9 +10,8 @@ import { ChapterPins } from "@/components/chapter-pins"
 /**
  * The journey on a painted globe. Three.js loads only here, when it mounts. The picture is painted on this device
  * (src/lib/paint-globe.ts) or is Nadia's painted land once ART.globeLand is set.
- * Run 19, see-through: the globe is drawn twice, its far side first (faint, through the glass) and its near side last
- * as a half-strength wash, so the far side's countries show through as it turns. Lines sit between the two: a line on
- * the far side is softened by the near side's wash, a line on the near side is in front of it.
+ * Run 27: the antique globe Griffin and Nadia chose (paint-globe.ts), solid paper with an ink rim, by day in Autumn
+ * and by night in Lantern. Lines on the far side are hidden by the paper; a line on the near side is in front of it.
  * Lines: Griffin's (Canada) and Nadia's (Australia) draw first; then every other coming household's city as faint
  * dotted lines, one per city, never who; last, this household's own, in gold, with a darker edge under it so it
  * reads on the pale land. Kyoto is pinned with its seal and date, an upright label that follows it round the spin
@@ -39,7 +38,7 @@ const KYOTO: [number, number] = [35.01, 135.77], BRISBANE: [number, number] = [-
 /** Zoom range and the step for the + and − buttons (run 24) */
 const ZOOM = { min: 1, max: 3 } // the step for + and − is the viewer's (story-journey.tsx STEP)
 /** Run 26: each kind's line on screen, in px, shared with the flat map's CSS (index.css, .journey-flat-lines) */
-const WEIGHT = { home: 2, guest: 1.2, bundle: 2.4, you: 2, edge: 6 } // run 26c: their line as strong as the home lines
+const WEIGHT = { home: 2, guest: 1.2, bundle: 2.4, you: 2, edge: 4 } // run 26c: their line as strong as the home lines
 const DASH = { home: [3, 3], guest: [2, 3] } as const
 /** A paper plane pointing right (+x), 24 × 24, folded down the middle */
 const PLANE = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M2 11.5 22 3l-6.5 18-4-7.5z" fill="currentColor" stroke="var(--plane-edge)" stroke-width="1.3" stroke-linejoin="round"/><path d="M22 3 11.5 13.5" stroke="var(--plane-edge)" stroke-width="1.1"/></svg>'
@@ -66,7 +65,7 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
     if (!el) return
     let alive = true, stop = () => {}
     void Promise.all([import("three"), import("three/examples/jsm/lines/Line2.js"), import("three/examples/jsm/lines/LineMaterial.js"), import("three/examples/jsm/lines/LineGeometry.js"), import("@/lib/paint-globe")])
-      .then(async ([THREE, { Line2 }, { LineMaterial }, { LineGeometry }, { paintGlobe, GLOBE_LOOK }]) => {
+      .then(async ([THREE, { Line2 }, { LineMaterial }, { LineGeometry }, { paintGlobe }]) => {
         if (!alive) return
         const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches, phone = matchMedia("(pointer: coarse)").matches
         // The site's colours are oklch, which Three.js can't read: a canvas turns them into RGB
@@ -77,12 +76,11 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
           const [r, g, b] = x.getImageData(0, 0, 1, 1).data
           return `#${[r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("")}`
         }
-        const countries = [...cities.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
         // Guest cities by the naming rule, a country with many lines bundled into one (lib/journey-names.ts)
         const guests = bundle(cities.map((c) => ({ name: c.name ?? "", country: c.country ?? "", lat: c.lat, lon: c.lon, n: c.n }) as Place), lang, t.journey.households)
         let tex: InstanceType<typeof THREE.Texture>
         if (ART.globeLand) tex = await new THREE.TextureLoader().loadAsync(`${import.meta.env.BASE_URL}${ART.globeLand}`)
-        else tex = new THREE.CanvasTexture(await paintGlobe(GLOBE_LOOK.map, phone ? 1024 : 2048, countries))
+        else tex = new THREE.CanvasTexture(await paintGlobe(theme === "lantern", phone ? 1024 : 2048))
         if (!alive) return
         tex.colorSpace = THREE.SRGBColorSpace
         let w = el.clientWidth, h = el.clientHeight
@@ -90,13 +88,14 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         renderer.setPixelRatio(Math.min(phone ? 1.5 : 2, devicePixelRatio)); renderer.setSize(w, h)
         const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(32, w / h, 0.1, 100)
         const toV = (lat: number, lon: number, r = 1) => { const p = (90 - lat) * Math.PI / 180, q = (lon + 180) * Math.PI / 180; return new THREE.Vector3(-r * Math.sin(p) * Math.cos(q), r * Math.cos(p), r * Math.sin(p) * Math.sin(q)) }
-        // The far side first, faint, then (after the lines) the near side's wash
+        // Run 27, the antique globe: solid paper, so no far side through it. An ink rim first (the back of a slightly
+        // bigger ball, which only shows past the globe's edge), then the lines, then the paper over the far side's
         const sphere = new THREE.SphereGeometry(1, 96, 64)
-        const far = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, transparent: true, opacity: 0.5, depthWrite: false }))
+        const rim = new THREE.Mesh(new THREE.SphereGeometry(1.012, 96, 64), new THREE.MeshBasicMaterial({ color: new THREE.Color(hex("--ink", "#3b2a20")), side: THREE.BackSide, transparent: true, opacity: 0.7, depthWrite: false }))
         const near = new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({ map: tex, side: THREE.FrontSide, transparent: true, depthWrite: false }))
-        far.renderOrder = 0; near.renderOrder = 3
-        scene.add(far, near)
-        const colour = { nadia: hex("--ink-story", "#a84f32"), griffin: hex("--ink-moss", "#727354"), guest: hex("--ink-soft", "#754b38"), you: hex("--journey-you", "#d5a34f"), edge: hex("--ink", "#3b2a20") }
+        rim.renderOrder = 0; near.renderOrder = 3
+        scene.add(rim, near)
+        const colour = { nadia: hex("--ink-story", "#a84f32"), griffin: hex("--ink-moss", "#727354"), guest: hex("--journey-guest", "#6e4f2c"), you: hex("--journey-you", "#d5a34f"), edge: hex("--ink", "#3b2a20") }
         const N = 140
         const make = ({ from, kind, bundled = false, low = false }: Line) => {
           const a = toV(...from), b = toV(...KYOTO), om = a.angleTo(b), pts: number[] = []
@@ -110,8 +109,9 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
           }
           const g = new LineGeometry(); g.setPositions(pts)
           const dotted = kind === "guest", mine = kind === "you", dash = dotted ? DASH.guest : mine ? null : DASH.home
-          const parts = [new LineMaterial({ color: new THREE.Color(colour[kind]).getHex(), linewidth: mine ? WEIGHT.you : dotted ? (bundled ? WEIGHT.bundle : WEIGHT.guest) : WEIGHT.home, transparent: true, opacity: dotted ? (bundled ? 0.7 : 0.5) : 1, dashed: Boolean(dash) })]
-          // Their own line gets a soft darker edge under it, so the gold holds on pale land and in Lantern
+          // Run 27: their own line gets an ink edge under it, so the gold holds on the antique globe's pale paper
+          const edge = mine ? [new LineMaterial({ color: new THREE.Color(colour.edge).getHex(), linewidth: WEIGHT.edge, transparent: true, opacity: 0.35 })] : []
+          const parts = [...edge, new LineMaterial({ color: new THREE.Color(colour[kind]).getHex(), linewidth: mine ? WEIGHT.you : dotted ? (bundled ? WEIGHT.bundle : WEIGHT.guest) : WEIGHT.home, transparent: true, opacity: dotted ? (bundled ? 0.7 : 0.5) : 1, dashed: Boolean(dash) })]
           const lines = parts.map((m, i) => {
             m.resolution.set(w, h)
             const line = new Line2(g, m); line.computeLineDistances(); line.renderOrder = mine ? 2 + i * 0.1 : 1
@@ -311,7 +311,7 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
   }, [you, cities, theme, lang, t.journey.households, pinKey, zoomable])
   if (failed) return null
   return (
-    <div className="journey-globe" data-theme="lantern" data-ready={ready || undefined}>
+    <div className="journey-globe" data-ready={ready || undefined}>
       <div ref={box} className="journey-globe-art" role="img" aria-label={label}>
         <div ref={pin} className="globe-pin" aria-hidden><div className="globe-pin-body"><span className="globe-pin-seal">京</span><span className="globe-pin-text">{t.journey.kyotoPin}</span></div></div>
         {/* Run 26c: who's from there, as a G or an N in their line's colour beside the place (Nadia from Brisbane,

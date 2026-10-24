@@ -2,9 +2,6 @@ import { ART } from "@/lib/art"
 import { NamesArt } from "@/components/names-art"
 import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import { BookOpen, Check, Minus, Sparkles } from "lucide-react"
-import { Sheet, SheetClose, SheetContent, SheetHead, SheetBody, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { FORTUNE_EVENT, localDraws } from "@/lib/fortune"
 import { Button } from "@/components/ui/button"
 import { useHousehold } from "@/lib/household"
 import { useContent } from "@/lib/content"
@@ -16,7 +13,6 @@ import { useLang } from "@/lib/lang"
 import { isLocked } from "@/lib/time"
 import { ReplyStatus } from "@/components/reply-status"
 import { Skeleton } from "@/components/skeleton"
-import type { Household } from "@/lib/api"
 import { pending } from "@/content/pending"
 import type { StepId } from "@/components/rsvp-sheet"
 import { AskUs } from "@/components/ask-us"
@@ -24,8 +20,6 @@ import { AskUs } from "@/components/ask-us"
 // The RSVP form loads just after the greeting paints. Until then the same button shows, and a tap
 // still opens it as soon as it arrives.
 const RsvpSheet = lazy(() => import("@/components/rsvp-sheet").then((m) => ({ default: m.RsvpSheet })))
-// Run 26: the fortune after a yes (its own chunk, shared with the reply sheet's); run 26c: in its own sheet, never on Home
-const FortuneCard = lazy(() => import("@/components/fortune-card").then((m) => ({ default: m.FortuneCard })))
 
 // The names reveal once, letter by letter, the first time the letter is opened (v3 L). Never again.
 const REVEAL_NAMES = (() => {
@@ -48,89 +42,6 @@ function Names() {
       <br aria-hidden />
       <span aria-hidden>{chars(COUPLE.second, COUPLE.first.length + 2)}</span>
     </h1>
-  )
-}
-
-/** The reply's steps as four tags (final run): Who's coming, Food, A song, Travel dates, each done or not yet with a
- *  tick or a soft dash, and each opening its own step of the reply. Food counts as done once they've replied (no
- *  dietary needs is an answer too). */
-function YourReply({ h, open }: { h: Household; open: (step: StepId) => void }) {
-  const { t } = useLang()
-  const coming = h.guests.filter((g) => g.attending === "yes")
-  if (!coming.length) return null
-  const rows = [
-    { key: "who", label: t.home.todo.who, done: h.guests.every((g) => g.attending), step: "who" as const },
-    { key: "food", label: t.home.todo.food, done: Boolean(h.respondedAt) || coming.some((g) => g.dietary && g.dietary !== "None"), step: "food" as const },
-    { key: "song", label: t.home.todo.song, done: h.songs.length > 0, step: "song" as const },
-    { key: "dates", label: t.home.todo.dates, done: Boolean(h.arrival && h.departure), step: "travel" as const, note: t.home.todo.datesLater },
-  ]
-  return (
-    <section aria-label={t.home.yourReply}>
-      <ul className="reply-chips">
-        {rows.map((r) => (
-          <li key={r.key}>
-            <button type="button" onClick={() => open(r.step)} className="reply-chip" data-done={r.done || undefined}>
-              {r.done ? <Check className="size-5 text-success" aria-hidden /> : <Minus className="size-5 text-muted-foreground" aria-hidden />}
-              <span>{r.label}{!r.done && r.note ? <span className="reply-chip-note text-muted-foreground">, {r.note}</span> : null}</span>
-              <span className="sr-only">, {r.done ? t.home.todo.done : t.home.todo.toDo}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )
-}
-
-/**
- * The next step once they've replied (18e), as one quiet card with one button: no travel dates yet, add them (the
- * reply's dates step); dates in (or past the change-by date), plan the trip on Travel. Before a reply the RSVP
- * button is the step; in the week of the wedding, The day is.
- */
-function NextStep({ h, open, locked }: { h: Household; open: (step: StepId) => void; locked: boolean }) {
-  const { lang } = useLang()
-  const dates = Boolean(h.arrival && h.departure)
-  return (
-    <div className="next-step">
-      {!dates && !locked
-        ? <Button size="md" variant="secondary" className="w-full sm:w-auto" onClick={() => open("travel")}>{pending("home.nextDates", lang)}</Button>
-        : <Button asChild size="md" variant="secondary" className="w-full sm:w-auto"><Link to="/travel">{pending("home.nextTrip", lang)}</Link></Button>}
-    </div>
-  )
-}
-
-/**
- * Run 26c: after a yes, two tags under the next step: the fortune (Draw your fortune, or Draw your fortune again once
- * one's been drawn) and Read our story. The fortune never opens on Home itself: its tag opens a sheet (the site's one
- * dialog, so focus is trapped, Esc and the X close it and focus goes back to the tag), with Back to your invite at the
- * bottom as the second way out. The card loads only once the sheet is opened.
- */
-function HomeTags({ token }: { token: string }) {
-  const { t } = useLang()
-  const [open, setOpen] = useState(false)
-  const [drawn, setDrawn] = useState(() => localDraws(token).length > 0)
-  useEffect(() => {
-    const on = () => setDrawn(localDraws(token).length > 0)
-    window.addEventListener(FORTUNE_EVENT, on)
-    return () => window.removeEventListener(FORTUNE_EVENT, on)
-  }, [token])
-  return (
-    <ul className="home-tags">
-      <li>
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <button type="button" className="reply-chip home-tag"><Sparkles className="size-5" aria-hidden /><span>{drawn ? t.fortune.homeAgain : t.fortune.homeTitle}</span></button>
-          </SheetTrigger>
-          <SheetContent className="sheet-fortune" aria-describedby={undefined}>
-            <SheetHead><SheetTitle className="heading outline-none">{t.fortune.title}</SheetTitle></SheetHead>
-            <SheetBody className="fortune-sheet-body">
-              {open && <Suspense fallback={null}><FortuneCard token={token} title={t.fortune.homeTitle} className="home-fortune" /></Suspense>}
-              <SheetClose asChild><Button size="md" variant="secondary" className="fortune-sheet-back">{t.rsvp.backHome}</Button></SheetClose>
-            </SheetBody>
-          </SheetContent>
-        </Sheet>
-      </li>
-      <li><Link to="/our-story" className="reply-chip home-tag"><BookOpen className="size-5" aria-hidden /><span>{t.home.keepsake.story}</span></Link></li>
-    </ul>
   )
 }
 
@@ -163,7 +74,6 @@ export function HomePage() {
   // v3 P: first names in the sheet's order; a plus one without a name yet is "your plus one"
   const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : g.firstName)).filter(Boolean) : []
   const dear = t.home.dearNames(names) || household?.displayName || ""
-  const openAt = (step: StepId) => { setTapped(true); setRequest({ at: Date.now(), step }) }
   const { mode, contactDay } = useContent()
   const { lang } = useLang()
 
@@ -219,13 +129,10 @@ export function HomePage() {
             </ReplyStatus>
             {done && <p className="text-small text-muted-foreground">{t.home.changeBy}</p>}
           </div>
-          {done && <YourReply h={household} open={openAt} />}
-          {done && <NextStep h={household} open={openAt} locked={false} />}
         </div>
       )}
-      {mode === "invite" && household && locked && done && <NextStep h={household} open={openAt} locked />}
-      {/* Run 26c: after a yes, the fortune and the story as tags; the fortune opens in its own sheet, not on Home */}
-      {mode === "invite" && household && done && household.guests.some((g) => g.attending === "yes") && <HomeTags token={household.token} />}
+      {/* Run 27: after a reply, Home is the letter, Replied with Change my reply, the note and the countdown; the
+          fortune is the omikuji in the top bar (fortune-button.tsx) */}
       <HomeCountdown />
     </>
   )
