@@ -1356,9 +1356,10 @@ svg.lucide { stroke-width: 1.5; }
   .story-slide-opener { justify-content: center; }
   .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.5); container-type: size; }
   .story-slide-opener .story-kids { height: 100%; width: min(100%, 52rem); }
-  .story-slide-opener .story-kid .story-print { --print-h: min(62cqh, 40cqw); }
-  .story-slide-opener .story-kid-him { left: 8%; top: 2%; }
-  .story-slide-opener .story-kid-her { right: 8%; top: auto; bottom: 0; }
+  /* Run 27 (Jehan): on laptops the two prints a little bigger and closer, her corner just over his (his name stays clear) */
+  .story-slide-opener .story-kid .story-print { --print-h: min(66cqh, 46cqw); }
+  .story-slide-opener .story-kid-him { left: 14%; top: 4%; }
+  .story-slide-opener .story-kid-her { right: 14%; top: auto; bottom: 2%; }
   .story-slide-opener .story-kid-him .story-print { --tilt: -7deg; }
   .story-slide-opener .story-kid-her .story-print { --tilt: 6deg; }
 }
