@@ -1,3 +1,4 @@
+import { FortuneButton } from "@/components/fortune-button"
 import { flushSync } from "react-dom"
 import { Moon, Sun } from "lucide-react"
 import { lazy, Suspense } from "react"
@@ -85,5 +86,5 @@ const MusicToggle = lazy(() => import("@/components/music-toggle"))
 
 /** The sun or moon, with あ / A beside it where shown, as one group (the letter's corner, or the top bar). */
 export function ModeSwitches({ className }: { className?: string }) {
-  return <span className={cn("mode-switches", className)}><LangToggle /><Suspense fallback={<span aria-hidden className="utility-btn invisible" />}><MusicToggle /></Suspense><LanternToggle /></span>
+  return <span className={cn("mode-switches", className)}><FortuneButton /><LangToggle /><Suspense fallback={<span aria-hidden className="utility-btn invisible" />}><MusicToggle /></Suspense><LanternToggle /></span>
 }

@@ -139,7 +139,6 @@ export const ja: DeepPartial<Content> = {
     changeReply: "お返事を変更する",
     changeBy: CHANGE_BY,
     changeAfter: CHANGE_AFTER,
-    reseal: "封筒に戻す",
     week: { greeting: "いよいよ今週です。金曜日のことはすべて「当日」のページに、いちばん簡単な行き方は下にあります。お会いできるのを楽しみにしています。", day: "当日", directions: "Googleマップで道順を見る" },
     keepsake: { badge: "2027年10月15日（金）、京都にて結婚しました", greeting: "遠くまで来てくださり、私たちの一日を一緒に過ごしてくださって、ありがとうございました。当日の写真は近日ここに掲載します。", story: "ふたりのことを読む" },
   },
