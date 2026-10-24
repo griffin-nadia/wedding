@@ -12,14 +12,14 @@ import { pending } from "@/content/pending"
 
 /**
  * The opener (run 24): one print each, tilted opposite ways, hers leaning into his and over his corner, with a strip
- * of washi tape across her top edge like the other taped prints. Run 26c (the review): Griffin's one photo is his
- * first day of school (the yellow jumper, kid-griffin), shown whole, and Nadia's home photo; each print carries just
- * a name on its bottom border, and opens full screen.
+ * of washi tape across her top edge like the other taped prints. Run 26c (Nadia, 24 Oct): Griffin's one photo is his
+ * 1998 school photo (the yellow jumper one moved to Back down under) and Nadia's is her home photo; each print carries
+ * just a name on its bottom border, and opens full screen.
  */
 function Opener() {
   const { t } = useLang()
   const has = (name: string) => name in photos
-  if (!has("kid-griffin") || !has("kid-nadia-home")) return null
+  if (!has("kid-griffin-1998") || !has("kid-nadia-home")) return null
   const print = (name: string, where: string, note: string) => (
     <div className={`story-kid story-kid-${where}`}>
       <PhotoOpen name={name} label={t.photos[name]?.alt ?? ""}><Photo name={name} treatment="print" sizes="(min-width: 1024px) 260px, 56vw" className="story-print" note={note} /></PhotoOpen>
@@ -27,7 +27,7 @@ function Opener() {
   )
   return (
     <div className="story-kids">
-      {print("kid-griffin", "him", "griffin")}
+      {print("kid-griffin-1998", "him", "griffin")}
       {print("kid-nadia-home", "her", "nadia")}
     </div>
   )
@@ -46,9 +46,12 @@ const AT: Record<string, [number, number]> = {
 /** Run 26: a place's photo when the Content tab gives its chapter none (Taiwan: their edited tea-field selfie). A photo
  *  set in the Content tab (story_N_photo) still wins */
 const PLACE_PHOTO: Record<string, string> = { Taiwan: "story-taiwan" }
+/** Run 26c (Nadia, 24 Oct): Griffin's yellow jumper photo is Back down under's (2022, Brisbane), over the Content tab's
+ *  photo for that chapter. Setting story_5_photo to kid-griffin in the Content tab makes this line unneeded */
+const CHAPTER_PHOTO: Record<string, string> = { "Australia (Brisbane)": "kid-griffin" }
 /** Run 26c: no photo-only stops any more (the Canada visit went with the review; Back to Japan in run 26) */
 function withStops(story: Chapter[]): Chapter[] {
-  return story.map((c) => ({ ...c, at: c.at ?? (c.place ? AT[c.place] : undefined), photo: c.photo || (c.place ? PLACE_PHOTO[c.place] : undefined) }))
+  return story.map((c) => ({ ...c, at: c.at ?? (c.place ? AT[c.place] : undefined), photo: (c.place && CHAPTER_PHOTO[c.place]) || c.photo || (c.place ? PLACE_PHOTO[c.place] : undefined) }))
 }
 
 export function StoryPage() {
