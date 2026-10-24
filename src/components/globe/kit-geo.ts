@@ -34,11 +34,12 @@ export function place(lat: number, dl: number, alt: number, m: number, tilt: num
   return out
 }
 
-/** Screen pixels for a view-space point in a w × h box */
-export function project(p: number[], w: number, h: number, out: number[] = [0, 0]) {
+/** Screen pixels for a view-space point in a w × h box, magnified z times about the middle (run 27: the zoom, the
+ *  camera's own, kit-three.ts) */
+export function project(p: number[], w: number, h: number, out: number[] = [0, 0], z = 1) {
   const d = DIST - p[2]
-  out[0] = ((p[0] / (d * TAN * ASPECT)) + 1) * 0.5 * w
-  out[1] = (1 - p[1] / (d * TAN)) * 0.5 * h
+  out[0] = ((p[0] / (d * TAN * ASPECT)) * z + 1) * 0.5 * w
+  out[1] = (1 - (p[1] / (d * TAN)) * z) * 0.5 * h
   return out
 }
 

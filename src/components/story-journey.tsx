@@ -219,12 +219,13 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
           {/* Run 27: the antique globe, its paper curling between the globe and the map you drag round the world; a
               phone that starts flat keeps the painted flat map with + and − */}
           {view === "flat" && base === "flat"
-            ? <><Suspense key="flat" fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>
-              <div className="globe-zoom">
-                <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}>+</button>
-                <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}>−</button>
-              </div></>
-            : <Suspense key="look" fallback={<GlobeWaiting />}><JourneyLook you={you} cities={cities} label={label} mode={view} size="full" /></Suspense>}
+            ? <Suspense key="flat" fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>
+            : <Suspense key="look" fallback={<GlobeWaiting />}><JourneyLook you={you} cities={cities} label={label} mode={view} size="full" zoomRef={zoom} /></Suspense>}
+          {/* + and − on both, smaller than it opens too (run 27); pinch and Ctrl or Cmd with the wheel as well */}
+          <div className="globe-zoom">
+            <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}>+</button>
+            <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}>−</button>
+          </div>
         </div>
         {/* Run 27: the key and how many lines are drawn so far, together under the map */}
         <div className="journey-viewer-foot">

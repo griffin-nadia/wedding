@@ -10,7 +10,7 @@ import { breathe } from "./kit-paint"
  * The canvas goes on the page (drawing nothing) while the picture paints, so its first frame isn't paid for later;
  * then the picture's upload and the shader's compile each get a task of their own (setPicture()).
  */
-export type View = { lon: number; tilt: number; m: number }
+export type View = { lon: number; tilt: number; m: number; z?: number }
 export type PaperOptions = { seeThrough: number; shade: number; glsl: string; segments: [number, number]; nearest?: boolean }
 
 const vert = /* glsl */ `
@@ -84,7 +84,11 @@ export function makePaper(o: PaperOptions, pixelRatio: number) {
     setMask: (m: HTMLCanvasElement) => { mask = new THREE.CanvasTexture(m); mask.wrapS = THREE.RepeatWrapping; uniforms.uMask.value = mask },
     /** The tuning panel: land opacity and added grain, 0 to 1 */
     tune: (land: number, grain: number) => { uniforms.uLand.value = land; uniforms.uGrain.value = grain },
-    render: (v: View) => { uniforms.uM.value = v.m; uniforms.uLon.value = v.lon; uniforms.uTilt.value = v.tilt; renderer.render(scene, camera) },
+    render: (v: View) => {
+      uniforms.uM.value = v.m; uniforms.uLon.value = v.lon; uniforms.uTilt.value = v.tilt
+      if (camera.zoom !== (v.z ?? 1)) { camera.zoom = v.z ?? 1; camera.updateProjectionMatrix() }
+      renderer.render(scene, camera)
+    },
     dispose: () => { geo.dispose(); tex?.dispose(); mask?.dispose(); for (const mesh of [near, far]) (mesh?.material as THREE.Material | undefined)?.dispose(); renderer.dispose() },
   }
 }

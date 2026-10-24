@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react"
 import type { Journey } from "@/lib/api"
 import type { City } from "@/lib/city-search"
 import { bundle, type Place } from "@/lib/journey-names"
@@ -18,7 +18,9 @@ import { look } from "@/components/globe/globe-antique"
  */
 const TUNE: Tune = { land: 0.88, grain: 0, weight: 1, shadow: 0, iconSize: 1, icon: "plane", speed: 1, loop: false }
 
-export function JourneyLook({ you, cities, label, mode = "globe", size = "stop" }: { you: City | null; cities: Journey[]; label: string; mode?: "globe" | "flat"; size?: "stop" | "full" }) {
+export function JourneyLook({ you, cities, label, mode = "globe", size = "stop", zoomRef }: { you: City | null; cities: Journey[]; label: string; mode?: "globe" | "flat"; size?: "stop" | "full"
+  /** Full screen: pinch, Ctrl or Cmd with the wheel, and the view's + and − (this ref) zoom it in and out */
+  zoomRef?: RefObject<((f: number) => void) | null> }) {
   const { t, lang } = useLang()
   const { theme } = useTheme()
   const night = theme === "lantern"
@@ -38,7 +40,7 @@ export function JourneyLook({ you, cities, label, mode = "globe", size = "stop" 
   return (
     <div ref={root} className="journey-look" data-size={size}>
       <style>{viewCss}{look.css}</style>
-      {ink && <View key={String(night)} look={look} night={night} inks={ink} arcs={arcs} list={list} style={look.line} tune={TUNE} mode={mode} reduce={reduce} size={size} label={label} />}
+      {ink && <View key={String(night)} look={look} night={night} inks={ink} arcs={arcs} list={list} style={look.line} tune={TUNE} mode={mode} reduce={reduce} size={size} label={label} zoomable={Boolean(zoomRef)} zoomRef={zoomRef} />}
     </div>
   )
 }

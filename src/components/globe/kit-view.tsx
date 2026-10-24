@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- a look (or the kit) exports its data beside its component */
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react"
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from "react"
 import { loop } from "@/lib/frame"
 import { useLang } from "@/lib/lang"
 import { ASPECT, DIST, FLAT, TAN, hidden, place, project, wrap } from "./kit-geo"
@@ -175,10 +175,14 @@ export type Arc = { trip: Trip } & ReturnType<typeof arcOf>
 export type ViewProps = {
   look: Look; night: boolean; inks: Inks; arcs: Arc[]; list: Trip[]; style: LineStyle; tune: Tune; mode: string; reduce: boolean; size: "stop" | "full"; label: string
   face?: { lon: number; tilt: number }
+  /** Run 27: pinch, Ctrl or Cmd with the wheel, and zoomRef (the full screen's + and −) zoom it, ZOOM.min to ZOOM.max */
+  zoomable?: boolean; zoomRef?: RefObject<((f: number) => void) | null>
 }
+/** Run 27: smaller than it opens (to see the whole globe with room round it) up to three times */
+export const ZOOM = { min: 0.6, max: 3 }
 
 /** One view of the look: the map's box, its paper, lines and names. Every view on a page reads the same switch and tuning. */
-export function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, label, face = FACE }: ViewProps) {
+export function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, label, face = FACE, zoomable = false, zoomRef }: ViewProps) {
   const { t } = useLang()
   const box = useRef<HTMLDivElement>(null), art = useRef<HTMLDivElement>(null), layer = useRef<HTMLCanvasElement>(null), tip = useRef<HTMLDivElement>(null)
   const marks = useRef(new Map<string, HTMLElement>())
@@ -186,7 +190,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
   const [open, setOpen] = useState<string | null>(null)
   const [focusAt, setFocusAt] = useState(0)
   // Everything the frame loop reads, kept in one place so a knob or the toggle never rebuilds the globe
-  const st = useRef({ lon: mode === "flat" ? FLAT_LON : face.lon, tilt: look.tilt == null || face !== FACE ? face.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
+  const st = useRef({ lon: mode === "flat" ? FLAT_LON : face.lon, tilt: look.tilt == null || face !== FACE ? face.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, z: 1, zt: 1, pinch: null as null | { d: number; z: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
   const live = useRef({ arcs, style, open, inks, tune })
   live.current = { arcs, style, open, inks, tune }
   // A new line style, crowd or travelling icon draws the lines again from the start; any other tuning redraws
@@ -265,14 +269,26 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
         const s = st.current
         const perPx = () => {
           const globe = Math.PI / Math.max(160, w), flat = ((DIST - 1) * TAN * ASPECT * 2) / (FLAT * w)
-          return flat + (globe - flat) * s.m
+          return (flat + (globe - flat) * s.m) / s.z
         }
+        const zoomTo = (z: number) => { s.zt = Math.min(ZOOM.max, Math.max(ZOOM.min, z)); s.touched = performance.now(); s.dirty = true }
+        if (zoomable && zoomRef) zoomRef.current = (f) => zoomTo(s.zt * f)
+        // Two fingers pinch: the zoom follows the spread between them (and the drag stops)
+        const fingers = new Map<number, [number, number]>()
+        const spread = () => { const [a, b] = [...fingers.values()]; return Math.hypot(a[0] - b[0], a[1] - b[1]) }
         const down = (e: PointerEvent) => {
-          if (s.drag || (e.pointerType === "mouse" && e.button !== 0) || (e.target as Element).closest("button")) return
+          if ((e.target as Element).closest("button")) return
+          if (zoomable && e.pointerType === "touch") {
+            fingers.set(e.pointerId, [e.clientX, e.clientY])
+            if (fingers.size === 2) { s.pinch = { d: spread(), z: s.zt }; s.drag = null; s.vLon = s.vTilt = 0; return }
+          }
+          if (s.drag || s.pinch || (e.pointerType === "mouse" && e.button !== 0)) return
           el.setPointerCapture(e.pointerId)
           s.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: e.timeStamp }; s.vLon = s.vTilt = 0
         }
         const move = (e: PointerEvent) => {
+          if (fingers.has(e.pointerId)) fingers.set(e.pointerId, [e.clientX, e.clientY])
+          if (s.pinch && fingers.size === 2) { zoomTo(s.pinch.z * (spread() / Math.max(1, s.pinch.d))); return }
           if (!s.drag || e.pointerId !== s.drag.id) return
           const k = perPx(), dLon = -(e.clientX - s.drag.x) * k, dTilt = s.m > 0.5 ? (e.clientY - s.drag.y) * k : 0, dt = Math.max(1, e.timeStamp - s.drag.t) / 1000
           s.lon += dLon; s.tilt = Math.max(-TURN.tilt, Math.min(TURN.tilt, s.tilt + dTilt))
@@ -280,6 +296,8 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
           s.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: e.timeStamp }; s.dirty = true
         }
         const up = (e: PointerEvent) => {
+          fingers.delete(e.pointerId)
+          if (fingers.size < 2) s.pinch = null
           if (!s.drag || e.pointerId !== s.drag.id) return
           if (reduce || e.timeStamp - s.drag.t > 80) s.vLon = s.vTilt = 0 // held still before letting go: no glide
           s.drag = null; s.touched = performance.now()
@@ -295,6 +313,8 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
         // Run 27: a trackpad's side scroll (or Shift and the wheel) turns the globe or slides the map too; an up and down
         // scroll is left to the page
         const wheel = (e: WheelEvent) => {
+          // Ctrl or Cmd with the wheel (a trackpad's pinch comes as this too) zooms
+          if (zoomable && (e.ctrlKey || e.metaKey)) { e.preventDefault(); zoomTo(s.zt * Math.exp(-e.deltaY * 0.01)); return }
           const dx = e.deltaX || (e.shiftKey ? e.deltaY : 0)
           if (Math.abs(dx) <= Math.abs(e.shiftKey ? 0 : e.deltaY)) return
           e.preventDefault()
@@ -326,6 +346,8 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
               s.lon += TURN.auto * back * back * dt
             }
           }
+          // The zoom eases to where it's asked (at once under reduced motion)
+          if (s.z !== s.zt) { s.z = Math.abs(s.zt - s.z) < 1e-3 || reduce ? s.zt : s.z + (s.zt - s.z) * (1 - Math.exp(-14 * dt)); s.dirty = true }
           const moving = s.drag || s.morphing || Math.abs(s.vLon) + Math.abs(s.vTilt) > 1e-4 || (s.m === 1 && !reduce)
           if (!moving && !drawing && !flying && !s.dirty) return true // a still flat map: nothing to draw
           s.dirty = false
@@ -334,7 +356,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
           g.setTransform(r, 0, 0, r, 0, 0); g.clearRect(0, 0, w, h)
           // The ink rim, as the paper becomes a ball
           if (look.rim && s.m > 0.85) {
-            const R = (Math.tan(Math.asin(1 / DIST)) / TAN) * (h / 2)
+            const R = (Math.tan(Math.asin(1 / DIST)) / TAN) * (h / 2) * s.z
             g.globalAlpha = (s.m - 0.85) / 0.15; g.strokeStyle = look.rimColour?.(night) ?? inks.ink; g.lineWidth = look.rim
             g.beginPath(); g.arc(w / 2, h / 2, R, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1
           }
@@ -343,7 +365,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
             const z = Math.max(0.6, w / 680) * glow.size
             g.globalCompositeOperation = glow.blend
             const spot = (la: number, lo: number, size: number) => {
-              place(la * RAD, wrap(lo * RAD - s.lon), 0.004, s.m, s.tilt, pt); project(pt, w, h, px)
+              place(la * RAD, wrap(lo * RAD - s.lon), 0.004, s.m, s.tilt, pt); project(pt, w, h, px, s.z)
               if (!(globe && hidden(pt))) g.drawImage(sprite, px[0] - size / 2, px[1] - size / 2, size, size)
             }
             spot(KYOTO.lat, KYOTO.lon, z * 2)
@@ -361,7 +383,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
             const kyo = lon[N - 1] - s.lon, home = lon[0] - s.lon
             const shift = Math.abs(wrap(kyo)) < Math.abs(wrap(home)) ? wrap(kyo) - kyo : wrap(home) - home
             for (let i = 0; i < n; i++) {
-              place(lat[i], lon[i] - s.lon + shift, alt[i], s.m, s.tilt, pt); project(pt, w, h, px)
+              place(lat[i], lon[i] - s.lon + shift, alt[i], s.m, s.tilt, pt); project(pt, w, h, px, s.z)
               xs[i] = px[0]; ys[i] = px[1]; al[i] = globe && hidden(pt) ? far : 1
             }
             // Once drawn, in the picker, it flies the line again and again: one flight, then a rest, each line at its own time
@@ -386,7 +408,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
           // nudge moves a mark off a taken spot (screen px), with an ink hairline back to its real place
           const marksAt = (id: string, la: number, lo: number, nudge?: [number, number]) => {
             const m = marks.current.get(id)
-            place(la * RAD, wrap(lo * RAD - s.lon), 0.004, s.m, s.tilt, pt); project(pt, w, h, px)
+            place(la * RAD, wrap(lo * RAD - s.lon), 0.004, s.m, s.tilt, pt); project(pt, w, h, px, s.z)
             const off = (globe && hidden(pt)) || px[0] < -4 || px[0] > w + 4 || px[1] < -4 || px[1] > h + 4
             if (nudge && !off) {
               g.globalAlpha = 0.55; g.strokeStyle = inks.ink; g.lineWidth = 0.8; g.setLineDash([])
