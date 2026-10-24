@@ -153,6 +153,7 @@ export function Layout() {
               ? <button type="button" className="btn-text -my-3 py-3 text-small" onClick={() => window.dispatchEvent(new Event("ng-reseal"))}>{t.home.reseal}</button>
               : null} />}
             </div>
+            <span aria-hidden className="letter-fade" />
           </Letter>
         </Arrival>
       </main>
