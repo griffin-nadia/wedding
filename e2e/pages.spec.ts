@@ -23,3 +23,16 @@ for (const theme of ["light", "lantern"]) for (const [name, path] of PAGES) {
   })
 }
 
+// 18e: the countdown's new digit rolls in at its full size (the 3D flip used to shrink it to a sliver mid-turn)
+test("the countdown digit never shrinks while it rolls", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" })
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto("?h=sample")
+  const secs = page.locator(".count-box-num").last()
+  await expect(secs).toBeVisible()
+  const full = (await secs.boundingBox())!.height
+  const heights: number[] = []
+  await page.waitForFunction(() => document.querySelector(".count-box:last-child .count-flip"), null, { timeout: 3000 })
+  for (let i = 0; i < 8; i++) { heights.push((await page.locator(".count-box-num").last().boundingBox())!.height); await page.waitForTimeout(25) }
+  expect(Math.min(...heights)).toBeGreaterThan(full * 0.95)
+})

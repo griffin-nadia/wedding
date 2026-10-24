@@ -1,7 +1,7 @@
 import type React from "react"
 import { flushSync } from "react-dom"
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement, type ReactNode } from "react"
-import { ChevronLeft, ChevronRight, Globe, List, Maximize2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Globe, List, Maximize2, Minus, Plus } from "lucide-react"
 import type { Chapter } from "@/lib/content"
 import { useLang } from "@/lib/lang"
 import { ART } from "@/lib/art"
@@ -223,8 +223,8 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
             : <Suspense key="look" fallback={<GlobeWaiting />}><JourneyLook you={you} cities={cities} label={label} mode={view} size="full" zoomRef={zoom} /></Suspense>}
           {/* + and − on both, smaller than it opens too (run 27); pinch and Ctrl or Cmd with the wheel as well */}
           <div className="globe-zoom">
-            <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}>+</button>
-            <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}>−</button>
+            <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}><Plus className="size-5" aria-hidden /></button>
+            <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}><Minus className="size-5" aria-hidden /></button>
           </div>
         </div>
         {/* Run 27: the key and how many lines are drawn so far, together under the map */}

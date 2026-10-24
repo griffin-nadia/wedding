@@ -9,8 +9,9 @@ const go = async (page: Page, path: string, theme = "autumn") => {
 }
 
 // Phones: Home's card is only as tall as what's on it (18e), so its bottom is left out; its top is the same as the
-// others'. Laptops (run 26c): every tab's card fills the frame, so its top and bottom edges are the same on every tab.
-test("laptops: every tab's card has the same top and bottom edges, filling the frame", async ({ page }, info) => {
+// others'. Laptops (run 27, Jehan): every tab's card starts at the same top edge and hugs what's on it, from one
+// starting height (560px, or the frame if less), up to the frame.
+test("laptops: every tab's card has the same top edge and hugs its content from one starting height", async ({ page }, info) => {
   test.skip(info.project.name === "phone", "laptops")
   await go(page, "")
   const edges: string[] = []
@@ -19,10 +20,11 @@ test("laptops: every tab's card has the same top and bottom edges, filling the f
     await page.waitForTimeout(700)
     edges.push(await page.evaluate(() => {
       const l = document.getElementById("letter")!.getBoundingClientRect(), w = document.querySelector(".letter-wrap")!, r = w.getBoundingClientRect(), cs = getComputedStyle(w)
-      return [Math.round(l.top - r.top - parseFloat(cs.paddingTop)), Math.round(r.bottom - parseFloat(cs.paddingBottom) - l.bottom)].join()
+      const frame = r.height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+      return [Math.round(l.top - r.top - parseFloat(cs.paddingTop)), Math.round(l.height) >= Math.round(Math.min(560, frame)) - 1 && Math.round(l.height) <= Math.round(frame) + 1 ? "fits" : `h ${Math.round(l.height)} of ${Math.round(frame)}`].join()
     }))
   }
-  expect(new Set(edges)).toEqual(new Set(["0,0"]))
+  expect(new Set(edges)).toEqual(new Set(["0,fits"]))
 })
 
 test("the card's top and visible bottom don't move between pages", async ({ page }, info) => {

@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/brand-mark"
 import { createContext, useContext, useState, type ReactNode } from "react"
 import { useLang } from "@/lib/lang"
 import { cn } from "@/lib/utils"
@@ -18,7 +19,8 @@ export function SignOff({ action }: { action?: ReactNode }) {
     <footer className="letter-end mt-auto flex flex-wrap items-center justify-between gap-x-4 pt-2">
       {__SIGNOFF_ART__
         ? <img src={`${import.meta.env.BASE_URL}brand/signoff.svg`} alt={t.letter.signOff} className="h-12 w-auto" />
-        : <p className="voice signoff-hand text-foreground">{t.letter.signOff}</p>}
+        // Run 27 (Jehan): the G, & and N cut from Nadia's own lettering (the top bar's mark), after "With love,"
+        : <p className="voice signoff-hand text-foreground"><span className="sr-only">{t.letter.signOff}</span><span aria-hidden className="signoff-art">{t.letter.signOff.replace(/G\s*&\s*N\s*$/, "")}<BrandMark /></span></p>}
       {action}
     </footer>
   )

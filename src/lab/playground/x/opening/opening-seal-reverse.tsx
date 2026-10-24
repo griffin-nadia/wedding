@@ -100,7 +100,7 @@ export default function OpeningSealReverse() {
         <p className={`${P}-note`} aria-live="polite">{phase === "sealed" ? "Sealed again" : ""}</p>
         {phase === "sealed"
           ? <Button variant="secondary" onClick={reset}>{t.letter.note}</Button>
-          : <Button onClick={seal} disabled={phase === "sealing"}>Seal it again</Button>}
+          : <Button onClick={seal} disabled={phase === "sealing"}>{t.home.reseal}</Button>}
       </div>
     </Stage>
   )
