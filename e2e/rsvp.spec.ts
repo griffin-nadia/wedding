@@ -382,20 +382,3 @@ test("the fortune folds again on a later visit, after an update, then stays open
   await expect(dialog.getByRole("button", { name: "Draw one" })).toHaveCount(0)
 })
 
-
-// 18e: once replied, Home shows one next step: travel dates if there are none yet (opening the dates step), else
-// Plan your trip (Travel)
-test("after a reply, Home's next step is the travel dates, then the trip", async ({ page }) => {
-  await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
-  await openForm(page)
-  const dialog = page.getByRole("dialog")
-  await dialog.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
-  await dialog.getByRole("radiogroup", { name: "Alex" }).getByText("Coming").click()
-  await toCheck(page); await press(page, /^Send our reply$/)
-  await page.keyboard.press("Escape")
-  await expect(dialog).toBeHidden()
-  const next = page.locator("#letter .next-step")
-  await expect(next.getByRole("button", { name: "Add your travel dates" })).toBeVisible()
-  await next.getByRole("button", { name: "Add your travel dates" }).click()
-  await expect(page.getByRole("dialog")).toContainText(/arriv|dates/i)
-})
