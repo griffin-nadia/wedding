@@ -30,12 +30,16 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(mix(fp, sp, k), 1.0);
 }`
 const frag = (glsl: string) => /* glsl */ `
-uniform sampler2D map; uniform float uShade, uAlpha, uLon, uTilt;
+uniform sampler2D map, uMask; uniform float uShade, uAlpha, uLon, uTilt, uLand, uGrain;
 varying vec2 vUv; varying float vK, vZ;
 void main() {
   vec4 col = texture2D(map, vUv);
   col.rgb *= mix(1.0, 0.7 + 0.3 * clamp(vZ, 0.0, 1.0), uShade * vK);
   ${glsl}
+  // Run 26 tuning: the land see-through (its mask), and grain added on the paper (fixed to the map, so it turns with it)
+  col.a *= mix(1.0, uLand, texture2D(uMask, vUv).r);
+  float n = fract(sin(dot(floor(vec2(fract(vUv.x), vUv.y) * vec2(1600.0, 800.0)), vec2(12.9898, 78.233))) * 43758.5453);
+  col.rgb *= 1.0 + (n - 0.5) * uGrain * 0.4;
   gl_FragColor = vec4(col.rgb, col.a * uAlpha);
 }`
 
@@ -45,8 +49,8 @@ export function makePaper(o: PaperOptions, pixelRatio: number) {
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(FOV, 5 / 4, 0.1, 50)
   camera.position.set(0, 0, DIST); camera.lookAt(0, 0, 0)
   const geo = new THREE.PlaneGeometry(1, 1, ...o.segments)
-  let tex: THREE.CanvasTexture | null = null
-  const uniforms = { map: { value: null as THREE.Texture | null }, uM: { value: 1 }, uLon: { value: 0 }, uTilt: { value: 0 }, uShade: { value: o.shade }, uAlpha: { value: 1 } }
+  let tex: THREE.CanvasTexture | null = null, mask: THREE.CanvasTexture | null = null
+  const uniforms = { map: { value: null as THREE.Texture | null }, uM: { value: 1 }, uLon: { value: 0 }, uTilt: { value: 0 }, uShade: { value: o.shade }, uAlpha: { value: 1 }, uMask: { value: null as THREE.Texture | null }, uLand: { value: 1 }, uGrain: { value: 0 } }
   // The two sides share every uniform object but their alpha, so one write moves both
   const material = (side: THREE.Side, alpha: number) => new THREE.ShaderMaterial({
     uniforms: { ...uniforms, uAlpha: { value: alpha } }, vertexShader: vert, fragmentShader: frag(o.glsl),
@@ -74,7 +78,11 @@ export function makePaper(o: PaperOptions, pixelRatio: number) {
       renderer.render(scene, camera); gl.finish()
       await breathe()
     },
+    /** The land's mask (white land on black, 2:1) for the Land opacity slider */
+    setMask: (m: HTMLCanvasElement) => { mask = new THREE.CanvasTexture(m); mask.wrapS = THREE.RepeatWrapping; uniforms.uMask.value = mask },
+    /** The tuning panel: land opacity and added grain, 0 to 1 */
+    tune: (land: number, grain: number) => { uniforms.uLand.value = land; uniforms.uGrain.value = grain },
     render: (v: View) => { uniforms.uM.value = v.m; uniforms.uLon.value = v.lon; uniforms.uTilt.value = v.tilt; renderer.render(scene, camera) },
-    dispose: () => { geo.dispose(); tex?.dispose(); for (const mesh of [near, far]) (mesh?.material as THREE.Material | undefined)?.dispose(); renderer.dispose() },
+    dispose: () => { geo.dispose(); tex?.dispose(); mask?.dispose(); for (const mesh of [near, far]) (mesh?.material as THREE.Material | undefined)?.dispose(); renderer.dispose() },
   }
 }

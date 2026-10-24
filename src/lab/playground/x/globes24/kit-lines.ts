@@ -1,4 +1,4 @@
-import type { LineStyle } from "./kit-data"
+import type { Icon, LineStyle } from "./kit-data"
 
 /**
  * The line styles (globes24 kit): how one journey line is drawn on the 2D layer over the paper, the same on the
@@ -10,6 +10,8 @@ import type { LineStyle } from "./kit-data"
  */
 /** Styles where something travels the arc once (they take a little longer to draw) */
 export const travels = (s: LineStyle) => s === "plane" || s === "leaf"
+/** What flies the line: the Travelling icon knob, or on "auto" the line style's own (run 26) */
+export const iconFor = (s: LineStyle, icon: Icon = "auto"): Exclude<Icon, "auto"> => (icon !== "auto" ? icon : s === "plane" ? "plane" : s === "leaf" ? "leaf" : "none")
 
 export type LineDraw = {
   colour: string
@@ -25,10 +27,16 @@ export type LineDraw = {
   time: number
   /** A wide soft pass under the line (a look's glow): the same dots and dashes in the same places, only wider */
   halo?: boolean
+  /** What travels the line (default: the line style's own) and its size, 1 as drawn (run 26 tuning) */
+  icon?: Exclude<Icon, "auto">
+  iconSize?: number
 }
 
 const PLANE = new Path2D("M1 0L-0.85 -0.7L-0.4 0L-0.85 0.7Z")
 const PLANE_FOLD = new Path2D("M-0.4 0L1 0")
+/** An orizuru seen from above, flying to +x: neck and head ahead, the tail behind, both wings spread */
+const CRANE = new Path2D("M1.05 -0.06L0.62 0L0.28 -0.12L0.05 -0.95L-0.18 -0.12L-0.55 -0.05L-1 -0.32L-0.72 0L-1 0.32L-0.55 0.05L-0.18 0.12L0.05 0.95L0.28 0.12L0.62 0Z")
+const CRANE_FOLD = new Path2D("M0.62 0L-0.72 0M0.05 -0.95L0.05 0.95")
 const LEAF = new Path2D("M0 -1L0.18 -0.55L0.55 -0.72L0.42 -0.25L0.95 -0.22L0.6 0.1L0.76 0.42L0.24 0.3L0.08 0.55L0.05 1L-0.05 1L-0.08 0.55L-0.24 0.3L-0.76 0.42L-0.6 0.1L-0.95 -0.22L-0.42 -0.25L-0.55 -0.72L-0.18 -0.55Z")
 
 function path(g: CanvasRenderingContext2D, xs: ArrayLike<number>, ys: ArrayLike<number>, a: number, b: number) {
@@ -87,20 +95,29 @@ export function drawLine(g: CanvasRenderingContext2D, style: LineStyle, xs: Arra
     g.beginPath(); g.arc(xs[0], ys[0], o.width * 1.35, 0, Math.PI * 2); g.fill(); g.stroke()
     g.beginPath(); g.arc(xs[0] + o.width * 1.5, ys[0] - o.width * 0.6, o.width * 0.7, 0, Math.PI * 2); g.strokeStyle = o.colour; g.stroke()
   }
-  // The plane or the leaf, travelling once: at the head while the line draws, gone when it lands
-  if (o.head && travels(style) && end < total - 1 && al[end] > 0) {
-    const i = Math.max(1, end), ang = Math.atan2(ys[i] - ys[i - 1], xs[i] - xs[i - 1])
-    const s = Math.max(8, o.width * 4.2)
-    g.globalAlpha = Math.min(1, base / 0.75) * al[end]
-    g.translate(xs[end], ys[end])
-    if (style === "plane") {
-      g.rotate(ang); g.scale(s, s)
-      g.fillStyle = o.paper; g.fill(PLANE)
-      g.lineWidth = 1 / s; g.strokeStyle = o.ink; g.stroke(PLANE); g.stroke(PLANE_FOLD)
-    } else {
-      g.rotate(ang + Math.PI / 2 + Math.sin(o.time * 3.2) * 0.45); g.scale(s * 0.9, s * 0.9)
-      g.fillStyle = o.ink; g.fill(LEAF)
+  // The plane, crane or leaf, travelling once: at the head while the line draws, gone when it lands. Three planes
+  // fly in a V: the leader at the head, two smaller ones a few points behind, either side of the line.
+  const icon = o.icon ?? iconFor(style)
+  if (o.head && icon !== "none" && end < total - 1 && al[end] > 0) {
+    const s = Math.max(8, o.width * 4.2) * (o.iconSize ?? 1)
+    const fly = (at: number, side: number, k: number) => {
+      const i = Math.max(1, at), ang = Math.atan2(ys[i] - ys[i - 1], xs[i] - xs[i - 1]), z = s * k
+      g.save()
+      g.globalAlpha = Math.min(1, base / (travels(style) ? 0.75 : 1)) * al[at]
+      g.translate(xs[at] - Math.sin(ang) * side * s, ys[at] + Math.cos(ang) * side * s)
+      if (icon === "leaf") {
+        g.rotate(ang + Math.PI / 2 + Math.sin(o.time * 3.2) * 0.45); g.scale(z * 0.9, z * 0.9)
+        g.fillStyle = o.ink; g.fill(LEAF)
+      } else {
+        g.rotate(ang); g.scale(z, z)
+        const body = icon === "crane" ? CRANE : PLANE, fold = icon === "crane" ? CRANE_FOLD : PLANE_FOLD
+        g.fillStyle = o.paper; g.fill(body)
+        g.lineWidth = 1 / z; g.strokeStyle = o.ink; g.stroke(body); g.stroke(fold)
+      }
+      g.restore()
     }
+    fly(end, 0, 1)
+    if (icon === "flock" && end > 5) { fly(end - 5, 0.9, 0.7); fly(end - 5, -0.9, 0.7) }
   }
   g.restore()
 }
