@@ -102,8 +102,8 @@ export const PENDING = {
     ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。",
   },
   "faqs.visa.a": {
-    en: "Not for Aussies or Canadians on a short trip. Just check your passport has 6 months left after you fly home. Travel has the rest.",
-    ja: "オーストラリアやカナダ国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」へ。",
+    en: "Not for Aussies or Canadians on a short trip. Just check your passport has 6 months left after you fly home. The “Travel” section has further details.",
+    ja: "オーストラリアやカナダ国籍の方は、短期の滞在ならビザは不要です。帰国日から6か月以上の有効期限があるか、パスポートだけご確認ください。くわしくは「アクセス」のページにあります。",
   },
   "faqs.details.a": {
     en: "Your reply goes straight to us and no one else will see it. We'll delete it a few months after the wedding.",

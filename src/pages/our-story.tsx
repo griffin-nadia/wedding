@@ -8,7 +8,6 @@ import { STORY_PLAN } from "@/content/story-plan"
 import type { Chapter } from "@/lib/content"
 import { KYOTO, PLACES } from "@/lib/journey"
 import { onMap } from "@/lib/map-land"
-import { pending } from "@/content/pending"
 
 /**
  * The opener (run 24): one print each, tilted opposite ways, hers leaning into his and over his corner, with a strip
@@ -34,8 +33,8 @@ function Opener() {
 }
 
 /**
- * Our story, for everyone: their chapters from the Content tab once they're written; until then the planner's
- * layout (the kid opener, the eight photo stops, Kyoto) with a placeholder line where their words will go.
+ * Our story, for everyone: the kid opener, then their chapters from the Content tab (story-plan.ts, the same chapters,
+ * until it answers), Kyoto last with the journey map.
  */
 /** Where each chapter's place sits on the map (the story_N_place values in the Content tab). Taiwan isn't on the flat
  *  map's regions yet (run 24's map work), so it has no spot. */
@@ -52,9 +51,9 @@ function withStops(story: Chapter[]): Chapter[] {
 }
 
 export function StoryPage() {
-  const { t, lang } = useLang()
+  const { t } = useLang()
   const { story, ready } = useContent()
-  const chapters = ready && story.length ? withStops(story) : STORY_PLAN.map((c) => (c.body.length ? c : { ...c, body: [pending("story.chapterBody", lang)] }))
+  const chapters = withStops(ready && story.length ? story : STORY_PLAN)
   return (
     <>
       <PageHeader title={t.story.title} lettering="ourStory" />
