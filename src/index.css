@@ -1357,11 +1357,12 @@ svg.lucide { stroke-width: 1.5; }
 }
 .story-kid { position: absolute; }
 .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.74); }
-/* Run 27 (Jehan): each print takes its photo's own shape (his is taller than 4:5), so neither photo is cut off */
-.story-kid .story-print > div { height: var(--print-h); width: auto; }
+.story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
 .story-kid-him { left: 2%; top: 2%; z-index: 2; }
 .story-kid-him .story-print { --tilt: -4deg; }
-/* Run 27: the whole photo again, no zoom (it cut him off) */
+/* Run 26c (Jehan): on the print, closer in on him at the door (his first day, the yellow jumper); the full-screen view
+   still shows the whole photo */
+.story-kid-him .photo-img { object-position: 50% 0%; transform: scale(1.75); transform-origin: 57% 9%; } /* his face in the middle of the print */
 .story-kid-her { right: 2%; top: 12%; z-index: 3; }
 .story-kid-her .story-print { --tape-x: 50%; --tape-w: 38%; --tape-turn: -2.5deg; }
 .story-kid-her .story-print { --tilt: 5deg; }
