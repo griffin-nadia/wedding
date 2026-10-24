@@ -1488,8 +1488,10 @@ svg.lucide { stroke-width: 1.5; }
 .journey-look > .x-g24-box { width: 100%; }
 /* Run 27 (Jehan): the paper faded back (less colour and contrast) so the routes and marks stand out; Lantern a touch
    darker as well. The lines and marks are on their own layer, so they keep their full strength */
-.journey-look .x-g24-art > canvas:first-child { filter: saturate(0.6) contrast(0.82) brightness(1.04); }
-[data-theme="lantern"] .journey-look .x-g24-art > canvas:first-child { filter: saturate(0.6) contrast(0.85) brightness(0.88); }
+/* Run 27 (Jehan): one paper on every map (the story stop, RSVP step 6, full screen globe and map): the same painting
+   with the same grade, a touch warmer than the first faded take, so the hue never shifts from view to view */
+.journey-look .x-g24-art > canvas:first-child, .journey-flat-art { filter: saturate(0.8) contrast(0.9) brightness(1.03); }
+[data-theme="lantern"] :is(.journey-look .x-g24-art > canvas:first-child, .journey-flat-art) { filter: saturate(0.8) contrast(0.9) brightness(0.9); }
 /* Run 27: while the globe loads, its own shape: a disc of the antique paper (the globe is 4/5 of the box's height) with
    its ink rim, breathing softly, the words in it; still under reduced motion */
 .journey-look-wait, .journey-look .x-g24-wait { display: grid; place-items: center; container-type: size; isolation: isolate; }
