@@ -138,7 +138,7 @@ export function FortuneCard({ token, className, title }: { token: string; classN
     window.addEventListener("devicemotion", on)
     return () => window.removeEventListener("devicemotion", on)
   })
-  const save = () => saveFortune(t, lang === "ja" && fortune.textJa ? { ...fortune, text: fortune.textJa } : fortune)
+  const save = () => saveFortune(t, lang === "ja" && fortune.textJa ? { ...fortune, text: fortune.textJa, tier: "" } : fortune)
 
   if (state !== "open") {
     return (
@@ -202,9 +202,10 @@ export function SlipWords({ i, of, fortune, copy = false, headId = "fortune-head
       <p lang="ja" className="omikuji-no font-ja" aria-hidden>第{kanjiNumber(fortune.no || i + 1)}番</p>
       <p id={copy ? undefined : headId} className="omikuji-head flex flex-col items-center gap-1">
         <span lang="ja" className="omikuji-kichi font-ja">{fortune.tierJa}</span>
-        <span lang="en" className="omikuji-hand omikuji-tier">{fortune.tier}</span>
+        {/* Run 27: with Japanese on, the tier is its Japanese name only (the kanji above), and no English category */}
+        {!ja && <span lang="en" className="omikuji-hand omikuji-tier">{fortune.tier}</span>}
       </p>
-      {fortune.category && <p lang="en" className="omikuji-hand omikuji-category">{fortune.category}</p>}
+      {fortune.category && !ja && <p lang="en" className="omikuji-hand omikuji-category">{fortune.category}</p>}
       <p lang={ja ? "ja" : "en"} className="omikuji-text">{ja || fortune.text}</p>
       {/* The fortune's own number from the Fortunes tab (the slip's place in the list only for the drafts) */}
       <p className="omikuji-hand omikuji-count">{t.fortune.number(fortune.no || i + 1, of)}</p>
