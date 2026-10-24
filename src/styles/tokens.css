@@ -246,7 +246,7 @@
   --journey-sea: #e2d4ae;
   --journey-guest: #5b4126;
   /* Run 27: the routes on the antique globe (globe-antique.tsx inks), for the key */
-  --journey-nadia: #a23a1c; --journey-griffin: #3e5a2a; --journey-line-you: #8f5800;
+  --journey-nadia: #932f15; --journey-griffin: #3e5a2a; --journey-line-you: #744800; /* run 27: each at least 3:1 on land and sea */
   /* Scene grade: saturate .92, contrast .95, warm tint 4% */
   --scene-filter: saturate(0.92) contrast(0.95) sepia(0.04);
   --scene-scrim: var(--surface-scrim);
@@ -260,7 +260,7 @@
   --button-line-hover: color-mix(in oklab, var(--brand-sage-ink) 45%, var(--ink));
   --journey-sea: #2c2318;
   --journey-guest: #e3cfa2;
-  --journey-nadia: #f08c5c; --journey-griffin: #b3cf8f; --journey-line-you: #f4c55a;
+  --journey-nadia: #f6a27c; --journey-griffin: #b3cf8f; --journey-line-you: #f4c55a;
 }
 
 /* ─── Scales (same in every mode) ───────────────────────────────────────────── */
