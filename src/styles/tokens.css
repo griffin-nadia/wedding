@@ -70,13 +70,15 @@
   --ink-link: var(--brand-forest);
   --ink-story: var(--brand-sabi);                  /* Our story only: map lines, chapter labels, stop numbers; never a control */
   --ink-stamp: var(--brand-shu);                   /* the hanko only */
-  /* The omikuji's five tiers (run 26, Jehan: the fortune slip only may use yellow and amber), calmest to strongest:
-     the tier's ink (4.5:1 or more on the cream slip) and its seal ring (3:1 or more). tests/tier-colours.test.ts */
-  --tier-good: #4a6534;       --tier-good-ring: #5f7a42;      /* 良い吉 Good Blessing: soft moss */
-  --tier-great: #7d5418;      --tier-great-ring: #a07431;     /* 大吉 Great Blessing: warm ochre */
-  --tier-special: #7a5a0c;    --tier-special-ring: #a27a14;   /* 特別吉 Special Blessing: honey gold */
-  --tier-grand: #8f4a06;      --tier-grand-ring: #a77a12;     /* 素晴吉 Grand Blessing: deeper amber, gold ring */
-  --tier-super: #b0301a;      --tier-super-ring: #a87a12;     /* メガ吉 Super Blessing: vermilion, gold ring */
+  /* The omikuji's five tiers (run 26, Jehan: the fortune slip only may use yellow and amber), calmest to strongest.
+     Run 26c: five hues apart, so the tier shows at a glance, each one ink for the tier, 第七番, No. x of 25, the bands
+     and the seal's ring (4.5:1 or more on the cream slip in both themes; the bands and ring 3:1 or more as drawn).
+     The slip is the same washi at night, so Lantern uses these too. tests/tier-colours.test.ts */
+  --tier-good: #46602f;       /* 良い吉 Good Blessing: moss */
+  --tier-great: #2f4d78;      /* 大吉 Great Blessing: indigo (藍, after the Lantern indigo) */
+  --tier-special: #6a5c00;    /* 特別吉 Special Blessing: honey gold */
+  --tier-grand: #934c00;      /* 素晴吉 Grand Blessing: amber */
+  --tier-super: #b42318;      /* メガ吉 Super Blessing: vermilion */
   --line-hairline: var(--brand-wara);
   --line-strong: var(--brand-nikkei);          /* hover border */
   --line-focus: var(--brand-sage-ink);
@@ -119,12 +121,6 @@
   --ink-link: var(--brand-mitsu);
   --ink-story: var(--brand-kabocha);
   --ink-stamp: var(--brand-shu);
-  /* The slip stays cream at night but lets a little walnut through: each tier a touch deeper to hold its ratios */
-  --tier-good: #46602f;       --tier-good-ring: #5a743e;
-  --tier-great: #77501a;      --tier-great-ring: #98702c;
-  --tier-special: #735509;    --tier-special-ring: #9a7410;
-  --tier-grand: #884606;      --tier-grand-ring: #a0740f;
-  --tier-super: #a82d17;      --tier-super-ring: #a0740f;
   --line-hairline: var(--brand-yoru-line);
   --line-strong: var(--brand-kare);
   --line-focus: var(--brand-sage);
