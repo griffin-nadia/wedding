@@ -231,11 +231,11 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
           <g aria-hidden className="journey-flat-names">
             {/* Run 26c: who's from there, a G or an N in their line's colour beside the place (the globe's marks) */}
             <g transform={`translate(${flatPoint(BRISBANE)[0]} ${flatPoint(BRISBANE)[1]}) scale(${kz})`}>
-              <rect x={5} y={-7} width={14} height={14} rx={3.5} className="home-mark-nadia" /><text x={12} y={3.5} textAnchor="middle" className="home-mark-letter">N</text>
+              <rect x={5} y={-7} width={14} height={14} rx={7} className="home-mark-nadia" /><text x={12} y={3.5} textAnchor="middle" className="home-mark-letter">N</text>
               <text x={23} y={4} className="journey-place journey-flat-home">{t.journey.from.nadia}</text>
             </g>
             <g transform={`translate(${flatPoint(VICTORIA)[0]} ${flatPoint(VICTORIA)[1]}) scale(${kz})`}>
-              <rect x={-19} y={-7} width={14} height={14} rx={3.5} className="home-mark-griffin" /><text x={-12} y={3.5} textAnchor="middle" className="home-mark-letter">G</text>
+              <rect x={-19} y={-7} width={14} height={14} rx={7} className="home-mark-griffin" /><text x={-12} y={3.5} textAnchor="middle" className="home-mark-letter">G</text>
               <text x={-23} y={4} textAnchor="end" className="journey-place journey-flat-home">{t.journey.from.griffin}</text>
             </g>
           </g>
@@ -257,7 +257,7 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
           {mine && (
             <g aria-hidden transform={`translate(${mine[0]} ${mine[1]}) scale(${kz})`} className="journey-flat-names">
               {/* From a home city (Brisbane): the badge sits under that city's, and its name isn't said twice */}
-              <rect x={5} y={mineLift < 0 ? 10 : -7} width={26} height={14} rx={3.5} className="home-mark-you" /><text x={18} y={mineLift < 0 ? 20.5 : 3.5} textAnchor="middle" className="home-mark-letter home-mark-you-letter">{t.journey.youMark}</text>
+              <rect x={5} y={mineLift < 0 ? 10 : -7} width={26} height={14} rx={7} className="home-mark-you" /><text x={18} y={mineLift < 0 ? 20.5 : 3.5} textAnchor="middle" className="home-mark-letter home-mark-you-letter">{t.journey.youMark}</text>
               {mineLift >= 0 && <text x={35} y={4} className="journey-place journey-flat-home">{you!.name}</text>}
             </g>
           )}
