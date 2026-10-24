@@ -747,6 +747,13 @@ svg.lucide { stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; 
   .rsvp-sheet .sheet-body:has(> .rsvp-step[data-step="map"]) { display: flex; flex-direction: column; justify-content: center; }
   .rsvp-step[data-step="map"] .journey-end { align-items: center; text-align: center; }
 }
+/* Run 27 review: the done screen's bar holds add to calendar and Back to your invite (stacked on phones; on laptops
+   the calendar links on the left, the button on the right). "Opened in a new tab" shows just above the bar */
+.done-actions { align-items: center; }
+.done-actions > * { flex: 1 0 100%; }
+.done-actions [aria-labelledby="add-cal"] { position: relative; }
+.done-actions .cal-note { position: absolute; left: 0; bottom: calc(100% + var(--space-4) + 4px); min-height: 0; margin: 0; }
+@media (min-width: 768px) { .done-actions > [aria-labelledby="add-cal"] { margin-right: auto; } }
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
 /* "All good?": who sees the reply, a small note just above Back and Send (run 25) */
 .rsvp-actions > .rsvp-privacy { flex: 1 0 100% !important; display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-small); line-height: var(--text-small--line-height); color: var(--muted-foreground); }
