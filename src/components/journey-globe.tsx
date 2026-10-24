@@ -39,7 +39,7 @@ const KYOTO: [number, number] = [35.01, 135.77], BRISBANE: [number, number] = [-
 /** Zoom range and the step for the + and − buttons (run 24) */
 const ZOOM = { min: 1, max: 3 } // the step for + and − is the viewer's (story-journey.tsx STEP)
 /** Run 26: each kind's line on screen, in px, shared with the flat map's CSS (index.css, .journey-flat-lines) */
-const WEIGHT = { home: 2, guest: 1.2, bundle: 2.4, you: 3, edge: 6 }
+const WEIGHT = { home: 2, guest: 1.2, bundle: 2.4, you: 2, edge: 6 } // run 26c: their line as strong as the home lines
 const DASH = { home: [3, 3], guest: [2, 3] } as const
 /** A paper plane pointing right (+x), 24 × 24, folded down the middle */
 const PLANE = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M2 11.5 22 3l-6.5 18-4-7.5z" fill="currentColor" stroke="var(--plane-edge)" stroke-width="1.3" stroke-linejoin="round"/><path d="M22 3 11.5 13.5" stroke="var(--plane-edge)" stroke-width="1.1"/></svg>'
@@ -50,7 +50,7 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
   /** Run 26: the full-screen view's + and − (one pair for both views, in one spot): zoom by a factor */
   zoomRef?: RefObject<((f: number) => void) | null> }) {
   const { t, lang } = useLang()
-  const brisbane = useRef<HTMLSpanElement>(null), victoria = useRef<HTMLSpanElement>(null), tip = useRef<HTMLSpanElement>(null)
+  const brisbane = useRef<HTMLSpanElement>(null), victoria = useRef<HTMLSpanElement>(null), yours = useRef<HTMLSpanElement>(null), tip = useRef<HTMLSpanElement>(null)
   const own = useRef<((f: number) => void) | null>(null), zoomBy = zoomRef ?? own
   const { theme } = useTheme()
   const box = useRef<HTMLDivElement>(null)
@@ -112,7 +112,6 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
           const dotted = kind === "guest", mine = kind === "you", dash = dotted ? DASH.guest : mine ? null : DASH.home
           const parts = [new LineMaterial({ color: new THREE.Color(colour[kind]).getHex(), linewidth: mine ? WEIGHT.you : dotted ? (bundled ? WEIGHT.bundle : WEIGHT.guest) : WEIGHT.home, transparent: true, opacity: dotted ? (bundled ? 0.7 : 0.5) : 1, dashed: Boolean(dash) })]
           // Their own line gets a soft darker edge under it, so the gold holds on pale land and in Lantern
-          if (mine) parts.unshift(new LineMaterial({ color: new THREE.Color(colour.edge).getHex(), linewidth: WEIGHT.edge, transparent: true, opacity: 0.18, depthWrite: false }))
           const lines = parts.map((m, i) => {
             m.resolution.set(w, h)
             const line = new Line2(g, m); line.computeLineDistances(); line.renderOrder = mine ? 2 + i * 0.1 : 1
@@ -131,7 +130,7 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         if (you && you.lat != null && you.lon != null && you.id !== "jp") lines.push({ from: [you.lat, you.lon], kind: "you", low: nearHome(you.lat, you.lon) }) // beside a home line: a lower curve, so both read
         const arcs = lines.map((l) => ({ kind: l.kind, arc: make(l) })).filter((a) => a.arc) as { kind: Line["kind"]; arc: NonNullable<ReturnType<typeof make>> }[]
         const dot = (at: [number, number], r: number, c: string) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), new THREE.MeshBasicMaterial({ color: new THREE.Color(c) })); m.position.copy(toV(...at, 1.004)); m.renderOrder = 1; scene.add(m) }
-        dot(KYOTO, 0.018, hex("--action", "#5b6b3a"))
+        dot(KYOTO, 0.018, hex("--brand-shiro-kinari", "#f4ecdb")) // cream, like its seal (run 26c)
         const last = lines[lines.length - 1]
         if (last.kind === "you") dot(last.from, 0.014, colour.you)
         // The camera's distance fits the globe in the box's shorter side: worked out again on every resize (run 25)
@@ -155,7 +154,7 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         // Kyoto's label, pinned: an upright HTML label moved to wherever Kyoto is on screen, on whichever side keeps
         // it inside the globe's square, dimmed while Kyoto is round the back
         // Brisbane and Victoria are always named (run 24), small, wherever they are, dimmed round the back
-        const named = [{ v: toV(...BRISBANE, 1.004), el: brisbane.current }, { v: toV(...VICTORIA, 1.004), el: victoria.current }]
+        const named = [{ v: toV(...BRISBANE, 1.004), el: brisbane.current }, { v: toV(...VICTORIA, 1.004), el: victoria.current }, ...(last.kind === "you" ? [{ v: toV(...last.from, 1.004), el: yours.current }] : [])]
         const guestAt = guests.map((g) => ({ v: toV(g.lat, g.lon, 1.004), label: g.label }))
         const toScreen = (v: InstanceType<typeof THREE.Vector3>) => { const s = v.clone().project(camera); return { x: ((s.x + 1) / 2) * w, y: ((1 - s.y) / 2) * h, back: v.dot(camera.position) < 0.08 * camera.position.length() } }
         const pinAt = pins.map((p) => toV(...p.at, 1.004))
@@ -319,6 +318,10 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
             Griffin from Victoria, Canada); the legend names them */}
         <span ref={brisbane} className="globe-place" aria-hidden><b className="home-mark home-mark-nadia">N</b>{t.journey.from.nadia}</span>
         <span ref={victoria} className="globe-place" aria-hidden><b className="home-mark home-mark-griffin">G</b>{t.journey.from.griffin}</span>
+        {/* Run 26c (Jehan): their own place, a gold "You" badge beside its name, like the G and the N */}
+        {you && you.id !== "jp" && you.lat != null && you.lon != null && (nearHome(you.lat, you.lon)
+          ? <span ref={yours} className="globe-place globe-place-under" aria-hidden><b className="home-mark home-mark-you">{t.journey.youMark}</b></span>
+          : <span ref={yours} className="globe-place" aria-hidden><b className="home-mark home-mark-you">{t.journey.youMark}</b>{you.name}</span>)}
         <span ref={tip} className="globe-tip" aria-hidden hidden />
         <span className="sr-only">{t.journey.title}</span>
       </div>

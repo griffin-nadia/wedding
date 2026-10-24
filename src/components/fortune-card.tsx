@@ -7,6 +7,7 @@ import { useLang } from "@/lib/lang"
 import { canShake, draftsOn, drawnKey, FORTUNE_EVENT, keepDraws, localDraws, saveFortune } from "@/lib/fortune"
 import { fortuneFor, fortuneIndex, lastDraw, mergeDraws, pickFor, randomPick, type Draw } from "@/lib/draws"
 import { Button } from "@/components/ui/button"
+import { Shuffle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { kanjiNumber } from "@/lib/kanji"
 
@@ -38,11 +39,11 @@ export function Box({ drawing }: { drawing: boolean }) {
  * Omikuji after RSVP: Nadia's 25 (22 Oct), five tiers of five (大吉, 素晴吉, 良い吉, 特別吉, メガ吉), one per category
  * (Food, Travel, Social, Shopping, Fun), from the sheet's Fortunes tab; the slip shows its own tier. No bad luck. Closed: the tin, a line and "Draw one"; the tin itself is
  * also the button. Drawing shakes the tin (900 ms) and raises its stick, then the slip, centred, folds open like a
- * real omikuji (run 19): it comes out folded in three; from the middle (run 26c) the top third swings up and the last
- * swings down, each a paper fold with its shade lifting as it flattens and a little give as it lands; then the creases ease
- * out to the two faint lines the paper keeps (about 1.1 s, then 0.9 s). The real slip holds its place from the start,
+ * real omikuji (run 19): run 26c, it comes out folded in half and opens from the middle like a letter, the top half up
+ * and the bottom half down together, each with its shade lifting as it flattens and a little give as it lands; then the
+ * crease eases out to the faint line the paper keeps (about 1.1 s, then 0.9 s). The real slip holds its place from the start,
  * so nothing below moves, and takes focus. Android phones can shake to draw. Reduced motion: no shake, no fold, the
- * slip fades in. The fortune is the household's for good, on any device. Run 25: the tin comes back on each visit, so
+ * slip fades in (no fold). The fortune is the household's for good, on any device. Run 25: the tin comes back on each visit, so
  * the fold plays on a first reply and after an update (once per visit; within a visit it opens on the slip). Before,
  * a slip drawn once opened already unfolded for ever after, which is why it never folded after an update on Jehan's
  * Android phone. Run 26: "Draw another" under the slip. Each draw is saved with its number (lib/draws.ts), never over
@@ -163,35 +164,31 @@ export function FortuneCard({ token, className, title }: { token: string; classN
         </div>
         {fold === "folding" && <Fold key={n} i={i} of={pool.length} fortune={fortune} />}
       </div>
-      {/* The same washi and ink as the slip, with a soft glow: the one thing to do next */}
-      <button type="button" onClick={again} disabled={fold === "folding"} className="omikuji-again">{t.fortune.again}</button>
+      {/* Run 26c (Jehan): the site's own secondary button, like every other next step */}
+      <Button variant="secondary" size="md" onClick={again} disabled={fold === "folding"} className="omikuji-again"><Shuffle className="size-4" aria-hidden />{t.fortune.again}</Button>
     </div>
   )
 }
 
 /**
- * The fold: three paper copies of the slip, each cut to its third. Run 26c: it opens from the middle, like a real
- * omikuji unfolded in the hand: the middle third stays, the top third swings up from the first crease and the last
- * swings down from the second, both from behind it. Looks only (inert, hidden from screen readers): the real slip
- * under it is the one that's read and focused.
+ * The fold: two paper copies of the slip, each cut to its half. Run 26c (Jehan's phone check, 24 Oct): it opens from
+ * the middle like a letter: the slip comes out folded in half towards you, then the top half swings up and the bottom
+ * half swings down together, the words showing as each flattens, so neither half is ever blank. Looks only (inert,
+ * hidden from screen readers): the real slip under it is the one that's read and focused.
  */
 function Fold({ i, of, fortune }: { i: number; of: number; fortune: Fortune }) {
   const { t } = useLang()
-  const copy = (part: number) => (
-    <div data-tier={tierOf(fortune)} className={`omikuji-slip paper-feel omikuji-copy omikuji-part-${part}`}>
-      <span className="omikuji-creases" />
-      <SlipWords i={i} of={of} fortune={fortune} copy />
-      <Button variant="link" tabIndex={-1} className="omikuji-save">{t.fortune.save}</Button>
-      {part !== 2 && <span className="omikuji-shade" />}
+  const half = (side: "top" | "bottom") => (
+    <div className={`omikuji-leaf omikuji-leaf-${side}`}>
+      <div data-tier={tierOf(fortune)} className={`omikuji-slip paper-feel omikuji-copy omikuji-half-${side}`}>
+        <span className="omikuji-creases" />
+        <SlipWords i={i} of={of} fortune={fortune} copy />
+        <Button variant="link" tabIndex={-1} className="omikuji-save">{t.fortune.save}</Button>
+        <span className="omikuji-shade" />
+      </div>
     </div>
   )
-  return (
-    <div className="omikuji-fold" aria-hidden inert>
-      {copy(2)}
-      <div className="omikuji-leaf omikuji-leaf-up">{copy(1)}<span className="omikuji-back omikuji-back-1" /></div>
-      <div className="omikuji-leaf omikuji-leaf-down">{copy(3)}<span className="omikuji-back omikuji-back-3" /></div>
-    </div>
-  )
+  return <div className="omikuji-fold" aria-hidden inert>{half("top")}{half("bottom")}</div>
 }
 
 /** The words on the slip: 第七番, its tier (素晴吉 large, Grand Blessing in small caps), its category, the line, No. 7 of
@@ -203,7 +200,7 @@ export function SlipWords({ i, of, fortune, copy = false, headId = "fortune-head
   return (
     <>
       <p lang="ja" className="omikuji-no font-ja" aria-hidden>第{kanjiNumber(fortune.no || i + 1)}番</p>
-      <p id={copy ? undefined : headId} className="flex flex-col items-center gap-1">
+      <p id={copy ? undefined : headId} className="omikuji-head flex flex-col items-center gap-1">
         <span lang="ja" className="omikuji-kichi font-ja">{fortune.tierJa}</span>
         <span lang="en" className="omikuji-hand omikuji-tier">{fortune.tier}</span>
       </p>
