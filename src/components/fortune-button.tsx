@@ -13,8 +13,8 @@ const FortuneCard = lazy(() => import("@/components/fortune-card").then((m) => (
 function OmikujiIcon() {
   return (
     <svg viewBox="0 0 24 24" className="lucide size-5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="m15 2-1.5 6" />
-      <rect x="4" y="8" width="16" height="14" rx="2" />
+      <path d="m14.5 3-1 5" />
+      <rect x="4" y="8" width="16" height="13" rx="2" />
       <path d="M4 12h16" />
     </svg>
   )

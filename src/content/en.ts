@@ -419,8 +419,9 @@ export const en = {
     noSongs: "None yet",
     doneTitle: { all: "You're all set", none: "Thanks for letting us know", mixed: "Thanks, got it" },
     backHome: "Back to your invite",
-    sentLine: `Sent. ${CHANGE_BY}`,
-    updatedLine: `Updated. ${CHANGE_BY}`,
+    // Run 27 (Jehan): short, so the done screen reads at a glance (Home says when answers can change)
+    sentLine: "Sent, thank you.",
+    updatedLine: "Updated, thank you.",
     savingQuiet: "Sending…",
     savedOffline: "Saved on this phone. It'll send when you're back online.",
     changeReply: "Change my reply",
