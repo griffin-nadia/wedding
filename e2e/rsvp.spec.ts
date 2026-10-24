@@ -82,7 +82,7 @@ for (const sam of ["yes", "no"] as const) for (const alex of ["yes", "no"] as co
           if (typing) { await more.focus(); await keyboard(page, true); await aboveKeyboard(page); await keyboard(page, false) }
         }
         await press(page, /^Next$/)
-        await expect(dialog.getByRole("heading", { name: /song for the dance floor/ })).toBeVisible()
+        await expect(dialog.getByRole("heading", { name: /song for our wedding playlist/ })).toBeVisible()
         await press(page, /^Next$/)
         await expect(dialog.getByText("Arriving")).toBeVisible()
       }
