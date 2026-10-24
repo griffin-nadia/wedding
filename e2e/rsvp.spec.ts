@@ -340,7 +340,7 @@ for (const theme of ["autumn", "lantern"] as const) test(`the done screen (${the
   await expect(page.locator("#letter")).toBeFocused()
 })
 
-// Run 19: the fortune is centred and folds open like an omikuji slip (three thirds over the real slip, which holds
+// Run 19: the fortune is centred and folds open like an omikuji slip (run 26c: two halves opening from the middle over the real slip, which holds
 // its place and is the one focused), then the fold goes and the slip settles
 test("the fortune folds open, centred, then settles", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" })

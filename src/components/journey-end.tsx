@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
+import { Maximize2 } from "lucide-react"
 import { Combobox } from "@/components/combobox"
 import { JourneyFlat } from "@/components/journey-flat"
 import { geocode, getJourneys, setFlying, type Journey, type Place } from "@/lib/api"
@@ -120,6 +121,13 @@ export function FlyingMap({ fly }: { fly: Flying }) {
           <button type="button" className="btn-text min-h-11" onClick={() => fly.setPinning(false)}>{t.flying.pinCancel}</button>
         </div>
       )}
+      {/* Run 26c (Jehan): Full screen, with Globe / Map, as on Our story's journey stop (loaded only on this step) */}
+      {!pinning && (
+        <Suspense fallback={null}>
+          <JourneyViewer pins={NO_PINS} onPin={() => {}}
+            trigger={<button type="button" className="journey-open self-center" aria-label={t.journey.openLabel}><Maximize2 className="size-4" aria-hidden />{t.journey.open}</button>} />
+        </Suspense>
+      )}
       <JourneyFlat you={city} cities={journeys} label={t.journey.map(city ? city.name : null)} onPick={pinning ? (lat, lon) => void fly.pin(lat, lon) : undefined} />
       {/* Run 26c (the review): the "From Melbourne" line under the map is gone (their gold line says it); screen
           readers still hear where they picked */}
@@ -127,6 +135,10 @@ export function FlyingMap({ fly }: { fly: Flying }) {
     </div>
   )
 }
+
+// The story's full-screen journey viewer, only once the map step shows (it lives with Our story's code)
+const JourneyViewer = lazy(() => import("@/components/story-journey").then((m) => ({ default: m.JourneyViewer })))
+const NO_PINS: never[] = []
 
 // Answers for this visit, by what was typed (memory only, gone on reload)
 const keyOf = (typed: string) => typed.trim().toLowerCase()
