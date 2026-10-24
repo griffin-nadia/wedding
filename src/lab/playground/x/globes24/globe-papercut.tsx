@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { around, breathe, grain, land, seeded, sheet } from "./kit-paint"
 
 /**
@@ -10,7 +10,7 @@ import { around, breathe, grain, land, seeded, sheet } from "./kit-paint"
  */
 const COL = {
   day: { sea: "#5f8ea0", shelf: "#8fb6bb", land: ["#e2b77a", "#d79f6c", "#c9b27c"], inland: "#ecd29c", core: "rgba(255, 250, 238, 0.9)", shadow: "rgba(40, 30, 20, 0.5)" },
-  night: { sea: "#1b2a3c", shelf: "#2c4152", land: ["#6e5a40", "#674c3a", "#5f5640"], inland: "#7c6849", core: "rgba(230, 215, 190, 0.45)", shadow: "rgba(0, 0, 0, 0.7)" },
+  night: { sea: "#173a33", shelf: "#24524a", land: ["#6e5a40", "#674c3a", "#5f5640"], inland: "#7c6849", core: "rgba(230, 215, 190, 0.45)", shadow: "rgba(0, 0, 0, 0.7)" },
 }
 
 /** Brushy gouache over one sheet: long soft strokes a touch lighter and darker than its colour, in a few widths
@@ -28,7 +28,7 @@ function gouache(g: CanvasRenderingContext2D, W: number, H: number, u: number, s
   }
 }
 
-const look: Look = {
+export const look: Look = {
   line: "plane",
   shade: 0.3,
   rim: 1,
@@ -90,8 +90,4 @@ const look: Look = {
     grain(g, night ? 0.07 : 0.11, 43)
     return c
   },
-}
-
-export default function GlobePapercut() {
-  return <GlobeLab look={look} />
 }

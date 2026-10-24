@@ -11,7 +11,7 @@ import { breathe } from "./kit-paint"
  * then the picture's upload and the shader's compile each get a task of their own (setPicture()).
  */
 export type View = { lon: number; tilt: number; m: number }
-export type PaperOptions = { seeThrough: number; shade: number; glsl: string; segments: [number, number] }
+export type PaperOptions = { seeThrough: number; shade: number; glsl: string; segments: [number, number]; nearest?: boolean }
 
 const vert = /* glsl */ `
 uniform float uM, uLon, uTilt;
@@ -66,6 +66,8 @@ export function makePaper(o: PaperOptions, pixelRatio: number) {
     setPicture: async (picture: HTMLCanvasElement) => {
       tex = new THREE.CanvasTexture(picture)
       tex.wrapS = THREE.RepeatWrapping; tex.anisotropy = 4
+      // Run 27: hard pixels (the video game look)
+      if (o.nearest) { tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter; tex.generateMipmaps = false }
       uniforms.map.value = tex
       // finish() waits for the GPU here, so each piece of its work is paid in its own short task, not in one long
       // first frame

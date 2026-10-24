@@ -1,6 +1,7 @@
+/* eslint-disable react-refresh/only-export-components -- a look (or the kit) exports its data beside its component */
 import type { CSSProperties } from "react"
 import { useParam } from "../../params"
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { around, breathe, grain, land, latY, seeded, sheet } from "./kit-paint"
 
 /**
@@ -86,7 +87,7 @@ function Dome() {
   )
 }
 
-const look: Look = {
+export const look: Look = {
   line: "leaf",
   shade: 0.45,
   // Kyoto near the top: the globe faces 10°S at first, so Kyoto rides about 45° above the middle as it turns
@@ -134,8 +135,4 @@ const look: Look = {
     grain(g, night ? 0.05 : 0.06, 31)
     return c
   },
-}
-
-export default function GlobeSnow() {
-  return <GlobeLab look={look} />
 }

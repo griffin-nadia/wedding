@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "../globes24/kit"
+import type { Look } from "../globes24/kit-view"
 import { breathe, grain, land, sheet } from "../globes24/kit-paint"
 
 /**
@@ -18,7 +18,7 @@ function tile(size: number, draw: (x: CanvasRenderingContext2D, s: number) => vo
   draw(t.getContext("2d")!, t.width); return t
 }
 
-const look: Look = {
+export const look: Look = {
   line: "dots",
   icon: "flock",
   shade: 0.15,
@@ -52,8 +52,4 @@ const look: Look = {
     grain(g, night ? 0.16 : 0.2, 61)
     return c
   },
-}
-
-export default function GlobeRiso() {
-  return <GlobeLab look={look} />
 }

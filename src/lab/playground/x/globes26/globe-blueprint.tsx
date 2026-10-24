@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "../globes24/kit"
+import type { Look } from "../globes24/kit-view"
 import { around, breathe, grain, land, latY, lonX, seeded, sheet } from "../globes24/kit-paint"
 
 /**
@@ -6,17 +6,17 @@ import { around, breathe, grain, land, latY, lonX, seeded, sheet } from "../glob
  * sun print, a white graticule every 10° (heavier every 30°), the land hatched at 45° inside a traced coast, and a
  * title block in the Southern Ocean. The lines are white drafting lines and white paper planes fly them.
  */
-const look: Look = {
+export const look: Look = {
   line: "stitch",
   icon: "plane",
   shade: 0.3,
   rim: 1.2,
   inks: (night) => ({ nadia: "#ffc2a6", griffin: "#cdeeb0", guest: night ? "#b9cbe6" : "#e9f1ff", you: "#ffd866", ink: night ? "#06101f" : "#0b2547", paper: "#f4f8ff" }),
-  back: (night) => (night ? "#0c1d36" : "#1f4e8c"),
+  back: (night) => (night ? "#173f78" : "#2563b0"),
   paint: async ({ night, width: W }) => {
     const [c, g] = sheet(W), H = W / 2, u = W / 2048, rnd = seeded(41)
     const white = night ? "rgba(200, 220, 250, " : "rgba(255, 255, 255, "
-    g.fillStyle = night ? "#0c1d36" : "#1f4e8c"; g.fillRect(0, 0, W, H)
+    g.fillStyle = night ? "#173f78" : "#2563b0"; g.fillRect(0, 0, W, H)
     // The sun print's uneven exposure
     for (let i = 0; i < 50; i++) {
       const cx = rnd() * W, cy = rnd() * H, r = (0.05 + rnd() * 0.12) * W, tone = rnd() > 0.5 ? "rgba(90, 140, 210, 0.16)" : "rgba(5, 20, 50, 0.22)"
@@ -52,8 +52,4 @@ const look: Look = {
     grain(g, night ? 0.08 : 0.12, 41)
     return c
   },
-}
-
-export default function GlobeBlueprint() {
-  return <GlobeLab look={look} />
 }

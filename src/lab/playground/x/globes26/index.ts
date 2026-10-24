@@ -1,4 +1,4 @@
-import { lazy } from "react"
+import { lookPage } from "../globes24/page"
 import type { Entry } from "../../types"
 import { globeKnobs } from "../globes24/kit-data"
 
@@ -24,7 +24,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Airmail (Wikipedia)", href: "https://en.wikipedia.org/wiki/Airmail" }, ...REFS],
     promote: `The painter (paint() in globe-airmail.tsx) replaces paint-globe.ts, painted on the device in steps. The postmarks use Georgia and a monospace face on the canvas (no web font), so on a phone they'd want the site's own lettering. ${KIT}`,
-    Component: lazy(() => import("./globe-airmail")),
+    Component: lookPage(() => import("./globe-airmail")),
   },
   {
     id: "globe-blueprint",
@@ -35,7 +35,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Cyanotype", href: "https://en.wikipedia.org/wiki/Cyanotype" }, ...REFS],
     promote: `The painter (paint() in globe-blueprint.tsx) replaces paint-globe.ts, painted on the device in steps. Its blue is its own colour, not a site token. ${KIT}`,
-    Component: lazy(() => import("./globe-blueprint")),
+    Component: lookPage(() => import("./globe-blueprint")),
   },
   {
     id: "globe-riso",
@@ -46,18 +46,18 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Risograph", href: "https://en.wikipedia.org/wiki/Risograph" }, ...REFS],
     promote: `The painter (paint() in globe-riso.tsx) replaces paint-globe.ts: two pattern fills and a stroke, the cheapest painter here. The fluoro inks are far louder than the site's palette. ${KIT}`,
-    Component: lazy(() => import("./globe-riso")),
+    Component: lookPage(() => import("./globe-riso")),
   },
   {
     id: "globe-kintsugi",
     title: "Kintsugi lacquer",
     deciding: DECIDING,
-    summary: "The globe as a lacquer bowl mended with gold: vermilion urushi seas and black land (Lantern: black seas, deep red land), every coast a gold seam, gold cracks across the world, and one still highlight the world turns under. Gold-leaf paper planes.",
+    summary: "The globe as a lacquer bowl mended with gold: black lacquer seas, vermilion land (Lantern: deep red land), every coast a gold seam, gold cracks across the world, and one still highlight the world turns under. Gold-leaf paper planes.",
     knobs: globeKnobs("ink", "plane"),
     live: { path: "/our-story" },
     refs: [{ label: "Kintsugi (金継ぎ)", href: "https://en.wikipedia.org/wiki/Kintsugi" }, ...REFS],
     promote: `The painter (paint() in globe-kintsugi.tsx) replaces paint-globe.ts, plus six lines of fragment shader for the highlight (no extra geometry). Risk: the cracks read as breakage, which might be the wrong note for a wedding; the gold lines are the strongest of any look. ${KIT}`,
-    Component: lazy(() => import("./globe-kintsugi")),
+    Component: lookPage(() => import("./globe-kintsugi")),
   },
   {
     id: "globe-chiyogami",
@@ -68,7 +68,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Chiyogami (千代紙)", href: "https://en.wikipedia.org/wiki/Chiyogami" }, ...REFS],
     promote: `The painter (paint() in globe-chiyogami.tsx) replaces paint-globe.ts: five small pattern tiles, one fill per country. The papers are simplified (the hemp leaf is a plain lattice); Nadia could paint real ones as tiles. ${KIT}`,
-    Component: lazy(() => import("./globe-chiyogami")),
+    Component: lookPage(() => import("./globe-chiyogami")),
   },
   {
     id: "globe-folded",
@@ -79,6 +79,6 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Map folding", href: "https://en.wikipedia.org/wiki/Map_folding" }, ...REFS],
     promote: `The painter (paint() in globe-folded.tsx) replaces paint-globe.ts, plus four lines of fragment shader for the fold light (the folds show on the flat map too). ${KIT}`,
-    Component: lazy(() => import("./globe-folded")),
+    Component: lookPage(() => import("./globe-folded")),
   },
 ]

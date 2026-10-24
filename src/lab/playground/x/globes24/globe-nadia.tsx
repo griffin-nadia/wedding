@@ -1,6 +1,5 @@
-import { useKnob } from "../../params"
 import { privateArt } from "../../private"
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { paintHers, paintStandIn, paintTemplate, seaOf } from "./globe-nadia-paint"
 
 /**
@@ -30,9 +29,6 @@ const hers: Look = {
   // Not there yet (or a build, where private files never are): the stand-in instead
   paint: ({ night, width }) => (SLOT.src ? paintHers(SLOT.src, { night, W: width, sea: SLOT.sea }) : Promise.reject(new Error("none"))).catch(() => paintStandIn({ night, W: width })),
 }
-const LOOKS: Record<string, Look> = { standin: standIn, template, hers }
-
-export default function GlobeNadia() {
-  const which = useKnob("painting", "standin")
-  return <GlobeLab look={LOOKS[which] ?? standIn} />
-}
+export const LOOKS: Record<string, Look> = { standin: standIn, template, hers }
+/** Run 27, the picker's Nadia's paint: hers once it's in, the stand-in until then (and always in a build) */
+export const look = hers

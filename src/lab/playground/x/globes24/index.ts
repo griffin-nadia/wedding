@@ -1,4 +1,5 @@
 import { lazy } from "react"
+import { lookPage } from "./page"
 import type { Entry } from "../../types"
 import { globeKnobs } from "./kit-data"
 
@@ -26,7 +27,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: REFS,
     promote: `No new painting: src/lib/paint-globe.ts as it is. ${KIT}`,
-    Component: lazy(() => import("./globe-watercolour")),
+    Component: lookPage(() => import("./globe-watercolour")),
   },
   {
     id: "globe-sashiko",
@@ -37,7 +38,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Hitomezashi sashiko patterns", href: "https://en.wikipedia.org/wiki/Sashiko" }, ...REFS],
     promote: `The painter (paint() in globe-sashiko.tsx) replaces paint-globe.ts: painted on the device in steps, no image to download. ${KIT} The indigo is its own colour, not a site token: one more for the token file if it ships.`,
-    Component: lazy(() => import("./globe-sashiko")),
+    Component: lookPage(() => import("./globe-sashiko")),
   },
   {
     id: "globe-woodblock",
@@ -48,7 +49,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Seigaiha (青海波)", href: "https://en.wikipedia.org/wiki/Seigaiha" }, { label: "Hokusai, Thirty-six Views of Mount Fuji", href: "https://en.wikipedia.org/wiki/Thirty-six_Views_of_Mount_Fuji" }, ...REFS],
     promote: `The painter (paint() in globe-woodblock.tsx) replaces paint-globe.ts, painted on the device in steps. ${KIT}`,
-    Component: lazy(() => import("./globe-woodblock")),
+    Component: lookPage(() => import("./globe-woodblock")),
   },
   {
     id: "globe-antique",
@@ -59,7 +60,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Globe gores (Library of Congress)", href: "https://www.loc.gov/maps/?q=globe+gores" }, ...REFS],
     promote: `The painter (paint() in globe-antique.tsx) replaces paint-globe.ts, painted on the device in steps; the ocean names use the site's display face (Latin only, so Japanese would need its own lettering). ${KIT}`,
-    Component: lazy(() => import("./globe-antique")),
+    Component: lookPage(() => import("./globe-antique")),
   },
   {
     id: "globe-dotted",
@@ -70,18 +71,18 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Halftone", href: "https://en.wikipedia.org/wiki/Halftone" }, ...REFS],
     promote: `The painter (paint() in globe-dotted.tsx) replaces paint-globe.ts, painted on the device in steps from a quarter-size land mask, no image to download. ${KIT}`,
-    Component: lazy(() => import("./globe-dotted")),
+    Component: lookPage(() => import("./globe-dotted")),
   },
   {
     id: "globe-lantern",
     title: "Lantern night",
     deciding: DECIDING,
-    summary: "Made for the Lantern theme: a deep indigo night sea, moonlit coasts, a still warm lantern glow at Kyoto, Brisbane, Victoria and every guest's city, and the lines as strings of tiny glowing lanterns. In the light theme it's the festival by day: paper land, red unlit lanterns, a faint warm blush.",
+    summary: "Made for the Lantern theme: a deep indigo night sea, moonlit coasts, a still warm lantern glow at Kyoto, Brisbane, Victoria and every guest's city, and the lines as strings of tiny glowing lanterns. In the light theme it's dusk (run 27: so it reads apart from the pale looks): a blue evening sea, the lanterns just lit.",
     knobs: globeKnobs("dots"),
     live: { path: "/our-story" },
     refs: [{ label: "Tōrō nagashi (floating lanterns)", href: "https://en.wikipedia.org/wiki/T%C5%8Dr%C5%8D_nagashi" }, ...REFS],
     promote: `The painter (paint() in globe-lantern.tsx) replaces paint-globe.ts, painted on the device in steps. The glows are the kit's new optional glow: one small soft sprite per place and a wide faint pass under each line, drawn on the 2D layer with an additive mix at night (still, no flicker). That doubles the line drawing per frame while the globe turns, so check it on a slow phone at 40 households. ${KIT}`,
-    Component: lazy(() => import("./globe-lantern")),
+    Component: lookPage(() => import("./globe-lantern")),
   },
   {
     id: "globe-papercut",
@@ -92,7 +93,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Kirie (切り絵) paper cutting", href: "https://en.wikipedia.org/wiki/Kirie" }, ...REFS],
     promote: `The painter (paint() in globe-papercut.tsx) replaces paint-globe.ts, painted on the device in steps; the shadows are blurred by scaling a small copy, so no filter or shadowBlur. The shadows fall down and to the right on the paper, so on the turning globe they turn with it rather than staying lit from one side. ${KIT}`,
-    Component: lazy(() => import("./globe-papercut")),
+    Component: lookPage(() => import("./globe-papercut")),
   },
   {
     id: "globe-inkline",
@@ -103,7 +104,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Pictorial maps", href: "https://en.wikipedia.org/wiki/Pictorial_maps" }, ...REFS],
     promote: `The painter (paint() in globe-inkline.tsx) replaces paint-globe.ts, painted on the device in steps. Her art isn't used, only its palette and feel; if Nadia draws the coasts herself, that's ART.globeLand (look 11). ${KIT}`,
-    Component: lazy(() => import("./globe-inkline")),
+    Component: lookPage(() => import("./globe-inkline")),
   },
   {
     id: "globe-origami",
@@ -114,7 +115,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: [{ label: "Origami crease patterns", href: "https://en.wikipedia.org/wiki/Crease_pattern" }, ...REFS],
     promote: `The painter (paint() in globe-origami.tsx) replaces paint-globe.ts, painted on the device in steps, plus a few lines of fragment shader for the facets' light (no extra geometry: the facets are worked out per pixel, so they turn with the land). The kit's fragment shader needs the view's uLon and uTilt for it (added here). ${KIT}`,
-    Component: lazy(() => import("./globe-origami")),
+    Component: lookPage(() => import("./globe-origami")),
   },
   {
     id: "globe-snow",
@@ -125,7 +126,7 @@ export const entries: Entry[] = [
     live: { path: "/our-story" },
     refs: REFS,
     promote: `The painter (paint() in globe-snow.tsx) replaces paint-globe.ts; the dome, base and leaves are one SVG and six CSS-animated leaves over the map (transform and opacity only, still under reduced motion). The look starts the globe facing 10°S so Kyoto rides near the top (a new tilt option in the kit). ${KIT} Maple leaves: a plain silhouette, because Nadia's maple leaf art isn't available yet; hers would drop into the same six leaves. Risk: it's a novelty, and the base covers the far south of the ball.`,
-    Component: lazy(() => import("./globe-snow")),
+    Component: lookPage(() => import("./globe-snow")),
   },
   {
     id: "globe-nadia",
@@ -135,8 +136,7 @@ export const entries: Entry[] = [
     knobs: [...globeKnobs("ink"), { id: "painting", label: "Painting", kind: "select", options: [["standin", "Stand-in (her venue map's colours)"], ["template", "The blank template"], ["hers", "Hers (private/nadia-art-globe/globe-land.png)"]], def: "standin" }],
     live: { path: "/our-story" },
     refs: REFS,
-    parked: "Waiting on Nadia's painting. Spec and template: .brief/docs/art.md, \"Globe land (ART.globeLand)\", and .brief/docs/globe-land-template.png.",
     promote: `Ready to ship once she paints it. In src/lib/art.ts, ART.globeLand becomes { src: "art/map/globe-land", sea: false } (today it's a bare string, "sea included"): sea false means her land on a clear background, and the site paints the sea in each theme's colour so one painting serves light and Lantern (Lantern multiplies a dusk over it). journey-globe.tsx (or the kit's paint) reads ART.globeLand.src and, when sea is false, fills the sea first; scripts/art-export.mjs exports private/nadia-art-globe/globe-land.png to public/art/map/globe-land-1024.webp (phones) and -2048.webp, alpha kept. Weight: one WebP, about 200 to 400 kB at 2048 (less on phones) (more than painting on the device, which is free). ${KIT}`,
-    Component: lazy(() => import("./globe-nadia")),
+    Component: lazy(() => import("./globe-nadia-lab")),
   },
 ]

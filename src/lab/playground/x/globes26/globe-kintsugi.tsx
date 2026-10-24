@@ -1,14 +1,14 @@
-import { GlobeLab, type Look } from "../globes24/kit"
+import type { Look } from "../globes24/kit-view"
 import { breathe, land, seeded, sheet } from "../globes24/kit-paint"
 
 /**
- * Run 26, kintsugi (金継ぎ): the globe as a lacquer bowl mended with gold. Light: vermilion urushi seas and black
- * lacquer land; Lantern: black seas and deep red land. Every coast is a gold seam, a few gold cracks run across the
+ * Run 26, kintsugi (金継ぎ): the globe as a lacquer bowl mended with gold. Black lacquer seas (run 27: by day too, so
+ * it reads apart from hanbok red), vermilion land by day and deep red at night. Every coast is a gold seam, a few gold cracks run across the
  * world as if it had been broken and put back together, and the lacquer has one soft highlight that stays still while
  * the world turns under it (a few lines of shader). Gold-leaf paper planes fly the lines.
  */
 const COL = {
-  day: { sea: "#8f2318", land: "#1a1412", deep: "rgba(40, 6, 4, 0.35)" },
+  day: { sea: "#14100e", land: "#b2341f", deep: "rgba(0, 0, 0, 0.4)" },
   night: { sea: "#0e0b0a", land: "#3a1410", deep: "rgba(0, 0, 0, 0.45)" },
 }
 
@@ -20,7 +20,7 @@ function seam(g: CanvasRenderingContext2D, draw: () => void, w: number) {
   g.strokeStyle = "rgba(255, 240, 190, 0.85)"; g.lineWidth = w * 0.32; draw()
 }
 
-const look: Look = {
+export const look: Look = {
   line: "ink",
   icon: "plane",
   shade: 0.45,
@@ -59,8 +59,4 @@ const look: Look = {
     await breathe(g)
     return c
   },
-}
-
-export default function GlobeKintsugi() {
-  return <GlobeLab look={look} />
 }

@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { around, breathe, grain, land, latY, lonX, seeded, sheet } from "./kit-paint"
 
 /**
@@ -29,7 +29,7 @@ const rose = (
   </svg>
 )
 
-const look: Look = {
+export const look: Look = {
   line: "ink",
   shade: 0.3,
   rim: 1.2,
@@ -95,8 +95,4 @@ const look: Look = {
     grain(g, night ? 0.08 : 0.12, 19)
     return c
   },
-}
-
-export default function GlobeAntique() {
-  return <GlobeLab look={look} />
 }

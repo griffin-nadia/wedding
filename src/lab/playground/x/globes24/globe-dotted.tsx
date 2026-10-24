@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { breathe, grain, land, sheet } from "./kit-paint"
 
 /**
@@ -6,14 +6,14 @@ import { breathe, grain, land, sheet } from "./kit-paint"
  * globes. The dots sit on rows of equal spacing over the sphere (fewer per row towards the poles, each drawn a little
  * wider on the picture so it lands nearly round on the ball and still reads as a dot on the flat map), and like a
  * halftone screen they shrink towards the coasts. The sea carries a faint, finer screen of its own, so it reads as
- * printed paper rather than empty. Lantern: pale dots on dark ink paper.
+ * printed paper rather than empty. Run 27: navy dots on blush paper by day; Lantern, gold dots on umber.
  */
 const COL = {
-  day: { paper: "#f3ead9", dot: "#3b2a20", sea: "rgba(59, 42, 32, 0.16)" },
-  night: { paper: "#17140f", dot: "#ead9b8", sea: "rgba(234, 217, 184, 0.13)" },
+  day: { paper: "#efd6cb", dot: "#1f3a6b", sea: "rgba(31, 58, 107, 0.16)" },
+  night: { paper: "#2a1c12", dot: "#f0c66e", sea: "rgba(240, 198, 110, 0.13)" },
 }
 
-const look: Look = {
+export const look: Look = {
   line: "dots",
   shade: 0.35,
   rim: 1,
@@ -67,8 +67,4 @@ const look: Look = {
     grain(g, night ? 0.06 : 0.1, 23)
     return c
   },
-}
-
-export default function GlobeDotted() {
-  return <GlobeLab look={look} />
 }

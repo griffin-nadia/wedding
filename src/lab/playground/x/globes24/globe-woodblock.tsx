@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { around, breathe, grain, land, seeded, sheet } from "./kit-paint"
 
 /**
@@ -7,8 +7,8 @@ import { around, breathe, grain, land, seeded, sheet } from "./kit-paint"
  * hair off the key block's ink outline (misregistration), and the grain of the wood and the paper over it all.
  */
 const COL = {
-  day: { paper: "#efe3c8", sea: "#b9cdc8", wave: "#3a6378", deep: "#2b4f68", land: "#d7b46e", land2: "#b9a05e", key: "#2a2420" },
-  night: { paper: "#211c18", sea: "#1d2c38", wave: "#6d8ea2", deep: "#0f1a24", land: "#8a7240", land2: "#6f5d36", key: "#0c0a08" },
+  day: { paper: "#efe3c8", sea: "#b9cdc8", wave: "#3a6378", deep: "#2b4f68", land: "#a3b56b", land2: "#869c55", key: "#2a2420" },
+  night: { paper: "#211c18", sea: "#1d2c38", wave: "#6d8ea2", deep: "#0f1a24", land: "#55703f", land2: "#475f35", key: "#0c0a08" },
 }
 
 /** One seigaiha tile: rows of fans, each fan a filled circle with three rings, the lower rows over the upper */
@@ -24,7 +24,7 @@ function seigaiha(T: number, sea: string, wave: string, lw: number) {
   return t
 }
 
-const look: Look = {
+export const look: Look = {
   line: "dots",
   shade: 0.25,
   rim: 1.5,
@@ -69,8 +69,4 @@ const look: Look = {
     grain(g, night ? 0.08 : 0.12, 3)
     return c
   },
-}
-
-export default function GlobeWoodblock() {
-  return <GlobeLab look={look} />
 }

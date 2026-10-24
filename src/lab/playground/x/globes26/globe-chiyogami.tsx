@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "../globes24/kit"
+import type { Look } from "../globes24/kit-view"
 import { breathe, grain, land, seeded, sheet } from "../globes24/kit-paint"
 
 /**
@@ -11,7 +11,7 @@ type Pal = { sea: string; fibre: string; shadow: string; edge: string; p: [strin
 const PAL: Record<"day" | "night", Pal> = {
   day: { sea: "#ece4d2", fibre: "rgba(120, 95, 60, 0.14)", shadow: "rgba(50, 30, 15, 0.45)", edge: "rgba(255, 252, 244, 0.9)",
     p: [["#c8473b", "#f3e3c8"], ["#2f4f7a", "#e9dfc9"], ["#e58fa0", "#fbeee6"], ["#c9a13a", "#f6ecd2"], ["#4f7d5c", "#efe8d2"]] },
-  night: { sea: "#1d2433", fibre: "rgba(220, 210, 190, 0.08)", shadow: "rgba(0, 0, 0, 0.6)", edge: "rgba(230, 220, 200, 0.35)",
+  night: { sea: "#3a2a1c", fibre: "rgba(220, 210, 190, 0.08)", shadow: "rgba(0, 0, 0, 0.6)", edge: "rgba(230, 220, 200, 0.35)",
     p: [["#8d3029", "#3a3128"], ["#3d5d8e", "#262b38"], ["#a35f6d", "#3a2e33"], ["#9a7a2a", "#352f22"], ["#3e6a4a", "#28302a"]] },
 }
 
@@ -31,7 +31,7 @@ function papers(T: number, pal: Pal) {
   ]
 }
 
-const look: Look = {
+export const look: Look = {
   line: "thread",
   icon: "crane",
   shade: 0.25,
@@ -71,8 +71,4 @@ const look: Look = {
     grain(g, night ? 0.07 : 0.1, 29)
     return c
   },
-}
-
-export default function GlobeChiyogami() {
-  return <GlobeLab look={look} />
 }

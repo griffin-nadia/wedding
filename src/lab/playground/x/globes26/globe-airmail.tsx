@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "../globes24/kit"
+import type { Look } from "../globes24/kit-view"
 import { breathe, grain, land, latY, lonX, seeded, sheet } from "../globes24/kit-paint"
 
 /**
@@ -30,7 +30,7 @@ function postmark(g: CanvasRenderingContext2D, x: number, y: number, r: number, 
   g.restore()
 }
 
-const look: Look = {
+export const look: Look = {
   line: "stitch",
   icon: "plane",
   shade: 0.25,
@@ -76,8 +76,4 @@ const look: Look = {
     grain(g, night ? 0.06 : 0.09, 23)
     return c
   },
-}
-
-export default function GlobeAirmail() {
-  return <GlobeLab look={look} />
 }

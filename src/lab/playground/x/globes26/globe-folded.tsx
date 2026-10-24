@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "../globes24/kit"
+import type { Look } from "../globes24/kit-view"
 import { breathe, grain, land, latY, lonX, seeded, sheet } from "../globes24/kit-paint"
 
 /**
@@ -13,7 +13,7 @@ const COL = {
 }
 const COLS = 8, ROWS = 4
 
-const look: Look = {
+export const look: Look = {
   line: "ink",
   icon: "flock",
   shade: 0.2,
@@ -69,8 +69,4 @@ const look: Look = {
     grain(g, night ? 0.07 : 0.1, 53)
     return c
   },
-}
-
-export default function GlobeFolded() {
-  return <GlobeLab look={look} />
 }

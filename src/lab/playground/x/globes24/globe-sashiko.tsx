@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { around, breathe, grain, land, seeded, sheet } from "./kit-paint"
 
 /**
@@ -7,7 +7,7 @@ import { around, breathe, grain, land, seeded, sheet } from "./kit-paint"
  * offset from the last) and its coasts sewn round in a longer stitch. Their lines are red thread with a tiny knot
  * where each starts. Lantern: a deeper indigo, the thread a touch warmer and dimmer.
  */
-const look: Look = {
+export const look: Look = {
   line: "thread",
   shade: 0.4,
   rim: 1,
@@ -50,8 +50,4 @@ const look: Look = {
     grain(g, night ? 0.06 : 0.08, 5)
     return c
   },
-}
-
-export default function GlobeSashiko() {
-  return <GlobeLab look={look} />
 }

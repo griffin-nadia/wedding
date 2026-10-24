@@ -6,17 +6,17 @@ import type { Knob } from "../../types"
  * without loading any of the kit. See kit.tsx for how a look uses them.
  */
 export type Kind = "nadia" | "griffin" | "guest" | "you"
-export type LineStyle = "thread" | "stitch" | "ink" | "dots" | "plane" | "leaf"
+export type LineStyle = "thread" | "stitch" | "ink" | "dots" | "plane" | "leaf" | "pixel"
 export const LINE_STYLES: [LineStyle, string][] = [
-  ["thread", "Red thread"], ["stitch", "Stitched dashes"], ["ink", "Inked route"], ["dots", "Dotted arc"], ["plane", "Paper plane"], ["leaf", "Maple leaf"],
+  ["thread", "Red thread"], ["stitch", "Stitched dashes"], ["ink", "Inked route"], ["dots", "Dotted arc"], ["plane", "Paper plane"], ["leaf", "Maple leaf"], ["pixel", "Pixel blocks"],
 ]
 export const RAD = Math.PI / 180
 export const KYOTO = { lat: 35.01, lon: 135.77 }
 
 /** What travels each line once (run 26): "auto" is the line style's own (a plane on Paper plane, a leaf on Maple leaf,
  *  nothing on the rest); any other choice flies on every line style */
-export type Icon = "auto" | "plane" | "flock" | "crane" | "leaf" | "none"
-export const ICONS: [Icon, string][] = [["auto", "The line style's"], ["plane", "Paper plane"], ["flock", "Three paper planes"], ["crane", "Paper crane"], ["leaf", "Maple leaf"], ["none", "None"]]
+export type Icon = "auto" | "plane" | "flock" | "crane" | "leaf" | "pixel" | "none"
+export const ICONS: [Icon, string][] = [["auto", "The line style's"], ["plane", "Paper plane"], ["flock", "Three paper planes"], ["crane", "Paper crane"], ["leaf", "Maple leaf"], ["pixel", "Pixel plane"], ["none", "None"]]
 
 /** The tuning panel's knobs (run 26), on every look. Each default leaves the look exactly as it was painted. */
 export const TUNE: Knob[] = [
@@ -25,6 +25,7 @@ export const TUNE: Knob[] = [
   { id: "weight", label: "Line weight", kind: "range", min: 50, max: 300, step: 10, def: 100, unit: "%" },
   { id: "shadow", label: "Shadow", kind: "range", min: 0, max: 100, step: 5, def: 0, unit: "%" },
   { id: "iconSize", label: "Travelling icon size", kind: "range", min: 50, max: 300, step: 10, def: 100, unit: "%" },
+  { id: "speed", label: "Plane speed", kind: "range", min: 25, max: 300, step: 25, def: 100, unit: "%" },
 ]
 
 /** The knobs every look has: the line style (its default), what travels it, the crowd, how many views, and the tuning */
@@ -60,8 +61,8 @@ export function demoCrowd(households: number): Journey[] {
 
 type LatLon = { lat: number; lon: number }
 /**
- * One line. to: where it lands (default Kyoto). badge: a letter beside the start (G for Griffin, N for Nadia; run 26c,
- * in place of the 京 seal and the chapter numbers). toLabel: a name at the landing end too. nudge: the dot drawn this
+ * One line. to: where it lands (default Kyoto). badge: a letter beside the start (G for Griffin, N for Nadia; run 26c).
+ * toLabel: a name at the landing end too. nudge: the dot drawn this
  * many screen px off its real place, with a hairline back (a traveller from beside a home start gets its own spot
  * instead of sitting under the G or the N). near: starts beside a home start, so its line flies lower.
  */
@@ -73,7 +74,7 @@ export const VICTORIA: LatLon = { lat: 48.43, lon: -123.37 }
 /** Run 26c: lab sample travellers from Brisbane (made up, never guests), so the map shows them in their own spots beside N */
 export const BRISBANE_SAMPLE: Journey = { name: "Brisbane", country: "AU", lat: BRISBANE.lat, lon: BRISBANE.lon, n: 4 }
 /** Spots round a home start for the travellers beside it, in screen px (down and away from the G or N and its name) */
-const SPOTS: [number, number][] = [[-15, 13], [-3, 21], [-24, 1], [10, 24], [-26, 18]]
+const SPOTS: [number, number][] = [[-16, 12], [-27, 0], [-26, 20], [16, 26], [-12, 30]]
 const NEAR = 3 // degrees, the site's HOME_NEAR
 
 /** Every line, in the order they draw: Nadia's, Griffin's, the guests' (one per city, never who), then the household's own */
@@ -96,52 +97,7 @@ export function trips(cities: Journey[], crowd: Journey[], you: Journey | null, 
     { id: "griffin", kind: "griffin", ...VICTORIA, label: "Victoria", always: true, demo: false, badge: "G" },
     ...cities.filter((c) => c.n > 0).map((c, i) => guest(c, false, i, true)),
     ...crowd.map((c, i) => guest(c, true, i)),
-    ...(you ? [{ id: "you", kind: "you" as const, lat: you.lat, lon: you.lon, label: you.name, always: false, demo: false, ...spot(you) }] : []),
+    // Run 27, as the site: their "You" sits under the N when they're from Brisbane
+    ...(you ? [{ id: "you", kind: "you" as const, lat: you.lat, lon: you.lon, label: you.name, always: false, demo: false, ...(Math.hypot(you.lat - BRISBANE.lat, you.lon - BRISBANE.lon) < NEAR ? { near: true, nudge: [0, 22] as [number, number] } : spot(you)) }] : []),
   ]
 }
-
-/**
- * Run 26c: the story's chapters as the map tells them, for the chapter detail view. Titles, years and places are the
- * planner's working ones (src/content/story-plan.ts, Canada visit out as PART 2 asks; Taiwan from the site's chapter
- * places); the routes are the lab's reading of each title, sample only, to show how a line gets explained.
- */
-type Route = { kind: Kind; from: LatLon & { name: string }; to: LatLon & { name: string }; badge?: string }
-export type Chapter = { key: string; year: string; title: string; place: string; at: LatLon; nudge?: [number, number]; line: string; routes: Route[] }
-const P = {
-  brisbane: { ...BRISBANE, name: "Brisbane" }, victoria: { ...VICTORIA, name: "Victoria" }, edmonton: { lat: 53.55, lon: -113.49, name: "Edmonton" },
-  hirakata: { lat: 34.81, lon: 135.65, name: "Hirakata" }, australia: { lat: -25.5, lon: 134, name: "Australia" }, taiwan: { lat: 23.7, lon: 121, name: "Taiwan" },
-  kyoto: { ...KYOTO, name: "Kyoto" },
-}
-export const CHAPTERS: Chapter[] = [
-  { key: "c1", year: "2017", title: "Became friends", place: "Kansai Gaidai, Hirakata", at: P.hirakata, nudge: [-16, 18], line: "Two lines meet at Hirakata, just outside Kyoto: Griffin's from Victoria and Nadia's from Brisbane.", routes: [{ kind: "griffin", from: P.victoria, to: P.hirakata, badge: "G" }, { kind: "nadia", from: P.brisbane, to: P.hirakata, badge: "N" }] },
-  { key: "c2", year: "2018", title: "Nadia visits Canada", place: "Canada", at: P.edmonton, line: "Nadia's line runs from Brisbane across the Pacific to Edmonton.", routes: [{ kind: "nadia", from: P.brisbane, to: P.edmonton, badge: "N" }] },
-  { key: "c3", year: "2018", title: "Griffin's internship in Australia", place: "Australia", at: P.australia, line: "Griffin's line runs the other way, from Canada down to Australia.", routes: [{ kind: "griffin", from: P.edmonton, to: P.australia, badge: "G" }] },
-  { key: "c4", year: "2020", title: "Nadia moves to Canada", place: "Canada", at: P.edmonton, line: "Nadia's line from Brisbane to Edmonton again.", routes: [{ kind: "nadia", from: P.brisbane, to: P.edmonton, badge: "N" }] },
-  { key: "c5", year: "", title: "Taiwan", place: "Taiwan", at: P.taiwan, line: "A line from Brisbane up to Taiwan (sample route).", routes: [{ kind: "nadia", from: P.brisbane, to: P.taiwan, badge: "N" }] },
-  { key: "c6", year: "2025", title: "Living in Australia", place: "Australia (Brisbane)", at: P.brisbane, nudge: [16, -16], line: "A line from Edmonton back to Brisbane.", routes: [{ kind: "nadia", from: P.edmonton, to: P.brisbane, badge: "G N" }] },
-  { key: "c7", year: "2027", title: "And then, Kyoto", place: "Kyoto", at: P.kyoto, nudge: [16, 16], line: "The two lines on the map today: Nadia's from Brisbane and Griffin's from Victoria, both landing in Kyoto.", routes: [{ kind: "nadia", from: P.brisbane, to: P.kyoto, badge: "N" }, { kind: "griffin", from: P.victoria, to: P.kyoto, badge: "G" }] },
-]
-/** A chapter's routes as lines for the detail view's map: every end named, the starts with their letter */
-export const chapterTrips = (c: Chapter): Trip[] => c.routes.map((r, i) => ({
-  id: `${c.key}-${i}`, kind: r.kind, lat: r.from.lat, lon: r.from.lon, label: r.from.name, to: r.to, toLabel: r.to.name, badge: r.badge, always: true, demo: false,
-}))
-
-/**
- * Run 26c: the Kyoto places the site's venue map and journey use, at their real places, for the close-up inset (at
- * world scale they all sit on one pixel). Coordinates to about 50 m, from the public map. short: named on the inset
- * (the rest are dots, named on hover and in the inset's label). lab: where its name sits from the dot, in the inset's 100 units (" / " breaks a line).
- */
-export const KYOTO_PLACES: { id: string; name: string; lat: number; lon: number; short?: string; lab?: [dx: number, dy: number, anchor: "start" | "middle" | "end"]; venue?: boolean }[] = [
-  { id: "venue", name: "The Sodoh", lat: 34.9978, lon: 135.7794, short: "The Sodoh", lab: [-5, -1.5, "end"], venue: true },
-  { id: "pagoda", name: "Yasaka Pagoda", lat: 34.9986, lon: 135.7809, short: "Yasaka / Pagoda", lab: [5, -5, "start"] },
-  { id: "shrine", name: "Yasaka Shrine", lat: 35.0037, lon: 135.7785, short: "Yasaka Shrine", lab: [0, -5, "middle"] },
-  { id: "kiyomizu", name: "Kiyomizu-dera", lat: 34.9949, lon: 135.785, short: "Kiyomizu-dera", lab: [25, 9, "end"] },
-  { id: "station", name: "Kyoto Station", lat: 34.9858, lon: 135.7588, short: "Kyoto / Station", lab: [1, 8.5, "middle"] },
-  { id: "gion", name: "Gion Shijo Station", lat: 35.0036, lon: 135.7722 },
-  { id: "kawaramachi", name: "Kawaramachi Shopping Street", lat: 35.004, lon: 135.7686 },
-  { id: "sanjo", name: "Sanjo Station", lat: 35.009, lon: 135.772 },
-  { id: "gojo", name: "Kiyomizu Gojo Station", lat: 34.9961, lon: 135.7686 },
-  { id: "shichijo", name: "Shichijo Station", lat: 34.9901, lon: 135.769 },
-  { id: "tofukuji", name: "Tofukuji Station", lat: 34.98, lon: 135.7697 },
-]
-

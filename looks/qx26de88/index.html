@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en" data-theme="autumn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- The globe looks picker (run 27): an unlisted page for Griffin and Nadia, linked from nowhere, kept out of search -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f3e7d3" />
+    <script>
+      // Day or night from the link only (?theme=night): the picker never reads or saves the site's own setting
+      if (/[?&]theme=night\b/.test(location.search)) document.documentElement.setAttribute("data-theme", "lantern")
+    </script>
+    <title>Globe looks</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/looks/picker.tsx"></script>
+  </body>
+</html>

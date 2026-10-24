@@ -1,28 +1,28 @@
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { around, breathe, grain, land, seeded, sheet } from "./kit-paint"
 
 /**
  * Look 6, Lantern night (made for the Lantern theme first): the world at night, a deep indigo sea and the land a
  * shade lighter, its coasts caught in a little moonlight. Warm lantern glows sit under Kyoto, Brisbane, Victoria and
  * every guest's city, and their lines are strings of tiny lanterns: the dotted arc with a soft glow round every lamp.
- * All of it still (no flicker, no shimmer). In the light theme it's the festival by day: pale washi sea and paper
- * land, the lanterns red and unlit, with only a faint warm blush under each place.
+ * All of it still (no flicker, no shimmer). In the light theme it's dusk (run 27, so it reads apart from the pale
+ * looks): a blue evening sea, paper land, the lanterns just lit.
  */
 const COL = {
   night: { top: "#0b1222", sea: "#111a30", bottom: "#0a0f1c", land: "#252a45", coast: "rgba(214, 196, 160, 0.45)", haze: "rgba(255, 190, 110, 0.05)" },
-  day: { top: "#e4e3dc", sea: "#dfe2df", bottom: "#d8dbd6", land: "#f1e7d3", coast: "rgba(160, 60, 40, 0.55)", haze: "rgba(200, 90, 50, 0.04)" },
+  day: { top: "#3f4f86", sea: "#54679c", bottom: "#46578c", land: "#e9dcbf", coast: "rgba(255, 214, 150, 0.6)", haze: "rgba(255, 190, 110, 0.06)" },
 }
 
-const look: Look = {
+export const look: Look = {
   line: "dots",
   shade: 0.45,
   rim: 1,
   inks: (night) => night
     ? { nadia: "#ff9a6b", griffin: "#ffd27a", guest: "#f7c98c", you: "#fff0b0", ink: "#f4e6c8", paper: "#2a2438" }
-    : { nadia: "#c23a24", griffin: "#7b6a1f", guest: "#a5532d", you: "#d08a1e", ink: "#3b2a20" },
+    : { nadia: "#ff8a5c", griffin: "#ffd27a", guest: "#ffe2b8", you: "#fff0b0", ink: "#2a2438", paper: "#fff6e0" },
   glow: (night) => night
     ? { colour: "rgba(255, 176, 92, 0.55)", blend: "lighter", size: 44, line: 0.22 }
-    : { colour: "rgba(214, 92, 52, 0.22)", blend: "source-over", size: 34, line: 0.12 },
+    : { colour: "rgba(255, 176, 92, 0.45)", blend: "lighter", size: 40, line: 0.18 },
   back: (night) => (night ? COL.night.sea : COL.day.sea),
   paint: async ({ night, width: W }) => {
     const k = night ? COL.night : COL.day, [c, g] = sheet(W), H = W / 2, u = W / 2048, rnd = seeded(29)
@@ -56,8 +56,4 @@ const look: Look = {
     grain(g, night ? 0.05 : 0.08, 29)
     return c
   },
-}
-
-export default function GlobeLantern() {
-  return <GlobeLab look={look} />
 }
