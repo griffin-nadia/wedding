@@ -1470,10 +1470,28 @@ svg.lucide { stroke-width: 1.5; }
 .story-timeline::before { content: ""; position: absolute; top: var(--space-4); bottom: var(--space-4); left: calc(var(--thumb) / 2 - 1px); width: 2px; border-radius: var(--radius-pill); background: color-mix(in oklab, var(--ink-moss) 55%, transparent); }
 /* Run 26c (Jehan's phone check): the same line fills as they read (--fill from story-journey.tsx), and each photo it
    reaches gets a ring in the line's colour. Reduced motion: no easing, it just follows */
-.story-timeline::after { content: ""; position: absolute; top: var(--space-4); left: calc(var(--thumb) / 2 - 2px); width: 4px; height: min(var(--fill, 0px), calc(100% - 2 * var(--space-4))); border-radius: var(--radius-pill); background: var(--action); transition: height 120ms linear; }
-.story-timeline-row .story-thumb { transition: box-shadow var(--duration-fast) var(--ease-paper); }
-.story-timeline-row[data-passed] .story-thumb { box-shadow: 0 0 0 3px var(--letter-bg), 0 0 0 5px var(--action); }
-@media (prefers-reduced-motion: reduce) { .story-timeline::after, .story-timeline-row .story-thumb { transition: none; } }
+/* Run 27: the fill is the whole line scaled down from the top (--fill, 0 to 1), eased, so it glides on the
+   compositor instead of resizing every scroll event */
+.story-timeline::after { content: ""; position: absolute; top: var(--space-4); bottom: var(--space-4); left: calc(var(--thumb) / 2 - 2px); width: 4px; border-radius: var(--radius-pill); background: var(--action);
+  transform: scaleY(var(--fill, 0)); transform-origin: top; transition: transform 220ms var(--ease-paper); }
+/* Each photo the line reaches gets its ring: a ring of its own that fades and settles in (opacity and transform) */
+.story-timeline-row::before { content: ""; position: absolute; z-index: 2; left: 0; top: 0; width: var(--thumb); height: var(--thumb); border-radius: var(--radius-control); pointer-events: none;
+  box-shadow: 0 0 0 3px var(--letter-bg), 0 0 0 5px var(--action); opacity: 0; transform: scale(1.08); transition: opacity 200ms var(--ease-paper), transform 200ms var(--ease-paper); }
+.story-timeline-row[data-passed]::before { opacity: 1; transform: none; }
+.story-timeline-row:has(.story-thumb-dot)::before { display: none; }
+/* The end of the line: Kyoto's seal (cream, ink 京, as on the globe), stamped as the line reaches it */
+.story-thumb-seal { display: grid; place-items: center; width: 40px; height: 40px; margin: 0 calc((var(--thumb) - 40px) / 2); border-radius: 8px; background: var(--brand-shiro-kinari); color: #3b2a20;
+  box-shadow: 0 0 0 4px var(--letter-bg), inset 0 0 0 2px #3b2a20; font-size: 22px; line-height: 1; transform: rotate(-4deg); transition: transform 260ms var(--ease-paper); }
+.story-timeline-end::before { display: none; }
+.story-timeline-end[data-passed] .story-thumb-seal { transform: rotate(-4deg) scale(1.12); animation: story-seal-stamp 360ms var(--ease-paper) forwards; }
+@keyframes story-seal-stamp { 0% { transform: rotate(-4deg) scale(1.3); opacity: 0.6; } 60% { transform: rotate(-4deg) scale(0.96); opacity: 1; } 100% { transform: rotate(-4deg) scale(1); } }
+.story-timeline-end .story-read > p:nth-child(2) { font-family: var(--font-display); font-size: var(--type-heading-size); line-height: 1.15; }
+@media (prefers-reduced-motion: reduce) {
+  .story-timeline::after { transition: none; }
+  .story-timeline-row::before { transform: none; transition: opacity 150ms linear; }
+  .story-thumb-seal { transition: none; }
+  .story-timeline-end[data-passed] .story-thumb-seal { animation: none; transform: rotate(-4deg); }
+}
 .story-timeline-row { position: relative; display: flex; align-items: flex-start; gap: var(--space-4); }
 .story-thumb { position: relative; z-index: 1; flex: none; width: var(--thumb, 48px); height: var(--thumb, 48px); border-radius: var(--radius-control); overflow: hidden; background: var(--surface-alt); box-shadow: 0 0 0 4px var(--letter-bg); }
 .story-thumb figcaption { display: none; }

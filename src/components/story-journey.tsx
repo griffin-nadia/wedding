@@ -497,7 +497,8 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
     const top = ol.getBoundingClientRect().top, read = el.getBoundingClientRect().top + el.clientHeight * 0.4
     const end = el.scrollTop >= el.scrollHeight - el.clientHeight - 2
     const fill = end ? ol.offsetHeight : Math.max(0, read - top)
-    ol.style.setProperty("--fill", `${Math.round(fill)}px`)
+    // Run 27: the fill is a scale of the full line (transform only, so it glides on the compositor)
+    ol.style.setProperty("--fill", String(Math.min(1, fill / Math.max(1, ol.offsetHeight)).toFixed(4)))
     for (const row of ol.children) (row as HTMLElement).toggleAttribute("data-passed", end || (row as HTMLElement).getBoundingClientRect().top + 28 <= read)
   }
   // Once open, before any scroll: the first photos above the reading line are already marked
@@ -524,12 +525,15 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
         </SheetHead>
         <SheetBody onScroll={onScroll}>
           <ol ref={list} className="story-timeline">
-            {chapters.map((ch) => {
+            {chapters.map((ch, i) => {
               const label = [ch.title, ch.year].filter(Boolean).join(", ")
+              // Run 27: the last stop (Kyoto, no photo) ends the line with the Kyoto seal, stamped as the line reaches it
+              const kyoto = i === chapters.length - 1 && !ch.photo
               return (
-                <li key={ch.key} className="story-timeline-row">
+                <li key={ch.key} className={cn("story-timeline-row", kyoto && "story-timeline-end")}>
                   {ch.photo
                     ? <PhotoOpen name={ch.photo} label={label} className="story-thumb"><Photo name={ch.photo} treatment="split" sizes="96px" alt="" /></PhotoOpen>
+                    : kyoto ? <span aria-hidden className="story-thumb story-thumb-seal font-ja">京</span>
                     : <span aria-hidden className="story-thumb story-thumb-dot" />}
                   <div className="story-read flex min-w-0 flex-col gap-2"><p className="text-small text-muted-foreground">{[ch.year, ch.place].filter(Boolean).join(" · ")}</p><p lang="en" className="font-medium text-foreground">{ch.title}</p><Paragraphs body={ch.body} /></div>
                 </li>

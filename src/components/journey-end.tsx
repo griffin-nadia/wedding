@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { Maximize2 } from "lucide-react"
 import { Combobox } from "@/components/combobox"
 import { JourneyFlat } from "@/components/journey-flat"
-import { geocode, getJourneys, setFlying, type Journey, type Place } from "@/lib/api"
+import { geocode, getFlying, getJourneys, setFlying, type Journey, type Place } from "@/lib/api"
 import { keepFlying, readFlying } from "@/lib/journey"
 import { cityLabel, loadCities, searchable, searchCities, type City, type CityIndex } from "@/lib/city-search"
 import { config } from "@/lib/config"
@@ -113,6 +113,9 @@ export function FlyingField({ fly, onDropPin }: { fly: Flying; onDropPin: () => 
 export function FlyingMap({ fly }: { fly: Flying }) {
   const { t } = useLang()
   const { city, journeys, pinning } = fly
+  // Run 27: how many households have drawn their line so far, under the map (as in the story's full screen)
+  const [told, setTold] = useState<{ told: number; households: number } | null>(null)
+  useEffect(() => { let on = true; void getFlying().then((f) => on && f && f.households > 0 && setTold(f)); return () => { on = false } }, [])
   return (
     <div className="journey-end flex flex-col gap-3">
       {pinning && (
@@ -132,6 +135,7 @@ export function FlyingMap({ fly }: { fly: Flying }) {
       {/* Run 26c (the review): the "From Melbourne" line under the map is gone (their gold line says it); screen
           readers still hear where they picked */}
       {city && !pinning && <p role="status" className="sr-only">{t.flying.yours("city", city.name)}</p>}
+      {told && !pinning && <p className="text-small text-muted-foreground text-center">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )
 }
