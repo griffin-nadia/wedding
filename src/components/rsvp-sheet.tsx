@@ -52,14 +52,19 @@ function DietField({ g, name, onChange }: { g: Guest; name: string; onChange: (d
   const other = options[options.length - 1]
   const d = parseDiet(g.dietary, options)
   const otherOn = d.picked.includes(other)
+  // Run 27 (Griffin's phone check): the saved answer is tidied (no double or trailing spaces), so the box keeps its own
+  // copy of what's typed; otherwise a space at the end vanished as it was typed and words ran together
+  const [typed, setTyped] = useState(d.other)
+  const tidy = (s: string) => s.replace(/[,，、]/g, " ").replace(/\s+/g, " ").trim()
+  useEffect(() => { if (tidy(typed) !== d.other) setTyped(d.other) }, [d.other]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="flex flex-col gap-3">
       <CheckboxGroup labelId={`diet-${g.id}`} label={name} options={options.map((o) => ({ value: o, label: o }))} value={d.picked}
         onChange={(picked) => onChange(dietString({ picked, other: picked.includes(other) ? d.other : "" }, options))} />
       {otherOn && (
         <FormField id={`diet-other-${g.id}`} label={t.rsvp.dietaryOther}>
-          <Input id={`diet-other-${g.id}`} value={d.other} maxLength={OTHER_MAX} autoComplete="off" autoCapitalize="sentences" enterKeyHint="done" data-filled={Boolean(d.other.trim())}
-            onChange={(e) => onChange(dietString({ picked: d.picked, other: e.target.value }, options))} />
+          <Input id={`diet-other-${g.id}`} value={typed} maxLength={OTHER_MAX} autoComplete="off" autoCapitalize="sentences" enterKeyHint="done" data-filled={Boolean(typed.trim())}
+            onChange={(e) => { setTyped(e.target.value); onChange(dietString({ picked: d.picked, other: e.target.value }, options)) }} />
         </FormField>
       )}
     </div>

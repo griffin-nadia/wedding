@@ -1386,7 +1386,7 @@ svg.lucide { stroke-width: 1.5; }
   .story-kid-her .story-print { --tilt: 6deg; }
   .story-kid-him { left: 2%; top: -2%; } /* run 27 (Jehan): both a little higher, so hers clears the dots (30px at 390) */
   /* Run 27 (Nadia): hers sits lower and further right, so "griffin" on his print's border shows */
-  .story-kid-her { right: 0; top: auto; bottom: 3%; }
+  .story-kid-her { right: 0; top: auto; bottom: 6%; } /* run 27: higher again, so its shadow clears the card's edge */
   .story-kid .story-print { --print-h: min(43cqh, 57cqw); }
 }
 

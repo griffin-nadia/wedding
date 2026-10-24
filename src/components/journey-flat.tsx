@@ -120,10 +120,12 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
     const el = box.current
     if (!el || !zoomable) return
     const wheel = (e: WheelEvent) => {
-      if (!e.ctrlKey && !e.metaKey) return
+      // Run 27 (Jehan): full screen only (zoomable), so a plain up and down scroll zooms too
+      const pinch = e.ctrlKey || e.metaKey
+      if (!pinch && Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return
       e.preventDefault()
       const r = el.getBoundingClientRect()
-      setView((v) => zoomAbout(v, v.z * Math.exp(-e.deltaY * 0.01), (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height))
+      setView((v) => zoomAbout(v, v.z * Math.exp(-e.deltaY * (pinch ? 0.01 : 0.002)), (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height))
     }
     el.addEventListener("wheel", wheel, { passive: false })
     return () => el.removeEventListener("wheel", wheel)
