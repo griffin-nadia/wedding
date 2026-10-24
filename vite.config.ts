@@ -25,21 +25,29 @@ function preloadFonts(): Plugin {
   }
 }
 
-// Run 27 (P1): opened on Our story, its page's code (and what it imports, but not the app's own entry) starts
-// downloading with the HTML instead of after the app script has run, a round trip and more sooner on a slow phone
+// Run 27 (P1): opened on Our story, its largest paint is the opener's two kid prints. With the photos on (the Pages
+// build, PUBLIC_PHOTOS=1) they're fetched first thing (the same srcset and sizes as their AVIF source, our-story.tsx
+// OPENER_SIZES, so the same file), and the page's code (and what it imports, but not the app's own entry) downloads
+// with the HTML instead of after the app script has run. Without photos (CI's build) nothing changes.
 function preloadStory(): Plugin {
   let base = "/wedding/"
   return {
     name: "preload-story",
     configResolved(c) { base = c.base },
-    transformIndexHtml(_html, ctx) {
-      if (!ctx.bundle) return
+    transformIndexHtml(html, ctx) {
+      if (!ctx.bundle || process.env.PUBLIC_PHOTOS !== "1") return
       const chunks = Object.values(ctx.bundle).filter((c) => c.type === "chunk")
       const page = chunks.find((c) => c.facadeModuleId?.endsWith("/src/pages/our-story.tsx"))
       if (!page || page.type !== "chunk") return
       const entry = new Set(chunks.filter((c) => c.type === "chunk" && c.isEntry).flatMap((c) => (c.type === "chunk" ? [c.fileName, ...c.imports] : [])))
       const files = [page.fileName, ...page.imports].filter((f) => !entry.has(f)).map((f) => `${base}${f}`)
-      return [{ tag: "script", children: `if (/\\/our-story\\/?$/.test(location.pathname)) ${JSON.stringify(files)}.forEach(function (f) { var l = document.createElement("link"); l.rel = "modulepreload"; l.href = f; document.head.appendChild(l) })`, injectTo: "head" as const }]
+      const kids = ["kid-nadia-home", "kid-griffin"].map((k) => `${base}photos/${k}-400.avif 400w, ${base}photos/${k}-800.avif 800w`)
+      // The prints right after the viewport tag (before it, a phone sizes "56vw" against a 980px page and picks the bigger
+      // file); the page's code at the end of the head, so the prints get the line first
+      const story = `/\\/our-story\\/?$/.test(location.pathname)`
+      return html
+        .replace(/(<meta name="viewport"[^>]*>)/, `$1<script>if (${story}) ${JSON.stringify(kids)}.forEach(function (s) { var l = document.createElement("link"); l.rel = "preload"; l.as = "image"; l.type = "image/avif"; l.setAttribute("fetchpriority", "high"); l.setAttribute("imagesrcset", s); l.setAttribute("imagesizes", "(min-width: 1024px) 260px, 56vw"); document.head.appendChild(l) })</script>`)
+        .replace("</head>", `<script>if (${story}) ${JSON.stringify(files)}.forEach(function (f) { var l = document.createElement("link"); l.rel = "modulepreload"; l.href = f; document.head.appendChild(l) })</script></head>`)
     },
   }
 }
