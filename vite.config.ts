@@ -2,7 +2,7 @@ import fs from "node:fs"
 import path from "node:path"
 import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
-import { defineConfig, type Plugin } from "vite"
+import { defineConfig, type BuildOptions, type Plugin } from "vite"
 
 // Preloads the Latin subsets of our self-hosted fonts (Oranienbaum and Inter), so text paints in the right font first
 // time. Zen Old Mincho, the Japanese display face, loads only when someone switches to Japanese.
@@ -108,7 +108,14 @@ export default defineConfig(({ command, mode }) => ({
   plugins: [react(), tailwindcss(), preloadFonts(), privateSong(), privatePictures(), noPrivateInBuild(mode === "lab")],
   ...(mode === "lab" ? {
     publicDir: false,
-    build: { outDir: `dist/${LAB_PATH}`, emptyOutDir: false, rollupOptions: { input: { lab: path.resolve(__dirname, "lab.html"), "lab-play": path.resolve(__dirname, "lab-play.html") } } },
+    build: { outDir: `dist/${LAB_PATH}`, emptyOutDir: false, rollupOptions: { input: { lab: path.resolve(__dirname, "lab.html"), "lab-play": path.resolve(__dirname, "lab-play.html") } } } as BuildOptions,
+  } : mode === "looks" ? {
+    // Run 27: the globe looks picker (looks/qx26de88/, unlisted, noindex), the one lab-derived page that ships. Its own
+    // pass of `npm run build`, after the site's, into the same dist/ with its scripts in its own folder, so the guest
+    // site's chunks stay exactly as they are (as a second entry it split the site's shared code into more chunks and
+    // cost Travel 300 ms of LCP)
+    publicDir: false,
+    build: { outDir: "dist", emptyOutDir: false, sourcemap: false, assetsDir: "looks/qx26de88/assets", rollupOptions: { input: { looks: path.resolve(__dirname, "looks/qx26de88/index.html") } } } as BuildOptions,
   } : { build: { sourcemap: false } }), // run 20: never source maps on the guest site (scripts/leak-check.mjs checks the rest)
   define: {
     ...(mode === "lab" ? {

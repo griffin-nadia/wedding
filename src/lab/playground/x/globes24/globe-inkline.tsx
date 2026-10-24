@@ -1,23 +1,23 @@
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { around, breathe, land, seeded, sheet } from "./kit-paint"
 
 /**
  * Look 8, ink line, in the spirit of Nadia's venue map: no fills, only hand-drawn outlines on cream paper. The paper
  * has her map's diagonal crayon scumble; every coast is drawn twice in a soft brown pen, each pass a hair off the
  * other as a hand would, with a pale blue water line just off the coast like her river; borders are a lighter, finer
- * line in her road green, and a few little pen waves sit out at sea. Lantern: the same drawing in pale chalk on
- * dark paper.
+ * line in her road green, and a few little pen waves sit out at sea. Lantern (run 27): the same pen on the
+ * paper dimmed to dusk, so it stays a drawing on paper and reads apart from the dark looks.
  */
 const COL = {
   day: { paper: "#f1f0e2", scumble: "rgba(255, 255, 248, 0.55)", scumble2: "rgba(140, 140, 115, 0.06)", pen: "#3d2f26", border: "rgba(120, 130, 105, 0.7)", water: "rgba(80, 190, 215, 0.55)", wave: "rgba(61, 47, 38, 0.45)" },
-  night: { paper: "#1f1d1a", scumble: "rgba(220, 210, 180, 0.035)", scumble2: "rgba(0, 0, 0, 0.12)", pen: "#ece0c6", border: "rgba(170, 180, 150, 0.55)", water: "rgba(110, 200, 220, 0.45)", wave: "rgba(236, 224, 198, 0.35)" },
+  night: { paper: "#c9bc9f", scumble: "rgba(240, 230, 205, 0.3)", scumble2: "rgba(60, 50, 35, 0.08)", pen: "#2e241c", border: "rgba(90, 100, 75, 0.7)", water: "rgba(50, 130, 160, 0.55)", wave: "rgba(46, 36, 28, 0.4)" },
 }
 
-const look: Look = {
+export const look: Look = {
   line: "ink",
   shade: 0.2,
   rim: 1.4,
-  inks: (night) => ({ guest: night ? "#d8c8a6" : "#5c4636", ink: night ? "#ece0c6" : "#3d2f26" }),
+  inks: (night) => ({ guest: "#5c4636", ink: night ? "#2e241c" : "#3d2f26", ...(night ? { nadia: "#a84f32", griffin: "#5b6b3a", you: "#b8801c" } : {}) }),
   paint: async ({ night, width: W }) => {
     const k = night ? COL.night : COL.day, [c, g] = sheet(W), H = W / 2, u = W / 2048, rnd = seeded(53)
     g.fillStyle = k.paper; g.fillRect(0, 0, W, H)
@@ -69,8 +69,4 @@ const look: Look = {
     }
     return c
   },
-}
-
-export default function GlobeInkline() {
-  return <GlobeLab look={look} />
 }

@@ -1,4 +1,4 @@
-import { GlobeLab, type Look } from "./kit"
+import type { Look } from "./kit-view"
 import { breathe, grain, land, seeded, sheet } from "./kit-paint"
 
 /**
@@ -13,7 +13,7 @@ const G = [24, 12] // facets across and down: 15° each
 
 const COL = {
   day: { sea: "#a9c0cc", sea2: "#93aebd", land: "#f3eadb", edge: "rgba(40, 55, 70, 0.28)", fibre: "rgba(255, 255, 255, 0.5)", fibreLand: "rgba(160, 120, 80, 0.16)", crease: "rgba(30, 40, 55, 0.2)", lift: "rgba(255, 255, 255, 0.45)" },
-  night: { sea: "#1d2a3a", sea2: "#16212e", land: "#5a5246", edge: "rgba(0, 0, 0, 0.45)", fibre: "rgba(190, 210, 230, 0.12)", fibreLand: "rgba(240, 220, 190, 0.14)", crease: "rgba(0, 0, 0, 0.35)", lift: "rgba(255, 240, 220, 0.1)" },
+  night: { sea: "#33243f", sea2: "#271c31", land: "#6a5a5e", edge: "rgba(0, 0, 0, 0.45)", fibre: "rgba(190, 210, 230, 0.12)", fibreLand: "rgba(240, 220, 190, 0.14)", crease: "rgba(0, 0, 0, 0.35)", lift: "rgba(255, 240, 220, 0.1)" },
 }
 
 // Each facet's light: its centre on the ball (in the paper's own longitude, so it turns with the land), turned to the
@@ -32,7 +32,7 @@ const glsl = /* glsl */ `
   col.rgb *= mix(ov ? 0.965 : 1.0, olit, vK);
 `
 
-const look: Look = {
+export const look: Look = {
   line: "plane",
   segments: [48, 24],
   rim: 0.8,
@@ -82,8 +82,4 @@ const look: Look = {
     grain(g, night ? 0.06 : 0.08, 23)
     return c
   },
-}
-
-export default function GlobeOrigami() {
-  return <GlobeLab look={look} />
 }

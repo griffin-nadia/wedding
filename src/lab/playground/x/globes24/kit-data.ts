@@ -6,17 +6,35 @@ import type { Knob } from "../../types"
  * without loading any of the kit. See kit.tsx for how a look uses them.
  */
 export type Kind = "nadia" | "griffin" | "guest" | "you"
-export type LineStyle = "thread" | "stitch" | "ink" | "dots" | "plane" | "leaf"
+export type LineStyle = "thread" | "stitch" | "ink" | "dots" | "plane" | "leaf" | "pixel"
 export const LINE_STYLES: [LineStyle, string][] = [
-  ["thread", "Red thread"], ["stitch", "Stitched dashes"], ["ink", "Inked route"], ["dots", "Dotted arc"], ["plane", "Paper plane"], ["leaf", "Maple leaf"],
+  ["thread", "Red thread"], ["stitch", "Stitched dashes"], ["ink", "Inked route"], ["dots", "Dotted arc"], ["plane", "Paper plane"], ["leaf", "Maple leaf"], ["pixel", "Pixel blocks"],
 ]
 export const RAD = Math.PI / 180
 export const KYOTO = { lat: 35.01, lon: 135.77 }
 
-/** The two knobs every look has: the line style (its default) and the crowd */
-export const globeKnobs = (line: LineStyle): Knob[] => [
+/** What travels each line once (run 26): "auto" is the line style's own (a plane on Paper plane, a leaf on Maple leaf,
+ *  nothing on the rest); any other choice flies on every line style */
+export type Icon = "auto" | "plane" | "flock" | "crane" | "leaf" | "pixel" | "none"
+export const ICONS: [Icon, string][] = [["auto", "The line style's"], ["plane", "Paper plane"], ["flock", "Three paper planes"], ["crane", "Paper crane"], ["leaf", "Maple leaf"], ["pixel", "Pixel plane"], ["none", "None"]]
+
+/** The tuning panel's knobs (run 26), on every look. Each default leaves the look exactly as it was painted. */
+export const TUNE: Knob[] = [
+  { id: "land", label: "Land opacity", kind: "range", min: 0, max: 100, step: 5, def: 100, unit: "%" },
+  { id: "grain", label: "Paper grain (added)", kind: "range", min: 0, max: 100, step: 5, def: 0, unit: "%" },
+  { id: "weight", label: "Line weight", kind: "range", min: 50, max: 300, step: 10, def: 100, unit: "%" },
+  { id: "shadow", label: "Shadow", kind: "range", min: 0, max: 100, step: 5, def: 0, unit: "%" },
+  { id: "iconSize", label: "Travelling icon size", kind: "range", min: 50, max: 300, step: 10, def: 100, unit: "%" },
+  { id: "speed", label: "Plane speed", kind: "range", min: 25, max: 300, step: 25, def: 100, unit: "%" },
+]
+
+/** The knobs every look has: the line style (its default), what travels it, the crowd, how many views, and the tuning */
+export const globeKnobs = (line: LineStyle, icon: Icon = "auto"): Knob[] => [
   { id: "line", label: "Line style", kind: "select", options: LINE_STYLES, def: line },
+  { id: "icon", label: "Travelling icon", kind: "select", options: ICONS, def: icon },
   { id: "crowd", label: "Crowd (demo households)", kind: "select", options: [["0", "None"], ["15", "15 demo"], ["40", "40 demo"]], def: "0" },
+  { id: "views", label: "Views", kind: "select", options: [["both", "Story stop and full screen"], ["one", "Full screen only"]], def: "both" },
+  ...TUNE,
 ]
 
 /** Made-up households for judging a crowd: real towns, invented counts, never guests. Spread over AU, NZ, CA, JP, US, UK. */
@@ -41,22 +59,45 @@ export function demoCrowd(households: number): Journey[] {
   return out
 }
 
-export type Trip = { id: string; kind: Kind; lat: number; lon: number; label: string; always: boolean; demo: boolean }
+type LatLon = { lat: number; lon: number }
+/**
+ * One line. to: where it lands (default Kyoto). badge: a letter beside the start (G for Griffin, N for Nadia; run 26c).
+ * toLabel: a name at the landing end too. nudge: the dot drawn this
+ * many screen px off its real place, with a hairline back (a traveller from beside a home start gets its own spot
+ * instead of sitting under the G or the N). near: starts beside a home start, so its line flies lower.
+ */
+export type Trip = { id: string; kind: Kind; lat: number; lon: number; label: string; always: boolean; demo: boolean; to?: LatLon; toLabel?: string; badge?: string; nudge?: [number, number]; near?: boolean }
 const regionName = (() => { try { return new Intl.DisplayNames(["en"], { type: "region" }) } catch { return null } })()
+
+export const BRISBANE: LatLon = { lat: -27.47, lon: 153.03 }
+export const VICTORIA: LatLon = { lat: 48.43, lon: -123.37 }
+/** Run 26c: lab sample travellers from Brisbane (made up, never guests), so the map shows them in their own spots beside N */
+export const BRISBANE_SAMPLE: Journey = { name: "Brisbane", country: "AU", lat: BRISBANE.lat, lon: BRISBANE.lon, n: 4 }
+/** Spots round a home start for the travellers beside it, in screen px (down and away from the G or N and its name) */
+const SPOTS: [number, number][] = [[-16, 12], [-27, 0], [-26, 20], [16, 26], [-12, 30]]
+const NEAR = 3 // degrees, the site's HOME_NEAR
+
 /** Every line, in the order they draw: Nadia's, Griffin's, the guests' (one per city, never who), then the household's own */
 export function trips(cities: Journey[], crowd: Journey[], you: Journey | null, names: { brisbane: string }): Trip[] {
-  const guest = (c: Journey, demo: boolean, i: number): Trip => ({
-    id: `${demo ? "demo" : "city"}-${i}`, kind: "guest", lat: c.lat, lon: c.lon, always: false, demo,
+  const taken = new Map<string, number>()
+  const spot = (c: LatLon) => {
+    const home = [["n", BRISBANE], ["g", VICTORIA]].find(([, h]) => Math.hypot((h as LatLon).lat - c.lat, (h as LatLon).lon - c.lon) < NEAR)?.[0] as string | undefined
+    if (!home) return {}
+    const i = taken.get(home) ?? 0; taken.set(home, i + 1)
+    return { near: true, nudge: SPOTS[i % SPOTS.length] }
+  }
+  const guest = (c: Journey, demo: boolean, i: number, sample = false): Trip => ({
+    id: `${demo ? "demo" : "city"}-${i}`, kind: "guest", lat: c.lat, lon: c.lon, always: false, demo, ...spot(c),
     // Run 24 §3: a city by name only with 2 or more households from it; otherwise just its country
-    label: `${c.n >= 2 ? c.name : regionName?.of(c.country) ?? c.country}${demo ? " (demo)" : ""}`,
+    label: `${c.n >= 2 ? `${c.name} · ${c.n} households` : regionName?.of(c.country) ?? c.country}${demo ? " (demo)" : sample ? " (sample)" : ""}`,
   })
   return [
-    { id: "nadia", kind: "nadia", lat: -27.47, lon: 153.03, label: names.brisbane, always: true, demo: false },
+    { id: "nadia", kind: "nadia", ...BRISBANE, label: names.brisbane, always: true, demo: false, badge: "N" },
     // Run 24's decision names Victoria (BC) for Griffin's label; the site's globe draws his line from Edmonton today
-    { id: "griffin", kind: "griffin", lat: 48.43, lon: -123.37, label: "Victoria", always: true, demo: false },
-    ...cities.filter((c) => c.n > 0).map((c, i) => guest(c, false, i)),
+    { id: "griffin", kind: "griffin", ...VICTORIA, label: "Victoria", always: true, demo: false, badge: "G" },
+    ...cities.filter((c) => c.n > 0).map((c, i) => guest(c, false, i, true)),
     ...crowd.map((c, i) => guest(c, true, i)),
-    ...(you ? [{ id: "you", kind: "you" as const, lat: you.lat, lon: you.lon, label: you.name, always: false, demo: false }] : []),
+    // Run 27, as the site: their "You" sits under the N when they're from Brisbane
+    ...(you ? [{ id: "you", kind: "you" as const, lat: you.lat, lon: you.lon, label: you.name, always: false, demo: false, ...(Math.hypot(you.lat - BRISBANE.lat, you.lon - BRISBANE.lon) < NEAR ? { near: true, nudge: [0, 22] as [number, number] } : spot(you)) }] : []),
   ]
 }
-
