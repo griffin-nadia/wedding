@@ -11,7 +11,7 @@ function merge<T>(base: T, over: unknown): T {
   return out as T
 }
 
-// The Japanese draft loads only when someone switches to it, so English pages carry none of it
+// The Japanese loads only when someone switches to it, so English pages carry none of it
 let jaMerged: Content | null = null
 export async function loadJapanese() { if (!jaMerged) { const { ja } = await import("./ja"); jaMerged = merge(en, ja) } }
 export function getContent(lang: Lang): Content {

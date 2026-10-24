@@ -406,7 +406,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
  * Success, on the same letter (18f: one column). In the sheet's head, like every step: the hanko and the heading
  * (so the close X sits in the head, never on a card). Then, evenly spaced: the line about the save, the fortune
  * once the stamp has landed (one thing moves at a time), add to calendar, and Back to your invite with Change my
- * reply. Where they're flying from and its map are steps before the check since run 26.
+ * reply (phones only since the run 26 review). Where they're flying from and its map are steps before the check since run 26.
  */
 function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveResult; confirm: "saving" | "saved" | "offline" | null; titleRef: React.RefObject<HTMLHeadingElement | null>; onClose: () => void; onChange: () => void }) {
   const { t } = useLang()
@@ -426,9 +426,10 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
           <p role="status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
           {answer !== "none" && <div className="sent-next"><FortuneCard token={h.token} /></div>}
           {answer !== "none" && <AddToCalendar />}
-          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-6">
+          {/* Run 26 review: on laptops just Back to your invite, at the bottom right (Change my reply is off there for now) */}
+          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-6 md:justify-end">
             <Button size="md" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
-            <button type="button" className="btn-text min-h-11 self-center sm:self-auto" onClick={onChange}>{t.rsvp.changeReply}</button>
+            <button type="button" className="btn-text min-h-11 self-center md:hidden" onClick={onChange}>{t.rsvp.changeReply}</button>
           </div>
         </div>
       </SheetBody>

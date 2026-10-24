@@ -102,3 +102,18 @@ test("the back end appends each draw and never rewrites one", () => {
   assert.equal(add("nobody", 1, 1).code, "not_found")
   assert.equal(add("house1", "2", 1).code, "bad_request")
 })
+
+test("draw another (run 26 review): random, never the one just shown, never a draft while the switch is off", async () => {
+  const { randomPick } = await import("../src/lib/draws.ts")
+  const pool = Array.from({ length: 25 }, (_, i) => ({ no: i + 1, draft: [2, 7, 22].includes(i + 1) }))
+  const seen = new Set<number>()
+  for (let k = 0; k < 2000; k++) {
+    const j = randomPick(pool, false, 5)
+    assert.notEqual(pool[j].no, 5)
+    assert.ok(!pool[j].draft)
+    seen.add(pool[j].no)
+  }
+  assert.equal(seen.size, 21) // every other drawable line comes up: 25, less 3 drafts, less the one shown
+  assert.equal(randomPick([{ no: 1 }], false, 1), 0) // a pool of one: that one again
+  assert.equal(randomPick([{ no: 1, draft: true }], false, undefined), -1) // nothing drawable
+})

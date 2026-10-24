@@ -130,6 +130,8 @@ test("a print opens full screen; the list is a sheet with Back to the story", as
   await page.keyboard.press("Escape")
   await expect(viewer).toHaveCount(0)
   await expect(print).toBeFocused()
+  // Run 26c: the print shrinks back from full screen (a view transition); the page takes touches again once it's done
+  await expect(page.locator("html[data-vt]")).toHaveCount(0)
   // A swipe from the print moves on and opens nothing
   if (info.project.name === "phone") {
     const at = await current(page), box = (await print.boundingBox())!

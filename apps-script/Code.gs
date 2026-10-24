@@ -94,10 +94,10 @@ const ERRORS = {
   search_failed: "Song search isn't working right now. Just type the song instead.",
 }
 
-// Where a reply can still be changed: until the lock, then their "life happens" line (planner, 7 to 11 Oct)
+// Where a reply can still be changed: until the lock, then their "life happens" line (planner, 7 to 11 Oct; in Griffin's voice since the run 26 review)
 function changeLine_() {
   return isLocked_()
-    ? "We know that life happens, so if you need to make any changes after the 30th of April please contact us directly."
+    ? "Life happens! If you need to change anything after 30 April, just message us."
     : "You can change your answers any time until " + fullDate_(prop_("CHANGES_LOCK")) + ", and add your travel dates once flights are booked."
 }
 
@@ -138,7 +138,7 @@ function onOpen() {
     .addSeparator()
     .addItem("Set up the Emails tab", "setupEmailsTab")
     .addItem("Set up the Content tab (fortunes)", "setupContentTab")
-    .addItem("Add the Japanese fortunes (drafts) to the Fortunes tab", "addFortunesJapanese")
+    .addItem("Add the Japanese fortunes to the Fortunes tab", "addFortunesJapanese")
     .addItem("Make two review links (Preview tab)", "makeReviewLinks")
     .addItem("Check song search", "checkSongSearch")
     .addItem("Turn on the fast email queue", "setupQueue")
@@ -1383,8 +1383,8 @@ function isDraft_(v) {
 }
 
 /**
- * Run 26: the Japanese for Nadia's 25, by No., drafts for Mitsumi's read. 2, 7 and 22 tell their story (Nijō Castle,
- * Kiyomizu-dera, Kyoto Tower): Draft until Nadia checks them, so they're never drawn as final.
+ * Run 26: the Japanese for Nadia's 25, by No. Final since 24 Oct (Jehan's call), with the story ones (2 Nijō Castle,
+ * 7 Kiyomizu-dera, 22 Kyoto Tower) drawn like the rest.
  */
 const FORTUNES_JA = {
   1: "グリフィンとナディアの好物はメロンパン。日本にいる間に、ぜひ一つ見つけるべし。",
@@ -1413,27 +1413,25 @@ const FORTUNES_JA = {
   24: "日本は自販機であふれている。ポケモンの飲み物、温かいコーンスープ、カップ酒など、珍しいものを一つ買ってみるべし。",
   25: "大阪で一夜を過ごすべし。遊びの都で、たこ焼きを食べ、道頓堀で自撮りをし、にぎわいを楽しめ。",
 }
-const FORTUNES_STORY = [2, 7, 22]
 
 /**
- * Menu, run once as the wedding account: adds Japanese and Draft columns at the end of the Fortunes tab (if missing),
- * fills an empty Japanese cell from FORTUNES_JA by No., and marks 2, 7 and 22 Draft where Draft is empty. Never
- * changes the English, and never overwrites a cell that already has something in it.
+ * Menu, run once as the wedding account: adds a Japanese column at the end of the Fortunes tab (if missing) and fills
+ * an empty Japanese cell from FORTUNES_JA by No. Never changes the English, never overwrites a cell that already has
+ * something in it, and marks nothing Draft (since 24 Oct; clear any Draft marks by hand).
  */
 function addFortunesJapanese() {
   const ui = SpreadsheetApp.getUi()
   const s = ss_().getSheetByName("Fortunes")
   if (!s) return ui.alert("There's no Fortunes tab.")
-  const head = ensureColumns_(s, ["Japanese", "Draft"])
+  const head = ensureColumns_(s, ["Japanese"])
   const data = s.getDataRange().getValues()
-  let ja = 0, drafts = 0
+  let ja = 0
   for (let i = 1; i < data.length; i++) {
     const no = Number(data[i][head.No]) || 0
     if (FORTUNES_JA[no] && !String(data[i][head.Japanese] || "").trim()) { s.getRange(i + 1, head.Japanese + 1).setValue("'" + FORTUNES_JA[no]); ja++ }
-    if (FORTUNES_STORY.indexOf(no) >= 0 && !String(data[i][head.Draft] || "").trim()) { s.getRange(i + 1, head.Draft + 1).setValue("yes"); drafts++ }
   }
   CacheService.getScriptCache().remove("fortunes")
-  ui.alert("Added " + ja + " Japanese lines (drafts for Mitsumi) and marked " + drafts + " story fortunes Draft (2, 7, 22: for Nadia to check).")
+  ui.alert("Added " + ja + " Japanese lines.")
 }
 
 // ---------- omikuji draws (run 26) ----------

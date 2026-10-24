@@ -11,26 +11,23 @@ import { onMap } from "@/lib/map-land"
 import { pending } from "@/content/pending"
 
 /**
- * The opener (run 24): Griffin's 1998 school portrait and Nadia's home photo as instant prints, tilted opposite ways,
- * hers leaning into his and over his corner, with a strip of washi tape across her top edge like the other taped prints.
- * Run 26: his first day of school (kid-griffin, his own pick) is back in, tucked under his portrait and cropped in on
- * his face; each front print carries just a name on its bottom border; every print opens full screen.
+ * The opener (run 24): one print each, tilted opposite ways, hers leaning into his and over his corner, with a strip
+ * of washi tape across her top edge like the other taped prints. Run 26c (the review): Griffin's one photo is his
+ * first day of school (the yellow jumper, kid-griffin), shown whole, and Nadia's home photo; each print carries just
+ * a name on its bottom border, and opens full screen.
  */
 function Opener() {
   const { t } = useLang()
   const has = (name: string) => name in photos
-  if (!has("kid-griffin-1998") || !has("kid-nadia-home")) return null
-  const sizes = "(min-width: 1024px) 240px, 46vw"
-  // His first day is cropped well in (index.css), so it asks for the bigger file
-  const print = (name: string, where: string, note?: string) => (
+  if (!has("kid-griffin") || !has("kid-nadia-home")) return null
+  const print = (name: string, where: string, note: string) => (
     <div className={`story-kid story-kid-${where}`}>
-      <PhotoOpen name={name} label={t.photos[name]?.alt ?? ""}><Photo name={name} treatment="print" sizes={where === "behind" ? "(min-width: 1024px) 600px, 100vw" : sizes} className="story-print" note={note} /></PhotoOpen>
+      <PhotoOpen name={name} label={t.photos[name]?.alt ?? ""}><Photo name={name} treatment="print" sizes="(min-width: 1024px) 260px, 56vw" className="story-print" note={note} /></PhotoOpen>
     </div>
   )
   return (
     <div className="story-kids">
-      {has("kid-griffin") && print("kid-griffin", "behind")}
-      {print("kid-griffin-1998", "him", "griffin")}
+      {print("kid-griffin", "him", "griffin")}
       {print("kid-nadia-home", "her", "nadia")}
     </div>
   )
@@ -46,19 +43,12 @@ const AT: Record<string, [number, number]> = {
   "Kansai Gaidai, Hirakata": onMap("JP", 34.81, 135.65), Japan: PLACES.japan, Canada: PLACES.canada,
   Australia: onMap("AU", -25.5, 134), "Australia (Brisbane)": PLACES.brisbane, Kyoto: KYOTO,
 }
-/** Photos with no words of their own (run 23): STORY_PLAN's Canada visit as a photo-only stop after chapter 5. Its year
- *  isn't in Griffin's story, so it shows none until they confirm it. Run 26: Back to Japan (the 2018 holidays) is out */
-const PHOTO_STOPS: Record<string, Chapter> = {
-  "5": { ...STORY_PLAN.find((c) => c.photo === "story-8")!, key: "photo-8", body: [] },
-}
 /** Run 26: a place's photo when the Content tab gives its chapter none (Taiwan: their edited tea-field selfie). A photo
  *  set in the Content tab (story_N_photo) still wins */
 const PLACE_PHOTO: Record<string, string> = { Taiwan: "story-taiwan" }
+/** Run 26c: no photo-only stops any more (the Canada visit went with the review; Back to Japan in run 26) */
 function withStops(story: Chapter[]): Chapter[] {
-  return story.flatMap((c) => {
-    const ch = { ...c, at: c.at ?? (c.place ? AT[c.place] : undefined), photo: c.photo || (c.place ? PLACE_PHOTO[c.place] : undefined) }
-    return PHOTO_STOPS[c.key] ? [ch, PHOTO_STOPS[c.key]] : [ch]
-  })
+  return story.map((c) => ({ ...c, at: c.at ?? (c.place ? AT[c.place] : undefined), photo: c.photo || (c.place ? PLACE_PHOTO[c.place] : undefined) }))
 }
 
 export function StoryPage() {

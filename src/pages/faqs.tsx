@@ -3,7 +3,7 @@ import { useLang } from "@/lib/lang"
 import { PageHeader } from "@/components/ui/page-header"
 import { pending } from "@/content/pending"
 import { useContent } from "@/lib/content"
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { useLocation } from "react-router-dom"
 import { AskUs } from "@/components/ask-us"
 import { getQuestions, type Asked } from "@/lib/api"
@@ -58,10 +58,18 @@ export function FaqsPage() {
   )
 }
 
-/** In the "Who made this site?" answer, the song's title links to the track (config.links.music); the pianist is plain
- * text (run 26) */
+/** In the "Who made this site?" answer, the song's title links to the track (config.links.music, run 26), and Jehan's
+ *  name, quietly, to his LinkedIn (run 26c: the same link as the laptop's credit seal, config.links.jehan) */
 function withMusicLink(a: string) {
-  const name = ART.music.title, at = a.indexOf(name)
-  if (at < 0 || !config.links.music) return a
-  return <>{a.slice(0, at)}<a href={config.links.music} target="_blank" rel="noreferrer" className="btn-text">{name}</a>{a.slice(at + name.length)}</>
+  if (!a.includes(ART.music.title)) return a
+  const links: [string, string, string][] = [[ART.music.title, config.links.music, "btn-text"], [/ジェハン/.test(a) ? "ジェハン" : "Jehan", config.links.jehan, "credit-link"]]
+  const parts: ReactNode[] = []
+  let rest = a
+  for (const [name, href, cls] of links.map((l) => [a.indexOf(l[0]), l] as const).filter(([at]) => at >= 0).sort(([x], [y]) => x - y).map(([, l]) => l)) {
+    const at = rest.indexOf(name)
+    if (at < 0 || !href) continue
+    parts.push(rest.slice(0, at), <a key={name} href={href} target="_blank" rel="noreferrer" className={cls}>{name}</a>)
+    rest = rest.slice(at + name.length)
+  }
+  return <>{parts}{rest}</>
 }

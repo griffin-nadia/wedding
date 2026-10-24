@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import { flushSync } from "react-dom"
-import { Maximize2, MapPin } from "lucide-react"
+import { Check, Maximize2, MapPin } from "lucide-react"
 import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useLang } from "@/lib/lang"
 import { config } from "@/lib/config"
@@ -64,9 +64,10 @@ export function venueMapOn() {
  * Phones: pinch to zoom from 1x to 2.5x and drag to look around. Reduced motion: the route still, no glide.
  */
 export function VenueMap({ inModal = false }: { inModal?: boolean }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const m = t.venueMap, k = t.kyotoMap
   const [on, setOn] = useState("venue")
+  const group = useId() // the inline map and the full-screen one can both be open: each its own radio group
   const place = m.places.find((p) => p.id === on) ?? m.places[0]
   const zoom = usePinch()
   const art = useRef<HTMLDivElement>(null)
@@ -80,7 +81,9 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
       // All in the map's own px (offsets ignore the zoom's scale): each dot's centre is its place's % of the art
       const W = a.offsetWidth, H = a.offsetHeight, ring = (p: HTMLElement) => p.querySelector<HTMLElement>(".vmap-dot")!.offsetWidth / 2
       const pins = [...a.querySelectorAll<HTMLElement>(".vmap-pin")]
-      const dots = pins.filter((p) => p !== pin).map((p) => { const r = ring(p) + 2, x = p.offsetLeft, y = p.offsetTop; return { l: x - r, r: x + r, t: y - r, b: y + r } })
+      // Clear of each dot by 2px on a phone-sized map (where every px of room counts), 4px on a big one: its whole-px
+      // offsets against her % spots can be a px or two out there (run 26 review: a chip touched a station at 2560)
+      const dots = pins.filter((p) => p !== pin).map((p) => { const r = ring(p) + (W < 480 ? 2 : 4), x = p.offsetLeft, y = p.offsetTop; return { l: x - r, r: x + r, t: y - r, b: y + r } })
       // Her lettering's boxes, 1px larger all round (offsets are whole px; the art's % aren't)
       const labels = LABELS.map(([x1, y1, x2, y2]) => ({ l: (x1 / 100) * W - 1, t: (y1 / 100) * H - 1, r: (x2 / 100) * W + 1, b: (y2 / 100) * H + 1 }))
       const best = placeChip({ x: pin.offsetLeft, y: pin.offsetTop }, ring(pin) * 1.1 + 4, place.chip, chip.offsetWidth, chip.offsetHeight, W, H, dots, labels)
@@ -126,7 +129,7 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
     if (to) art.current?.querySelector<HTMLElement>(`[data-id="${to.id}"]`)?.focus()
   }
   return (
-    <section aria-label={m.title} className="flex flex-col gap-4">
+    <section aria-label={m.title} className="vmap-section flex flex-col gap-4">
       <p className="text-small text-muted-foreground">{k.intro}</p>
       <div className="vmap" ref={zoom.box} data-zoomed={zoom.s > 1 || undefined} data-seen={seen ?? undefined} {...zoom.handlers}>
         <div className="vmap-art" ref={art} style={{ transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})` }}>
@@ -170,12 +173,20 @@ export function VenueMap({ inModal = false }: { inModal?: boolean }) {
         <p>{place.body}</p>
         <a href={place.maps} target="_blank" rel="noreferrer" className="btn-text press inline-flex min-h-11 items-center gap-1 self-start"><MapPin className="size-4" aria-hidden />{k.directions}</a>
       </div>
-      <details className="vmap-list">
-        <summary className="btn-text min-h-11 inline-flex items-center">{m.listTitle}</summary>
-        <ul className="flex flex-col gap-1 pt-2">
-          {m.places.map((p) => <li key={p.id}><button type="button" className="btn-text press min-h-11 text-left" onClick={() => { setOn(p.id); setFocused(null) }}>{p.name} <span lang="ja" className="font-ja">{p.ja}</span></button></li>)}
-        </ul>
-      </details>
+      {/* Run 26c: the places as a radio group of chips (APG radio group, native radios): Tab lands on the chosen one,
+          the arrow keys move and choose, and the map's dot and card follow. Japanese names in Japanese mode */}
+      <fieldset role="radiogroup" className="vmap-places">
+        <legend className="label-caps text-muted-foreground">{m.listTitle}</legend>
+        <div className="flex flex-wrap gap-2">
+          {m.places.map((p) => (
+            <label key={p.id} className="state chip" data-selected={on === p.id ? "true" : undefined}>
+              <input type="radio" name={group} value={p.id} checked={on === p.id} onChange={() => { setOn(p.id); setFocused(null) }} className="sr-only" />
+              {on === p.id && <Check className="chip-tick size-5 text-primary" aria-hidden />}
+              {lang === "ja" ? <span lang="ja" className="font-ja">{p.ja}</span> : p.name}
+            </label>
+          ))}
+        </div>
+      </fieldset>
     </section>
   )
 }

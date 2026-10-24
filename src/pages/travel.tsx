@@ -103,7 +103,7 @@ function PickSheet({ id, title, sub, note, list, airbnb, open, onOpen }: { id: s
           <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
         </button>
       </SheetTrigger>
-      <SheetContent aria-describedby={`${id}-note`}>
+      <SheetContent className="takeover" aria-describedby={`${id}-note`}>
         <SheetHead>
           <SheetTitle className="heading">{title}</SheetTitle>
           <SheetDescription id={`${id}-note`} className="text-small text-muted-foreground">{note}</SheetDescription>
@@ -153,7 +153,8 @@ function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => vo
   const note = lang === "ja" ? p.note : twoSentences(picks.note)
   return (
     <div id="picks" className="flex scroll-mt-(--travel-head) flex-col gap-3">
-      <h3 className="font-medium text-foreground">{p.title}</h3>
+      {/* Run 26c: a small label over the rows, not a row of its own, so it never reads as something to tap */}
+      <h3 className="label-caps text-muted-foreground">{p.title}</h3>
       <div className="flex flex-col border-y border-border">
         <PickSheet id="hotels" title={p.hotelsTitle} note={note} list={picks.hotels} airbnb={false} open={sheet === "hotels"} onOpen={(o) => setSheet(o ? "hotels" : "")} />
         <div className="border-t border-border" />

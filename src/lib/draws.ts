@@ -44,6 +44,18 @@ export function fortuneFor<F extends Drawable>(token: string, n: number, pool: F
   return i
 }
 
+/**
+ * Run 26 review (Nadia, 24 Oct): "Draw another" is random. Any line that may be drawn, never the one just shown (a
+ * pool of one: that one again). Saved with its number like every draw, so the slip stays put on every device.
+ * `rand` is Math.random, or a fixed one in the tests.
+ */
+export function randomPick<F extends Drawable>(pool: F[], drafts: boolean, avoid: number | undefined, rand = Math.random) {
+  const ok = pool.map((_, j) => j).filter((j) => drafts || !pool[j].draft)
+  const fresh = ok.filter((j) => pool[j].no !== avoid)
+  const from = fresh.length ? fresh : ok
+  return from.length ? from[Math.floor(rand() * from.length)] : -1
+}
+
 const whole = (v: unknown) => typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= 999
 export const isDraws = (v: unknown): v is Draw[] => Array.isArray(v) && v.every((d) => typeof d === "object" && d !== null && whole((d as Draw).draw) && whole((d as Draw).no))
 

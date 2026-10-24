@@ -9,30 +9,24 @@ const go = async (page: Page, path: string, theme = "autumn") => {
 }
 
 // Phones: Home's card is only as tall as what's on it (18e), so its bottom is left out; its top is the same as the
-// others'. Laptops (run 21): every card is as tall as what's on it, so a card shorter than the frame sits centred in it
-// (the same space above and below), and one as tall as the frame starts at the standard top gap.
-test("laptops: a short card is centred in the frame, a tall one starts at the standard gap", async ({ page }, info) => {
+// others'. Laptops (run 26c): every tab's card fills the frame, so its top and bottom edges are the same on every tab.
+test("laptops: every tab's card has the same top and bottom edges, filling the frame", async ({ page }, info) => {
   test.skip(info.project.name === "phone", "laptops")
   await go(page, "")
-  const at: Record<number, { top: number; above: number; below: number; fills: boolean }> = {}
+  const edges: string[] = []
   for (const i of [1, 2, 3, 4, 0]) {
     await page.locator(".site-nav a").nth(i).click()
     await page.waitForTimeout(700)
-    const m = await page.evaluate(() => {
-      // The frame: the wrap inside its padding (the standard gaps)
+    edges.push(await page.evaluate(() => {
       const l = document.getElementById("letter")!.getBoundingClientRect(), w = document.querySelector(".letter-wrap")!, r = w.getBoundingClientRect(), cs = getComputedStyle(w)
-      const top = r.top + parseFloat(cs.paddingTop), bottom = r.bottom - parseFloat(cs.paddingBottom)
-      return { top: Math.round(l.top), above: Math.round(l.top - top), below: Math.round(bottom - l.bottom), fills: l.height >= bottom - top - 1 }
-    })
-    at[i] = m
+      return [Math.round(l.top - r.top - parseFloat(cs.paddingTop)), Math.round(r.bottom - parseFloat(cs.paddingBottom) - l.bottom)].join()
+    }))
   }
-  const tall = Object.values(at).filter((m) => m.fills), short = Object.values(at).filter((m) => !m.fills)
-  expect(new Set(tall.map((m) => m.top)).size).toBeLessThanOrEqual(1)
-  for (const m of short) expect(Math.abs(m.above - m.below)).toBeLessThanOrEqual(1)
+  expect(new Set(edges)).toEqual(new Set(["0,0"]))
 })
 
 test("the card's top and visible bottom don't move between pages", async ({ page }, info) => {
-  test.skip(info.project.name !== "phone", "phones (laptops centre a short card, above)")
+  test.skip(info.project.name !== "phone", "phones (laptops, above)")
   await go(page, "")
   const edges = [], tops = []
   for (const i of [1, 2, 3, 4, 0]) {

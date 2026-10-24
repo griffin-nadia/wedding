@@ -131,17 +131,19 @@
   "formats": {
    "avif": [
     400,
-    800
+    800,
+    1160
    ],
    "webp": [
     400,
-    800
+    800,
+    1160
    ]
   },
   "wide": {},
   "lqip": "kid-griffin-lqip.webp",
-  "width": 800,
-  "height": 1206
+  "width": 1160,
+  "height": 1749
  },
  "kid-nadia": {
   "formats": {
@@ -273,33 +275,37 @@
   "formats": {
    "avif": [
     400,
-    800
+    800,
+    1108
    ],
    "webp": [
     400,
-    800
+    800,
+    1108
    ]
   },
   "wide": {},
   "lqip": "story-1-lqip.webp",
-  "width": 800,
-  "height": 1067
+  "width": 1108,
+  "height": 1478
  },
  "story-2": {
   "formats": {
    "avif": [
     400,
-    800
+    800,
+    1458
    ],
    "webp": [
     400,
-    800
+    800,
+    1458
    ]
   },
   "wide": {},
   "lqip": "story-2-lqip.webp",
-  "width": 800,
-  "height": 1067
+  "width": 1458,
+  "height": 1944
  },
  "story-3": {
   "formats": {
@@ -337,17 +343,19 @@
   "formats": {
    "avif": [
     400,
-    800
+    800,
+    1600
    ],
    "webp": [
     400,
-    800
+    800,
+    1600
    ]
   },
   "wide": {},
   "lqip": "story-5-lqip.webp",
-  "width": 800,
-  "height": 1067
+  "width": 1600,
+  "height": 2133
  },
  "story-6": {
   "formats": {
@@ -369,17 +377,19 @@
   "formats": {
    "avif": [
     400,
-    800
+    800,
+    1600
    ],
    "webp": [
     400,
-    800
+    800,
+    1600
    ]
   },
   "wide": {},
   "lqip": "story-7-lqip.webp",
-  "width": 800,
-  "height": 1067
+  "width": 1600,
+  "height": 1600
  },
  "story-8": {
   "formats": {
@@ -395,7 +405,7 @@
   "wide": {},
   "lqip": "story-8-lqip.webp",
   "width": 800,
-  "height": 800
+  "height": 1067
  },
  "torii-mist": {
   "formats": {
@@ -465,16 +475,34 @@
   "formats": {
    "avif": [
     400,
-    800
+    800,
+    1536
    ],
    "webp": [
     400,
-    800
+    800,
+    1536
    ]
   },
   "wide": {},
   "lqip": "story-taiwan-lqip.webp",
-  "width": 800,
-  "height": 1067
+  "width": 1536,
+  "height": 2048
+ },
+ "kid-nadia-home-full": {
+  "formats": {
+   "avif": [
+    800,
+    1065
+   ],
+   "webp": [
+    800,
+    1065
+   ]
+  },
+  "wide": {},
+  "lqip": "kid-nadia-home-full-lqip.webp",
+  "width": 1065,
+  "height": 1876
  }
 }

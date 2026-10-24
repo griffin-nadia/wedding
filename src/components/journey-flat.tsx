@@ -4,7 +4,7 @@ import { arc } from "@/lib/journey"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import type { City } from "@/lib/city-search"
-import { bundle, nearHome, type ChapterPin, type Place } from "@/lib/journey-names"
+import { bundle, nearHome, PACE, type ChapterPin, type Place } from "@/lib/journey-names"
 import { ChapterPins } from "@/components/chapter-pins"
 import { cn } from "@/lib/utils"
 
@@ -198,13 +198,15 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
   const mine = you && you.id !== "jp" && you.lat != null && you.lon != null && Math.hypot(you.lat - KYOTO[0], you.lon - KYOTO[1]) > 0.5 ? flatPoint([you.lat, you.lon]) : null
   // Beside a home line's start, their line bows the other way, so the two part and both read
   const mineLift = you?.lat != null && you.lon != null && nearHome(you.lat, you.lon) ? -0.1 : 0.25
-  const youDelay = 900 + others.length * 120
+  // Run 26c: every time here is run 26's times PACE (journey-names.ts), set on each line, so the planes keep pace
+  const ms = (x: number) => Math.round(x * PACE)
+  const youDelay = ms(900 + others.length * 120)
   const line = (from: [number, number], lift: number) => arc(from, kyoto, lift)
-  // The lines and when each draws (index.css: the home lines 300 and 600 ms in over 900, guests 120 apart over 700)
+  // The lines and when each draws: the home lines 300 and 600 ms in over 900, guests 120 apart over 700 (times PACE)
   const flights = [
-    { d: line(flatPoint(BRISBANE), 0.25), delay: 300, dur: 900, kind: "nadia" }, { d: line(flatPoint(VICTORIA), 0.25), delay: 600, dur: 900, kind: "griffin" },
-    ...others.map((p, i) => ({ d: line(p, 0.15), delay: 900 + i * 120, dur: 700, kind: "guest" })),
-    ...(mine ? [{ d: line(mine, mineLift), delay: youDelay, dur: 900, kind: "you" }] : []),
+    { d: line(flatPoint(BRISBANE), 0.25), delay: ms(300), dur: ms(900), kind: "nadia" }, { d: line(flatPoint(VICTORIA), 0.25), delay: ms(600), dur: ms(900), kind: "griffin" },
+    ...others.map((p, i) => ({ d: line(p, 0.15), delay: ms(900 + i * 120), dur: ms(700), kind: "guest" })),
+    ...(mine ? [{ d: line(mine, mineLift), delay: youDelay, dur: ms(900), kind: "you" }] : []),
   ]
   const vw = 400 / view.z, vh = 320 / view.z
   return (
@@ -218,7 +220,7 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
           <defs>
             {[flatPoint(BRISBANE), flatPoint(VICTORIA), ...others].map((p, i) => (
               <mask key={i} id={`${id}-m${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="320">
-                <path d={line(p, i < 2 ? 0.25 : 0.15)} className={i === 0 ? "journey-reveal" : i === 1 ? "journey-reveal journey-reveal-2" : "journey-reveal journey-reveal-guest"} style={i > 1 ? { animationDelay: `${900 + (i - 2) * 120}ms` } : undefined} pathLength={1} />
+                <path d={line(p, i < 2 ? 0.25 : 0.15)} className={i === 0 ? "journey-reveal" : i === 1 ? "journey-reveal journey-reveal-2" : "journey-reveal journey-reveal-guest"} style={{ animationDelay: `${flights[i].delay}ms`, animationDuration: `${flights[i].dur}ms` }} pathLength={1} />
               </mask>
             ))}
           </defs>
@@ -228,8 +230,15 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
           {others.map((p, i) => <path key={i} d={line(p, 0.15)} className={guests[i].bundled ? "journey-guest journey-guest-bundle" : "journey-guest"} mask={`url(#${id}-m${i + 2})`} />)}
           {/* Brisbane and Victoria always named (run 24); Brisbane's to its right (run 25), clear of Australia's chapter pin */}
           <g aria-hidden className="journey-flat-names">
-            <text x={flatPoint(BRISBANE)[0] + 6 * kz} y={flatPoint(BRISBANE)[1] + 4 * kz} className="journey-place">{t.journey.brisbane}</text>
-            <text x={flatPoint(VICTORIA)[0] - 6 * kz} y={flatPoint(VICTORIA)[1] + 4 * kz} textAnchor="end" className="journey-place">{t.journey.victoria}</text>
+            {/* Run 26c: who's from there, a G or an N in their line's colour beside the place (the globe's marks) */}
+            <g transform={`translate(${flatPoint(BRISBANE)[0]} ${flatPoint(BRISBANE)[1]}) scale(${kz})`}>
+              <rect x={5} y={-7} width={14} height={14} rx={3.5} className="home-mark-nadia" /><text x={12} y={3.5} textAnchor="middle" className="home-mark-letter">N</text>
+              <text x={23} y={4} className="journey-place journey-flat-home">{t.journey.from.nadia}</text>
+            </g>
+            <g transform={`translate(${flatPoint(VICTORIA)[0]} ${flatPoint(VICTORIA)[1]}) scale(${kz})`}>
+              <rect x={-19} y={-7} width={14} height={14} rx={3.5} className="home-mark-griffin" /><text x={-12} y={3.5} textAnchor="middle" className="home-mark-letter">G</text>
+              <text x={-23} y={4} textAnchor="end" className="journey-place journey-flat-home">{t.journey.from.griffin}</text>
+            </g>
           </g>
           {/* Each guest line's start: its name on hover or tap (a city only with 2+ households, else the country) */}
           {others.map((p, i) => (
@@ -241,8 +250,8 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
           {tipAt !== null && others[tipAt] && (
             <text aria-hidden x={others[tipAt][0]} y={others[tipAt][1] - 9 * kz} textAnchor="middle" className="journey-place journey-flat-tip">{guests[tipAt].label}</text>
           )}
-          {mine && <path key={String(you!.id)} d={line(mine, mineLift)} className="journey-you journey-you-edge" pathLength={1} style={{ animationDelay: `${youDelay}ms` }} />}
-          {mine && <path key={`${you!.id}-line`} d={line(mine, mineLift)} className="journey-you" pathLength={1} style={{ animationDelay: `${youDelay}ms` }} />}
+          {mine && <path key={String(you!.id)} d={line(mine, mineLift)} className="journey-you journey-you-edge" pathLength={1} style={{ animationDelay: `${youDelay}ms`, animationDuration: `${ms(900)}ms` }} />}
+          {mine && <path key={`${you!.id}-line`} d={line(mine, mineLift)} className="journey-you" pathLength={1} style={{ animationDelay: `${youDelay}ms`, animationDuration: `${ms(900)}ms` }} />}
           {mine && <circle cx={mine[0]} cy={mine[1]} r={4 * kz} className="journey-you-dot" />}
           {!still && flights.map((f) => <FlatPlane key={`${f.kind}:${f.d}`} {...f} k={kz} run={shown} />)}
           <g aria-hidden transform={`translate(${kyoto[0]} ${kyoto[1]}) scale(${kz})`} className="journey-flat-pin">

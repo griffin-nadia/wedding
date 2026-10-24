@@ -4,7 +4,7 @@ import { loop } from "@/lib/frame"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import type { City } from "@/lib/city-search"
-import { bundle, nearHome, type ChapterPin, type Place } from "@/lib/journey-names"
+import { bundle, nearHome, PACE, type ChapterPin, type Place } from "@/lib/journey-names"
 import { ChapterPins } from "@/components/chapter-pins"
 
 /**
@@ -44,7 +44,7 @@ const DASH = { home: [3, 3], guest: [2, 3] } as const
 /** A paper plane pointing right (+x), 24 × 24, folded down the middle */
 const PLANE = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M2 11.5 22 3l-6.5 18-4-7.5z" fill="currentColor" stroke="var(--plane-edge)" stroke-width="1.3" stroke-linejoin="round"/><path d="M22 3 11.5 13.5" stroke="var(--plane-edge)" stroke-width="1.1"/></svg>'
 /** The turn's feel: degrees a second on its own, the wait after a touch, the follow and the glide */
-const TURN = { auto: 5, wait: 3000, easeIn: 1500, follow: 16, glide: 2.4, tilt: 55 }
+const TURN = { auto: 3.5, wait: 3000, easeIn: 1500, follow: 16, glide: 2.4, tilt: 55 }
 
 export function JourneyGlobe({ you, cities, label, children, zoomable = false, held = false, pins = [], onPin, zoomRef }: { you: City | null; cities: { lat: number; lon: number; n: number; country?: string; name?: string }[]; label: string; children?: ReactNode; zoomable?: boolean; held?: boolean; pins?: ChapterPin[]; onPin?: (key: string) => void
   /** Run 26: the full-screen view's + and − (one pair for both views, in one spot): zoom by a factor */
@@ -273,8 +273,8 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
         const cancel = loop((now) => {
           const dt = Math.min(0.05, (now - then) / 1000); then = now
           if (!visible || hold.current) { then = now; return true } // off screen or held: nothing drawn until it's back
-          const s = (now - t0) / 1000
-          // 0 to 1.2 s the home lines, 1.2 to 2.6 s everyone else's, then theirs, last
+          const s = (now - t0) / 1000 / PACE // run 26c: slower by PACE (journey-names.ts)
+          // 0 to 1.2 s the home lines, 1.2 to 2.6 s everyone else's, then theirs, last (times PACE)
           arcs.forEach(({ kind, arc }, i) => {
             const at = kind === "nadia" ? 0 : kind === "griffin" ? 0.25 : kind === "guest" ? 1.2 + (i % 8) * 0.12 : 2.6
             const prog = Math.min(1, Math.max(0, (s - at) / 1.1))
@@ -315,8 +315,10 @@ export function JourneyGlobe({ you, cities, label, children, zoomable = false, h
     <div className="journey-globe" data-theme="lantern" data-ready={ready || undefined}>
       <div ref={box} className="journey-globe-art" role="img" aria-label={label}>
         <div ref={pin} className="globe-pin" aria-hidden><div className="globe-pin-body"><span className="globe-pin-seal">京</span><span className="globe-pin-text">{t.journey.kyotoPin}</span></div></div>
-        <span ref={brisbane} className="globe-place" aria-hidden>{t.journey.brisbane}</span>
-        <span ref={victoria} className="globe-place" aria-hidden>{t.journey.victoria}</span>
+        {/* Run 26c: who's from there, as a G or an N in their line's colour beside the place (Nadia from Brisbane,
+            Griffin from Victoria, Canada); the legend names them */}
+        <span ref={brisbane} className="globe-place" aria-hidden><b className="home-mark home-mark-nadia">N</b>{t.journey.from.nadia}</span>
+        <span ref={victoria} className="globe-place" aria-hidden><b className="home-mark home-mark-griffin">G</b>{t.journey.from.griffin}</span>
         <span ref={tip} className="globe-tip" aria-hidden hidden />
         <span className="sr-only">{t.journey.title}</span>
       </div>

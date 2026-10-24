@@ -121,7 +121,9 @@ export function FlyingMap({ fly }: { fly: Flying }) {
         </div>
       )}
       <JourneyFlat you={city} cities={journeys} label={t.journey.map(city ? city.name : null)} onPick={pinning ? (lat, lon) => void fly.pin(lat, lon) : undefined} />
-      {city && !pinning && <p role="status" className="text-small text-muted-foreground">{t.flying.yours("city", city.name)}</p>}
+      {/* Run 26c (the review): the "From Melbourne" line under the map is gone (their gold line says it); screen
+          readers still hear where they picked */}
+      {city && !pinning && <p role="status" className="sr-only">{t.flying.yours("city", city.name)}</p>}
     </div>
   )
 }

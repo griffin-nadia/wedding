@@ -255,7 +255,7 @@ export async function getJourneys(token?: string): Promise<Journey[]> {
 }
 
 /** One omikuji (run 23): Nadia's tier in English and Japanese, its category and the words. draft (run 26): a fortune
- *  still waiting on Griffin and Nadia's OK (the Fortunes tab's Draft column), never drawn unless config.storyFortunes.
+ *  marked Draft in the Fortunes tab's Draft column, drawn only while config.storyFortunes is on (on since run 26c).
  *  textJa (run 26): the Japanese column, shown with Japanese on; empty or missing (an older back end): the English */
 export type Fortune = { no: number; tier: string; tierJa: string; category: string; text: string; draft?: boolean; textJa?: string }
 /** The fortunes from the sheet's Fortunes tab (null: use the built-in drafts), and this household's draws (run 26; null

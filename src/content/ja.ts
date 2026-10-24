@@ -1,6 +1,5 @@
-// 日本語版 · DRAFT (v3 S). Same shape as en.ts; any line not here falls back to English.
-// Full draft of every line (6 Oct). Every line is still to be checked by a native speaker before guests
-// can switch to it (the switch is in the crew Options panel only until then). Polite form throughout (です・ます).
+// 日本語版 (v3 S). Same shape as en.ts; any line not here falls back to English.
+// Every line, final as it stands (Jehan, 24 Oct). Polite form throughout (です・ます).
 // Nothing here says more than the English does: no facts added.
 import type { Content } from "./en"
 import { pending } from "./pending"
@@ -13,7 +12,7 @@ const TRAVEL_FROM = "2027年9月1日（水）"
 const TRAVEL_TO = "2027年11月30日（火）"
 // Their final wording (22 Oct): until the lock, and add travel dates once booked
 const CHANGE_BY = "2027年4月30日まで、お返事はいつでも変更できます。航空券を予約したら、旅の日程も追加してください。"
-const CHANGE_AFTER = "予定が変わることもありますよね。4月30日以降に変更が必要になったら、直接ご連絡ください。"
+const CHANGE_AFTER = "予定が変わることもありますよね！4月30日以降に変更が必要になったら、気軽にメッセージをください。"
 const A = "グリフィン"
 const B = "ナディア"
 // Lines about one of them name that person, whatever the order
@@ -44,7 +43,7 @@ export const ja: DeepPartial<Content> = {
     "griffin-cedar-forest": { alt: `杉の大木の間に立つ${GRIFFIN}`, caption: `杉林の${GRIFFIN}` },
     "kid-griffin-1998": { alt: "1998年の学校写真の幼いグリフィン。赤いTシャツでほほえんでいる", caption: "" },
     "kid-nadia-home": { alt: "家でにっこり笑う幼いナディア。髪をクリップで留めた二つ結びに、クリスマスツリーのTシャツ", caption: "" },
-    "kid-griffin": { alt: "小学校の初日、玄関の前に立つ幼い頃のグリフィン", caption: "" },
+    "kid-griffin": { alt: "小学校の初日、黄色いセーターで玄関の前に立つ幼い頃のグリフィン", caption: "" },
     "kid-nadia": { alt: "幼い頃のナディア。帽子をかぶって車の後部座席で笑っている", caption: "" },
     "couple-osaka-castle": { alt: `大阪城の前に立つ${A}と${B}`, caption: "大阪に着くなら、お城も立ち寄る価値あり" },
     "yasaka-gate-shijo": { alt: "八坂神社の門から四条通を見下ろす", caption: "八坂神社から四条通を望む。会場から徒歩10分" },
@@ -87,17 +86,18 @@ export const ja: DeepPartial<Content> = {
     map: (city: string | null, key?: string) => (key === "Already in Japan" ? "京都までの道のりを描いた小さな地図（すでに日本にいらっしゃいます）" : city ? `${city}から京都までのあなたの線を描いた小さな地図` : "京都までの道のりを描いた小さな地図"),
     review: "出発地", notSaying: "未回答",
     onMap: "あなたの線が地図に加わりました", pick: "都市を選ぶ",
-    kyoto: "京都・2027年10月15日", kyotoPin: "京都、2027年10月15日", brisbane: "ブリスベン", victoria: "ビクトリア", zoomIn: "拡大", zoomOut: "縮小", households: (n: number) => `${n}世帯`, canada: "カナダ",
+    kyoto: "京都・2027年10月15日", kyotoPin: "京都、2027年10月15日", brisbane: "ブリスベン", victoria: "ビクトリア",
+    from: { griffin: "カナダ・ビクトリア", nadia: "ブリスベン" }, zoomIn: "拡大", zoomOut: "縮小", households: (n: number) => `${n}世帯`, canada: "カナダ",
     open: "全画面", openLabel: "地図を全画面で開く", loading: "地図を描いています…", close: "地図を閉じる", view: "地球儀か地図", globe: "地球儀", flat: "地図",
     pin: (n: number, title: string, place: string) => `${n ? `第${n}章：` : ""}${title}、${place}。この章へ移動`,
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "ゲスト", you: "あなたの線" },
     count: (n: number, of: number) => `${of}本中${n}本の線が描かれました`,
     seeList: "リストで見る", seeMap: "地図で見る",
-    list: { nadia: `${NADIA}：ブリスベンから京都へ`, griffin: `${GRIFFIN}：カナダから京都へ`, you: (city: string) => `あなたの線：${city}から京都へ`, city: (city: string, n: number) => `${city}：${n}本` },
+    list: { nadia: `${NADIA}：ブリスベンから京都へ`, griffin: `${GRIFFIN}：カナダのビクトリアから京都へ`, you: (city: string) => `あなたの線：${city}から京都へ`, city: (city: string, n: number) => `${city}：${n}本` },
   },
   flying: { endTitle: "どちらから来られますか？", cities: { Brisbane: "ブリスベン", Melbourne: "メルボルン", Sydney: "シドニー", Perth: "パース", Adelaide: "アデレード", "Elsewhere in Australia": "オーストラリアのその他の地域", Canada: "カナダ", "Already in Japan": "日本国内から", "Somewhere else": "その他" }, title: "どちらから来られますか？", hint: "任意です。人数のみ表示し、お名前は表示しません。", thanks: "ありがとうございます。", yours: (key: string, city: string) => (key === "Already in Japan" ? "すでに日本にいらっしゃいます" : `${city}から`), change: "変更", placeholder: "都市名や町名を入力", noMatch: "見つかりませんでした。",
     dropPin: "見つからないときは、地図にピンを置いてください", pinHint: "出発地を地図でタップしてください。", pinCancel: "やめる", searching: "検索中…" },
-  fortune: { title: "旅のささやかなおみくじ", draw: "ひく", blessing: "大吉", blessingEn: "大吉", number: (n: number, of: number) => `第${n}番（全${of}番）`, save: "スマホに保存", copied: "コピーしました。メモに貼り付けてください。", hint: "箱をタップしてひいてください。", hintShake: "箱をタップするか、スマホを軽く振ってください。", boxLabel: "おみくじの箱。おみくじをひく", drawing: "箱を振っています…", onMap: "地図であなたの線を見る", again: "もう一度ひく", homeTitle: "おみくじをひく" },
+  fortune: { title: "旅のささやかなおみくじ", draw: "ひく", blessing: "大吉", blessingEn: "大吉", number: (n: number, of: number) => `第${n}番（全${of}番）`, save: "スマホに保存", copied: "コピーしました。メモに貼り付けてください。", hint: "箱をタップしてひいてください。", hintShake: "箱をタップするか、スマホを軽く振ってください。", boxLabel: "おみくじの箱。おみくじをひく", drawing: "箱を振っています…", onMap: "地図であなたの線を見る", again: "もう一度ひく", homeTitle: "おみくじをひく", homeAgain: "もう一度おみくじをひく" },
   driver: { label: "京都駅からタクシーで", fare: "15〜20分です。会場のチケットがあればMKタクシーは無料です。", show: "運転手さんに見せる", maps: "Googleマップで道順を見る", mapsOpens: "Googleマップがひらきます", english: "Please take me here", done: "閉じる", copy: "住所をコピー", copied: "住所をコピーしました" },
   countdownMore: {
     until: "京都でお会いできる日まで", tomorrow: "いよいよ明日", today: "今日がその日です", married: "結婚しました",
@@ -172,7 +172,7 @@ export const ja: DeepPartial<Content> = {
     print: "当日の予定を印刷",
     now: "現在",
     rainPlan: "雨の場合、挙式は会場内のチャペルで行います。",
-    venueFacts: "ザ・ソウドウは、日本画家・竹内栖鳳の旧邸です。約1.4エーカーの庭園は、季節ごとに色を変えます。",
+    venueFacts: "ザ・ソウドウは、もともと日本画家・竹内栖鳳の家でした。庭はとても広く（約1.4エーカー）、季節ごとに色を変えます。",
     gettingTitleJa: "行き方",
     stay: [
       { label: "祇園・東山", good: "会場まで徒歩圏、いちばん美しい通り", watch: "料金は高め、混雑、石畳の坂道", maps: "https://www.google.com/maps/search/?api=1&query=Gion+Higashiyama+Kyoto" },
@@ -186,9 +186,9 @@ export const ja: DeepPartial<Content> = {
     tickHint: "済んだものにチェックを。チェックはこの端末にだけ保存されます。",
     ticked: "済み",
     items: [
-      { title: "パスポート", body: "旅の情報が最新か確認してください！パスポートは、帰国日から6か月以上の有効期限が必要です。更新が必要な方は、お早めにどうぞ！" },
-      { title: "航空券", body: "航空券は、できる範囲でなるべく早めに予約してください。結婚式の日程は確定しているので、変わる心配はありません！せっかくなので、日本を楽しんでいってください。結婚式の前の数日に楽しめることをご紹介しますし、できれば式のあとも数日ゆっくりしていってください。" },
-      { title: "宿泊先", body: "航空券を予約したら、次は宿の予約です！会場の近くのホテルやAirbnbのおすすめをまとめます。日本のホテルは小さく必要最低限なことが多いので、選ぶときの参考にしてください。ほかのゲストと相談して一緒に泊まるのも大歓迎です！迷ったら、気軽にご相談ください！" },
+      { title: "パスポート", body: "旅の情報が最新か確認してください！パスポートは、帰国したあとも6か月以上残っているか確かめてください。更新が必要なら、早めに済ませておきましょう！" },
+      { title: "航空券", body: "航空券はできるだけ早めに予約してください。日程は確定しているので、動くことはありません！せっかくなので、旅行も楽しんでください。結婚式の前の数日に楽しめることをご紹介します。式のあとも数日ゆっくりしてもらえたらうれしいです。" },
+      { title: "宿泊先", body: "航空券を予約したら、次は宿の予約です！上の「宿泊について」をご覧ください。ほかのゲストと一緒に泊まりたい？ぜひどうぞ！迷ったら、気軽に声をかけてください！" },
       { title: "SIMまたはポケットWi-Fi", body: "出発前に、eSIMかポケットWi-Fiを用意しておきましょう。おすすめはこちら：", links: [
         { label: "Sakura Mobile", href: "https://www.sakuramobile.jp/" },
         { label: "Ninja WiFi", href: "https://ninjawifi.com/en/plan/sim" },
@@ -242,12 +242,12 @@ export const ja: DeepPartial<Content> = {
   },
   stay: {
     title: "宿泊について",
-    intro: "早めの予約を。10月中旬の京都は混み合います。日本のホテルは小さく必要最低限なことが多いので、選ぶときの参考にしてください。京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと相談して一緒に泊まるのも大歓迎です！迷ったら、気軽にご相談ください！",
+    intro: "早めの予約を。10月中旬の京都は混み合います。日本のホテルはたいてい小さめで必要最低限なので、そのつもりで選んでください。京都では1人1泊ごとに少額の宿泊税がかかります。ほかのゲストと一緒に泊まりたい？ぜひどうぞ！迷ったら、気軽に声をかけてください！",
     mapLink: "3つのエリアを地図で見る",
     mapHref: "https://www.google.com/maps/search/?api=1&query=Gion+Kawaramachi+Kyoto+Station",
     picks: {
       title: "おすすめの宿",
-      note: "リンク先は各ホテルの公式サイトです。ほかの予約サイトとも比べてみてください。料金は変わることがあり、6か月前まで予約を受け付けないホテルもあります。大人数で予約するほうが1人あたりは安くなることが多く、2人より4人のほうがお得です。",
+      note: "リンク先は各ホテルの公式サイトですが、ほかの予約サイトも見比べてみてください。料金は変わりますし、6か月前にならないと部屋を出さないホテルもあります。大人数のほうが1人あたりは安くなることが多く、2人より4人がお得です。",
       hotelsTitle: "ホテル",
       airbnbsTitle: "Airbnb",
       airbnbsNote: "人数で割ると1人あたりは安くなります。",
@@ -281,14 +281,14 @@ export const ja: DeepPartial<Content> = {
       { q: "同伴者を連れていけますか？", a: pending("faqs.bring.a", "ja") },
       { q: "日本の伝統的な結婚式ですか？", a: pending("faqs.style.a", "ja") },
       { q: "服装は？", a: "ドレスコードはありません。いちばん自分らしくいられる服装でどうぞ。会場のまわりは石畳の道なので、歩きやすい靴でお越しください。" },
-      { q: "お食事は？", a: "食事の制限やアレルギーを教えてください！結婚式の昼食はケータリングで、メニューは式の数か月前に決まります。" },
+      { q: "お食事は？", a: "食べられないものがあれば教えてください！昼食はケータリングで、メニューは数か月前に決めます。" },
       { q: "ご祝儀やプレゼントは？", a: "プレゼントは不要です！遠くまで来てくださるだけで十分なので、来てくださることが何よりの贈り物です！" },
       { q: "ビザは必要ですか？", a: pending("faqs.visa.a", "ja") },
       { q: "個人情報はどうなりますか？", a: pending("faqs.details.a", "ja") },
-      { q: "このサイトはどなたが作ったのですか？", a: "家族みんなで作りました。文はグリフィン、目に見える絵はぜんぶナディア、サイトはまるごとジェハンが作りました。音楽は久石譲の「A Town With an Ocean View」、ピアノ演奏はPiano ZeroLです。" },
+      { q: "このサイトはどなたが作ったのですか？", a: "家族みんなで作りました。文はグリフィン、目に見える絵はぜんぶナディア、サイトはジェハンが作りました。音楽は久石譲の「A Town With an Ocean View」です。" },
     ],
     onTheDay: "当日の連絡先：",
-    contact: "どんなことでも、ご質問があればいつでもどちらかにお気軽にご連絡ください。いつでも喜んでお手伝いします！",
+    contact: "どんなことでも、質問があればいつでもどちらかにメッセージをください。いつでも喜んでお手伝いします！",
   },
   rsvp: {
     step: (n: number, of = 3) => `ステップ ${n}/${of}`,

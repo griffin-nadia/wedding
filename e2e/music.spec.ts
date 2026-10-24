@@ -39,10 +39,12 @@ test("the music credit is only in FAQs, in the last answer", async ({ page }) =>
   const last = page.locator("#letter [data-slot=accordion-item]").last()
   await last.locator("[data-slot=accordion-trigger]").click()
   await expect(last).toContainText("Who made this site?")
-  await expect(last).toContainText("A proper family effort. Griffin wrote the words, Nadia drew everything you can see, and Jehan built the whole site. The music is A Town With an Ocean View by Joe Hisaishi, played on piano by Piano ZeroL.")
-  // The link is on the song's title only; the pianist is plain text
-  await expect(last.getByRole("link")).toHaveCount(1)
+  await expect(last).toContainText("A proper family effort. Griffin wrote the words, Nadia drew everything you can see, and Jehan built the site. The music is A Town With an Ocean View by Joe Hisaishi.")
+  await expect(last).not.toContainText("Piano ZeroL") // run 26c: no pianist in the credit
+  // Two links: the song's title to the track, and Jehan's name, quietly, to the same LinkedIn as the laptop's credit seal
+  await expect(last.getByRole("link")).toHaveCount(2)
   await expect(last.getByRole("link", { name: "A Town With an Ocean View" })).toHaveAttribute("href", "https://open.spotify.com/track/53StnIsGVxhcKaSwcJiY0Y")
+  await expect(last.getByRole("link", { name: "Jehan" })).toHaveAttribute("href", "https://au.linkedin.com/in/jehanbaguley")
 })
 
 // Coming back to the tab: it carries on from where it stopped and is back at 20% within a second, not a slow restart.

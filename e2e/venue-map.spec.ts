@@ -15,8 +15,37 @@ test("the venue map is on and complete", async ({ page }) => {
   await expect(page.locator(".vmap-key")).toContainText("Taxi from the station")
   await expect(page.locator(".vmap-key")).toContainText("Walk from Gion-Shijo")
   await expect(page.getByRole("button", { name: "Open the map" })).toBeVisible()
-  await page.locator(".vmap-list summary").click()
-  await expect(page.locator(".vmap-list [lang=ja]", { hasText: "清水寺" })).toBeVisible()
+  await expect(page.getByRole("radiogroup", { name: "The places on the map" }).getByRole("radio")).toHaveCount(11)
+})
+
+// Run 26c: the places selector is a radio group (APG, native radios): Tab lands on the chosen place, the arrow keys
+// move and choose, and the map's dot (opaque, honey gold and bigger when chosen) and the card follow
+test("the places radio group: keyboard chooses, the dot and card follow", async ({ page }, info) => {
+  test.skip(info.project.name !== "laptop", "keyboard")
+  await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
+  await page.goto("travel?h=sample#around")
+  const group = page.getByRole("radiogroup", { name: "The places on the map" })
+  const sodoh = group.getByRole("radio", { name: "The Sodoh" })
+  await expect(sodoh).toBeChecked()
+  await sodoh.focus()
+  await page.keyboard.press("ArrowRight")
+  await expect(group.getByRole("radio", { name: "Kyoto Station" })).toBeFocused()
+  await expect(group.getByRole("radio", { name: "Kyoto Station" })).toBeChecked()
+  await expect(page.locator(".kmap-card")).toContainText("Hachijo exit")
+  await page.keyboard.press("ArrowLeft")
+  await page.keyboard.press("ArrowLeft") // back past the first: wraps to the last
+  await expect(group.getByRole("radio", { name: "Kiyomizu-dera" })).toBeChecked()
+  await expect(page.locator(".vmap").getByRole("button", { name: /Kiyomizu-dera/ })).toHaveAttribute("aria-pressed", "true")
+  await page.waitForTimeout(400) // the gold fades in and the dot grows over 200ms
+  const dots = await page.locator(".vmap").evaluate((m) => [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((p) => {
+    const d = p.querySelector<HTMLElement>(".vmap-dot")!, cs = getComputedStyle(d), fill = getComputedStyle(d, "::before")
+    return { on: p.classList.contains("is-on"), alpha: Number(cs.backgroundColor.match(/[\d.]+/g)?.[3] ?? 1), shadow: cs.boxShadow !== "none", gold: fill.opacity === "1", scale: new DOMMatrix(cs.transform).a }
+  }))
+  for (const d of dots) { expect(d.alpha).toBe(1); expect(d.shadow).toBe(true) }
+  const on = dots.filter((d) => d.on)
+  expect(on).toHaveLength(1)
+  expect(on[0].gold).toBe(true)
+  expect(on[0].scale).toBeGreaterThan(1.2)
 })
 
 // Run 24b: every ring sits on its own dot in Nadia's art (the place's % of the image), at three widths (run 25: and 2560)
@@ -90,17 +119,19 @@ const LABELS = [[60.6, 34.2, 79.7, 42.5], [58.8, 51.6, 73.6, 55.5], [61.4, 25, 7
   [32.6, 10.9, 48.1, 16.9], [58.1, 4.6, 63.8, 8.6], [46.6, 19.5, 54, 23.3], [35.2, 44.6, 46.4, 48.5], [39.8, 62.6, 45.9, 66.7], [52.5, 88, 59.4, 92.2]]
 test("dots keep the minimum gap and their spots; chips stay clear of dots and her lettering", async ({ page }, info) => {
   test.skip(info.project.name !== "laptop", "sizes set here")
-  test.setTimeout(90_000)
+  test.setTimeout(150_000)
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
   for (const [w, h] of [[390, 844], [430, 932], [1440, 900], [2560, 1440]]) for (const full of [false, true]) {
     await page.setViewportSize({ width: w, height: h })
     await page.goto(`travel?h=sample&w=${w}${full ? "f" : ""}#around`) // a new address each time, so the page reloads
     if (full) await page.getByRole("button", { name: "Open the map" }).click()
+    await page.mouse.move(0, 0) // no dot under the pointer (a hovered dot grows 1.12x)
     const map = full ? page.getByRole("dialog").locator(".vmap") : page.locator(".vmap")
     await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(1400) // past the dots' first pulse, so they're their own size
     const pins = map.locator(".vmap-pin"), where = `${w}${full ? " full screen" : ""}`
     for (let i = 0; i < await pins.count(); i++) {
-      await pins.nth(i).evaluate((el: HTMLElement) => el.click()); await page.waitForTimeout(30)
+      // Past the last chosen dot easing back from 1.3x, so every dot is measured at rest
+      await pins.nth(i).evaluate((el: HTMLElement) => el.click()); await page.waitForTimeout(300)
       const r = await map.evaluate((m, labels) => {
         const img = m.querySelector("img")!.getBoundingClientRect()
         const dots = [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((pin) => {
