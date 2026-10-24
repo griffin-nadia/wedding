@@ -69,6 +69,30 @@ export const ja: DeepPartial<Content> = {
       { id: "venue", name: "ザ・ソウドウ", ja: "ザ・ソウドウ", body: "会場：東山区八坂上町366。挙式は11時から庭園で行います。", maps: "https://www.google.com/maps/dir/?api=1&destination=The+Sodoh+Higashiyama+Kyoto" },
     ],
   },
+  // Nadia's painted map (run 22): the words around it in Japanese. Names stay as on her art (English), the chips and
+  // the card already carry the Japanese name beside them; each place's note in order, by index (as en.venueMap.places)
+  venueMap: {
+    title: "会場のまわり",
+    intro: "場所をタップすると、位置と行き方がわかります。",
+    alt: "ナディアが描いた京都・東山の地図。左下にJR線の京都駅。鴨川と京阪線が北へのび、東福寺、七条、清水五条、祇園四条、三条の各駅を通ります。西には河原町の商店街。東には八坂神社、八坂の塔、ザ・ソウドウ、坂の上に清水寺があります。",
+    listTitle: "地図の場所",
+    open: "地図をひらく", close: "地図を閉じる",
+    zoomHint: "ピンチで拡大",
+    directions: "Googleマップで道順を見る",
+    places: [
+      { body: "会場：東山区八坂上町366。挙式は11時から庭園で行います。" },
+      { body: "空港からの電車が着く駅です。タクシーは八条口で待っています。会場まで約15分で、会場のチケットがあればMKタクシーは無料です。" },
+      { body: "京阪線の駅です。会場まで歩いて約20分、ほぼ平坦です。タクシーなら約4分です。" },
+      { body: "京阪線、四条通のふもとの駅です。会場まで石畳の道を歩いて約15分、少し階段があります。タクシーなら約3分です。" },
+      { body: "京阪線、地図のいちばん上の駅です。河原町のお店や飲食店の近くです。" },
+      { body: "京阪線、清水五条のひとつ南の駅です。" },
+      { body: "京都駅からのJR奈良線と京阪線が交わる駅です。東福寺はすぐ近くで、秋の紅葉は格別です。" },
+      { body: "京都いちばんの繁華街で、アーケードの商店街が続いています。食べ歩きや散策にぴったりです。" },
+      { body: "四条通の突き当たりにあり、昼も夜も開いています。会場から歩いて約10分です。" },
+      { body: "会場のそばの五重塔です。塔が見えたら、もうすぐです。" },
+      { body: "会場の上の丘にあるお寺で、木々の上に大きな木の舞台があります。" },
+    ],
+  },
   story: {
     title: "ふたりのこと",
     prevChapter: "前の章", nextChapter: "次の章",
