@@ -196,7 +196,8 @@ function useJourneyData() {
  */
 export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger: ReactElement; pins: ChapterPin[]; onPin: (key: string) => void; onOpenChange?: (open: boolean) => void }) {
   const { t } = useLang()
-  const { you, journeys, label } = useJourneyData()
+  const { you, flying, journeys, label } = useJourneyData()
+  const told = flying && flying.households > 0 ? flying : null
   const [base] = useState<View>(() => (startsFlat() ? "flat" : "globe"))
   const [open, setOpen] = useState(false)
   const [view, setView] = useState<View>(base)
@@ -225,7 +226,11 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
               </div></>
             : <Suspense key="look" fallback={<GlobeWaiting />}><JourneyLook you={you} cities={cities} label={label} mode={view} size="full" /></Suspense>}
         </div>
-        <div className="journey-viewer-foot"><JourneyLegend you={Boolean(you && you.id !== "jp")} /></div>
+        {/* Run 27: the key and how many lines are drawn so far, together under the map */}
+        <div className="journey-viewer-foot">
+          <JourneyLegend you={Boolean(you && you.id !== "jp")} />
+          {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
+        </div>
       </SheetContent>
     </Sheet>
   )
@@ -233,7 +238,7 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
 
 function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: boolean; pins: ChapterPin[]; onPin: (key: string) => void }) {
   const { t } = useLang()
-  const { you, flying, journeys, label } = useJourneyData()
+  const { you, journeys, label } = useJourneyData()
   const [base] = useState<View>(() => (startsFlat() ? "flat" : "globe"))
   // One stop early, while they read: the globe's code, then its paper painted in idle time (paintGlobe keeps it, so the
   // globe mounts on a ready painting)
@@ -255,7 +260,6 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
     const id = window.setTimeout(() => setSettled(true), still() ? 0 : 550)
     return () => window.clearTimeout(id)
   }, [active])
-  const told = flying && flying.households > 0 ? flying : null
   const cities = journeys ?? NONE
   // The stop's globe waits for its stop to settle and for the lines
   const stop = base === "flat" ? <Suspense fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={onPin} /></Suspense>
@@ -268,9 +272,8 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
         <JourneyViewer pins={pins} onPin={onPin}
           trigger={<button type="button" className="journey-open" aria-label={t.journey.openLabel}><Maximize2 className="size-4" aria-hidden />{t.journey.open}</button>} />
       </div>
-      {/* Run 27 (Jehan): the key only in full screen, so the stop's globe has the room */}
+      {/* Run 27 (Jehan): the key and the count only in full screen, so the stop's globe has the room */}
       {stop}
-      {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )
 }

@@ -1450,12 +1450,15 @@ svg.lucide { stroke-width: 1.5; }
 .story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 84px)); } /* room for the switch above and the key under */
 /* Run 27, the antique globe (journey-look.tsx): a 5:4 box (the paper's, the globe four fifths of its height), as tall
    as the old square globe on the stop; full screen it fills the stage */
-.journey-look { position: relative; width: min(100%, 425px, calc((var(--stop-h, 400px) - 56px) * 1.25)); aspect-ratio: 5 / 4; }
+.journey-look { position: relative; width: min(100%, 425px, calc((var(--stop-h, 400px) - 36px) * 1.25)); aspect-ratio: 5 / 4; }
 .journey-look > .x-g24-box { width: 100%; }
 .journey-look-wait { display: grid; place-items: center; }
 /* Run 27 (Jehan): the stop keeps it simple; the compass rose (and the key) only in full screen */
 .journey-look[data-size="stop"] .x-gan-rose { display: none; }
-.journey-viewer .journey-look { width: min(100%, calc(var(--flat-h) * 1.25), 1200px); }
+/* Run 27: full screen, the map as big as the screen allows: edge to edge on a phone, as tall as there's room for on a
+   laptop (the paper's 5:4 is fixed, its projection is) */
+.journey-viewer .journey-look { width: min(100vw, calc(var(--flat-h) * 1.25), 1400px); margin-inline: calc(-1 * var(--space-3)); }
+@media (min-width: 768px) { .journey-viewer .journey-look { margin-inline: 0; } .journey-viewer .journey-look .x-g24-box { border-radius: var(--radius-section); overflow: hidden; } }
 /* The flat map in the same box (run 19 globe: its height token) */
 .story-slide-map { --flat-h: calc(var(--stop-h) - 84px); }
 /* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */
@@ -1796,7 +1799,10 @@ g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
 @media (hover: hover) { .journey-open:hover { box-shadow: 0 0 0 1px var(--line-strong); } }
 /* The map full screen (like a photo): the toggle in a fixed row at the top, the map filling the middle, the key under */
 .sheet.journey-viewer { top: 0; left: 0; right: 0; bottom: 0; translate: none; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0;
-  display: grid; grid-template-rows: 64px minmax(0, 1fr) auto; justify-items: center; padding: 0 var(--space-3) var(--space-4); --flat-h: calc(100dvh - 140px); }
+  display: grid; grid-template-rows: 64px minmax(0, 1fr) auto auto minmax(0, 1fr); justify-items: center; padding: 0 var(--space-3) var(--space-4); --flat-h: calc(100dvh - 160px); }
+/* Run 27: the map and its key together in the middle of the screen, the toggle staying at the top */
+.journey-viewer-stage { grid-row: 3; }
+.journey-viewer-foot { grid-row: 4; }
 .journey-viewer-bar { display: flex; align-items: center; justify-content: center; height: 64px; }
 .journey-viewer .segmented.journey-mode .segmented-item { min-height: 40px; padding-inline: var(--space-4); font-size: 14px; }
 .journey-viewer-stage { position: relative; display: grid; place-items: center; width: 100%; height: 100%; min-height: 0; }
@@ -1811,7 +1817,7 @@ g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
 .journey-flat-art { transform-origin: 0 0; }
 .journey-viewer .globe-zoom .utility-btn { width: 44px; height: 44px; }
 .journey-viewer .globe-zoom .utility-btn::after { display: none; }
-.journey-viewer-foot { padding-top: var(--space-2); }
+.journey-viewer-foot { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding-top: var(--space-3); text-align: center; }
 /* Chapter pins (run 25, the lab's stamp): a paper disc with an ink ring and the chapter's number, 20px, a 44px target */
 .chapter-pins { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .chapter-pin-at { position: absolute; left: var(--x); top: var(--y); width: 0; height: 0; transition: opacity var(--duration-fast) linear; }
