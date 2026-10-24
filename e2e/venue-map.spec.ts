@@ -119,17 +119,19 @@ const LABELS = [[60.6, 34.2, 79.7, 42.5], [58.8, 51.6, 73.6, 55.5], [61.4, 25, 7
   [32.6, 10.9, 48.1, 16.9], [58.1, 4.6, 63.8, 8.6], [46.6, 19.5, 54, 23.3], [35.2, 44.6, 46.4, 48.5], [39.8, 62.6, 45.9, 66.7], [52.5, 88, 59.4, 92.2]]
 test("dots keep the minimum gap and their spots; chips stay clear of dots and her lettering", async ({ page }, info) => {
   test.skip(info.project.name !== "laptop", "sizes set here")
-  test.setTimeout(90_000)
+  test.setTimeout(150_000)
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
   for (const [w, h] of [[390, 844], [430, 932], [1440, 900], [2560, 1440]]) for (const full of [false, true]) {
     await page.setViewportSize({ width: w, height: h })
     await page.goto(`travel?h=sample&w=${w}${full ? "f" : ""}#around`) // a new address each time, so the page reloads
     if (full) await page.getByRole("button", { name: "Open the map" }).click()
+    await page.mouse.move(0, 0) // no dot under the pointer (a hovered dot grows 1.12x)
     const map = full ? page.getByRole("dialog").locator(".vmap") : page.locator(".vmap")
     await map.scrollIntoViewIfNeeded(); await page.waitForTimeout(1400) // past the dots' first pulse, so they're their own size
     const pins = map.locator(".vmap-pin"), where = `${w}${full ? " full screen" : ""}`
     for (let i = 0; i < await pins.count(); i++) {
-      await pins.nth(i).evaluate((el: HTMLElement) => el.click()); await page.waitForTimeout(30)
+      // Past the last chosen dot easing back from 1.3x, so every dot is measured at rest
+      await pins.nth(i).evaluate((el: HTMLElement) => el.click()); await page.waitForTimeout(300)
       const r = await map.evaluate((m, labels) => {
         const img = m.querySelector("img")!.getBoundingClientRect()
         const dots = [...m.querySelectorAll<HTMLElement>(".vmap-pin")].map((pin) => {
