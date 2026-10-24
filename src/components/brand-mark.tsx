@@ -1,6 +1,6 @@
 /**
  * The top bar's mark (run 27, from the lab's "G&N from Nadia's lettering"): a G and an N cut from Nadia's own
- * lettering of the names (the masks the names on Home use, public/art/names), her "&" between in the sage. Each part
+ * lettering of the names (the masks the names on Home use, public/art/names), her "&" between, all in the one ink. Each part
  * is a window onto the mask at its own columns, so the three keep her baseline. The link keeps "G&N" as its name.
  * The cut, measured from the mask's ink (1040 × 274): G columns 10 to 114, "&" 486 to 540, N 582 to 739; rows 10 to 272.
  */

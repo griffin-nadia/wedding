@@ -583,10 +583,10 @@
 .signoff-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.5rem; line-height: 1.2; }
 .site-mark { margin-right: auto; font-family: var(--font-hand); font-weight: 500; font-size: calc(var(--type-heading-size) * 1.1); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
-/* Run 27: the mark in Nadia's lettering (brand-mark.tsx): her G and N in the ink, her "&" in the sage */
+/* Run 27: the mark in Nadia's lettering (brand-mark.tsx), her G, "&" and N all in the one ink */
 .brand-mark { --mark-h: 36px; display: inline-flex; align-items: flex-start; gap: calc(var(--mark-h) * 0.02); height: var(--mark-h); vertical-align: middle; }
 .brand-mark-part { display: block; height: var(--mark-h); background: var(--ink); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
-.brand-mark-amp { background: var(--action); }
+
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
    its paper carries on under the home indicator (safe area), so nothing shows beneath it. */
 .site-nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--letter-bg); border-top: 1px solid transparent; }
@@ -1350,7 +1350,9 @@ svg.lucide { stroke-width: 1.5; }
   .story-kid-him .story-print { --tilt: -6deg; }
   .story-kid-her .story-print { --tilt: 6deg; }
   .story-kid-him { left: 2%; top: 0; }
-  .story-kid-her { right: 2%; top: auto; bottom: 2%; }
+  /* Run 27 (Nadia): hers sits lower and further right, so "griffin" on his print's border shows */
+  .story-kid-her { right: 0; top: auto; bottom: -3%; }
+  .story-kid .story-print { --print-h: min(43cqh, 57cqw); }
 }
 
 

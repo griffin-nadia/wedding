@@ -352,14 +352,16 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     spring()
   }
 
-  // Placed before the first paint, and again whenever the size changes (stops are placed in px of the track's width)
+  // Placed before the first paint, and again whenever the size changes (stops are placed in px of the track's width).
+  // Run 27: and whenever the chapters change (the Content tab's arriving after the fallback gives new stops, which
+  // came in unplaced and all showed at once)
   useLayoutEffect(() => {
     paint()
     const el = track.current
     if (!el || typeof ResizeObserver === "undefined") return
     const ro = new ResizeObserver(paint); ro.observe(el)
     return () => { ro.disconnect(); running.current?.() }
-  }, [paint])
+  }, [paint, chapters])
 
   // Dragging: sideways moves follow the finger; up and down stay the page's
   useEffect(() => {
