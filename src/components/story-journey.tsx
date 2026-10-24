@@ -480,12 +480,26 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
   const { t } = useLang()
   const [open, setOpen] = useState(false)
   const globe = useRef(false)
-  const bar = useRef<HTMLSpanElement>(null)
-  // Run 26c: how far down the list, as a thin line under the head (one write per scroll event, no re-render)
-  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget, room = el.scrollHeight - el.clientHeight
-    bar.current?.style.setProperty("--p", String(room > 0 ? Math.min(1, el.scrollTop / room) : 1))
+  const list = useRef<HTMLOListElement>(null)
+  // Run 26c (Jehan's phone check): the timeline's own line fills as they read, down to a reading line 40% of the way
+  // down the sheet, and each photo it reaches is marked as passed. Writes only (a style and data attributes), no
+  // re-render; at the end of the list the line is full
+  const onScroll = (e: React.UIEvent<HTMLDivElement>) => measure(e.currentTarget)
+  const measure = (el: HTMLElement) => {
+    const ol = list.current
+    if (!ol) return
+    const top = ol.getBoundingClientRect().top, read = el.getBoundingClientRect().top + el.clientHeight * 0.4
+    const end = el.scrollTop >= el.scrollHeight - el.clientHeight - 2
+    const fill = end ? ol.offsetHeight : Math.max(0, read - top)
+    ol.style.setProperty("--fill", `${Math.round(fill)}px`)
+    for (const row of ol.children) (row as HTMLElement).toggleAttribute("data-passed", end || (row as HTMLElement).getBoundingClientRect().top + 28 <= read)
   }
+  // Once open, before any scroll: the first photos above the reading line are already marked
+  useEffect(() => {
+    if (!open) return
+    const id = window.setTimeout(() => { const body = list.current?.closest<HTMLElement>(".sheet-body"); if (body) measure(body) }, 60)
+    return () => window.clearTimeout(id)
+  }, [open])
   return (
     <Sheet open={open} onOpenChange={(o) => { setOpen(o); if (o) globe.current = false }}>
       {/* Run 26c: a button (with its list icon), not a text link, so it reads apart from a chapter's Keep reading */}
@@ -501,10 +515,9 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
               <Globe className="size-4" aria-hidden />{t.journey.globe}
             </button>
           </span>
-          <span ref={bar} aria-hidden className="story-progress" />
         </SheetHead>
         <SheetBody onScroll={onScroll}>
-          <ol className="story-timeline">
+          <ol ref={list} className="story-timeline">
             {chapters.map((ch) => {
               const label = [ch.title, ch.year].filter(Boolean).join(", ")
               return (

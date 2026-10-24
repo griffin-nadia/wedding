@@ -250,9 +250,17 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
           {tipAt !== null && others[tipAt] && (
             <text aria-hidden x={others[tipAt][0]} y={others[tipAt][1] - 9 * kz} textAnchor="middle" className="journey-place journey-flat-tip">{guests[tipAt].label}</text>
           )}
-          {mine && <path key={String(you!.id)} d={line(mine, mineLift)} className="journey-you journey-you-edge" pathLength={1} style={{ animationDelay: `${youDelay}ms`, animationDuration: `${ms(900)}ms` }} />}
           {mine && <path key={`${you!.id}-line`} d={line(mine, mineLift)} className="journey-you" pathLength={1} style={{ animationDelay: `${youDelay}ms`, animationDuration: `${ms(900)}ms` }} />}
-          {mine && <circle cx={mine[0]} cy={mine[1]} r={4 * kz} className="journey-you-dot" />}
+          {mine && <circle cx={mine[0]} cy={mine[1]} r={3 * kz} className="journey-you-dot" />}
+          {/* Run 26c (Jehan): their line is as strong as Nadia's and Griffin's, still gold, and their place gets a gold
+              "You" badge beside its name, like the G and the N */}
+          {mine && (
+            <g aria-hidden transform={`translate(${mine[0]} ${mine[1]}) scale(${kz})`} className="journey-flat-names">
+              {/* From a home city (Brisbane): the badge sits under that city's, and its name isn't said twice */}
+              <rect x={5} y={mineLift < 0 ? 10 : -7} width={26} height={14} rx={3.5} className="home-mark-you" /><text x={18} y={mineLift < 0 ? 20.5 : 3.5} textAnchor="middle" className="home-mark-letter home-mark-you-letter">{t.journey.youMark}</text>
+              {mineLift >= 0 && <text x={35} y={4} className="journey-place journey-flat-home">{you!.name}</text>}
+            </g>
+          )}
           {!still && flights.map((f) => <FlatPlane key={`${f.kind}:${f.d}`} {...f} k={kz} run={shown} />)}
           <g aria-hidden transform={`translate(${kyoto[0]} ${kyoto[1]}) scale(${kz})`} className="journey-flat-pin">
             <rect x={-11} y={-11} width="22" height="22" rx="5" className="journey-seal" />

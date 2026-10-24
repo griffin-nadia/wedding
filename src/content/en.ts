@@ -106,7 +106,7 @@ export const en = {
     map: (city: string | null, key?: string) => (key === "Already in Japan" ? "A small map of the way to Kyoto, and you're already in Japan" : city ? `A small map with your line from ${/^(Somewhere|Elsewhere)/.test(key ?? "") ? city.toLowerCase() : city} to Kyoto` : "A small map of the way to Kyoto"),
     review: "Flying from", notSaying: "Not saying",
     onMap: "Your line's on the map", pick: "Pick a city",
-    kyoto: "Kyoto · 15 Oct 2027", kyotoPin: "Kyoto, 15 Oct 2027", brisbane: "Brisbane", canada: "Canada", victoria: "Victoria",
+    kyoto: "Kyoto · 15 Oct 2027", kyotoPin: "Kyoto, 15 Oct 2027", youMark: "You", brisbane: "Brisbane", canada: "Canada", victoria: "Victoria",
     // Run 26c: where each of them is from, under their name on the globe and the map
     from: { griffin: "Victoria, Canada", nadia: "Brisbane" },
     zoomIn: "Zoom in", zoomOut: "Zoom out", households: (n: number) => `${n} households`,
