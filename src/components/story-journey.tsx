@@ -496,9 +496,13 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
     if (!ol) return
     const top = ol.getBoundingClientRect().top, read = el.getBoundingClientRect().top + el.clientHeight * 0.4
     const end = el.scrollTop >= el.scrollHeight - el.clientHeight - 2
-    const fill = end ? ol.offsetHeight : Math.max(0, read - top)
-    // Run 27: the fill is a scale of the full line (transform only, so it glides on the compositor)
-    ol.style.setProperty("--fill", String(Math.min(1, fill / Math.max(1, ol.offsetHeight)).toFixed(4)))
+    // Run 27: the line runs from the top to the middle of the last stop's mark (Kyoto's seal), and the fill is a scale
+    // of it (transform only, so it glides on the compositor)
+    const last = ol.lastElementChild as HTMLElement | null, mark = last?.firstElementChild as HTMLElement | null
+    const lineH = last && mark ? last.offsetTop + mark.offsetTop + mark.offsetHeight / 2 - 16 : ol.offsetHeight - 32
+    ol.style.setProperty("--line-h", `${Math.round(lineH)}px`)
+    const fill = end ? lineH : Math.max(0, read - top - 16)
+    ol.style.setProperty("--fill", String(Math.min(1, fill / Math.max(1, lineH)).toFixed(4)))
     for (const row of ol.children) (row as HTMLElement).toggleAttribute("data-passed", end || (row as HTMLElement).getBoundingClientRect().top + 28 <= read)
   }
   // Once open, before any scroll: the first photos above the reading line are already marked
