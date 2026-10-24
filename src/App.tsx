@@ -56,8 +56,7 @@ if (typeof window !== "undefined") {
   // component, and what it loads when it mounts (three and its line modules, the paint and the land)
   const go = () => warm(navigator,
     [() => import("@/pages/day"), () => import("@/pages/travel"), () => import("@/pages/faqs"), () => import("@/pages/our-story")],
-    [() => import("@/components/journey-globe"), () => import("three"), () => import("three/examples/jsm/lines/Line2.js"), () => import("three/examples/jsm/lines/LineMaterial.js"),
-      () => import("three/examples/jsm/lines/LineGeometry.js"), () => import("@/lib/paint-globe"), () => import("world-atlas/countries-110m.json")])
+    [() => import("@/components/journey-look"), () => import("three"), () => import("@/components/globe/kit-three"), () => import("world-atlas/countries-110m.json")])
   window.addEventListener("load", () => ("requestIdleCallback" in window ? (window as unknown as { requestIdleCallback: (f: () => void) => void }).requestIdleCallback(go) : setTimeout(go, 1500)), { once: true })
 }
 

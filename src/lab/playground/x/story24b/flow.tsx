@@ -122,7 +122,7 @@ export function KidPrints({ className }: { className?: string }) {
 }
 
 // ── The journey stop (as story-journey.tsx's JourneyMap): the painted globe or the flat map ──
-const JourneyGlobe = lazy(() => import("@/components/journey-globe").then((m) => ({ default: m.JourneyGlobe })))
+const JourneyGlobe = lazy(() => import("@/lab/playground/journey-globe").then((m) => ({ default: m.JourneyGlobe })))
 export function JourneyStop({ active }: { active: boolean }) {
   const { t, lang } = useLang()
   const { household } = useHousehold()

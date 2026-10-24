@@ -1118,7 +1118,7 @@ svg.lucide { stroke-width: 1.5; }
 .journey-place-dot { fill: var(--ink-soft); }
 .journey-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin: 0; padding: 0; list-style: none; font-size: var(--type-small-size); color: var(--ink-soft); }
 .journey-legend li { display: inline-flex; align-items: center; gap: var(--space-2); }
-.journey-key { display: inline-block; width: 18px; height: 0; border-top: 2px dotted; }
+.journey-key { display: inline-block; width: 18px; height: 0; border-top: 2px solid; border-radius: 1px; } /* run 27: the antique globe's lines are solid inked routes */
 .journey-key-nadia { border-color: var(--ink-story); }
 .journey-key-griffin { border-color: var(--ink-moss); }
 .journey-key-guests { border-color: var(--journey-guest); opacity: 0.8; }
@@ -1442,6 +1442,12 @@ svg.lucide { stroke-width: 1.5; }
 /* The map fits the same box: the Globe / Flat switch (about 56px with its gap) and the map under it */
 .story-slide-map .journey-mini { max-height: calc(var(--stop-h) - 56px); }
 .story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 84px)); } /* room for the switch above and the key under */
+/* Run 27, the antique globe (journey-look.tsx): a 5:4 box (the paper's, the globe four fifths of its height), as tall
+   as the old square globe on the stop; full screen it fills the stage */
+.journey-look { position: relative; width: min(100%, 425px, calc((var(--stop-h, 400px) - 48px) * 1.25)); aspect-ratio: 5 / 4; }
+.journey-look > .x-g24-box { width: 100%; }
+.journey-look-wait { display: grid; place-items: center; }
+.journey-viewer .journey-look { width: min(100%, calc(var(--flat-h) * 1.25), 1200px); }
 /* The flat map in the same box (run 19 globe: its height token) */
 .story-slide-map { --flat-h: calc(var(--stop-h) - 84px); }
 /* The spread centred in the card's height below the title (phones fill the frame; laptops' card is only as tall) */

@@ -87,7 +87,7 @@ export const ja: DeepPartial<Content> = {
     onMap: "あなたの線が地図に加わりました", pick: "都市を選ぶ",
     kyoto: "京都・2027年10月15日", kyotoPin: "京都、2027年10月15日", youMark: "あなた", brisbane: "ブリスベン", victoria: "ビクトリア",
     from: { griffin: "カナダ・ビクトリア", nadia: "ブリスベン" }, zoomIn: "拡大", zoomOut: "縮小", households: (n: number) => `${n}世帯`, canada: "カナダ",
-    open: "全画面", openLabel: "地図を全画面で開く", loading: "地図を描いています…", close: "地図を閉じる", view: "地球儀か地図", globe: "地球儀", flat: "地図",
+    open: "全画面", openLabel: "地図を全画面で開く", loading: "地図を描いています…", drag: "ドラッグするか矢印キーで動かせます。", guestsFrom: "ゲストの出発地", close: "地図を閉じる", view: "地球儀か地図", globe: "地球儀", flat: "地図",
     pin: (n: number, title: string, place: string) => `${n ? `第${n}章：` : ""}${title}、${place}。この章へ移動`,
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "ゲスト", you: "あなたの線" },
     count: (n: number, of: number) => `${of}本中${n}本の線が描かれました`,
