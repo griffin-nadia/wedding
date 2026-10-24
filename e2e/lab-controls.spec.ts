@@ -62,7 +62,10 @@ test("lab: a story line opens its own detail dialog, never the chapter; focus go
   await expect(dialog).toBeHidden()
   await expect(opener).toBeFocused()
   // A ring on the map opens the same kind of view; Back to the map closes it
-  await page.getByRole("button", { name: /Became friends, Kansai Gaidai, Hirakata\. Explain its line/ }).first().click({ force: true })
+  // (keyboard, so a slow GL frame over the ring can't swallow the tap in CI)
+  const ring = page.getByRole("button", { name: /Became friends, Kansai Gaidai, Hirakata\. Explain its line/ }).first()
+  await ring.focus(); await page.keyboard.press("Enter")
+  await expect(page.getByRole("dialog")).toBeVisible()
   await page.getByRole("dialog").getByRole("button", { name: "Back to the map" }).click()
   await expect(page.getByRole("dialog")).toBeHidden()
 })
