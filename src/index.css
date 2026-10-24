@@ -1178,7 +1178,7 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-stick { fill: var(--brand-hachimitsu); translate: 0 14px; transition: translate var(--duration-base) var(--ease-paper) 700ms; }
 .omikuji-tin.is-drawing .omikuji-stick { translate: 0 0; }
 /* The omikuji's washi (run 25): fixed colours, the same in light and Lantern */
-.omikuji-slip, .omikuji-again {
+.omikuji-slip {
   --washi: rgb(248 241 226 / 0.96);
   /* Run 26c: the bands are printed in the tier's ink, the same as 第七番, the tier, the links and the seal */
   --washi-band-top: linear-gradient(to right, color-mix(in srgb, var(--tier) 82%, transparent), color-mix(in srgb, var(--tier) 92%, transparent) 12%, color-mix(in srgb, var(--tier) 88%, transparent) 88%, color-mix(in srgb, var(--tier) 78%, transparent));
@@ -1252,19 +1252,8 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-slip .omikuji-text { color: color-mix(in oklab, var(--brand-kogecha) 88%, var(--tier)); }
 /* The one link style (btn-text), in the slip's own ink (it's always bright paper); run 26: in the serif, italic */
 .omikuji-save { min-height: 44px; color: var(--tier); font-family: var(--font-display); font-style: italic; font-size: var(--type-body-size); }
-/* Run 26: Draw another. The slip's washi and ink, with a soft honey glow: the one thing to do next (no motion) */
-.omikuji-again {
-  min-height: 48px; padding: var(--space-2) var(--space-6); border-radius: var(--radius-control);
-  background-color: var(--washi); background-image: var(--washi-fibre); color: var(--tier);
-  font-family: var(--font-display); font-size: var(--type-body-size); line-height: 1.2;
-  box-shadow: var(--elevation-paper), 0 0 0 1px color-mix(in srgb, var(--tier) 35%, transparent), 0 0 18px 4px rgb(var(--glow-honey) / 0.45);
-  outline: 2px solid transparent; outline-offset: 4px; transition: box-shadow var(--duration-fast) var(--ease-paper), transform var(--duration-fast) var(--ease-paper);
-  --glow-honey: 226 170 74;
-}
-@media (hover: hover) { .omikuji-again:hover:not(:disabled) { box-shadow: var(--elevation-paper), 0 0 0 1px color-mix(in srgb, var(--tier) 50%, transparent), 0 0 26px 8px rgb(var(--glow-honey) / 0.6); } }
-.omikuji-again:active:not(:disabled) { transform: scale(var(--press-scale)); }
-.omikuji-again:focus-visible { outline-color: var(--input-focus); }
-.omikuji-again:disabled { cursor: default; }
+/* Run 26c (Jehan): Draw another is the site's own secondary button, centred under the slip */
+.omikuji-again { align-self: center; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }
   .omikuji-stick { transition: none; }

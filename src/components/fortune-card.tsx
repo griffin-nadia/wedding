@@ -7,6 +7,7 @@ import { useLang } from "@/lib/lang"
 import { canShake, draftsOn, drawnKey, FORTUNE_EVENT, keepDraws, localDraws, saveFortune } from "@/lib/fortune"
 import { fortuneFor, fortuneIndex, lastDraw, mergeDraws, pickFor, randomPick, type Draw } from "@/lib/draws"
 import { Button } from "@/components/ui/button"
+import { Shuffle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { kanjiNumber } from "@/lib/kanji"
 
@@ -163,8 +164,8 @@ export function FortuneCard({ token, className, title }: { token: string; classN
         </div>
         {fold === "folding" && <Fold key={n} i={i} of={pool.length} fortune={fortune} />}
       </div>
-      {/* The same washi and ink as the slip, with a soft glow: the one thing to do next */}
-      <button type="button" onClick={again} disabled={fold === "folding"} className="omikuji-again">{t.fortune.again}</button>
+      {/* Run 26c (Jehan): the site's own secondary button, like every other next step */}
+      <Button variant="secondary" size="md" onClick={again} disabled={fold === "folding"} className="omikuji-again"><Shuffle className="size-4" aria-hidden />{t.fortune.again}</Button>
     </div>
   )
 }
