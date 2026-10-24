@@ -31,12 +31,14 @@ test("Home's four tags show what's done and open their step", async ({ page }) =
   }
 })
 
-// Run 26c: after a yes the fortune never opens on Home. Two tags: the fortune (a dialog with the X, Esc and Back to your
-// invite to close it, focus back on the tag) and Read our story. Once drawn, the tag says Draw your fortune again.
-test("Home's fortune opens in its own dialog from a tag, never on Home", async ({ page }) => {
+// Run 27 (Jehan): no fortune or story tags on Home. Once a fortune has been drawn (here on the done screen), the
+// omikuji in the top bar, left of あ, opens it in its own dialog: Esc closes it, focus back on the icon, Back to your
+// invite closes it too. Before the first draw it isn't there.
+test("the fortune lives in the top bar once drawn, never on Home", async ({ page }) => {
   await page.route("**/itunes.apple.com/**", (r) => r.fulfill({ json: { results: [] } }))
   await page.addInitScript(() => { localStorage.setItem("ng-opened", "1"); localStorage.setItem("ng-music", "off") })
   await page.goto("?h=sample")
+  const icon = page.locator(".site-bar").getByRole("button", { name: "Draw your fortune" })
   await page.locator("#letter").getByRole("button", { name: /RSVP/ }).first().click()
   const d = page.getByRole("dialog")
   await d.getByRole("radiogroup", { name: "Sam" }).getByText("Coming").click()
@@ -44,21 +46,20 @@ test("Home's fortune opens in its own dialog from a tag, never on Home", async (
   const send = d.getByRole("button", { name: /^Send our reply$/ })
   while (!(await send.isVisible())) await d.getByRole("button", { name: /^Next$/ }).click()
   await send.click()
+  await expect(icon).toHaveCount(0) // replied, nothing drawn yet
+  await d.getByRole("button", { name: "Draw one" }).click()
+  await expect(d.locator(".omikuji-slip").first()).toBeVisible()
   await page.keyboard.press("Escape")
   const letter = page.locator("#letter")
-  await expect(letter.locator(".omikuji, .omikuji-stage")).toHaveCount(0)
-  await expect(letter.getByRole("link", { name: "Read our story" })).toHaveAttribute("href", /our-story/)
-  const tag = letter.getByRole("button", { name: "Draw your fortune" })
-  await tag.click()
+  await expect(letter.locator(".omikuji, .omikuji-stage, .home-tags, .next-step")).toHaveCount(0)
+  await expect(icon).toBeVisible()
+  await icon.click()
   const sheet = page.getByRole("dialog", { name: "A little fortune for the trip" })
-  await sheet.getByRole("button", { name: "Draw one" }).click()
   await expect(sheet.locator(".omikuji-slip").first()).toBeVisible()
   await page.keyboard.press("Escape")
   await expect(sheet).toHaveCount(0)
-  const again = letter.getByRole("button", { name: "Draw your fortune again" })
-  await expect(again).toBeFocused()
-  await again.click()
+  await expect(icon).toBeFocused()
+  await icon.click()
   await page.getByRole("dialog").getByRole("button", { name: "Back to your invite" }).click()
   await expect(page.getByRole("dialog")).toHaveCount(0)
-  await expect(letter.locator(".omikuji, .omikuji-stage")).toHaveCount(0)
 })

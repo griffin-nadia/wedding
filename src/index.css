@@ -585,9 +585,10 @@
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* Run 27: the mark in Nadia's lettering (brand-mark.tsx), her G, "&" and N all in the one ink */
 .brand-mark { --mark-h: 36px; display: inline-flex; align-items: flex-start; gap: calc(var(--mark-h) * 0.02); height: var(--mark-h); vertical-align: middle; }
-/* The sign-off: "With love," then her G&N, a touch taller than the words, on their baseline */
-.signoff-art { display: inline-flex; align-items: flex-end; gap: 0.35em; }
-.signoff-art .brand-mark { --mark-h: 1.7em; vertical-align: baseline; translate: 0 0.28em; }
+/* The sign-off: "With love," in the sign-off's own hand, then her G&N the same size as those words (Jehan, run 27):
+   her letters' cap height matched to the words', her G's tail dropping below the line as a written G does */
+.signoff-art { display: inline-flex; align-items: baseline; gap: 0.3em; }
+.signoff-art .brand-mark { --mark-h: 1.3em; align-self: center; translate: 0 0.12em; }
 .brand-mark-part { display: block; height: var(--mark-h); background: var(--ink); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
 
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
@@ -1357,11 +1358,12 @@ svg.lucide { stroke-width: 1.5; }
 }
 .story-kid { position: absolute; }
 .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.74); }
-/* Run 27 (Jehan): each print takes its photo's own shape (his is taller than 4:5), so neither photo is cut off */
-.story-kid .story-print > div { height: var(--print-h); width: auto; }
+.story-kid .story-print > div { height: var(--print-h); width: auto; aspect-ratio: 4 / 5 !important; }
 .story-kid-him { left: 2%; top: 2%; z-index: 2; }
 .story-kid-him .story-print { --tilt: -4deg; }
-/* Run 27: the whole photo again, no zoom (it cut him off) */
+/* Run 26c (Jehan): on the print, closer in on him at the door (his first day, the yellow jumper); the full-screen view
+   still shows the whole photo */
+.story-kid-him .photo-img { object-position: 50% 0%; transform: scale(1.75); transform-origin: 57% 9%; } /* his face in the middle of the print */
 .story-kid-her { right: 2%; top: 12%; z-index: 3; }
 .story-kid-her .story-print { --tape-x: 50%; --tape-w: 38%; --tape-turn: -2.5deg; }
 .story-kid-her .story-print { --tilt: 5deg; }
