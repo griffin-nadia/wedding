@@ -1178,9 +1178,8 @@ svg.lucide { stroke-width: 1.5; }
 .omikuji-stick { fill: var(--brand-hachimitsu); translate: 0 14px; transition: translate var(--duration-base) var(--ease-paper) 700ms; }
 .omikuji-tin.is-drawing .omikuji-stick { translate: 0 0; }
 /* The omikuji's washi (run 25): fixed colours, the same in light and Lantern */
-.omikuji-slip, .omikuji-back, .omikuji-again {
+.omikuji-slip, .omikuji-again {
   --washi: rgb(248 241 226 / 0.96);
-  --washi-back: rgb(241 232 213 / 0.95);
   /* Run 26c: the bands are printed in the tier's ink, the same as 第七番, the tier, the links and the seal */
   --washi-band-top: linear-gradient(to right, color-mix(in srgb, var(--tier) 82%, transparent), color-mix(in srgb, var(--tier) 92%, transparent) 12%, color-mix(in srgb, var(--tier) 88%, transparent) 88%, color-mix(in srgb, var(--tier) 78%, transparent));
   --washi-band-bottom: var(--washi-band-top);
@@ -1188,68 +1187,65 @@ svg.lucide { stroke-width: 1.5; }
   --washi-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.11' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.5 0 0 0 0 0.36 0 0 0 2.4 -1.45'/%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='1' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.42 0 0 0 0 0.3 0 0 0 0.35 -0.12'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.18'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.2'/%3E%3C/svg%3E");
 }
 .omikuji-slip {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-3); width: 100%; max-width: 320px; margin-inline: auto;
-  padding: calc(var(--space-6) + 6px) var(--space-5); text-align: center; background-color: var(--washi); color: var(--brand-kogecha);
+  /* Run 26c: on the 8px grid. 40 above (the band, then air), 32 below (the save link's 44px box adds its own) */
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); width: 100%; max-width: 320px; margin-inline: auto;
+  padding: calc(var(--space-6) + var(--space-2)) var(--space-5) var(--space-6); text-align: center; background-color: var(--washi); color: var(--brand-kogecha);
   border-radius: var(--radius-control); box-shadow: var(--elevation-paper);
   outline: 2px solid transparent; outline-offset: 4px;
   animation: toast-in var(--duration-base) var(--ease-paper) both; /* a slip opened before: it simply arrives */
 }
-/* Run 19: the slip, centred, folds open like a real omikuji (fortune-card.tsx). Three copies, each its third of the
-   slip; the middle hangs from the first crease, the last from the second (nested, so it rides with the middle). The
-   real slip holds its place underneath, unseen, then takes over with the creases easing out. */
+/* Run 19: the slip, centred, folds open like a real omikuji (fortune-card.tsx). Run 26c (Jehan's phone check, 24 Oct):
+   from the middle, like a letter. Two copies, each its half of the slip, come out folded towards you at the crease;
+   the top half swings up and the bottom half down together, so the words fill both halves as they open and neither is
+   ever blank. The real slip holds its place underneath, unseen, then takes over with the crease easing out. */
 .done-column > .sent-next > .omikuji-stage { margin-inline: auto; }
 .omikuji-stage { position: relative; width: 100%; display: flex; flex-direction: column; align-items: center; gap: var(--space-5); }
 .omikuji-paper { position: relative; width: 100%; } /* the fold's copies cover the slip only, not Draw another */
 .omikuji-slip.is-folded { opacity: 0; animation: none; }
 .omikuji-slip.is-fresh { animation: none; }
-.omikuji-fold { position: absolute; inset: 0; perspective: 1100px; transform-style: preserve-3d; pointer-events: none; }
+.omikuji-fold { position: absolute; inset: 0; perspective: 1100px; pointer-events: none; }
 .omikuji-fold .omikuji-copy { position: absolute; inset: 0; height: 100%; animation: none; backface-visibility: hidden; }
-.omikuji-part-1 { clip-path: inset(0 0 66.667% 0); }
-.omikuji-part-2 { clip-path: inset(33.333% 0 33.333% 0); }
-.omikuji-part-3 { clip-path: inset(66.667% 0 0 0); }
-.omikuji-leaf { position: absolute; inset: 0; transform-style: preserve-3d; }
-.omikuji-leaf-up { transform-origin: 50% 33.333%; animation: omikuji-leaf-up 1100ms var(--ease-paper-in-out) both; }
-.omikuji-leaf-down { transform-origin: 50% 66.667%; animation: omikuji-leaf-down 1100ms var(--ease-paper-in-out) both; }
-/* Run 26c: from the middle. Both outer thirds are folded behind the middle; the top swings up from the first crease
-   and the bottom down from the second, a beat apart, each landing with a little give */
-@keyframes omikuji-leaf-up { 0% { transform: rotateX(178deg); } 66% { transform: rotateX(-3deg); } 80% { transform: rotateX(1deg); } 100% { transform: rotateX(0deg); } }
-@keyframes omikuji-leaf-down { 0%, 12% { transform: rotateX(-178deg); } 78% { transform: rotateX(4deg); } 90% { transform: rotateX(-1deg); } 100% { transform: rotateX(0deg); } }
-/* The back of each third: plain paper, seen while it swings past edge-on */
-.omikuji-back { position: absolute; inset-inline: 0; width: 100%; max-width: 320px; margin-inline: auto; background-color: var(--washi-back); transform: rotateX(180deg); backface-visibility: hidden; }
-.omikuji-back-1 { top: 0; height: 33.334%; border-radius: var(--radius-control) var(--radius-control) 0 0; background-image: var(--washi-band-top), var(--washi-fibre); background-repeat: no-repeat, repeat; background-size: calc(100% - 20px) 6px, 220px 220px; background-position: center top 8px, 0 0; }
-.omikuji-back-3 { top: 66.667%; height: 33.333%; border-radius: 0 0 var(--radius-control) var(--radius-control); background-image: var(--washi-band-bottom), var(--washi-fibre); background-repeat: no-repeat, repeat; background-size: calc(100% - 20px) 6px, 220px 220px; background-position: center bottom 8px, 0 0; }
-/* A third's shade lifts as it flattens */
-.omikuji-shade { position: absolute; inset: 0; z-index: 31; pointer-events: none; background: rgb(var(--tint-shadow) / 0.3); }
-.omikuji-part-1 .omikuji-shade { animation: omikuji-shade 1100ms var(--ease-paper) both; }
-.omikuji-part-3 .omikuji-shade { animation: omikuji-shade-3 1100ms var(--ease-paper) both; }
-@keyframes omikuji-shade { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes omikuji-shade-3 { 0%, 12% { opacity: 1; } 80%, 100% { opacity: 0; } }
-/* The creases, sharp while it opens, then easing out to the two faint lines the paper keeps */
+.omikuji-half-top { clip-path: inset(0 0 50% 0); }
+.omikuji-half-bottom { clip-path: inset(50% 0 0 0); }
+.omikuji-leaf { position: absolute; inset: 0; transform-origin: 50% 50%; animation: 1100ms var(--ease-paper-in-out) both; }
+.omikuji-leaf-top { animation-name: omikuji-leaf-top; }
+.omikuji-leaf-bottom { animation-name: omikuji-leaf-bottom; }
+/* Folded towards you (edge on, nearly), then flat, each landing with a little give; mirror images of each other */
+@keyframes omikuji-leaf-top { 0% { transform: rotateX(-84deg); } 72% { transform: rotateX(3deg); } 86% { transform: rotateX(-1deg); } 100% { transform: rotateX(0deg); } }
+@keyframes omikuji-leaf-bottom { 0% { transform: rotateX(84deg); } 72% { transform: rotateX(-3deg); } 86% { transform: rotateX(1deg); } 100% { transform: rotateX(0deg); } }
+/* Each half's shade lifts as it flattens */
+.omikuji-shade { position: absolute; inset: 0; z-index: 31; pointer-events: none; background: rgb(var(--tint-shadow) / 0.3); animation: omikuji-shade 1100ms var(--ease-paper) both; }
+@keyframes omikuji-shade { 0% { opacity: 1; } 60%, 100% { opacity: 0; } }
+/* The crease, sharp while it opens, then easing out to the faint line the paper keeps */
 .omikuji-creases { position: absolute; inset: 0; z-index: 31; border-radius: inherit; pointer-events: none; opacity: 0;
-  background:
-    linear-gradient(to bottom, transparent calc(33.333% - 5px), rgb(var(--tint-shadow) / 0.16) calc(33.333% - 0.5px), rgb(255 255 255 / 0.85) calc(33.333% + 0.5px), transparent calc(33.333% + 5px)),
-    linear-gradient(to bottom, transparent calc(66.667% - 5px), rgb(255 255 255 / 0.85) calc(66.667% - 0.5px), rgb(var(--tint-shadow) / 0.16) calc(66.667% + 0.5px), transparent calc(66.667% + 5px)); }
+  background: linear-gradient(to bottom, transparent calc(50% - 5px), rgb(var(--tint-shadow) / 0.16) calc(50% - 0.5px), rgb(255 255 255 / 0.85) calc(50% + 0.5px), transparent calc(50% + 5px)); }
 .omikuji-copy .omikuji-creases { opacity: 1; }
 .omikuji-slip.is-fresh .omikuji-creases { animation: omikuji-creases 900ms var(--ease-paper) both; }
 @keyframes omikuji-creases { from { opacity: 1; } to { opacity: 0; } }
 .omikuji-slip:focus-visible { outline-color: var(--input-focus); }
 .omikuji-slip .label-caps { color: var(--brand-kuri); }
-.omikuji-no { font-size: var(--type-small-size); letter-spacing: 0.2em; color: var(--tier); }
+.omikuji-no { font-size: var(--type-small-size); line-height: var(--type-small-leading); letter-spacing: 0.2em; color: var(--tier); }
 .omikuji-kichi { font-size: 3.25rem; line-height: 1; color: var(--tier); }
-/* Run 26: the five tiers, calmest to strongest. Only the colour of the tier (its kanji and its name) and the seal's
-   ring change, with a heavier ring from Special up; layout, font and size are the same for all five */
-/* Run 26c: the stage carries the tier too, so the fold's backs and Draw another share the slip's one ink */
-:is(.omikuji-stage, .omikuji-slip) { --tier: var(--tier-great); --tier-ring: var(--tier-great-ring); --seal-ring: 5.5; }
-[data-tier="good"] { --tier: var(--tier-good); --tier-ring: var(--tier-good-ring); }
-[data-tier="special"] { --tier: var(--tier-special); --tier-ring: var(--tier-special-ring); --seal-ring: 6.5; }
-[data-tier="grand"] { --tier: var(--tier-grand); --tier-ring: var(--tier-grand-ring); --seal-ring: 7; }
-[data-tier="super"] { --tier: var(--tier-super); --tier-ring: var(--tier-super-ring); --seal-ring: 8; }
+/* Run 26: the five tiers, calmest to strongest. Only the tier's ink changes (run 26c: on 第七番, the tier, No. x of 25,
+   the bands and the seal's ring), with a heavier ring from Special up; layout, font and size are the same for all five.
+   The stage carries the tier too, so Draw another shares the slip's one ink */
+:is(.omikuji-stage, .omikuji-slip) { --tier: var(--tier-great); --seal-ring: 5.5; }
+[data-tier="good"] { --tier: var(--tier-good); }
+[data-tier="special"] { --tier: var(--tier-special); --seal-ring: 6.5; }
+[data-tier="grand"] { --tier: var(--tier-grand); --seal-ring: 7; }
+[data-tier="super"] { --tier: var(--tier-super); --seal-ring: 8; }
 .omikuji-slip .omikuji-tier { color: var(--tier); }
-.omikuji-seal .hanko-rim { stroke: var(--tier-ring); stroke-width: var(--seal-ring); }
-.omikuji-seal .hanko-rim-inner { stroke: var(--tier-ring); }
+.omikuji-seal .hanko-rim { stroke: var(--tier); stroke-width: var(--seal-ring); }
+.omikuji-seal .hanko-rim-inner { stroke: var(--tier); }
 .omikuji-text { font-family: var(--font-display); font-size: var(--type-body-size); line-height: var(--type-body-leading); text-wrap: pretty; max-width: 34ch; } /* Nadia's fortunes run to three or four sentences (run 23) */
 /* Run 26: tier, category and No. x of 25 in Caveat, as if written in by hand; the fortune stays in the serif */
 .omikuji-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.25rem; line-height: 1.1; letter-spacing: 0; text-transform: none; color: var(--tier); }
+/* Run 26c: one clear order. 大吉 (52), its English name (22), the fortune (the 16px serif, the one thing to read), then
+   the category and No. x of 25 as quieter notes (18). Three groups on the 8px grid: the head (第一番, 大吉 and the name,
+   tight), the fortune (category over the line, 8 apart), the foot (the number and the save link); 24 between groups */
+.omikuji-slip .omikuji-tier { font-size: 1.375rem; }
+.omikuji-category, .omikuji-count { font-size: 1.125rem; }
+.omikuji-category, .omikuji-head + .omikuji-text, .omikuji-count { margin-top: var(--space-4); }
 /* Run 26c: the English sits in the paper like the Japanese: multiplied into the washi in the same ink (no specks or
    bleed: Caveat's thin strokes broke up under them); the fortune itself in the slip's dark ink, a touch of the tier */
 .omikuji-slip :is(.omikuji-hand, .omikuji-text) { mix-blend-mode: multiply; }
@@ -1272,7 +1268,7 @@ svg.lucide { stroke-width: 1.5; }
 @media (prefers-reduced-motion: reduce) {
   .omikuji-tin.is-drawing { animation: none; }
   .omikuji-stick { transition: none; }
-  .omikuji-slip { animation: toast-in var(--duration-fast) linear both; }
+  .omikuji-slip { animation: fade-in var(--duration-base) linear both; } /* run 26c: a plain fade, no fold, no rise */
 }
 
 /* Nadia's lettering for the names (ART.names, names-art.tsx): two masks on one frame, the names filled with the body
@@ -1615,19 +1611,18 @@ svg.lucide { stroke-width: 1.5; }
     inset 0 1px 0 rgb(255 255 255 / 0.5),
     inset 0 -1px 0 rgb(var(--tint-shadow) / 0.07);
 }
-/* The slip: bright paper in both modes, folded in three before it was drawn, so two faint creases cross it (a
-   shadowed side, a lit side) */
+/* The slip: bright paper in both modes, folded in half before it was drawn (run 26c), so one faint crease crosses
+   its middle (a shadowed side, a lit side) */
 /* Run 25: washi. One tone in both themes, a touch see-through (the card shows faintly behind), long fibres and a fine
-   grain (an inline SVG noise, no download), the two creases of the three-fold clearly there (a shadowed side and a lit
+   grain (an inline SVG noise, no download), the crease clearly there (a shadowed side and a lit
    side), and the red bands printed on: inset from the paper's edges, broken up by the fibres over them, not border bars */
 .omikuji-slip.paper-feel {
   --tint-shadow: 66 26 5;
   background-image:
     var(--washi-fibre),
-    linear-gradient(to bottom, transparent calc(33.33% - 4px), rgb(var(--tint-shadow) / 0.08) calc(33.33% - 0.5px), rgb(255 255 255 / 0.6) calc(33.33% + 0.5px), transparent calc(33.33% + 4px)),
-    linear-gradient(to bottom, transparent calc(66.66% - 4px), rgb(255 255 255 / 0.6) calc(66.66% - 0.5px), rgb(var(--tint-shadow) / 0.08) calc(66.66% + 0.5px), transparent calc(66.66% + 4px));
-  background-size: 220px 220px, 100% 100%, 100% 100%;
-  background-repeat: repeat, no-repeat, no-repeat;
+    linear-gradient(to bottom, transparent calc(50% - 4px), rgb(var(--tint-shadow) / 0.08) calc(50% - 0.5px), rgb(255 255 255 / 0.6) calc(50% + 0.5px), transparent calc(50% + 4px));
+  background-size: 220px 220px, 100% 100%;
+  background-repeat: repeat, no-repeat;
 }
 /* The printed parts are inked like the 寿 stamp (the hanko utility's ink): the red bands, 第七番 and the tier, with the
    ink's soft bleed and dry specks, sinking into the paper. Their line stays crisp to read. */
