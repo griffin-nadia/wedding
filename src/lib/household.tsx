@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react"
 import { ApiError, getHousehold, type Household } from "./api"
+import { LINK_GONE } from "./call"
 
 const KEY = "ng-invite"
 
@@ -80,6 +81,18 @@ export function HouseholdProvider({ children }: { children: ReactNode }) {
   }, [setHousehold])
 
   useEffect(load, [load])
+
+  // The back end stopped knowing this link while the page was open (it was replaced): straight to the
+  // "That link doesn't look right" page, which can email the current link
+  useEffect(() => {
+    const gone = () => {
+      forgetToken()
+      setHouseholdState(null)
+      setStatus("unknown")
+    }
+    window.addEventListener(LINK_GONE, gone)
+    return () => window.removeEventListener(LINK_GONE, gone)
+  }, [])
 
   return <Ctx.Provider value={{ household, status, setHousehold, retry: load }}>{children}</Ctx.Provider>
 }
