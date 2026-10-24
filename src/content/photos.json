@@ -391,22 +391,6 @@
   "width": 1600,
   "height": 1600
  },
- "story-8": {
-  "formats": {
-   "avif": [
-    400,
-    800
-   ],
-   "webp": [
-    400,
-    800
-   ]
-  },
-  "wide": {},
-  "lqip": "story-8-lqip.webp",
-  "width": 800,
-  "height": 1067
- },
  "torii-mist": {
   "formats": {
    "avif": [
