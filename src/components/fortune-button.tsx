@@ -8,15 +8,14 @@ import { useLang } from "@/lib/lang"
 // The card loads only once the sheet is opened (its own chunk, shared with the reply sheet's)
 const FortuneCard = lazy(() => import("@/components/fortune-card").then((m) => ({ default: m.FortuneCard })))
 
-/** An omikuji box: the hexagonal drum with a stick out of its top, drawn as the bar's Lucide icons are (24 × 24, stroke 2,
- *  round ends, shown at 20px) so it sits with them as one set */
+/** An omikuji box in Lucide's own style (24 grid, the site's 1.75 stroke, round caps and joins, currentColor): the
+ *  box, its top edge, and the stick rising out of it. Class lucide, so it takes the same rules as the others. */
 function OmikujiIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M14.5 2.5 13 8" />
-      <path d="M7 8h10l2 3v8.5l-2 2H7l-2-2V11z" />
-      <path d="M5 11h14" />
-      <path d="M12 14v4" />
+    <svg viewBox="0 0 24 24" className="lucide size-5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="m15 2-1.5 6" />
+      <rect x="4" y="8" width="16" height="14" rx="2" />
+      <path d="M4 12h16" />
     </svg>
   )
 }
