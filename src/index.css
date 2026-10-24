@@ -1148,9 +1148,9 @@ svg.lucide { stroke-width: 1.5; }
 .journey-key-guests { border-color: var(--journey-guest); opacity: 0.8; }
 .journey-key-you { border-top-style: solid; border-top-width: 2px; border-color: var(--journey-line-you); }
 [data-theme="lantern"] .journey-hifi :is(.journey-route, .journey-guest, .journey-you) { filter: drop-shadow(0 0 2.5px currentColor); }
-[data-theme="lantern"] .journey-hifi .journey-route-nadia { color: var(--ink-story); }
-[data-theme="lantern"] .journey-hifi .journey-route-griffin { color: var(--ink-moss); }
-[data-theme="lantern"] .journey-hifi .journey-you { color: var(--journey-you); }
+[data-theme="lantern"] .journey-hifi .journey-route-nadia { color: var(--journey-nadia); }
+[data-theme="lantern"] .journey-hifi .journey-route-griffin { color: var(--journey-griffin); }
+[data-theme="lantern"] .journey-hifi .journey-you { color: var(--journey-line-you); }
 [data-theme="lantern"] .journey-hifi .journey-guest { color: var(--journey-guest); }
 @media (prefers-reduced-motion: reduce) {
   .home-rsvp::after { animation: none !important; }
@@ -1845,10 +1845,17 @@ b.home-mark-you { width: auto; padding-inline: 4px; } /* the globe's HTML badge;
 .journey-flat-lines .journey-place { font-size: calc(11px * var(--k, 1)); }
 .journey-flat-lines .journey-flat-kyoto, .journey-flat-lines .journey-flat-pin .journey-place { font-size: 11px; }
 /* Run 26: one weight and one dash per kind, in px on screen, the globe's too (journey-globe.tsx WEIGHT and DASH) */
-.journey-flat-lines .journey-route { stroke-width: calc(2px * var(--k, 1)); stroke-dasharray: calc(3px * var(--k, 1)) calc(3px * var(--k, 1)); stroke-linecap: butt; }
-.journey-flat-lines .journey-guest { stroke-width: calc(1.2px * var(--k, 1)); stroke-dasharray: calc(2px * var(--k, 1)) calc(3px * var(--k, 1)); }
+/* Run 27 (Jehan, phone check): the flat map (RSVP step 6, the story stop) inks its routes exactly as the antique
+   globe and map in full screen do (globe-antique.tsx inks, the key's tokens): solid, full strength, one colour each,
+   in both themes. Each ink is at least 3:1 on the land and the sea (tokens.css). */
+.journey-flat-lines .journey-route { stroke-width: calc(2.5px * var(--k, 1)); stroke-dasharray: none; stroke-linecap: round; opacity: 1; }
+.journey-flat-lines .journey-route-nadia { stroke: var(--journey-nadia); }
+.journey-flat-lines .journey-route-griffin { stroke: var(--journey-griffin); }
+.journey-flat-lines .journey-guest { stroke: var(--journey-guest); stroke-width: calc(1.2px * var(--k, 1)); stroke-dasharray: none; stroke-linecap: round; opacity: 0.7; }
+.journey-flat-lines .journey-you:not(.journey-you-edge) { stroke: var(--journey-line-you); }
+.journey-flat-lines .journey-you-dot { fill: var(--journey-line-you); }
 .journey-flat-lines .journey-guest-bundle { stroke-width: calc(2.4px * var(--k, 1)); }
-.journey-flat-lines .journey-you { stroke-width: calc(2px * var(--k, 1)); } /* run 26c: as strong as the home lines */
+.journey-flat-lines .journey-you { stroke-width: calc(2.5px * var(--k, 1)); } /* run 26c: as strong as the home lines */
 .journey-flat-lines .journey-flat-tip { stroke-width: calc(3px * var(--k, 1)); }
 /* The legend on the stop in one line, "Your line" included, at 390 */
 .story-slide-map .journey-legend { gap: var(--space-1) var(--space-3); font-size: 12px; }
