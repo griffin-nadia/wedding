@@ -157,7 +157,7 @@ const loadGlobe = () => import("@/components/journey-globe")
  *  throttled phone. Its place while it loads is the map's own dark ground, the same size, so nothing moves. */
 const loadFlat = () => import("@/components/journey-flat")
 const JourneyFlat = lazy(() => loadFlat().then((m) => ({ default: m.JourneyFlat })))
-const FlatWaiting = () => <div className="journey-flat" data-theme="lantern" aria-hidden />
+const FlatWaiting = () => <div className="journey-flat" aria-hidden />
 type View = "globe" | "flat"
 const STEP = 1.4 // the + and − (journey-globe.tsx ZOOM.step), 1x to 3x on both views
 
@@ -244,8 +244,7 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
     const idle = (f: () => void) => window.setTimeout(() => (typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(f) : f()), still() ? 0 : 700)
     void loadGlobe().then(() => idle(() => {
       if (!alive) return
-      const countries = [...journeys.map((c) => c.country ?? ""), you?.country ?? ""].filter(Boolean)
-      void import("@/lib/paint-globe").then(({ paintGlobe, GLOBE_LOOK }) => paintGlobe(GLOBE_LOOK.map, matchMedia("(pointer: coarse)").matches ? 1024 : 2048, countries))
+      void import("@/lib/paint-globe").then(({ paintGlobe }) => paintGlobe(theme === "lantern", matchMedia("(pointer: coarse)").matches ? 1024 : 2048))
     }))
     return () => { alive = false }
   }, [near, base, theme, journeys, you])

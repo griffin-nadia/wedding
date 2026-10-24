@@ -242,6 +242,9 @@
   --nav-hover-bg: color-mix(in oklab, var(--action) 9%, transparent);
   /* Guest maps: the household's own line, honey gold on both papers */
   --journey-you: var(--brand-hachimitsu);
+  /* Run 27, the antique globe (src/lib/paint-globe.ts): its paper (the flat map's ground) and the guests' sepia ink */
+  --journey-sea: #e2d4ae;
+  --journey-guest: #6e4f2c;
   /* Scene grade: saturate .92, contrast .95, warm tint 4% */
   --scene-filter: saturate(0.92) contrast(0.95) sepia(0.04);
   --scene-scrim: var(--surface-scrim);
@@ -253,6 +256,8 @@
   --button-bg: var(--brand-sage-ink);
   --button-ink: var(--brand-shiro-kinari);
   --button-line-hover: color-mix(in oklab, var(--brand-sage-ink) 45%, var(--ink));
+  --journey-sea: #2c2318;
+  --journey-guest: #d9c49a;
 }
 
 /* ─── Scales (same in every mode) ───────────────────────────────────────────── */

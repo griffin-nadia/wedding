@@ -1111,7 +1111,7 @@ svg.lucide { stroke-width: 1.5; }
 /* Journey map, hi-fi (Options → Journey map): Nadia rust, Griffin moss, guests faint gold, yours full gold; the places
    named; a legend; in Lantern the lines glow softly (no lanterns on the map) */
 .journey-hifi .journey-route { opacity: 0.85; stroke-width: 2; }
-.journey-hifi .journey-guest { stroke: var(--journey-you); stroke-width: 1.2; opacity: 0.45; }
+.journey-hifi .journey-guest { stroke: var(--journey-guest); stroke-width: 1.2; opacity: 0.6; }
 .journey-place { font-family: var(--font-label); font-size: 11px; fill: var(--ink-soft); }
 .journey-scale { font-size: 9px; fill: var(--ink-muted); }
 .journey-place-kyoto { font-size: 9.5px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--ink); }
@@ -1121,12 +1121,13 @@ svg.lucide { stroke-width: 1.5; }
 .journey-key { display: inline-block; width: 18px; height: 0; border-top: 2px dotted; }
 .journey-key-nadia { border-color: var(--ink-story); }
 .journey-key-griffin { border-color: var(--ink-moss); }
-.journey-key-guests { border-color: var(--journey-you); opacity: 0.6; }
+.journey-key-guests { border-color: var(--journey-guest); opacity: 0.8; }
 .journey-key-you { border-top-style: solid; border-top-width: 2px; border-color: var(--journey-you); }
 [data-theme="lantern"] .journey-hifi :is(.journey-route, .journey-guest, .journey-you) { filter: drop-shadow(0 0 2.5px currentColor); }
 [data-theme="lantern"] .journey-hifi .journey-route-nadia { color: var(--ink-story); }
 [data-theme="lantern"] .journey-hifi .journey-route-griffin { color: var(--ink-moss); }
-[data-theme="lantern"] .journey-hifi :is(.journey-guest, .journey-you) { color: var(--journey-you); }
+[data-theme="lantern"] .journey-hifi .journey-you { color: var(--journey-you); }
+[data-theme="lantern"] .journey-hifi .journey-guest { color: var(--journey-guest); }
 @media (prefers-reduced-motion: reduce) {
   .home-rsvp::after { animation: none !important; }
 }
@@ -1710,6 +1711,11 @@ b.home-mark-you { width: auto; padding-inline: 4px; } /* the globe's HTML badge;
 .home-mark-letter.home-mark-you-letter { fill: #3b2a20; }
 .home-mark-letter { fill: #fff; font: 700 10px var(--font-label); }
 .journey-flat-lines .journey-flat-home { font-size: 11px; }
+/* Run 27: the flat map's names on the antique paper, each with a halo of the letter's paper, so they hold AA on the
+   sepia land and the lettered sea in both themes (the globe's names have the same halo) */
+.journey-flat-lines .journey-place { fill: var(--ink); paint-order: stroke; stroke: var(--letter-bg); stroke-width: calc(3px * var(--k, 1)); stroke-linejoin: round; }
+/* Their own line: an ink edge under the gold, so it holds on the pale paper */
+.journey-flat-lines .journey-you.journey-you-edge { fill: none; stroke: var(--ink); filter: none; stroke-opacity: 0.35; stroke-width: calc(4px * var(--k, 1)); stroke-linecap: round; }
 .globe-tip { padding: 2px var(--space-2); border-radius: var(--radius-control); background: var(--letter-bg); box-shadow: 0 1px 3px rgb(var(--tint-shadow) / 0.25); text-shadow: none; translate: -50% calc(-100% - 8px); }
 .globe-zoom { position: absolute; right: -44px; bottom: 0; z-index: 3; display: flex; flex-direction: column; gap: 2px; }
 .globe-zoom .utility-btn { width: 32px; height: 32px; font: 500 18px / 1 var(--font-label); background: color-mix(in oklab, var(--surface-raised) 88%, transparent); box-shadow: 0 0 0 1px var(--line-hairline); }
@@ -1718,14 +1724,14 @@ b.home-mark-you { width: auto; padding-inline: 4px; } /* the globe's HTML badge;
 /* A bundle of one country's lines: one, a little thicker */
 .journey-guest-bundle { stroke-width: 2.4; opacity: 0.75; }
 .journey-flat-hit { cursor: default; }
-.journey-flat-dot { fill: var(--ink-soft); opacity: 0.6; }
+.journey-flat-dot { fill: var(--journey-guest); opacity: 0.8; }
 .journey-flat-tip { paint-order: stroke; stroke: var(--letter-bg); stroke-width: 3px; }
 .journey-mode .segmented-mark { top: 2px; bottom: 2px; }
 .segmented.journey-mode .segmented-item { min-height: 28px; padding-inline: var(--space-2); gap: 0; font-size: 12px; }
 .journey-mode .segmented-item::after, .journey-mode .segmented-tick { display: none; }
 /* The flat map: the globe's painting cut to the Pacific, the lines over it (5:4, the 400 × 320 viewBox) */
 .journey-flat.is-picking { cursor: crosshair; outline: 2px dashed color-mix(in oklab, var(--ink-moss) 60%, transparent); outline-offset: 2px; } /* run 25: dropping a pin */
-.journey-flat { position: relative; width: min(100%, calc(var(--flat-h, 36svh) * 1.25)); aspect-ratio: 5 / 4; border-radius: var(--radius-section); overflow: hidden; background: #2f3428; box-shadow: 0 0 0 1px var(--line-hairline); } /* run 25 (Jehan): the dark sage ground in both themes, the painting's own */
+.journey-flat { position: relative; width: min(100%, calc(var(--flat-h, 36svh) * 1.25)); aspect-ratio: 5 / 4; border-radius: var(--radius-section); overflow: hidden; background: var(--journey-sea); box-shadow: 0 0 0 1px var(--line-hairline); } /* run 27: the antique paper, the painting's own */
 .journey-flat-art, .journey-flat-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
 .journey-flat-lines.journey-map { background: none; }
 .journey-flat-seal { font-size: 13px; }
@@ -1761,10 +1767,11 @@ b.home-mark-you { width: auto; padding-inline: 4px; } /* the globe's HTML badge;
 @keyframes journey-wait-in { to { opacity: 1; } }
 /* Run 26: a paper plane flies each line once, at its tip as it draws (journey-globe.tsx and journey-flat.tsx) */
 .journey-plane { color: var(--brand-shiro-kinari); fill: var(--brand-shiro-kinari); --plane-edge: #2f3428; pointer-events: none; }
+[data-theme="autumn"] .journey-plane { --plane-edge: #3d2a18; } /* run 27: a sepia edge on the antique paper by day */
 span.journey-plane { position: absolute; left: 0; top: 0; z-index: 2; display: block; width: 14px; height: 14px; translate: -50% -50%; will-change: transform; }
 span.journey-plane svg { display: block; }
 span.journey-plane[data-back="true"] { opacity: 0.3; }
-g.journey-plane path { stroke: #2f3428; stroke-width: 1.3px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+g.journey-plane path { stroke: var(--plane-edge); stroke-width: 1.3px; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
 .journey-flat-lines:not(.is-in) .journey-you { animation-play-state: paused; } /* run 26: their line waits for the map to show too */
 /* The Full screen control above the stop's map, where the Globe / Flat switch was: a small pill, a 44px target */

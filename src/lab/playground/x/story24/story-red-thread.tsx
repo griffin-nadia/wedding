@@ -81,7 +81,7 @@ export default function StoryRedThread() {
     if (!el) return
     let alive = true, stop = () => {}
     void Promise.all([import("three"), import("three/examples/jsm/lines/Line2.js"), import("three/examples/jsm/lines/LineMaterial.js"), import("three/examples/jsm/lines/LineGeometry.js"), import("@/lib/paint-globe")])
-      .then(async ([THREE, { Line2 }, { LineMaterial }, { LineGeometry }, { paintGlobe, GLOBE_LOOK }]) => {
+      .then(async ([THREE, { Line2 }, { LineMaterial }, { LineGeometry }, { paintGlobe }]) => {
         if (!alive) return
         const phone = matchMedia("(pointer: coarse)").matches, calm = still()
         const hex = (v: string, fb: string) => {
@@ -91,7 +91,7 @@ export default function StoryRedThread() {
           return (r << 16) | (g << 8) | b
         }
         const night = theme === "lantern"
-        const tex = new THREE.CanvasTexture(await paintGlobe(night ? GLOBE_LOOK.night : GLOBE_LOOK.day, phone ? 1024 : 2048, ["CA", "AU", "JP"]))
+        const tex = new THREE.CanvasTexture(await paintGlobe(night, phone ? 1024 : 2048))
         if (!alive) return
         tex.colorSpace = THREE.SRGBColorSpace
         let w = el.clientWidth, h = el.clientHeight

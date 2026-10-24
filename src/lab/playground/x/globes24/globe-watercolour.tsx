@@ -1,13 +1,13 @@
-import { GLOBE_LOOK, paintGlobe } from "@/lib/paint-globe"
+import { paintGlobe } from "@/lib/paint-globe"
 import type { Look } from "./kit-view"
 
 /**
- * Look 1, the baseline: the site's own painted watercolour (src/lib/paint-globe.ts, unchanged), see-through as on the
- * site since run 19, so every other look is judged against what ships today.
+ * Look 1, the baseline: the site's own painting (src/lib/paint-globe.ts; since run 27 the antique globe, so this look
+ * now shows what ships rather than the old watercolour).
  */
 export const look: Look = {
   line: "ink",
-  paint: ({ night, width, countries }) => paintGlobe(night ? GLOBE_LOOK.night : GLOBE_LOOK.day, width, countries),
+  paint: ({ night, width }) => paintGlobe(night, width),
   seeThrough: 0.5,
   farLines: 0.3,
 }
