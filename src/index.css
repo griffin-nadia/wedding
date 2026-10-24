@@ -583,6 +583,10 @@
 .signoff-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.5rem; line-height: 1.2; }
 .site-mark { margin-right: auto; font-family: var(--font-hand); font-weight: 500; font-size: calc(var(--type-heading-size) * 1.1); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
+/* Run 27: the mark in Nadia's lettering (brand-mark.tsx): her G and N in the ink, her "&" in the sage */
+.brand-mark { --mark-h: 36px; display: inline-flex; align-items: flex-start; gap: calc(var(--mark-h) * 0.02); height: var(--mark-h); vertical-align: middle; }
+.brand-mark-part { display: block; height: var(--mark-h); background: var(--ink); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.brand-mark-amp { background: var(--action); }
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
    its paper carries on under the home indicator (safe area), so nothing shows beneath it. */
 .site-nav { position: fixed; left: 0; right: 0; bottom: 0; padding-bottom: env(safe-area-inset-bottom); background: var(--letter-bg); border-top: 1px solid transparent; }
@@ -1444,9 +1448,11 @@ svg.lucide { stroke-width: 1.5; }
 .story-slide-map .journey-globe { width: min(100%, 340px, calc(var(--stop-h) - 84px)); } /* room for the switch above and the key under */
 /* Run 27, the antique globe (journey-look.tsx): a 5:4 box (the paper's, the globe four fifths of its height), as tall
    as the old square globe on the stop; full screen it fills the stage */
-.journey-look { position: relative; width: min(100%, 425px, calc((var(--stop-h, 400px) - 48px) * 1.25)); aspect-ratio: 5 / 4; }
+.journey-look { position: relative; width: min(100%, 425px, calc((var(--stop-h, 400px) - 56px) * 1.25)); aspect-ratio: 5 / 4; }
 .journey-look > .x-g24-box { width: 100%; }
 .journey-look-wait { display: grid; place-items: center; }
+/* Run 27 (Jehan): the stop keeps it simple; the compass rose (and the key) only in full screen */
+.journey-look[data-size="stop"] .x-gan-rose { display: none; }
 .journey-viewer .journey-look { width: min(100%, calc(var(--flat-h) * 1.25), 1200px); }
 /* The flat map in the same box (run 19 globe: its height token) */
 .story-slide-map { --flat-h: calc(var(--stop-h) - 84px); }

@@ -268,8 +268,8 @@ function JourneyMap({ active, near, pins, onPin }: { active: boolean; near: bool
         <JourneyViewer pins={pins} onPin={onPin}
           trigger={<button type="button" className="journey-open" aria-label={t.journey.openLabel}><Maximize2 className="size-4" aria-hidden />{t.journey.open}</button>} />
       </div>
+      {/* Run 27 (Jehan): the key only in full screen, so the stop's globe has the room */}
       {stop}
-      <JourneyLegend you={Boolean(you && you.id !== "jp")} />
       {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
     </div>
   )

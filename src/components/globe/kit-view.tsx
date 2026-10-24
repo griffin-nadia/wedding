@@ -292,6 +292,15 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
           s.lon += d[0] * 10 * RAD; if (s.m > 0.5) s.tilt = Math.max(-TURN.tilt, Math.min(TURN.tilt, s.tilt + d[1] * 6 * RAD))
           s.touched = performance.now(); s.dirty = true
         }
+        // Run 27: a trackpad's side scroll (or Shift and the wheel) turns the globe or slides the map too; an up and down
+        // scroll is left to the page
+        const wheel = (e: WheelEvent) => {
+          const dx = e.deltaX || (e.shiftKey ? e.deltaY : 0)
+          if (Math.abs(dx) <= Math.abs(e.shiftKey ? 0 : e.deltaY)) return
+          e.preventDefault()
+          s.lon += dx * perPx(); s.vLon = s.vTilt = 0; s.touched = performance.now(); s.dirty = true
+        }
+        el.addEventListener("wheel", wheel, { passive: false })
         el.addEventListener("pointerdown", down); el.addEventListener("pointermove", move)
         el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("lostpointercapture", up)
         el.addEventListener("keydown", key)
@@ -404,7 +413,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
         }
         const cancel = loop(draw)
         setState("ready")
-        stop = () => { cancel(); ro.disconnect(); io.disconnect(); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); el.removeEventListener("lostpointercapture", up); el.removeEventListener("keydown", key); paper.canvas.remove(); paper.dispose() }
+        stop = () => { cancel(); ro.disconnect(); io.disconnect(); el.removeEventListener("pointerdown", down); el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); el.removeEventListener("lostpointercapture", up); el.removeEventListener("keydown", key); el.removeEventListener("wheel", wheel); paper.canvas.remove(); paper.dispose() }
       })
       .catch(() => alive && setState("failed"))
     return () => { alive = false; stop() }

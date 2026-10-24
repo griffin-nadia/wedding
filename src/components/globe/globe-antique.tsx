@@ -33,8 +33,9 @@ export const look: Look = {
   line: "ink",
   shade: 0.3,
   rim: 1.2,
-  // Run 27 (Jehan): a little see-through, the far side's land and lines faint through the paper
-  seeThrough: 0.15,
+  // Run 27 (Jehan): see-through, so a line going round the back still shows faintly through the paper
+  seeThrough: 0.3,
+  farLines: 0.4,
   inks: (night) => ({ guest: night ? "#d9c49a" : "#6e4f2c", ink: night ? "#efdfbf" : "#3d2a18" }),
   decor: rose,
   css,

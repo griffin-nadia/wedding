@@ -12,7 +12,7 @@ import { Scene } from "@/components/letter/scene"
 import { Letter, SignOff, useSceneDim } from "@/components/letter/letter"
 import { Arrival, firstPhase, resetArrival } from "@/components/envelope"
 import { letterScroll } from "@/lib/frame"
-import { Lettering } from "@/components/lettering"
+import { BrandMark } from "@/components/brand-mark"
 import { PreviewBanner } from "@/components/preview-banner"
 // Loaded after the first screen: the credit and the phone QR
 const CreditMark = lazy(() => import("@/components/credit-mark").then((m) => ({ default: m.CreditMark })))
@@ -132,7 +132,7 @@ export function Layout() {
       <a href="#letter" className="skip-link">{t.letter.skip}</a>
       <Scene source={sceneFor(theme)} dim={dim} />
       <header className="site-bar">
-        <Link to="/" className="site-mark"><Lettering word="mark">{t.meta.shortTitle}</Lettering></Link>
+        <Link to="/" className="site-mark" aria-label={t.meta.shortTitle}><BrandMark /></Link>
         <Nav />
         {!replied && <Link to="/?rsvp=1" className="btn-primary site-rsvp hidden h-11 items-center rounded-(--button-radius) px-(--button-pad) font-label text-body font-medium md:inline-flex">{t.nav.rsvp}</Link>}
         <ModeSwitches className="chrome-lantern" />
