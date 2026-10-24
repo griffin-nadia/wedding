@@ -93,7 +93,7 @@ const at = (page: Page, f: number) => page.evaluate((f) => {
 const done = (page: Page) => page.evaluate(() => { for (const a of (window as unknown as { __seq: Animation[] }).__seq) a.finish() })
 
 // Run 27: Seal it again is gone, so only the opening is stepped through
-test("open: one step at a time, held at 0, 25, 50, 75 and 100%", async ({ page }, info) => {
+test("open: one step at a time, held at 0, 25, 50, 75 and 100%", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("ng-music", "off"))
   await page.goto("?h=sample")
   await expect(open(page)).toBeVisible()
