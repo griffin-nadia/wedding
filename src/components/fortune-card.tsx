@@ -5,7 +5,7 @@ import { FORTUNES } from "@/content/en"
 import { getFortunes, saveDraw, type Fortune } from "@/lib/api"
 import { config } from "@/lib/config"
 import { useLang } from "@/lib/lang"
-import { canShake, draftsOn, drawnKey, FORTUNE_EVENT, keepDraws, localDraws, saveFortune } from "@/lib/fortune"
+import { canShake, draftsOn, drawnKey, finePointer, FORTUNE_EVENT, keepDraws, localDraws, saveFortuneImage } from "@/lib/fortune"
 import { fortuneFor, fortuneIndex, lastDraw, mergeDraws, pickFor, randomPick, type Draw } from "@/lib/draws"
 import { Button } from "@/components/ui/button"
 import { Shuffle } from "lucide-react"
@@ -162,7 +162,9 @@ export function FortuneCard({ token, className, title }: { token: string; classN
     window.addEventListener("devicemotion", on)
     return () => window.removeEventListener("devicemotion", on)
   })
-  const save = () => saveFortune(t, lang === "ja" && fortune.textJa ? { ...fortune, text: fortune.textJa, tier: "" } : fortune)
+  // Run 27: the slip as a picture (shared on phones, downloaded on laptops), the words if that can't be done
+  const save = () => saveFortuneImage(t, slip.current, lang === "ja" && fortune.textJa ? { ...fortune, text: fortune.textJa, tier: "" } : fortune)
+  const saveLabel = finePointer() ? t.fortune.saveDesktop : t.fortune.save
 
   // A slip opened earlier this visit waits for the real list too (the tin, still, until it answers)
   if (state !== "open" || !ready) {
@@ -186,7 +188,7 @@ export function FortuneCard({ token, className, title }: { token: string; classN
         <div key={n} ref={slip} data-tier={tierOf(fortune)} tabIndex={-1} role="group" aria-labelledby={`fortune-head-${token}`} className={cn("omikuji-slip paper-feel", fold === "folding" && "is-folded", fold === "settling" && "is-fresh")}>
           <span aria-hidden className="omikuji-creases" />
           <SlipWords i={i} of={pool.length} fortune={fortune} headId={`fortune-head-${token}`} />
-          <Button variant="link" onClick={save} className="omikuji-save">{t.fortune.save}</Button>
+          <Button variant="link" onClick={save} className="omikuji-save">{saveLabel}</Button>
         </div>
         {fold === "folding" && <Fold key={n} i={i} of={pool.length} fortune={fortune} />}
       </div>
@@ -209,7 +211,7 @@ function Fold({ i, of, fortune }: { i: number; of: number; fortune: Fortune }) {
       <div data-tier={tierOf(fortune)} className={`omikuji-slip paper-feel omikuji-copy omikuji-half-${side}`}>
         <span className="omikuji-creases" />
         <SlipWords i={i} of={of} fortune={fortune} copy />
-        <Button variant="link" tabIndex={-1} className="omikuji-save">{t.fortune.save}</Button>
+        <Button variant="link" tabIndex={-1} className="omikuji-save">{finePointer() ? t.fortune.saveDesktop : t.fortune.save}</Button>
         <span className="omikuji-shade" />
       </div>
     </div>
