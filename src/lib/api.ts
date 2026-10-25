@@ -225,6 +225,21 @@ export async function setFlying(token: string, city: FlyingCity): Promise<void> 
   if (!data.ok) throw new ApiError((data.code as ErrorCode) ?? "server", data.error)
 }
 
+/** Run 27: the Travel checklist's ticked rows for this link, the same on every device. null: no back end, or an
+ *  older one that doesn't keep them (the ticks then stay on this device only). */
+export async function getTicks(token: string): Promise<string[] | null> {
+  if (!config.apiUrl || !token) return null
+  try {
+    const d = await call(`${config.apiUrl}?action=ticks&token=${encodeURIComponent(token)}`)
+    return d.ok && Array.isArray(d.ticks) ? (d.ticks as string[]) : null
+  } catch { return null }
+}
+/** Saves the whole list of ticked rows. Fire and forget: the tick has already shown, and this device keeps it too. */
+export function saveTicks(token: string, ticks: string[]) {
+  if (!config.apiUrl || !token) return
+  void call(config.apiUrl, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "ticks", token, ticks }) }).catch(() => {})
+}
+
 /** Run 25: any city or town, through the back end's geocoder (q), or the place at a dropped pin (lat, lon). Up to five
  *  places, each a city or town with its region, country and centre. null: no back end, or it couldn't answer. */
 export type Place = { name: string; region: string; country: string; countryName: string; lat: number | null; lon: number | null }
