@@ -79,7 +79,7 @@ function YourReply({ h, open }: { h: Household; open: (step: StepId) => void }) 
 
 /**
  * Home (v3 A, K): a letterhead (the names, the date and place as the second line in the same face),
- * the greeting, and one action: RSVP by Mon 15 Feb. Once replied, the Replied pill, Change my reply and
+ * the greeting, and one action: RSVP by Mon 15 Mar. Once replied, the Replied pill, Change my reply and
  * a quiet note of what's left. Sign-off only.
  */
 export function HomePage() {

@@ -9,7 +9,7 @@ export const DATES = {
   ceremonyDay: "2027-10-15",
   /** When the day's schedule ends (Japan time), for the calendar and the Now marker */
   endsAt: "15:30",
-  rsvpBy: "2027-02-15",
+  rsvpBy: "2027-03-15",
   changesLock: "2027-04-30",
   travelFrom: "2027-09-01",
   travelTo: "2027-11-30",

@@ -7,7 +7,7 @@ import { pending } from "./pending"
 type DeepPartial<T> = { [K in keyof T]?: T[K] extends (...a: never[]) => unknown ? T[K] : T[K] extends object ? DeepPartial<T[K]> : T[K] }
 
 const DAY = "2027年10月15日（金）"
-const RSVP_BY = "2027年2月15日（月）"
+const RSVP_BY = "2027年3月15日（月）"
 const TRAVEL_FROM = "2027年9月1日（水）"
 const TRAVEL_TO = "2027年11月30日（火）"
 // Their final wording (22 Oct): until the lock, and add travel dates once booked

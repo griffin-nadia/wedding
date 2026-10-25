@@ -32,12 +32,12 @@
  *   REPLY_TO        the wedding account's address: only here, never in the repo (run 26). If it's missing, the
  *                   first ?action=health after a deploy fills it in from the web app's own account (it runs as the
  *                   wedding account), and health stays "ok":false until it's set
- *   RSVP_BY         2027-02-15
+ *   RSVP_BY         2027-03-15
  *   TEST_EMAIL      where test invites go (asked for the first time you send a test)
  *   NOTIFY_CHANGES  "yes" to email REPLY_TO when someone changes from coming to not coming
  *   RESEND_LIVE     "yes" to let "Can't find your invite?" email real guests (test households only until then)
  *   PLANNER_ID      the planner sheet's ID, so Travel can read its Accommodation Options tab (kept out of the repo)
- *   REMINDER_AT     when the gentle reminder goes, e.g. 2027-02-01T10:00:00+11:00 (off until you turn it on)
+ *   REMINDER_AT     when the gentle reminder goes, e.g. 2027-03-01T10:00:00+11:00 (off until you turn it on)
  *   SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET   optional: Spotify for song search (needs a Premium
  *                   app owner). Without them, or if Spotify says no, search uses iTunes.
  */
@@ -53,7 +53,7 @@ const DEFAULTS = {
   SITE_URL: "https://griffin-nadia.github.io/wedding",
   CHANGES_LOCK: "2027-04-30",
   REPLY_TO: "", // Script Properties only (run 26)
-  RSVP_BY: "2027-02-15",
+  RSVP_BY: "2027-03-15", // Nadia, 25 Oct 2026: a month longer than 15 Feb
   TEST_EMAIL: "",
   NOTIFY_CHANGES: "no",
 }
@@ -102,7 +102,7 @@ function changeLine_() {
 }
 
 // Invite and reminder wording. The Emails tab overrides these, so Nadia can edit without code.
-// {household}, {rsvp_by}, {rsvp_by_full} ("15 February 2027"), {lock}, {date} and {venue} are filled in when sending.
+// {household}, {rsvp_by}, {rsvp_by_full} ("15 March 2027"), {lock}, {date} and {venue} are filled in when sending.
 // The invite is their final wording (planner, Inv details, column E, 22 Oct): the body, then their link (the button),
 // then invite_after, signed "Lots of love,". Kept in the site's name order (Griffin & Nadia).
 const COPY = {
@@ -154,8 +154,8 @@ function onOpen() {
     .addItem("Weekly backup: turn on", "setupWeeklyBackup")
     .addItem("Name order: find and fix \"Nadia & Griffin\"…", "fixNameOrder")
     .addSeparator()
-    .addItem("Schedule the February reminder…", "scheduleReminder")
-    .addItem("Cancel the February reminder", "cancelReminder")
+    .addItem("Schedule the RSVP reminder…", "scheduleReminder")
+    .addItem("Cancel the RSVP reminder", "cancelReminder")
     .addSeparator()
     .addItem("Tidy the sheets (report)", "tidySheets")
     .addItem("Tidy the sheets: do it", "tidySheetsForReal")
@@ -2230,13 +2230,13 @@ function showResult_(title, text) {
 
 // ---------- gentle reminder (off until scheduled) ----------
 
-const REMINDER_DEFAULT = "2027-02-01T10:00:00+11:00" // Mon 1 Feb 2027, 10 am Melbourne
+const REMINDER_DEFAULT = "2027-03-01T10:00:00+11:00" // Mon 1 Mar 2027, 10 am Melbourne (two weeks before RSVPs close)
 
 /** Sets a one-off trigger for the reminder. Nothing is scheduled until someone runs this. */
 function scheduleReminder() {
   const ui = SpreadsheetApp.getUi()
   const at = new Date(prop_("REMINDER_AT") || REMINDER_DEFAULT)
-  if (isNaN(at) || at < new Date()) return ui.alert("REMINDER_AT needs to be a future date, like 2027-02-01T10:00:00+11:00.")
+  if (isNaN(at) || at < new Date()) return ui.alert("REMINDER_AT needs to be a future date, like 2027-03-01T10:00:00+11:00.")
   const ok = ui.alert("Schedule the reminder", "On " + Utilities.formatDate(at, "Australia/Melbourne", "EEE d MMM yyyy, h:mm a") + " (Melbourne), every invited household with an email that hasn't replied gets the reminder email. Schedule it?", ui.ButtonSet.OK_CANCEL)
   if (ok !== ui.Button.OK) return
   cancelReminder(true)
@@ -2246,7 +2246,7 @@ function scheduleReminder() {
 
 function cancelReminder(quiet) {
   ScriptApp.getProjectTriggers().filter((t) => t.getHandlerFunction() === "sendScheduledReminder").forEach((t) => ScriptApp.deleteTrigger(t))
-  if (quiet !== true) SpreadsheetApp.getUi().alert("The February reminder is off.")
+  if (quiet !== true) SpreadsheetApp.getUi().alert("The RSVP reminder is off.")
 }
 
 /** Runs from the trigger: same list and limits as "Send a reminder…", no dialog. */
@@ -3075,7 +3075,7 @@ function longDate_(ymd) {
   return ymd ? Utilities.formatDate(new Date(ymd + "T12:00:00+09:00"), "Asia/Tokyo", "EEE d MMM yyyy") : ""
 }
 
-/** "2027-02-15" → "15 February 2027" (their wording's dates) */
+/** "2027-03-15" → "15 March 2027" (their wording's dates) */
 function fullDate_(ymd) {
   return ymd ? Utilities.formatDate(new Date(ymd + "T12:00:00+09:00"), "Asia/Tokyo", "d MMMM yyyy") : ""
 }
