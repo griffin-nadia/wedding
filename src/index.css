@@ -980,7 +980,8 @@ svg.lucide { stroke-width: 1.5; }
 /* ─── v3 S · Home overhaul ─────────────────────────────────────────── */
 /* Countdown A: one long narrow strip under the card (numerals 28, units and caption 12) */
 /* Date as a sage paper badge under the names (A) */
-.date-badge { @apply chip-shape; align-self: flex-start; background: var(--surface-alt); color: var(--ink); font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); font-weight: 500; }
+/* Run 27 review: a touch bigger and bolder so the date reads first after the names */
+.date-badge { @apply chip-shape; align-self: flex-start; background: var(--surface-alt); color: var(--ink); font-family: var(--font-label); font-size: 15px; line-height: var(--type-small-leading); font-weight: 600; letter-spacing: 0.01em; }
 /* Names on one line from 1024 (A): the Home letter widens to fit them at 88 */
 /* Accent B (Options): the earlier rust buttons, to compare against one green */
 ::selection { background: color-mix(in oklab, var(--ink-moss) 35%, transparent); color: var(--ink); }
@@ -1366,10 +1367,14 @@ svg.lucide { stroke-width: 1.5; }
   .story-slide-opener .story-kids { height: 100%; width: min(100%, 52rem); }
   /* Run 27 (Jehan): on laptops the two prints a little bigger and closer, her corner just over his (his name stays clear) */
   .story-slide-opener .story-kid .story-print { --print-h: min(66cqh, 46cqw); }
-  .story-slide-opener .story-kid-him { left: 14%; top: 4%; }
-  .story-slide-opener .story-kid-her { right: 14%; top: auto; bottom: 2%; }
-  .story-slide-opener .story-kid-him .story-print { --tilt: -7deg; }
-  .story-slide-opener .story-kid-her .story-print { --tilt: 6deg; }
+  /* Run 27 review: a little more space between them and a touch more tilt; his comes over hers on hover */
+  .story-slide-opener .story-kid-him { left: 7%; top: 3%; }
+  .story-slide-opener .story-kid-her { right: 7%; top: auto; bottom: 2%; }
+  .story-slide-opener .story-kid-him .story-print { --tilt: -8deg; }
+  .story-slide-opener .story-kid-her .story-print { --tilt: 7deg; }
+}
+@media (min-width: 768px) and (hover: hover) {
+  .story-slide-opener .story-kid-him:hover, .story-slide-opener .story-kid-him:focus-within { z-index: 4; }
 }
 .story-kid { position: absolute; }
 .story-kid .story-print { --print-h: calc(var(--stop-h) * 0.74); }
