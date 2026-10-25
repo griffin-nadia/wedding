@@ -12,7 +12,7 @@ import { KyotoMap } from "@/components/kyoto-map"
 import { VenueMap, venueMapOn } from "@/components/venue-map"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
-import { getStayPicks } from "@/lib/api"
+import { getStayPicks, getTicks, saveTicks } from "@/lib/api"
 import { PageHeader, useUnder } from "@/components/ui/page-header"
 import { pickList, type Pick, type Picks } from "@/lib/stay"
 import { SECTIONS, travelOrder, type Section } from "@/lib/travel-order"
@@ -60,11 +60,32 @@ function Row({ value, title, done, onTick, tickLabel, children }: { value: strin
   )
 }
 
-/** The ticks, per household, on this device only. */
+/** The ticks, per household: kept on this device for an instant start, and (run 27) on the back end so a phone and a
+ *  laptop with the same link show the same. The back end's list wins when it answers; checked again on coming back. */
 function useTicks(token: string | undefined) {
   const key = `ng-fly-${token ?? "anon"}`
   const [ticks, setTicks] = useState<Record<string, boolean>>(() => { try { return JSON.parse(localStorage.getItem(key) || "{}") } catch { return {} } })
-  const set = (k: string, v: boolean) => setTicks((t) => { const n = { ...t, [k]: v }; try { localStorage.setItem(key, JSON.stringify(n)) } catch { /* fine */ } return n })
+  const keep = (n: Record<string, boolean>) => { try { localStorage.setItem(key, JSON.stringify(n)) } catch { /* fine */ } }
+  useEffect(() => {
+    if (!token) return
+    let on = true
+    const pull = () => void getTicks(token).then((list) => {
+      if (!on || !list) return
+      const n = Object.fromEntries(list.map((k) => [k, true]))
+      keep(n); setTicks(n)
+    })
+    pull()
+    const back = () => { if (!document.hidden) pull() }
+    document.addEventListener("visibilitychange", back)
+    return () => { on = false; document.removeEventListener("visibilitychange", back) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token])
+  const set = (k: string, v: boolean) => {
+    const n = { ...ticks, [k]: v }
+    setTicks(n)
+    keep(n)
+    if (token) saveTicks(token, Object.keys(n).filter((x) => n[x]))
+  }
   return [ticks, set] as const
 }
 

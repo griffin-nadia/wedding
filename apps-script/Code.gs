@@ -432,6 +432,13 @@ function doGet(e) {
       return json_({ ok: true, household: h || previewHousehold_(p.token) })
     }
     if (action === "flying") return json_(flyingCounts_())
+    // Run 27: the Travel checklist's ticks, the same on every device with this link
+    if (action === "ticks") {
+      if (!token || over_("ticks:" + token.slice(0, 40), 60)) return fail_("busy")
+      if (previewHousehold_(token)) return json_({ ok: true, ticks: [] })
+      if (!cachedHousehold_(token)) return fail_("not_found")
+      return json_({ ok: true, ticks: ticks_(token) })
+    }
     // Run 25: "Where are you flying from?" finds any city or town (Savusavu too); only for a real link, and not hammered
     if (action === "geocode") {
       if (!token || over_("geo:" + token.slice(0, 40), 60)) return fail_("busy")
@@ -488,15 +495,16 @@ function doPost(e) {
   if (body && body.action === "feedback") return json_(feedback_(body))
   const preview = body && typeof body === "object" ? previewHousehold_(body.token) : null
   if (preview) {
-    if (body.action === "flying" || body.action === "stamps" || body.action === "draw") return json_({ ok: true })
+    if (body.action === "flying" || body.action === "stamps" || body.action === "draw" || body.action === "ticks") return json_({ ok: true })
     if (body.action !== "rsvp") return fail_("bad_request")
     const input = validate_(preview, body)
     if (input.error) return fail_(input.error)
     return json_({ ok: true, updated: false, changes: [], household: applyInput_(preview, input) })
   }
-  if (body && (body.action === "flying" || body.action === "stamps" || body.action === "draw" || body.action === "rsvp") && over_("post:" + String(body.token || "").slice(0, 40), 30)) return fail_("busy")
+  if (body && (body.action === "flying" || body.action === "stamps" || body.action === "draw" || body.action === "ticks" || body.action === "rsvp") && over_("post:" + String(body.token || "").slice(0, 40), 30)) return fail_("busy")
   if (body && body.action === "flying") return json_(setFlying_(body.token, body.city))
   if (body && body.action === "stamps") return json_(setStamps_(body.token, body.stamps))
+  if (body && body.action === "ticks") return json_(setTicks_(body.token, body.ticks))
   if (body && body.action === "draw") return json_(addDraw_(body.token, body.draw, body.no))
   if (!body || typeof body !== "object" || body.action !== "rsvp") return fail_("bad_request")
   if (isLocked_()) return fail_("closed")
@@ -1589,6 +1597,44 @@ function setStamps_(token, stamps) {
   }
 }
 
+// ---------- Travel checklist (run 27) ----------
+
+const TICK_ID = /^[a-z0-9-]{1,40}$/
+
+/** A household's ticked checklist rows, from the Checklist column on Guests (cached 6 hours, kept fresh on save). */
+function ticks_(token) {
+  const cache = CacheService.getScriptCache(), hit = cache.get("ticks:" + token)
+  if (hit) return JSON.parse(hit)
+  const row = rows_(TABS.guests).find((r) => String(r.Token).trim() === token)
+  const list = String((row && row.Checklist) || "").split(",").map((x) => x.trim()).filter((x) => TICK_ID.test(x))
+  cache.put("ticks:" + token, JSON.stringify(list), CACHE_SECONDS)
+  return list
+}
+
+/** Saves the whole list of ticked rows (up to 20 ids) on the household's rows, so every device shows the same. */
+function setTicks_(token, ticks) {
+  token = String(token || "").trim()
+  const list = (Array.isArray(ticks) ? ticks : []).map(String).filter((x, i, all) => TICK_ID.test(x) && all.indexOf(x) === i).slice(0, 20)
+  const lock = LockService.getUserLock()
+  if (!lock.tryLock(10000)) return { ok: false, code: "busy", error: ERRORS.busy }
+  try {
+    const s = sheet_(TABS.guests)
+    const head = ensureColumns_(s, ["Checklist"])
+    const data = s.getDataRange().getValues()
+    let found = false
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][head.Token]).trim() !== token) continue
+      s.getRange(i + 1, head.Checklist + 1).setValue(list.join(", "))
+      found = true
+    }
+    if (!found) return { ok: false, code: "not_found", error: ERRORS.not_found }
+    CacheService.getScriptCache().put("ticks:" + token, JSON.stringify(list), CACHE_SECONDS)
+    return { ok: true, ticks: list }
+  } finally {
+    lock.releaseLock()
+  }
+}
+
 // ---------- "Flying from" (anonymous counts for the journey map) ----------
 
 /**
@@ -2341,7 +2387,7 @@ function resetHouseholds_(tokens) {
   const data = g.getDataRange().getValues()
   for (let i = 1; i < data.length; i++) {
     if (tokens.indexOf(String(data[i][head.Token]).trim()) < 0) continue
-    ;["Attending", "Dietary", "Invite sent", "Stamps", "Flying from"].concat(VISITS).forEach((k) => {
+    ;["Attending", "Dietary", "Invite sent", "Stamps", "Flying from", "Checklist"].concat(VISITS).forEach((k) => {
       if (k in head) g.getRange(i + 1, head[k] + 1).setValue("")
     })
     if ("Notes" in head) {
@@ -2361,6 +2407,7 @@ function resetHouseholds_(tokens) {
     for (let i = rows.length - 1; i >= 1; i--) if (tokens.indexOf(String(rows[i][col]).trim()) >= 0) s.deleteRow(i + 1)
   })
   forgetAllHouseholds_()
+  CacheService.getScriptCache().removeAll(tokens.map((t) => "ticks:" + t))
 }
 
 /**
