@@ -153,8 +153,8 @@ function Picks({ sheet, setSheet }: { sheet: string; setSheet: (s: string) => vo
   const note = lang === "ja" ? p.note : twoSentences(picks.note)
   return (
     <div id="picks" className="flex scroll-mt-(--travel-head) flex-col gap-3">
-      {/* Run 26c: a small label over the rows, not a row of its own, so it never reads as something to tap */}
-      <h3 className="label-caps text-muted-foreground">{p.title}</h3>
+      {/* Run 27 review: a proper sub-heading in the headings' serif (smaller than the section's), not a small label */}
+      <h3 className="font-display text-[length:var(--type-accent-size)] leading-snug text-foreground">{p.title}</h3>
       <div className="flex flex-col border-y border-border">
         <PickSheet id="hotels" title={p.hotelsTitle} note={note} list={picks.hotels} airbnb={false} open={sheet === "hotels"} onOpen={(o) => setSheet(o ? "hotels" : "")} />
         <div className="border-t border-border" />
