@@ -1369,7 +1369,8 @@ svg.lucide { stroke-width: 1.5; }
   .story-slide-opener .story-kid .story-print { --print-h: min(66cqh, 46cqw); }
   /* Run 27 review: a little more space between them and a touch more tilt; his comes over hers on hover */
   .story-slide-opener .story-kid-him { left: 7%; top: 3%; }
-  .story-slide-opener .story-kid-her { right: 7%; top: auto; bottom: 2%; }
+  /* Run 27 review: hers a little higher so its shadow clears the stop's bottom edge (the stop clips) */
+  .story-slide-opener .story-kid-her { right: 7%; top: auto; bottom: 7%; }
   .story-slide-opener .story-kid-him .story-print { --tilt: -8deg; }
   .story-slide-opener .story-kid-her .story-print { --tilt: 7deg; }
 }
