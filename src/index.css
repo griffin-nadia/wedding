@@ -980,7 +980,8 @@ svg.lucide { stroke-width: 1.5; }
 /* ─── v3 S · Home overhaul ─────────────────────────────────────────── */
 /* Countdown A: one long narrow strip under the card (numerals 28, units and caption 12) */
 /* Date as a sage paper badge under the names (A) */
-.date-badge { @apply chip-shape; align-self: flex-start; background: var(--surface-alt); color: var(--ink); font-family: var(--font-label); font-size: var(--type-small-size); line-height: var(--type-small-leading); font-weight: 500; }
+/* Run 27 review: a touch bigger and bolder so the date reads first after the names */
+.date-badge { @apply chip-shape; align-self: flex-start; background: var(--surface-alt); color: var(--ink); font-family: var(--font-label); font-size: 15px; line-height: var(--type-small-leading); font-weight: 600; letter-spacing: 0.01em; }
 /* Names on one line from 1024 (A): the Home letter widens to fit them at 88 */
 /* Accent B (Options): the earlier rust buttons, to compare against one green */
 ::selection { background: color-mix(in oklab, var(--ink-moss) 35%, transparent); color: var(--ink); }
