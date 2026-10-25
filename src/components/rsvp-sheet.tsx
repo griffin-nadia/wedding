@@ -2,7 +2,7 @@ import { AddToCalendar } from "@/components/add-to-calendar"
 import { Info } from "lucide-react"
 import { DATES } from "@/lib/wedding-dates"
 import { nextFrame } from "@/lib/frame"
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react"
 import { Sheet, SheetBody, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -417,6 +417,7 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
   const { t } = useLang()
   const h = result.household
   const answer = answerOf(h)
+  const wide = useWide()
   useEffect(() => {
     titleRef.current?.focus({ preventScroll: true })
   }, [answer, titleRef])
@@ -430,18 +431,30 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
         <div className="done-column">
           <p role="status" className="done-status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
           {answer !== "none" && <div className="sent-next"><FortuneCard token={h.token} /></div>}
+          {/* Phones: the calendar links under the fortune, so the bar stays one slim row like every step's */}
+          {answer !== "none" && !wide && <AddToCalendar compact />}
         </div>
       </SheetBody>
-      {/* Run 27 review: add to calendar and Back to your invite sit in the bar at the bottom, like every step. On laptops
-          the calendar links on the left, Back to your invite on the right (Change my reply is phones only for now) */}
+      {/* Run 27 review: the bar at the bottom, like every step. Laptops: the calendar links on the left, Back to your
+          invite on the right. Phones: one row, Change my reply then Back to your invite (as Back and Next) */}
       <footer className="rsvp-actions done-actions">
-        {answer !== "none" && <AddToCalendar compact />}
-        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-6">
-          <Button size="md" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
-          <button type="button" className="btn-text min-h-11 self-center md:hidden" onClick={onChange}>{t.rsvp.changeReply}</button>
+        {answer !== "none" && wide && <AddToCalendar compact />}
+        <div className="flex items-center gap-3">
+          <button type="button" className="btn-text min-h-11 shrink-0 px-1 md:hidden" onClick={onChange}>{t.rsvp.changeReply}</button>
+          <Button size="md" className="flex-1 md:flex-none" onClick={onClose}>{t.rsvp.backHome}</Button>
         </div>
       </footer>
     </>
+  )
+}
+
+/** Laptops (768 and up): the done screen's calendar links go in the bottom bar; on phones they stay in the column */
+const WIDE = "(min-width: 768px)"
+function useWide() {
+  return useSyncExternalStore(
+    (f) => { const m = window.matchMedia(WIDE); m.addEventListener("change", f); return () => m.removeEventListener("change", f) },
+    () => window.matchMedia(WIDE).matches,
+    () => true,
   )
 }
 
