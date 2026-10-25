@@ -381,7 +381,7 @@ export const en = {
     dietaryOther: "Tell us more (optional)",
     answerMissing: (name: string) => `Choose coming or can't make it for ${name}.`,
     close: "Close",
-    song: "A song for the dance floor?",
+    song: "A song for good vibes?",
     songHint: "Search by song or artist, or just type it",
     searching: "Searching…",
     searchSong: "Search",

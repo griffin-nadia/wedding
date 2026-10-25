@@ -36,10 +36,27 @@ export async function call(input: string, init?: RequestInit) {
     throw new ApiError(!offline() && (await googleAnswers(input)) ? "paused" : "network")
   }
   if (!res.ok) throw new ApiError(res.status >= 500 ? "server" : [401, 403, 404, 410, 423].includes(res.status) ? "paused" : "network")
+  let data
   try {
-    return await res.json()
+    data = await res.json()
   } catch {
     // A 200 that isn't JSON is Google's own page (sign-in, "unavailable"), not our script
     throw new ApiError("paused")
   }
+  // A link the back end no longer knows (replaced in the sheet while this page was open, as with the test links on
+  // 25 Oct 2026): tell the page, which swaps to "That link doesn't look right" and its email-me-my-link form, instead
+  // of every step failing one by one
+  if (data && data.ok === false && data.code === "not_found" && sentToken(input, init) && typeof window !== "undefined") {
+    window.dispatchEvent(new Event(LINK_GONE))
+  }
+  return data
+}
+
+/** The event the household listens for when the back end stops knowing this link. */
+export const LINK_GONE = "ng-link-gone"
+
+/** Whether a request carried an invite link (a token in the query or the posted body). */
+function sentToken(input: string, init?: RequestInit) {
+  if (/[?&]token=[^&]/.test(input)) return true
+  try { return typeof init?.body === "string" && Boolean(JSON.parse(init.body).token) } catch { return false }
 }

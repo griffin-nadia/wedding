@@ -314,7 +314,8 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
         // scroll is left to the page
         const wheel = (e: WheelEvent) => {
           // Ctrl or Cmd with the wheel (a trackpad's pinch comes as this too) zooms
-          if (zoomable && (e.ctrlKey || e.metaKey)) { e.preventDefault(); zoomTo(s.zt * Math.exp(-e.deltaY * 0.01)); return }
+          // Run 27 (Jehan): in full screen (zoomable) a plain up and down scroll zooms too; nothing under it scrolls there
+          if (zoomable && (e.ctrlKey || e.metaKey || Math.abs(e.deltaY) > Math.abs(e.deltaX))) { e.preventDefault(); zoomTo(s.zt * Math.exp(-e.deltaY * (e.ctrlKey || e.metaKey ? 0.01 : 0.002))); return }
           const dx = e.deltaX || (e.shiftKey ? e.deltaY : 0)
           if (Math.abs(dx) <= Math.abs(e.shiftKey ? 0 : e.deltaY)) return
           e.preventDefault()

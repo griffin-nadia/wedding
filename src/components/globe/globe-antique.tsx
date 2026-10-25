@@ -87,7 +87,7 @@ export const look: Look = {
     try { await document.fonts.load(`italic ${size}px ${face}`) } catch { /* the fallback face is fine */ }
     g.fillStyle = k.text; g.textAlign = "center"; g.textBaseline = "middle"; g.font = `italic ${size}px ${face}`
     g.globalAlpha = 0.85
-    for (const [name, lon, lat] of [["Pacific Ocean", -150, 8], ["Pacific Ocean", 165, -12], ["Indian Ocean", 78, -22], ["Atlantic Ocean", -35, 18], ["Southern Ocean", 110, -55]] as const) {
+    for (const [name, lon, lat] of [["Pacific Ocean", -150, 8], ["Indian Ocean", 78, -22], ["Atlantic Ocean", -42, 16], ["Southern Ocean", 110, -55]] as const) {
       if ("letterSpacing" in g) (g as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${4 * u}px`
       around(lonX(lon, W), g.measureText(name).width / 2, W, (x) => g.fillText(name, x, latY(lat, W)))
     }

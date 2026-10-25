@@ -89,3 +89,12 @@
   src: url("../assets/fonts/caveat-500-basic-latin.woff2") format("woff2");
   unicode-range: U+0020-007E, U+00A0, U+2019, U+2026;
 }
+/* Run 27: the lighter cut for "With love," on the letters (same source, subset and licence) */
+@font-face {
+  font-family: "Caveat";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/caveat-400-basic-latin.woff2") format("woff2");
+  unicode-range: U+0020-007E, U+00A0, U+2019, U+2026;
+}

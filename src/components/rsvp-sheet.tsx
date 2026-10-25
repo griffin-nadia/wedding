@@ -52,14 +52,19 @@ function DietField({ g, name, onChange }: { g: Guest; name: string; onChange: (d
   const other = options[options.length - 1]
   const d = parseDiet(g.dietary, options)
   const otherOn = d.picked.includes(other)
+  // Run 27 (Griffin's phone check): the saved answer is tidied (no double or trailing spaces), so the box keeps its own
+  // copy of what's typed; otherwise a space at the end vanished as it was typed and words ran together
+  const [typed, setTyped] = useState(d.other)
+  const tidy = (s: string) => s.replace(/[,，、]/g, " ").replace(/\s+/g, " ").trim()
+  useEffect(() => { if (tidy(typed) !== d.other) setTyped(d.other) }, [d.other]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="flex flex-col gap-3">
       <CheckboxGroup labelId={`diet-${g.id}`} label={name} options={options.map((o) => ({ value: o, label: o }))} value={d.picked}
         onChange={(picked) => onChange(dietString({ picked, other: picked.includes(other) ? d.other : "" }, options))} />
       {otherOn && (
         <FormField id={`diet-other-${g.id}`} label={t.rsvp.dietaryOther}>
-          <Input id={`diet-other-${g.id}`} value={d.other} maxLength={OTHER_MAX} autoComplete="off" autoCapitalize="sentences" enterKeyHint="done" data-filled={Boolean(d.other.trim())}
-            onChange={(e) => onChange(dietString({ picked: d.picked, other: e.target.value }, options))} />
+          <Input id={`diet-other-${g.id}`} value={typed} maxLength={OTHER_MAX} autoComplete="off" autoCapitalize="sentences" enterKeyHint="done" data-filled={Boolean(typed.trim())}
+            onChange={(e) => { setTyped(e.target.value); onChange(dietString({ picked: d.picked, other: e.target.value }, options)) }} />
         </FormField>
       )}
     </div>
@@ -425,14 +430,17 @@ function Done({ result, confirm, titleRef, onClose, onChange }: { result: SaveRe
         <div className="done-column">
           <p role="status" className="done-status">{confirm === "offline" ? t.rsvp.savedOffline : confirm === "saving" ? t.rsvp.savingQuiet : `${result.updated ? t.rsvp.updatedLine : t.rsvp.sentLine} ${h.hasEmail === false ? "" : t.rsvp.doneBodyEmail}`.trim()}</p>
           {answer !== "none" && <div className="sent-next"><FortuneCard token={h.token} /></div>}
-          {answer !== "none" && <AddToCalendar compact />}
-          {/* Run 26 review: on laptops just Back to your invite, at the bottom right (Change my reply is off there for now) */}
-          <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-6 md:justify-end">
-            <Button size="md" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
-            <button type="button" className="btn-text min-h-11 self-center md:hidden" onClick={onChange}>{t.rsvp.changeReply}</button>
-          </div>
         </div>
       </SheetBody>
+      {/* Run 27 review: add to calendar and Back to your invite sit in the bar at the bottom, like every step. On laptops
+          the calendar links on the left, Back to your invite on the right (Change my reply is phones only for now) */}
+      <footer className="rsvp-actions done-actions">
+        {answer !== "none" && <AddToCalendar compact />}
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-6">
+          <Button size="md" className="w-full sm:w-auto" onClick={onClose}>{t.rsvp.backHome}</Button>
+          <button type="button" className="btn-text min-h-11 self-center md:hidden" onClick={onChange}>{t.rsvp.changeReply}</button>
+        </div>
+      </footer>
     </>
   )
 }

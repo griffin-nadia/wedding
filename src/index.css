@@ -580,7 +580,7 @@
 [data-theme="lantern"] .site-bar::before { border-bottom-color: rgb(0 0 0 / 0.45); box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.35); }
 /* Run 26c: the mark and Home's "With love" sign-off in the hand agreed in run 26 (Caveat, --font-hand, as on the omikuji
    slip), a touch larger than the serif so it reads at the same weight */
-.signoff-hand { font-family: var(--font-hand); font-weight: 500; font-size: 1.5rem; line-height: 1.2; }
+.signoff-hand { font-family: var(--font-hand); font-weight: 400; font-size: 1.5rem; line-height: 1.2; }
 .site-mark { margin-right: auto; font-family: var(--font-hand); font-weight: 500; font-size: calc(var(--type-heading-size) * 1.1); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* Run 27: the mark in Nadia's lettering (brand-mark.tsx), her G, "&" and N all in the one ink */
@@ -588,7 +588,8 @@
 /* The sign-off: "With love," in the sign-off's own hand, then her G&N the same size as those words (Jehan, run 27):
    her letters' cap height matched to the words', her G's tail dropping below the line as a written G does */
 .signoff-art { display: inline-flex; align-items: baseline; gap: 0.3em; }
-.signoff-art .brand-mark { --mark-h: 1.3em; align-self: center; translate: 0 0.12em; }
+/* Run 27: G&N a touch smaller, its foot on the same line as "With love," */
+.signoff-art .brand-mark { --mark-h: 1.1em; align-self: center; translate: 0 0.1em; }
 .brand-mark-part { display: block; height: var(--mark-h); background: var(--ink); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
 
 /* The nav: one paper glass bar, the site's only backdrop blur. On phones it runs edge to edge along the bottom and
@@ -747,6 +748,13 @@ svg.lucide { stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; 
   .rsvp-sheet .sheet-body:has(> .rsvp-step[data-step="map"]) { display: flex; flex-direction: column; justify-content: center; }
   .rsvp-step[data-step="map"] .journey-end { align-items: center; text-align: center; }
 }
+/* Run 27 review: the done screen's bar holds add to calendar and Back to your invite (stacked on phones; on laptops
+   the calendar links on the left, the button on the right). "Opened in a new tab" shows just above the bar */
+.done-actions { align-items: center; }
+.done-actions > * { flex: 1 0 100%; }
+.done-actions [aria-labelledby="add-cal"] { position: relative; }
+.done-actions .cal-note { position: absolute; left: 0; bottom: calc(100% + var(--space-4) + 4px); min-height: 0; margin: 0; }
+@media (min-width: 768px) { .done-actions > [aria-labelledby="add-cal"] { margin-right: auto; } }
 @media (min-width: 768px) { .rsvp-actions { justify-content: flex-end; } .rsvp-actions > * { flex: none !important; } }
 /* "All good?": who sees the reply, a small note just above Back and Send (run 25) */
 .rsvp-actions > .rsvp-privacy { flex: 1 0 100% !important; display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-small); line-height: var(--text-small--line-height); color: var(--muted-foreground); }
@@ -1356,9 +1364,10 @@ svg.lucide { stroke-width: 1.5; }
   .story-slide-opener { justify-content: center; }
   .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: calc(var(--stop-h) * 1.5); container-type: size; }
   .story-slide-opener .story-kids { height: 100%; width: min(100%, 52rem); }
-  .story-slide-opener .story-kid .story-print { --print-h: min(62cqh, 40cqw); }
-  .story-slide-opener .story-kid-him { left: 8%; top: 2%; }
-  .story-slide-opener .story-kid-her { right: 8%; top: auto; bottom: 0; }
+  /* Run 27 (Jehan): on laptops the two prints a little bigger and closer, her corner just over his (his name stays clear) */
+  .story-slide-opener .story-kid .story-print { --print-h: min(66cqh, 46cqw); }
+  .story-slide-opener .story-kid-him { left: 14%; top: 4%; }
+  .story-slide-opener .story-kid-her { right: 14%; top: auto; bottom: 2%; }
   .story-slide-opener .story-kid-him .story-print { --tilt: -7deg; }
   .story-slide-opener .story-kid-her .story-print { --tilt: 6deg; }
 }
@@ -1385,7 +1394,7 @@ svg.lucide { stroke-width: 1.5; }
   .story-kid-her .story-print { --tilt: 6deg; }
   .story-kid-him { left: 2%; top: -2%; } /* run 27 (Jehan): both a little higher, so hers clears the dots (30px at 390) */
   /* Run 27 (Nadia): hers sits lower and further right, so "griffin" on his print's border shows */
-  .story-kid-her { right: 0; top: auto; bottom: 3%; }
+  .story-kid-her { right: 0; top: auto; bottom: 6%; } /* run 27: higher again, so its shadow clears the card's edge */
   .story-kid .story-print { --print-h: min(43cqh, 57cqw); }
 }
 

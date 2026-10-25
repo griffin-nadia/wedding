@@ -325,7 +325,7 @@ export const ja: DeepPartial<Content> = {
     dietaryOther: "詳しく教えてください（任意）",
     answerMissing: (name: string) => `${name}さんの出席・欠席を選んでください。`,
     close: "閉じる",
-    song: "ダンスでかけたい一曲は？",
+    song: "いい気分になれる一曲は？",
     songHint: "曲名かアーティスト名で検索するか、そのまま入力してください",
     searching: "検索中…",
     searchSong: "検索",

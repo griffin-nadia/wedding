@@ -24,7 +24,7 @@ test("Home's four tags show what's done and open their step", async ({ page }) =
     expect(boxes[0].left).toBe(boxes[2].left); expect(new Set(boxes.map((b) => b.w)).size).toBe(1)
     for (const b of boxes) expect(b.fits).toBe(true)
   }
-  for (const [tag, heading] of [["A song", /song for the dance floor/], ["Food", /dietary needs/], ["Travel dates", /travel dates/], ["Who's coming", /Who's coming/]] as const) {
+  for (const [tag, heading] of [["A song", /song for good vibes/], ["Food", /dietary needs/], ["Travel dates", /travel dates/], ["Who's coming", /Who's coming/]] as const) {
     await tags.filter({ hasText: tag }).click()
     await expect(page.getByRole("dialog").getByRole("heading", { name: heading })).toBeVisible()
     await page.keyboard.press("Escape")
