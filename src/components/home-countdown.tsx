@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { config } from "@/lib/config"
-import { partsAt, sentence } from "@/lib/countdown-parts"
+import { partsAt, sentence, sentenceJa } from "@/lib/countdown-parts"
 import { useLang } from "@/lib/lang"
 import { useContent } from "@/lib/content"
 import { cn } from "@/lib/utils"
@@ -17,7 +17,7 @@ function Flip({ value }: { value: string }) {
  * ticking number. Stops while the tab is hidden.
  */
 export function HomeCountdown() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     let id = 0
@@ -35,7 +35,7 @@ export function HomeCountdown() {
   const boxes: [string, string][] = [[String(days), u.days], [String(hours).padStart(2, "0"), u.hours], [String(mins).padStart(2, "0"), u.mins], [String(secs).padStart(2, "0"), u.secs]]
   return (
     <section className="count-boxes" aria-label={t.countdownMore.until}>
-      <p className="sr-only">{sentence(p)}</p>
+      <p className="sr-only">{lang === "ja" ? sentenceJa(p) : sentence(p)}</p>
       <div aria-hidden className="count-boxes-row">
         <ol className="count-boxes-list">
           {boxes.map(([v, unit]) => (

@@ -31,3 +31,11 @@ export function sentence(p: Parts) {
   if (!bits.length) return "Today's the day"
   return `${bits.length > 1 ? `${bits.slice(0, -1).join(", ")} and ${bits[bits.length - 1]}` : bits[0]} to go`
 }
+
+/** The same line in Japanese (run 27: the Japanese site read it in English): "あと11か月と19日". */
+export function sentenceJa(p: Parts) {
+  const y = Math.floor(p.months / 12), m = p.months % 12
+  const bits = [y && `${y}年`, m && `${m}か月`, p.days && `${p.days}日`].filter(Boolean) as string[]
+  if (!bits.length) return "今日がその日です"
+  return `あと${bits.join("と")}`
+}
