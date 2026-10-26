@@ -11,10 +11,12 @@ test("opening a row keeps it under your finger while the open one above closes",
   const rows = page.locator("#letter [data-slot=accordion-trigger]")
   await rows.nth(0).click()
   await page.waitForTimeout(500) // let it finish opening
-  await rows.nth(2).evaluate((e) => document.querySelector(".letter-scroll")!.scrollBy(0, e.getBoundingClientRect().top - innerHeight / 2))
-  const top = () => rows.nth(2).evaluate((e) => e.getBoundingClientRect().top)
+  // A row lower down (On the day), so there is always page above to give back when the open one closes
+  const row = page.locator("#on-the-day [data-slot=accordion-trigger]").first()
+  await row.evaluate((e) => document.querySelector(".letter-scroll")!.scrollBy(0, e.getBoundingClientRect().top - innerHeight / 2))
+  const top = () => row.evaluate((e) => e.getBoundingClientRect().top)
   const before = await top()
-  await rows.nth(2).click()
+  await row.click()
   await page.waitForTimeout(600)
   expect(Math.abs((await top()) - before)).toBeLessThan(2)
 })

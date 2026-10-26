@@ -98,10 +98,6 @@ const twoSentences = (s: string) => (s.match(/[^.!?]+[.!?]+/g) ?? [s]).slice(0, 
 
 /** A URL-friendly id for a row (an area's name) */
 const slug = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "area"
-/** The first sentence of a line of copy, in either language */
-const firstSentence = (s: string) => (s.match(/^.+?[.!?。！？](?=\s|$)/u)?.[0] ?? s).trim()
-/** The rest of it */
-const afterFirst = (s: string) => s.slice(firstSentence(s).length).trim()
 
 /**
  * Hotels or Airbnbs: one row that opens the shared sheet with every pick, filtered by area with chips (none on = all).
@@ -250,8 +246,7 @@ function JumpLinks({ order, labels }: { order: readonly Section[]; labels: Recor
 
 /**
  * Travel, one page, in the order a guest needs it: Getting to Kyoto, Where to stay (the areas, then their picks),
- * Before you fly as a ticked checklist, and On the day (the taxi card, the way from the station, the map). Three
- * lines at the top sum it up, from the copy below. One accordion row open at a time on the whole page, all closed on
+ * Before you fly as a ticked checklist, and On the day (the taxi card, the way from the station, the map). One accordion row open at a time on the whole page, all closed on
  * load; a hash opens a row directly (/travel#flights, #walk, #hotels) or scrolls to a section (#stay, #before).
  */
 export function TravelPage() {
@@ -289,9 +284,6 @@ export function TravelPage() {
     ["weather", g.rows.weather, <p>{g.tips[0]}</p>],
     ["medicines", g.rows.medicines, <><p>{g.tips[2]}</p><Ext href={g.links.smartraveller.href}>{g.links.smartraveller.label}</Ext></>],
   ]
-  // The three lines at the top: the first sentence of each part's own copy
-  const lines: Partial<Record<Section, string>> = { "to-kyoto": firstSentence(g.flyingBody), stay: firstSentence(t.stay.intro), "on-the-day": g.shuttleTitle }
-  const summary = order.flatMap((id) => (lines[id] ? [[id, lines[id]] as const] : []))
   const sections: Record<Section, React.ReactNode> = {
     "to-kyoto": (
         <section key="to-kyoto" id="to-kyoto" aria-labelledby="to-kyoto-title" className="travel-section flex scroll-mt-(--travel-head) flex-col gap-4">
@@ -309,8 +301,7 @@ export function TravelPage() {
     "stay": (
         <section key="stay" id="stay" aria-labelledby="stay-title" className="travel-section flex scroll-mt-(--travel-head) flex-col gap-4">
           <h2 id="stay-title" className="font-display text-heading text-foreground">{t.stay.title}</h2>
-          {/* Its first sentence is already the summary line at the top of the page (run 19: no intro said twice) */}
-          {afterFirst(t.stay.intro) && <p>{afterFirst(t.stay.intro)}</p>}
+          <p>{t.stay.intro}</p>
           <Disclosure label={t.stay.title} {...one}>
             {t.day.stay.map((a, i) => (
               <Plain key={a.label} value={slug(a.label) === "area" ? `area-${i + 1}` : slug(a.label)} title={a.label}>
@@ -349,11 +340,6 @@ export function TravelPage() {
       <PageHeader title={t.nav.travel} lettering="travel" />
       {/* Under the header, not in it: they stick to the card's top edge once scrolled past (18e), so their box is the page */}
       <JumpLinks order={order} labels={{ "to-kyoto": g.toKyotoTitle, stay: t.stay.title, before: g.beforeTitle, "on-the-day": g.onTheDayTitle }} />
-
-      {/* Griffin, 26 Oct: the three lines are the short version, plain text; the tabs above are the links */}
-      <ul className="travel-summary">
-        {summary.map(([id, line]) => <li key={id} className="travel-summary-line">{line}</li>)}
-      </ul>
 
       {order.map((id) => sections[id])}
     </>
