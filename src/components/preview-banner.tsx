@@ -16,7 +16,7 @@ export function PreviewBanner() {
     try { if (!localStorage.getItem("ng-lang")) setLang("ja") } catch { /* private mode: stays as it is */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preview])
-  if (!preview) return null
+  if (!preview || preview === "demo") return null // a demo link (run 28): the showcase, nothing on top of it
   return (
     <aside aria-label={t.preview.banner} className="preview-banner">
       <p>{t.preview.banner}</p>

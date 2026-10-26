@@ -29,7 +29,7 @@ export type Household = {
   message: string
   respondedAt: string | null
   photos?: boolean | null // happy to be in photos shared with guests
-  preview?: "en" | "ja" // a review link (run 21): a made-up household, replies not saved; the language it opens in
+  preview?: "en" | "ja" | "demo" // a review link (run 21): a made-up household, replies not saved; the language it opens in. demo (run 28): same, with no banner, for showing the site off
 }
 
 export type RsvpPayload = Pick<Household, "guests" | "songs" | "arrival" | "departure" | "message" | "photos">

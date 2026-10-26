@@ -2513,7 +2513,7 @@ function makeTokensAndLinks() {
 
 // ---------- review links (run 21) ----------
 //
-// The Preview tab: Token, Name, Language (en or ja), Notes. Each row is a review link (?h=<token>) that opens a
+// The Preview tab: Token, Name, Language (en, ja or demo), Notes. Each row is a review link (?h=<token>) that opens a
 // made-up household with everything visible and the reply usable, but nothing saved. Preview tokens are never in
 // Guests, so they're in no count, the Summary, the journeys or any email. Feedback from them goes to the Feedback tab.
 
@@ -2528,7 +2528,9 @@ function previewLang_(token) {
   if (hit) return hit === "-" ? null : hit
   const tab = ss_().getSheetByName(PREVIEW_TAB)
   const row = tab ? rows_(PREVIEW_TAB).find((r) => String(r.Token || "").trim() === token) : null
-  const lang = row ? (String(row.Language || "").trim() === "ja" ? "ja" : "en") : null
+  // Run 28 (27 Oct): "demo" is a public showcase link (Awwwards and the like): the same made-up household, no banner
+  const kind = row ? String(row.Language || "").trim().toLowerCase() : ""
+  const lang = row ? (kind === "ja" ? "ja" : kind === "demo" ? "demo" : "en") : null
   cache.put("preview:" + token, lang || "-", 600)
   return lang
 }
