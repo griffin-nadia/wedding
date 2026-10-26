@@ -97,7 +97,7 @@ export const en = {
     // Run 25: the chapter and list sheets, and a photo full screen
     backToStory: "Back to the story", openPhoto: (what: string) => `Open the photo: ${what}`, closePhoto: "Close the photo",
   },
-  flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", endTitle: "Where are you flying from?", hint: "Optional. We only ever show how many, never who.", thanks: "Thanks, got it.", yours: (key: string, city: string) => (key === "Already in Japan" ? "You're already in Japan" : `From ${/^(Somewhere|Elsewhere)/.test(key) ? city.toLowerCase() : city}`), change: "Change", placeholder: "Type your city or town", noMatch: "Nothing found for that.",
+  flying: { cities: {} as Partial<Record<string, string>>, title: "Flying from?", endTitle: "Where are you flying from?", hint: "Optional. The map only shows how many people are coming from each place, never who.", thanks: "Thanks, got it.", yours: (key: string, city: string) => (key === "Already in Japan" ? "You're already in Japan" : `From ${/^(Somewhere|Elsewhere)/.test(key) ? city.toLowerCase() : city}`), change: "Change", placeholder: "Type your city or town", noMatch: "Nothing found for that.",
     // Run 25: one search for any city or town, or a pin on the map
     dropPin: "Can't find it? Drop a pin instead", pinHint: "Tap the map where you're flying from.", pinCancel: "Cancel", searching: "Looking…" },
   music: { on: "Play music", off: "Pause music" },

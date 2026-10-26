@@ -384,11 +384,12 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
                   )}
                   <ReviewRow label={t.rsvp.messageLabel} edit={() => goTo(stepOf(coming.length ? "travel" : "note"))} editLabel={t.rsvp.edit(t.rsvp.messageLabel)} block>{form.message.trim() || t.rsvp.noMessage}</ReviewRow>
                 </dl>
-                <label htmlFor="photos" className="check-row">
+                {/* Run 27 review: only asked when someone is coming (no photos of guests who can't make it) */}
+                {form.guests.some((g) => g.attending === "yes") && <label htmlFor="photos" className="check-row">
                   <Checkbox id="photos" className="mt-0.5" checked={form.photos === true}
                     onCheckedChange={(v) => setForm((f) => ({ ...f, photos: v === true }))} />
                   {t.rsvp.photos}
-                </label>
+                </label>}
               </>
             )}
             {/* A paused back end is a calm note on paper, not an error: nothing the guest did, nothing lost */}
