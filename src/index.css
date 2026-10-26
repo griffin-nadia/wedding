@@ -584,7 +584,7 @@
 .site-mark { margin-right: auto; font-family: var(--font-hand); font-weight: 500; font-size: calc(var(--type-heading-size) * 1.1); line-height: 1; color: var(--ink); border-radius: var(--radius-chip); outline: 2px solid transparent; outline-offset: 4px; }
 .site-mark:focus-visible { outline-color: var(--input-focus); }
 /* Run 27: the mark in Nadia's lettering (brand-mark.tsx), her G, "&" and N all in the one ink */
-.brand-mark { --mark-h: 36px; display: inline-flex; align-items: flex-start; gap: calc(var(--mark-h) * 0.02); height: var(--mark-h); vertical-align: middle; }
+.brand-mark { --mark-h: 36px; display: inline-flex; align-items: flex-start; gap: calc(var(--mark-h) * 0.1); height: var(--mark-h); vertical-align: middle; }
 /* The sign-off: "With love," in the sign-off's own hand, then her G&N the same size as those words (Jehan, run 27):
    her letters' cap height matched to the words', her G's tail dropping below the line as a written G does */
 .signoff-art { display: inline-flex; align-items: baseline; gap: 0.3em; }
@@ -1482,6 +1482,8 @@ svg.lucide { stroke-width: 1.5; }
 .story-read { display: flex; flex-direction: column; gap: var(--space-4); max-width: 65ch; text-wrap: pretty; }
 .story-signoff { display: flex; flex-direction: column; gap: var(--space-1); margin-top: var(--space-2); }
 .story-signoff .voice { font-size: 1.5em; color: var(--foreground); }
+/* Their G&N, the bar's mark at about the size of the words above it */
+.story-signoff .brand-mark { --mark-h: 1.15em; }
 /* Every photo stop's print sits on the same line in the same-sized box, so its caption lands in the same spot on
    every stop, right under the photo (18f): a landscape print is shorter, so it sits low in the box, not centred */
 .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { place-items: end center; }
