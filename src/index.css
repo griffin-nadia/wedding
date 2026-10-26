@@ -1661,12 +1661,12 @@ svg.lucide { stroke-width: 1.5; }
 
 /* Radio group as a segmented pair (RSVP, Who's coming): the name, then two equal halves of the row, 48 tall (one
    above the other under 360 wide). Unchosen halves have a strong 1px line (3:1 on the paper); the chosen one fills, takes the 2px
-   accent line and a tick at its left edge, so each label stays centred on one line. */
+   accent line and a tick at its left edge, so each label stays centred on one line (equal padding both sides). */
 .radio-group { display: flex; flex-direction: column; gap: var(--space-2); padding-block: var(--space-2); outline: none; }
 .radio-group-label { font-family: var(--font-label); font-weight: 500; color: var(--ink); }
 .radio-group-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 .radio-option {
-  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: var(--space-2) var(--space-3) var(--space-2) var(--space-6); text-wrap: balance; /* side by side at every width (run 25): a long label wraps */
+  position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; padding: var(--space-2) var(--space-6); text-wrap: balance; /* even on both sides so the label sits in the middle with or without its tick */ /* side by side at every width (run 25): a long label wraps */
   border: 1px solid var(--line-strong); border-radius: var(--input-radius); background: var(--input-bg); color: var(--ink-soft); /* line-strong: 3:1 or more on the paper in both modes */
   font-family: var(--font-label); font-size: var(--type-ui-size); font-weight: 500; text-align: center; cursor: pointer;
   outline: 2px solid transparent; outline-offset: 2px; -webkit-tap-highlight-color: transparent; user-select: none;
