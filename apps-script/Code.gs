@@ -201,7 +201,9 @@ function plannerGuestColumns_(values) {
   const map = {}
   headers.forEach((h, i) => {
     const low = h.toLowerCase()
-    if (map.household == null && /household|party|group|invite name|family/.test(low)) map.household = i
+    // Run 27: an optional Japanese name column (how Japanese guests are greeted on the Japanese site)
+    if (map.ja == null && /japanese|日本語|kanji|漢字/.test(low)) map.ja = i
+    else if (map.household == null && /household|party|group|invite name|family/.test(low)) map.household = i
     else if (map.first == null && /^(first( ?name)?|given( name)?)$/.test(low)) map.first = i
     else if (map.last == null && /^(last( ?name)?|surname|family name)$/.test(low)) map.last = i
     else if (map.name == null && /^(name|full name|guest( name)?|guests)$/.test(low)) map.name = i
@@ -241,7 +243,8 @@ function planLaunch_(siteGuests, tabs, planner, queueKeys) {
       if (isTest(household)) return
       if (have[(household + "|" + first).toLowerCase()]) return
       have[(household + "|" + first).toLowerCase()] = true
-      add.push({ household: household, first: first, last: last, email: cell("email"), phone: cell("phone") })
+      const ja = cell("ja")
+      add.push(Object.assign({ household: household, first: first, last: last, email: cell("email"), phone: cell("phone") }, ja ? { nameJa: ja } : {}))
     })
   }
   // Households (kept plus added) with no email for anyone in them
@@ -337,12 +340,13 @@ function prepareForLaunchForReal() {
     // 4. The planner's guests, appended with fresh Guest IDs
     const ids = rows_(TABS.guests).map((r) => Number(String(r["Guest ID"] || "").replace(/\D/g, "")) || 0)
     let next = Math.max(0, ...ids) + 1
+    if (plan.add.some((p) => p.nameJa)) head = ensureColumns_(g, ["Japanese name"])
     const width = g.getLastColumn()
     const rows = plan.add.map((p) => {
       const r = new Array(width).fill("")
       const set = (k, v) => { if (k in head) r[head[k]] = v }
       set("Household", p.household); set("Guest ID", "g" + String(next++).padStart(3, "0")); set("First name", p.first)
-      set("Last name", p.last); set("Email", p.email); set("Phone", p.phone)
+      set("Last name", p.last); set("Email", p.email); set("Phone", p.phone); if (p.nameJa) set("Japanese name", p.nameJa)
       return r
     })
     if (rows.length) g.getRange(g.getLastRow() + 1, 1, rows.length, width).setValues(rows)
@@ -637,6 +641,8 @@ function getHousehold_(token) {
       return {
         id: id,
         firstName: String(g["First name"] || ""),
+        // Run 27: the name the Japanese site greets them by (Guests → Japanese name), when there is one
+        nameJa: String(g["Japanese name"] || "").trim(),
         attending: g.Attending === "yes" || g.Attending === "no" ? g.Attending : null,
         dietary: g.Attending === "yes" ? String(g.Dietary || "None") : "None",
         plusOne: PLUS_ONE.test(String(g["First name"] || "").trim()) || named["plusone_" + id] === "1",

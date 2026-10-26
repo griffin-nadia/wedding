@@ -9,10 +9,14 @@ export type Attending = "yes" | "no" | null
 export type Guest = {
   id: string
   firstName: string
+  nameJa?: string // run 27: how the Japanese site greets them (Guests → Japanese name), when set
   attending: Attending
   dietary: string
   plusOne?: boolean // an unnamed "Guest" the household can name
 }
+
+/** A guest's name as the site shows it: their Japanese name on the Japanese site when they have one */
+export const nameFor = (g: Guest, lang: string) => (lang === "ja" && g.nameJa ? g.nameJa : g.firstName)
 
 export type Household = {
   token: string

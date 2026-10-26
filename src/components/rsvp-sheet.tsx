@@ -19,7 +19,7 @@ import { CheckboxGroup } from "@/components/ui/checkbox-group"
 import { FortuneCard } from "@/components/fortune-card"
 import { FlyingField, FlyingMap, useFlying } from "@/components/journey-end"
 import { useSceneDim } from "@/components/letter/letter"
-import { answerOf, ApiError, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
+import { answerOf, ApiError, nameFor, warmUp, clearDraft, readDraft, saveRsvpWithRetry, trackStarted, writeDraft, type Guest, type Household, type RsvpPayload, type SaveResult } from "@/lib/api"
 import { fmtStay } from "@/lib/dates"
 import { useHousehold } from "@/lib/household"
 import { useLang } from "@/lib/lang"
@@ -177,7 +177,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
   if (!household) return null
   const locked = isLocked()
 
-  const nameOf = (g: Guest) => g.firstName || t.rsvp.plusOneName
+  const nameOf = (g: Guest) => nameFor(g, lang) || t.rsvp.plusOneName
   const setGuest = (id: string, patch: Partial<Guest>) => {
     setForm((f) => ({ ...f, guests: f.guests.map((g) => (g.id === id ? { ...g, ...patch } : g)) }))
     setMissing((m) => { const n = { ...m }; delete n[`answer-${id}`]; delete n[`diet-other-${id}`]; return n })
@@ -328,7 +328,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
               <div className="flex flex-col">
                 {form.guests.filter((g) => !g.plusOne).map((g) => (
                   <div key={g.id} className="flex flex-col">
-                    <RadioGroup id={`answer-${g.id}`} name={`answer-${g.id}`} label={g.firstName} value={g.attending ?? ""} invalid={Boolean(missing[`answer-${g.id}`])}
+                    <RadioGroup id={`answer-${g.id}`} name={`answer-${g.id}`} label={nameFor(g, lang)} value={g.attending ?? ""} invalid={Boolean(missing[`answer-${g.id}`])}
                       describedBy={missing[`answer-${g.id}`] ? `answer-${g.id}-err` : undefined}
                       onChange={(v) => setGuest(g.id, { attending: v as Guest["attending"] })}
                       options={[{ value: "yes", label: t.rsvp.coming }, { value: "no", label: t.rsvp.notComing }]} />

@@ -1,3 +1,4 @@
+import { nameFor } from "@/lib/api"
 import { ART } from "@/lib/art"
 import { nextFrame } from "@/lib/frame"
 import { BrandSeal } from "@/components/brand-seal"
@@ -59,7 +60,7 @@ function PressSeal() {
 }
 
 export function Arrival({ enabled, onOpened, children, reseal = 0 }: { enabled: boolean; onOpened?: () => void; children: ReactNode; reseal?: number }) {
-  const { t } = useLang()
+  const { t, lang: nameLang } = useLang()
   const { household } = useHousehold()
   const [phase, setPhase] = useState<Phase>(() => firstPhase(enabled))
   const button = useRef<HTMLButtonElement>(null)
@@ -213,7 +214,7 @@ export function Arrival({ enabled, onOpened, children, reseal = 0 }: { enabled: 
   }, [phase])
 
   const arrival = enabled && phase !== "open"
-  const first = household?.guests.filter((g) => !g.plusOne).map((g) => g.firstName).join(" & ") ?? ""
+  const first = household?.guests.filter((g) => !g.plusOne).map((g) => nameFor(g, nameLang)).join(" & ") ?? ""
   return (
     <>
       {/* No long-press menu (save image, share) anywhere on it: a hold is the start of a pull, not a request for the picture */}
