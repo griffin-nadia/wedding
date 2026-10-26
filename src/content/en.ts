@@ -400,6 +400,7 @@ export const en = {
     songPlaceholder: "Search for a song",
     arrival: "Arriving",
     departure: "Leaving",
+    datesDay: `The wedding is ${DAY}.`, // Ash, 27 Oct: the date right where the dates are picked
     datesHint: "Not booked yet? Add these later.",
     dateRange: `Pick dates between ${fmtDay(DATES.travelFrom)} and ${fmtDay(DATES.travelTo)}.`,
     dateOrder: "Pick a leaving date on or after your arrival.",

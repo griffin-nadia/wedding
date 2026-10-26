@@ -344,6 +344,7 @@ export const ja: DeepPartial<Content> = {
     songPlaceholder: "曲を検索",
     arrival: "到着日",
     departure: "出発日",
+    datesDay: `結婚式は${DAY}です。`,
     datesHint: "まだ予約していなければ、あとで追加できます。",
     dateRange: `${TRAVEL_FROM}から${TRAVEL_TO}の間で選んでください。`,
     dateOrder: "出発日は到着日以降を選んでください。",
