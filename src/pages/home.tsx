@@ -1,3 +1,4 @@
+import { nameFor } from "@/lib/api"
 import { ART } from "@/lib/art"
 import { NamesArt } from "@/components/names-art"
 import { lazy, Suspense, useEffect, useRef, useState } from "react"
@@ -83,7 +84,7 @@ function YourReply({ h, open }: { h: Household; open: (step: StepId) => void }) 
  * a quiet note of what's left. Sign-off only.
  */
 export function HomePage() {
-  const { t } = useLang()
+  const { t, lang: nameLang } = useLang()
   const { household } = useHousehold()
   const [params, setParams] = useSearchParams()
   const [tapped, setTapped] = useState(params.get("rsvp") === "1")
@@ -104,7 +105,7 @@ export function HomePage() {
   const done = Boolean(household?.respondedAt)
   const locked = isLocked()
   // v3 P: first names in the sheet's order; a plus one without a name yet is "your plus one"
-  const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : g.firstName)).filter(Boolean) : []
+  const names = household ? household.guests.map((g) => (g.plusOne && /^(guest|plus one|\+1)?$/i.test(g.firstName.trim()) ? t.home.yourPlusOne : nameFor(g, nameLang))).filter(Boolean) : []
   const dear = t.home.dearNames(names) || household?.displayName || ""
   const openAt = (step: StepId) => { setTapped(true); setRequest({ at: Date.now(), step }) }
   const { mode, contactDay } = useContent()
