@@ -31,14 +31,14 @@ export function printNote(c: Pick<Chapter, "year" | "place">) {
 /** Their sign-off at the end of the last chapter ("Lots of love,", then "G + N") */
 const SIGNOFF = /^lots of love,?\s*\n\s*(g \+ n)\s*$/i
 
-/** A chapter's paragraphs, kept whole, with their sign-off as a signature. Their words stay English on the Japanese
- *  site too, marked lang="en" so a screen reader switches. */
-function Paragraphs({ body }: { body: string[] }) {
+/** A chapter's paragraphs, kept whole, with their sign-off as a signature. Run 27: on the Japanese site their
+ *  translation (the Content tab's _ja rows) where there is one, otherwise their English, marked lang="en". */
+function Paragraphs({ body, lang = "en" }: { body: string[]; lang?: string }) {
   return <>{body.map((p, k) => {
     const sign = SIGNOFF.exec(p)
     return sign
       ? <p key={k} lang="en" className="story-signoff">Lots of love,<span className="voice"><Lettering word="mark">{sign[1].toUpperCase()}</Lettering></span></p>
-      : <p key={k} lang="en">{p}</p>
+      : <p key={k} lang={lang}>{p}</p>
   })}</>
 }
 
@@ -56,9 +56,9 @@ function ReadOn({ c, meta }: { c: Chapter; meta: string }) {
         {/* Run 26c: the chapter's photo stays with it, small beside the title (decorative: the print said it already) */}
         <SheetHead className="story-read-head">
           {c.photo && <span aria-hidden className="story-thumb"><Photo name={c.photo} treatment="split" sizes="56px" alt="" /></span>}
-          <span className="flex min-w-0 flex-col gap-1"><span className="text-small text-muted-foreground">{meta}</span><SheetTitle lang="en" className="heading">{c.title}</SheetTitle></span>
+          <span className="flex min-w-0 flex-col gap-1"><span className="text-small text-muted-foreground">{meta}</span><SheetTitle lang={c.lang ?? "en"} className="heading">{c.title}</SheetTitle></span>
         </SheetHead>
-        <SheetBody><div className="story-read"><Paragraphs body={c.body} /></div></SheetBody>
+        <SheetBody><div className="story-read"><Paragraphs body={c.body} lang={c.lang} /></div></SheetBody>
         <BackToStory />
       </SheetContent>
     </Sheet>
@@ -451,8 +451,8 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
     return <>
       {/* Run 25: the chapter line is for screen readers only (the print's note says the year and place) */}
       <p className="sr-only">{meta}</p>
-      <h2 lang="en" className="font-display text-heading text-foreground">{c.title}</h2>
-      {c.body.length > 0 && <p lang="en" className={cn(more && "story-lead")}>{c.body[0]}</p>}
+      <h2 lang={c.lang ?? "en"} className="font-display text-heading text-foreground">{c.title}</h2>
+      {c.body.length > 0 && <p lang={c.lang ?? "en"} className={cn(more && "story-lead")}>{c.body[0]}</p>}
       {more && <ReadOn c={c} meta={meta} />}
     </>
   }
@@ -539,7 +539,7 @@ function StoryList({ chapters, onGlobe }: { chapters: Chapter[]; onGlobe: () => 
                     ? <PhotoOpen name={ch.photo} label={label} className="story-thumb"><Photo name={ch.photo} treatment="split" sizes="96px" alt="" /></PhotoOpen>
                     : kyoto ? <span aria-hidden className="story-thumb story-thumb-seal font-ja">京</span>
                     : <span aria-hidden className="story-thumb story-thumb-dot" />}
-                  <div className="story-read flex min-w-0 flex-col gap-2"><p className="text-small text-muted-foreground">{[ch.year, ch.place].filter(Boolean).join(" · ")}</p><p lang="en" className="font-medium text-foreground">{ch.title}</p><Paragraphs body={ch.body} /></div>
+                  <div className="story-read flex min-w-0 flex-col gap-2"><p className="text-small text-muted-foreground">{[ch.year, ch.place].filter(Boolean).join(" · ")}</p><p lang={ch.lang ?? "en"} className="font-medium text-foreground">{ch.title}</p><Paragraphs body={ch.body} lang={ch.lang} /></div>
                 </li>
               )
             })}

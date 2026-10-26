@@ -62,9 +62,11 @@ function withStops(story: Chapter[]): Chapter[] {
 }
 
 export function StoryPage() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const { story, ready } = useContent()
-  const chapters = withStops(ready && story.length ? story : STORY_PLAN)
+  // Run 27: on the Japanese site, each chapter in Japanese where they've translated it (the map spot stays from the English place)
+  const chapters = withStops(ready && story.length ? story : STORY_PLAN).map((c) => lang === "ja" && c.titleJa && c.bodyJa?.length
+    ? { ...c, title: c.titleJa, body: c.bodyJa, place: c.placeJa || c.place, lang: "ja" as const } : c)
   return (
     <>
       <PageHeader title={t.story.title} lettering="ourStory" />
