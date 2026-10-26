@@ -86,11 +86,11 @@ export const PENDING = {
   // Run 25: their last sentence (the planner's Q&A tab, 16 Oct), pointing at Ask us rather than an email address
   "faqs.bring.a": {
     en: "Your invite is for the people named on it. If there's room for a plus one, your reply will ask “Bringing someone?”. Not sure? Send us a message with Ask us below.",
-    ja: "招待状はお名前のある方へのものです。お連れの方の枠があれば、お返事で「お連れの方はいらっしゃいますか？」とお聞きします。わからないときは、下の「質問する」からメッセージをどうぞ。",
+    ja: "招待状はお名前のある方へのものです。会場の席数が限られている都合上、会場の席に余裕があった場合のみ、招待状のお返事の際に、「お連れの方はいらっしゃいますか」とお伺いします。わからないときは、下の「質問する」からメッセージをどうぞ。",
   },
   "faqs.style.a": {
     en: "Not really. It's a relaxed garden wedding with a few Japanese touches. Nothing to learn, just come as you are.",
-    ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。覚えることは何もないので、そのままお越しください。",
+    ja: "いいえ、日本らしさを少し添えた、気楽なガーデンウェディングです。特別な作法などはありませんので、どうぞ普段どおり、リラックスしてお越しください。",
   },
   "faqs.visa.a": {
     en: "Not for Aussies or Canadians on a short trip. Just check your passport has 6 months left after you fly home. The Travel section has further details.",
