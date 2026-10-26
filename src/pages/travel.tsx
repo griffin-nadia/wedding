@@ -246,8 +246,7 @@ function JumpLinks({ order, labels }: { order: readonly Section[]; labels: Recor
 
 /**
  * Travel, one page, in the order a guest needs it: Getting to Kyoto, Where to stay (the areas, then their picks),
- * Before you fly as a ticked checklist, and On the day (the taxi card, the way from the station, the map). Three
- * lines at the top sum it up, from the copy below. One accordion row open at a time on the whole page, all closed on
+ * Before you fly as a ticked checklist, and On the day (the taxi card, the way from the station, the map). One accordion row open at a time on the whole page, all closed on
  * load; a hash opens a row directly (/travel#flights, #walk, #hotels) or scrolls to a section (#stay, #before).
  */
 export function TravelPage() {
