@@ -284,7 +284,7 @@ export function RsvpSheet({ children, openOnLoad = false, request }: { children:
       </div>
       {dateError
         ? <FieldError id="date-error" className="mt-(--field-helper-gap)">{dateError}</FieldError>
-        : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-small text-muted-foreground">{form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.stayLine) : t.rsvp.datesHint}</p>}
+        : <p id="date-hint" className="form-help mt-(--field-helper-gap) text-small text-muted-foreground">{t.rsvp.datesDay} {form.arrival || form.departure ? fmtStay(form.arrival, form.departure, t.rsvp.stayLine) : t.rsvp.datesHint}</p>}
     </div>
   )
 
