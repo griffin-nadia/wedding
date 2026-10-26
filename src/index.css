@@ -1655,9 +1655,7 @@ svg.lucide { stroke-width: 1.5; }
 .travel-section:last-of-type { min-height: calc(100dvh - var(--bar-h) - 12px - var(--dock-band) - var(--travel-head) - var(--letter-pad)); }
 @media (min-width: 768px) { .travel-section:last-of-type { min-height: calc(100dvh - 2 * var(--letter-top) + var(--bar-h) - var(--travel-head) - var(--letter-pad)); } }
 .travel-summary { display: flex; flex-direction: column; gap: var(--space-2); padding-left: var(--space-4); border-left: 2px solid var(--leaf); }
-.travel-summary-line { color: var(--ink-soft); text-decoration: none; border-radius: var(--radius-control); outline: 2px solid transparent; outline-offset: 2px; }
-.travel-summary-line:focus-visible { outline-color: var(--input-focus); }
-@media (hover: hover) { .travel-summary-line:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; } }
+.travel-summary-line { color: var(--ink-soft); }
 
 /* Radio group as a segmented pair (RSVP, Who's coming): the name, then two equal halves of the row, 48 tall (one
    above the other under 360 wide). Unchosen halves have a strong 1px line (3:1 on the paper); the chosen one fills, takes the 2px

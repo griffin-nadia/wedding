@@ -350,8 +350,9 @@ export function TravelPage() {
       {/* Under the header, not in it: they stick to the card's top edge once scrolled past (18e), so their box is the page */}
       <JumpLinks order={order} labels={{ "to-kyoto": g.toKyotoTitle, stay: t.stay.title, before: g.beforeTitle, "on-the-day": g.onTheDayTitle }} />
 
+      {/* Griffin, 26 Oct: the three lines are the short version, plain text; the tabs above are the links */}
       <ul className="travel-summary">
-        {summary.map(([id, line]) => <li key={id}><a href={`#${id}`} onClick={(e) => glide(e, id)} className="travel-summary-line">{line}</a></li>)}
+        {summary.map(([id, line]) => <li key={id} className="travel-summary-line">{line}</li>)}
       </ul>
 
       {order.map((id) => sections[id])}
