@@ -304,10 +304,17 @@ function prepareForLaunch() {
 
 /** Dated copies of a spreadsheet in the backups folder (made if missing). Returns the copy's name. */
 function backupSpreadsheet_(id, label) {
-  const folders = DriveApp.getFoldersByName(BACKUP_FOLDER)
-  const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(BACKUP_FOLDER)
   const name = label + " backup " + Utilities.formatDate(new Date(), "Asia/Tokyo", "yyyy-MM-dd HHmm")
-  DriveApp.getFileById(id).makeCopy(name, folder)
+  try {
+    const folders = DriveApp.getFoldersByName(BACKUP_FOLDER)
+    const folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(BACKUP_FOLDER)
+    DriveApp.getFileById(id).makeCopy(name, folder)
+  } catch (err) {
+    // 27 Oct: the Drive permission wasn't granted on launch day. A plain copy (Sheets permission only) lands in My
+    // Drive instead of the backups folder; same content, just not filed. Drag it into the folder later if you like.
+    SpreadsheetApp.openById(id).copy(name)
+    return name + " (in My Drive, not the " + BACKUP_FOLDER + " folder)"
+  }
   return name
 }
 
