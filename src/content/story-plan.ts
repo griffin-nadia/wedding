@@ -33,6 +33,6 @@ export const STORY_PLAN: Chapter[] = [
   { key: "plan-7", year: "2027", title: "And then, Kyoto", place: "Kyoto", at: KYOTO, body: [
     "So where do we go from here? We can promise each other we will never stop adventuring. Life has been so much richer, fuller, and brighter with each other in our lives, and we keep that energy going with us wherever we may be. When we share a lazy Sunday coffee with each other, when we fold laundry, cook dinners, or file taxes, we are thinking of new places to see and experiences to try. And with that, while we are climbing pagodas in Taiwan, munching durian in Malaysia, or snuggled up next to a fireplace in a West Coast Canadian cabin, we are still looking forward to grocery shopping with each other back home and hearing about the other’s day after work.",
     "We are filled with excitement when we think of what the future holds, and despite all the struggles and troubles we know are ahead, they don’t hold a candle to the strength we get from each other and the love we continue to share. We are deeply excited to invite you all on this journey with us, and we truly appreciate each and every one of you. We are just two silly geese, honking around this world together, and half of us have a very silly accent.",
-    "Lots of love,\nG + N",
+    "Lots of love,\nG & N",
   ] },
 ]

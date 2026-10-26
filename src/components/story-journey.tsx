@@ -19,7 +19,7 @@ import { loop } from "@/lib/frame"
 import { Sheet, SheetBody, SheetClose, SheetContent, SheetHead, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import photos from "@/content/photos.json"
-import { Lettering } from "@/components/lettering"
+import { BrandMark } from "@/components/brand-mark"
 
 /** Run 24: what's written on a print's bottom border, lowercase and casual: the year and the place's own name
  *  ("Kansai Gaidai, Hirakata" → "2017 · hirakata", "Australia (Brisbane)" → "2022 · brisbane") */
@@ -28,8 +28,8 @@ export function printNote(c: Pick<Chapter, "year" | "place">) {
   return [c.year, place].filter(Boolean).join(" · ")
 }
 
-/** Their sign-off at the end of the last chapter ("Lots of love,", then "G + N") */
-const SIGNOFF = /^lots of love,?\s*\n\s*(g \+ n)\s*$/i
+/** Their sign-off at the end of the last chapter ("Lots of love,", then "G & N", shown as the bar's G&N mark) */
+const SIGNOFF = /^lots of love,?\s*\n\s*g\s*[&+＆]\s*n\s*$/i
 
 /** A chapter's paragraphs, kept whole, with their sign-off as a signature. Run 27: on the Japanese site their
  *  translation (the Content tab's _ja rows) where there is one, otherwise their English, marked lang="en". */
@@ -37,7 +37,7 @@ function Paragraphs({ body, lang = "en" }: { body: string[]; lang?: string }) {
   return <>{body.map((p, k) => {
     const sign = SIGNOFF.exec(p)
     return sign
-      ? <p key={k} lang="en" className="story-signoff">Lots of love,<span className="voice"><Lettering word="mark">{sign[1].toUpperCase()}</Lettering></span></p>
+      ? <p key={k} lang="en" className="story-signoff">Lots of love,<span className="voice"><span className="sr-only">G&amp;N</span><BrandMark /></span></p>
       : <p key={k} lang={lang}>{p}</p>
   })}</>
 }
