@@ -126,40 +126,42 @@ const COPY = {
 }
 
 function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu("Wedding site")
-    .addItem("Make tokens + links for new rows", "makeTokensAndLinks")
+  const ui = SpreadsheetApp.getUi()
+  // Run 28 (26 Oct): one item to send the invites, the few things they'll do after, and everything else under More
+  ui.createMenu("Wedding site")
+    .addItem("Send the invites (does everything)…", "launch")
     .addSeparator()
-    .addItem("Send invites (test, to me only)…", "sendInvitesTest")
-    .addItem("Send invites to everyone not yet invited…", "sendInvitesAll")
     .addItem("Resend invite to selected household", "resendInviteSelected")
     .addItem("Send a reminder to households who haven't replied…", "sendReminders")
     .addItem("Send the \"Final numbers soon\" note to households coming…", "sendFinalNumbers")
+    .addItem("Make tokens + links for new rows", "makeTokensAndLinks")
     .addSeparator()
-    .addItem("Set up the Emails tab", "setupEmailsTab")
-    .addItem("Set up the Content tab (fortunes)", "setupContentTab")
-    .addItem("Add the Japanese fortunes to the Fortunes tab", "addFortunesJapanese")
-    .addItem("Make two review links (Preview tab)", "makeReviewLinks")
-    .addItem("Check song search", "checkSongSearch")
-    .addItem("Turn on the fast email queue", "setupQueue")
-    .addItem("Check the email queue…", "checkQueue")
-    .addItem("Clear queued items for test households…", "clearTestQueue")
-    .addItem("Reset test households…", "resetTestHouseholds")
-    .addItem("Make crew links", "makeCrewLinks")
-    .addSeparator()
-    .addItem("Prepare for launch (report only)…", "prepareForLaunch")
-    .addItem("Prepare for launch: run for real…", "prepareForLaunchForReal")
-    .addSeparator()
-    .addItem("Weekly backup: check (report only)…", "weeklyBackupCheck")
-    .addItem("Weekly backup: turn on", "setupWeeklyBackup")
-    .addItem("Name order: find and fix \"Nadia & Griffin\"…", "fixNameOrder")
-    .addSeparator()
-    .addItem("Schedule the RSVP reminder…", "scheduleReminder")
-    .addItem("Cancel the RSVP reminder", "cancelReminder")
-    .addSeparator()
-    .addItem("Tidy the sheets (report)", "tidySheets")
-    .addItem("Tidy the sheets: do it", "tidySheetsForReal")
-    .addItem("Refresh the To look at box", "refreshLookAt")
+    .addSubMenu(ui.createMenu("More")
+      .addItem("Send invites (test, to me only)…", "sendInvitesTest")
+      .addItem("Send invites to everyone not yet invited…", "sendInvitesAll")
+      .addItem("Prepare for launch (report only)…", "prepareForLaunch")
+      .addItem("Prepare for launch: run for real…", "prepareForLaunchForReal")
+      .addSeparator()
+      .addItem("Schedule the RSVP reminder…", "scheduleReminder")
+      .addItem("Cancel the RSVP reminder", "cancelReminder")
+      .addSeparator()
+      .addItem("Set up the Emails tab", "setupEmailsTab")
+      .addItem("Set up the Content tab (fortunes)", "setupContentTab")
+      .addItem("Add the Japanese fortunes to the Fortunes tab", "addFortunesJapanese")
+      .addItem("Make two review links (Preview tab)", "makeReviewLinks")
+      .addItem("Check song search", "checkSongSearch")
+      .addItem("Turn on the fast email queue", "setupQueue")
+      .addItem("Check the email queue…", "checkQueue")
+      .addItem("Clear queued items for test households…", "clearTestQueue")
+      .addItem("Reset test households…", "resetTestHouseholds")
+      .addItem("Make crew links", "makeCrewLinks")
+      .addSeparator()
+      .addItem("Weekly backup: check (report only)…", "weeklyBackupCheck")
+      .addItem("Weekly backup: turn on", "setupWeeklyBackup")
+      .addItem("Name order: find and fix \"Nadia & Griffin\"…", "fixNameOrder")
+      .addItem("Tidy the sheets (report)", "tidySheets")
+      .addItem("Tidy the sheets: do it", "tidySheetsForReal")
+      .addItem("Refresh the To look at box", "refreshLookAt"))
     .addToUi()
   // Once the tidy has added it, the Summary's To look at box is fresh every time the sheet opens
   safely_(() => refreshLookAt_(false))
@@ -313,17 +315,17 @@ function backupSpreadsheet_(id, label) {
  * Wedding site → Prepare for launch: run for real. Shows the same report, then asks you to type LAUNCH. Backs up both
  * sheets first; stops if either backup fails. Never sends anything.
  */
-function prepareForLaunchForReal() {
+function prepareForLaunchForReal(quiet) {
   const ui = SpreadsheetApp.getUi()
   const plan = launchPlanNow_()
-  if (plan.problems.length) return ui.alert("Prepare for launch", launchReport_(plan, true), ui.ButtonSet.OK)
+  if (plan.problems.length) { ui.alert("Prepare for launch", launchReport_(plan, true), ui.ButtonSet.OK); return false }
   const ok = ui.prompt("Prepare for launch: run for real", launchReport_(plan, true) + "\n\nType LAUNCH to go ahead.", ui.ButtonSet.OK_CANCEL)
-  if (ok.getSelectedButton() !== ui.Button.OK || ok.getResponseText().trim() !== "LAUNCH") return ui.alert("Nothing changed.")
+  if (ok.getSelectedButton() !== ui.Button.OK || ok.getResponseText().trim() !== "LAUNCH") { ui.alert("Nothing changed."); return false }
   let backups
   try { backups = [backupSpreadsheet_(ss_().getId(), "Site-Data"), backupSpreadsheet_(prop_("PLANNER_ID"), "Planner")] }
-  catch (err) { return ui.alert("Stopped before changing anything: a backup failed (" + err + ").") }
+  catch (err) { ui.alert("Stopped before changing anything: a backup failed (" + err + ")."); return false }
   const lock = LockService.getScriptLock()
-  if (!lock.tryLock(30000)) return ui.alert("Busy (a reply is saving). Try again in a minute. Backups made: " + backups.join(", "))
+  if (!lock.tryLock(30000)) { ui.alert("Busy (a reply is saving). Try again in a minute. Backups made: " + backups.join(", ")); return false }
   try {
     // 2. Test households and everything of theirs
     const tokens = rows_(TABS.guests).filter((g) => TEST_HOUSEHOLD.test(String(g.Household || "")) && g.Token).map((g) => String(g.Token))
@@ -357,7 +359,42 @@ function prepareForLaunchForReal() {
   } finally {
     lock.releaseLock()
   }
-  ui.alert("Prepare for launch", "Done. Backups: " + backups.join(", ") + ".\n\nHouseholds with no email (text them their link): " + (plan.noEmail.join(", ") || "none") + ".\n\nNothing was sent. Next: Send invites (test, to me only)…, then to everyone.", ui.ButtonSet.OK)
+  if (!quiet) ui.alert("Prepare for launch", "Done. Backups: " + backups.join(", ") + ".\n\nHouseholds with no email (text them their link): " + (plan.noEmail.join(", ") || "none") + ".\n\nNothing was sent. Next: Send invites (test, to me only)…, then to everyone.", ui.ButtonSet.OK)
+  return true
+}
+
+/**
+ * Wedding site → Send the invites (does everything). Run 28, 26 Oct: the one thing Griffin and Nadia do on launch day.
+ * In order: sets the two launch settings (replies to real guests on, RSVP by the site's date); if the Guests tab still
+ * has test rows or nobody has a link yet, runs Prepare for launch (its own report and LAUNCH prompt); sends one test
+ * invite to the wedding inbox and waits for a yes; then sends to everyone (its own confirm with the numbers). Safe to
+ * run again: a step that's already done is skipped, and nobody is invited twice.
+ */
+function launch() {
+  const ui = SpreadsheetApp.getUi()
+  if (!menuFromWedding_(ui)) return
+  const props = PropertiesService.getScriptProperties()
+  props.setProperty("RESEND_LIVE", "yes")
+  if (props.getProperty("RSVP_BY") && props.getProperty("RSVP_BY") !== DEFAULTS.RSVP_BY) props.deleteProperty("RSVP_BY")
+  const guests = rows_(TABS.guests)
+  const needPrepare = guests.some((g) => TEST_HOUSEHOLD.test(String(g.Household || ""))) || !guests.some((g) => g.Token && !TEST_HOUSEHOLD.test(String(g.Household || "")))
+  if (needPrepare) {
+    const go = ui.alert("Send the invites", "Step 1 of 3: get the guest list ready.\n\nThis backs up both sheets, clears the test households, copies everyone from the planner's Guest list and makes their links. Nothing is sent yet.", ui.ButtonSet.OK_CANCEL)
+    if (go !== ui.Button.OK) return
+    if (!prepareForLaunchForReal(true)) return
+  }
+  const all = households_()
+  if (!all.length) return ui.alert("No households with links yet. Check the planner's Guest list has names, then run this again.")
+  const to = prop_("REPLY_TO")
+  if (all.some((h) => !h.invited)) {
+    const first = all.filter((h) => !h.invited)[0]
+    const mail = inviteEmail_("invite", first, "Test: the real invite would go to " + (first.emails.join(", ") || "nobody (no email, text them the link)"))
+    MailApp.sendEmail({ to: to, replyTo: to, name: COUPLE, subject: "[TEST] " + mail.subject, body: mail.text, htmlBody: mail.html })
+    log_("(test send)", "", "Launch: 1 test invite sent to " + to + ". Invite sent not filled.", "")
+    const ok = ui.alert("Send the invites", "Step 2 of 3: a test invite has just been sent to " + to + " (" + first.name + "'s, marked [TEST]).\n\nOpen it and check it reads right and the link opens.\n\nHappy with it? OK sends the invites to everyone (you'll see the numbers first). Cancel stops here; run this again any time.", ui.ButtonSet.OK_CANCEL)
+    if (ok !== ui.Button.OK) return
+  }
+  sendInvitesAll()
 }
 
 // ---------- weekly backup (a dated copy of Site-Data every week, the newest 8 kept) ----------
