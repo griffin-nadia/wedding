@@ -3,7 +3,9 @@ import { config } from "@/lib/config"
 import { readToken } from "@/lib/household"
 
 /** A story stop. place, photo and at (a spot on the map's 400 × 320 viewBox) come from the planner for the crew preview. */
-export type Chapter = { key: string; title: string; year: string; body: string[]; place?: string; photo?: string; at?: [number, number] }
+export type Chapter = { key: string; title: string; year: string; body: string[]; place?: string; photo?: string; at?: [number, number]
+  // Run 27: their translation from the Content tab (story_N_title_ja, _place_ja, _body_ja), and the language shown
+  titleJa?: string; placeJa?: string; bodyJa?: string[]; lang?: "en" | "ja" }
 export type SiteMode = "invite" | "week-of" | "keepsake"
 export type SiteContent = { story: Chapter[]; mode: SiteMode; contactDay?: string }
 

@@ -1521,6 +1521,9 @@ function content_() {
         key: String(n), title: title.slice(0, 60), year: (kv["story_" + n + "_year"] || "").slice(0, 20),
         place: (kv["story_" + n + "_place"] || "").slice(0, 60), photo: (kv["story_" + n + "_photo"] || "").replace(/[^a-z0-9-]/g, "").slice(0, 40),
         body: body.split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean).slice(0, 8),
+        // Run 27: the Japanese site's version, when the Content tab has it (story_N_title_ja, _place_ja, _body_ja)
+        titleJa: (kv["story_" + n + "_title_ja"] || "").slice(0, 60), placeJa: (kv["story_" + n + "_place_ja"] || "").slice(0, 60),
+        bodyJa: (kv["story_" + n + "_body_ja"] || "").split(/\n\s*\n/).map((x) => x.trim()).filter(Boolean).slice(0, 8),
       })
     }
     if (["invite", "week-of", "keepsake"].indexOf(kv.mode) >= 0) out.mode = kv.mode
