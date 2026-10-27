@@ -1,6 +1,7 @@
 import type React from "react"
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react"
 import { arc } from "@/lib/journey"
+import { fan } from "@/components/globe/kit-data"
 import { useLang } from "@/lib/lang"
 import { useTheme } from "@/lib/theme"
 import type { City } from "@/lib/city-search"
@@ -195,18 +196,20 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
   // The same naming and bundling as the globe (lib/journey-names.ts)
   const guests = bundle(cities.filter((c) => c.n > 0).map((c) => ({ name: c.name ?? "", country: c.country ?? "", lat: c.lat, lon: c.lon, n: c.n }) as Place), lang, t.journey.households)
   const others = guests.map((c) => flatPoint([c.lat, c.lon]))
+  // Jehan, 27 Oct: one line per household from a city, fanned in height (the globe's fan), so none hides another
+  const fanned = guests.flatMap((c, gi) => Array.from({ length: Math.max(1, Math.round(c.n)) }, (_, k) => ({ gi, p: others[gi], lift: 0.15 * fan(k, c.n) })))
   // Their own line, unless they're in Kyoto already (no line to draw)
   const mine = you && you.id !== "jp" && you.lat != null && you.lon != null && Math.hypot(you.lat - KYOTO[0], you.lon - KYOTO[1]) > 0.5 ? flatPoint([you.lat, you.lon]) : null
   // Beside a home line's start, their line bows the other way, so the two part and both read
   const mineLift = you?.lat != null && you.lon != null && nearHome(you.lat, you.lon) ? -0.1 : 0.25
   // Run 26c: every time here is run 26's times PACE (journey-names.ts), set on each line, so the planes keep pace
   const ms = (x: number) => Math.round(x * PACE)
-  const youDelay = ms(900 + others.length * 120)
+  const youDelay = ms(900 + guests.reduce((a, c) => a + Math.max(1, Math.round(c.n)), 0) * 120)
   const line = (from: [number, number], lift: number) => arc(from, kyoto, lift)
   // The lines and when each draws: the home lines 300 and 600 ms in over 900, guests 120 apart over 700 (times PACE)
   const flights = [
     { d: line(flatPoint(BRISBANE), 0.25), delay: ms(300), dur: ms(900), kind: "nadia" }, { d: line(flatPoint(VICTORIA), 0.25), delay: ms(600), dur: ms(900), kind: "griffin" },
-    ...others.map((p, i) => ({ d: line(p, 0.15), delay: ms(900 + i * 120), dur: ms(700), kind: "guest" })),
+    ...fanned.map((f, i) => ({ d: line(f.p, f.lift), delay: ms(900 + i * 120), dur: ms(700), kind: "guest" })),
     ...(mine ? [{ d: line(mine, mineLift), delay: youDelay, dur: ms(900), kind: "you" }] : []),
   ]
   const vw = 400 / view.z, vh = 320 / view.z
@@ -219,16 +222,16 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
           style={view.z > 1 ? { transform: `scale(${view.z}) translate(${(-view.x / 4).toFixed(3)}%, ${(-view.y / 3.2).toFixed(3)}%)` } : undefined} />
         <svg viewBox={`${view.x} ${view.y} ${vw} ${vh}`} role="img" aria-label={label} className={cn("journey journey-hifi journey-flat-lines", shown && "is-in")} style={{ "--k": kz } as CSSProperties}>
           <defs>
-            {[flatPoint(BRISBANE), flatPoint(VICTORIA), ...others].map((p, i) => (
+            {[{ p: flatPoint(BRISBANE), lift: 0.25 }, { p: flatPoint(VICTORIA), lift: 0.25 }, ...fanned].map((f, i) => (
               <mask key={i} id={`${id}-m${i}`} maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="320">
-                <path d={line(p, i < 2 ? 0.25 : 0.15)} className={i === 0 ? "journey-reveal" : i === 1 ? "journey-reveal journey-reveal-2" : "journey-reveal journey-reveal-guest"} style={{ animationDelay: `${flights[i].delay}ms`, animationDuration: `${flights[i].dur}ms` }} pathLength={1} />
+                <path d={line(f.p, f.lift)} className={i === 0 ? "journey-reveal" : i === 1 ? "journey-reveal journey-reveal-2" : "journey-reveal journey-reveal-guest"} style={{ animationDelay: `${flights[i].delay}ms`, animationDuration: `${flights[i].dur}ms` }} pathLength={1} />
               </mask>
             ))}
           </defs>
           {/* Run 26: no pathLength on the lines, so their dots and dashes are px on screen, the globe's */}
           <path d={line(flatPoint(BRISBANE), 0.25)} className="journey-route journey-route-nadia" mask={`url(#${id}-m0)`} />
           <path d={line(flatPoint(VICTORIA), 0.25)} className="journey-route journey-route-griffin" mask={`url(#${id}-m1)`} />
-          {others.map((p, i) => <path key={i} d={line(p, 0.15)} className={guests[i].bundled ? "journey-guest journey-guest-bundle" : "journey-guest"} mask={`url(#${id}-m${i + 2})`} />)}
+          {fanned.map((f, i) => <path key={i} d={line(f.p, f.lift)} className={guests[f.gi].bundled ? "journey-guest journey-guest-bundle" : "journey-guest"} mask={`url(#${id}-m${i + 2})`} />)}
           {/* Brisbane and Victoria always named (run 24); Brisbane's to its right (run 25), clear of Australia's chapter pin */}
           <g aria-hidden className="journey-flat-names">
             {/* Run 26c: who's from there, a G or an N in their line's colour beside the place (the globe's marks) */}

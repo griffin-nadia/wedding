@@ -66,7 +66,11 @@ type LatLon = { lat: number; lon: number }
  * many screen px off its real place, with a hairline back (a traveller from beside a home start gets its own spot
  * instead of sitting under the G or the N). near: starts beside a home start, so its line flies lower.
  */
-export type Trip = { id: string; kind: Kind; lat: number; lon: number; label: string; always: boolean; demo: boolean; to?: LatLon; toLabel?: string; badge?: string; nudge?: [number, number]; near?: boolean }
+export type Trip = { id: string; kind: Kind; lat: number; lon: number; label: string; always: boolean; demo: boolean; to?: LatLon; toLabel?: string; badge?: string; nudge?: [number, number]; near?: boolean; lift?: number; twin?: boolean }
+
+/** Jehan, 27 Oct: a city with several households gets one line each, fanned a little in height so they all read as
+ *  separate lines instead of one on top of another. lift multiplies the arc's height; k of n lines. */
+export const fan = (k: number, n: number) => (n < 2 ? 1 : 1 + (k - (n - 1) / 2) * Math.min(0.3, 0.9 / (n - 1)))
 const regionName = (() => { try { return new Intl.DisplayNames(["en"], { type: "region" }) } catch { return null } })()
 
 export const BRISBANE: LatLon = { lat: -27.47, lon: 153.03 }
@@ -97,7 +101,8 @@ export function trips(cities: Journey[], crowd: Journey[], you: Journey | null, 
     { id: "nadia", kind: "nadia", ...BRISBANE, label: names.brisbane, always: true, demo: false, badge: "N" },
     // Run 24's decision names Victoria (BC) for Griffin's label; the site's globe draws his line from Edmonton today
     { id: "griffin", kind: "griffin", ...VICTORIA, label: names.victoria ?? "Victoria", always: true, demo: false, badge: "G" },
-    ...cities.filter((c) => c.n > 0).map((c, i) => guest(c, false, i, opts.sample ?? true)),
+    // One line per household from each city (fan), the first carrying the dot and the name, the rest twins
+    ...cities.filter((c) => c.n > 0).flatMap((c, i) => { const g = guest(c, false, i, opts.sample ?? true); return Array.from({ length: Math.max(1, Math.round(c.n)) }, (_, k) => ({ ...g, id: k ? `${g.id}-${k}` : g.id, lift: fan(k, c.n), twin: k > 0 })) }),
     ...crowd.map((c, i) => guest(c, true, i)),
     // Run 27, as the site: their "You" sits under the N when they're from Brisbane
     ...(you ? [{ id: "you", kind: "you" as const, lat: you.lat, lon: you.lon, label: names.you ?? you.name, always: false, demo: false, ...(Math.hypot(you.lat - BRISBANE.lat, you.lon - BRISBANE.lon) < NEAR ? { near: true, nudge: [0, 22] as [number, number] } : spot(you)) }] : []),
