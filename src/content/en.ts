@@ -128,8 +128,9 @@ export const en = {
   theme: { label: "Evening mode" },
   // Review links (run 21): a made-up household for a Japanese reader and for designer friends; nothing is saved
   preview: {
-    banner: "Preview: replies aren't saved",
-    feedback: "Leave feedback",
+    banner: "Preview", // 27 Oct: a small chip, out of the way (the hint is for screen readers and the feedback sheet)
+    bannerHint: "Replies aren't saved on this link.",
+    feedback: "Feedback",
     feedbackTitle: "Feedback",
     feedbackLabel: "What reads oddly or looks off?",
     feedbackHelp: "Up to 1,000 characters. The page, theme, screen size and language go with it.",

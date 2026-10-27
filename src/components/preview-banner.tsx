@@ -18,9 +18,9 @@ export function PreviewBanner() {
   }, [preview])
   if (!preview || preview === "demo") return null // a demo link (run 28): the showcase, nothing on top of it
   return (
-    <aside aria-label={t.preview.banner} className="preview-banner">
-      <p>{t.preview.banner}</p>
-      <AskUs feedback><button type="button" className="btn-text min-h-11 text-small">{t.preview.feedback}</button></AskUs>
+    <aside aria-label={t.preview.banner} title={t.preview.bannerHint} className="preview-banner">
+      <p>{t.preview.banner}<span className="sr-only">. {t.preview.bannerHint}</span></p>
+      <AskUs feedback><button type="button" className="btn-text min-h-9 text-small">{t.preview.feedback}</button></AskUs>
     </aside>
   )
 }

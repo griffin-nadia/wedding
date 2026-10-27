@@ -1953,11 +1953,11 @@ g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
 .chapter-pin-at[data-back="true"] { opacity: 0.3; }
 .chapter-pin-at[data-back="true"] .chapter-pin { pointer-events: none; }
 
-/* Review links (run 21): a small paper banner, top centre under the bar, above the card's top edge. Never on a guest's link. */
-.preview-banner { position: fixed; z-index: 45; top: calc(var(--bar-h, 56px) + var(--space-1)); left: 50%; translate: -50% 0; display: flex; align-items: center; gap: var(--space-3); max-width: calc(100vw - 24px); padding: 0 var(--space-2) 0 var(--space-4); border: 1px solid var(--line-hairline); border-radius: var(--radius-pill); background: var(--letter-bg); color: var(--ink); box-shadow: var(--shadow-paper); font-family: var(--font-label); font-size: var(--type-small-size); font-weight: 500; }
+/* Review links (run 21, quieter 27 Oct): a small chip in a bottom corner (left on laptops, right on phones), "Preview" and a Feedback button, so it
+   never sits over the card. Phones: just above the dock. Never on a guest's link or the demo. */
+.preview-banner { position: fixed; z-index: 45; left: 12px; bottom: 12px; /* left: the QR card has the right corner on laptops */ display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-1) 0 var(--space-3); border: 1px solid var(--line-hairline); border-radius: var(--radius-pill); background: color-mix(in oklab, var(--letter-bg) 92%, transparent); color: var(--ink-soft); box-shadow: var(--shadow-paper); font-family: var(--font-label); font-size: var(--type-small-size); font-weight: 500; opacity: 0.9; }
 .preview-banner p { margin: 0; }
-/* Phones: full width just above the dock, wrapping onto two lines if it needs to */
-@media (max-width: 767px) { .preview-banner { top: auto; bottom: calc(72px + env(safe-area-inset-bottom)); left: 12px; right: 12px; translate: none; flex-wrap: wrap; column-gap: var(--space-3); row-gap: 0; padding: var(--space-2) var(--space-3) 0; border-radius: var(--radius-control); } }
+@media (max-width: 767px) { .preview-banner { left: auto; right: 12px; bottom: calc(72px + env(safe-area-inset-bottom)); } }
 /* Nadia's venue map (run 22). Her art at its own ratio; the route, the ring and the buttons over it in % so they scale
    with it. Light: on the card's cream, no frame (the art is flattened onto that cream). Lantern: a cream print framed
    with a soft shadow and rounded corners (her dark ink can't sit on walnut, and no filters on her art). */
