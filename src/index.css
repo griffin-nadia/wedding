@@ -1362,9 +1362,9 @@ svg.lucide { stroke-width: 1.5; }
 /* Run 27 (Jehan): on laptops the opener's two prints are bigger and more of a pile (tilted further, hers lower), filling
    the stop's height instead of sitting small at its top */
 @media (min-width: 768px) {
-  .story-slide-opener { justify-content: center; }
+  .story-slide-opener { justify-content: center; min-height: var(--chapter-h, auto); } /* 27 Oct: a chapter's height, so the controls stay put */
   /* Run 27 review: never taller than a shorter laptop's card can show (no scrollbar on the opener at 780px tall) */
-  .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: max(var(--stop-h), min(calc(var(--stop-h) * 1.5), calc(100svh - 380px))); container-type: size; }
+  .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: var(--stop-h); container-type: size; } /* fills the stop; the stop itself is a chapter's height */
   .story-slide-opener .story-kids { height: 100%; width: min(100%, 52rem); }
   /* Run 27 (Jehan): on laptops the two prints a little bigger and closer, her corner just over his (his name stays clear) */
   .story-slide-opener .story-kid .story-print { --print-h: min(66cqh, 46cqw); }
