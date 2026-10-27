@@ -105,7 +105,7 @@ export function trips(cities: Journey[], crowd: Journey[], you: Journey | null, 
     // Run 24's decision names Victoria (BC) for Griffin's label; the site's globe draws his line from Edmonton today
     { id: "griffin", kind: "griffin", ...VICTORIA, label: names.victoria ?? "Victoria", always: true, demo: false, badge: "G" },
     // One line per household from each city (fan), the first carrying the dot and the name, the rest twins
-    ...cities.filter((c) => c.n > 0).flatMap((c, i) => { const g = guest(c, false, i, opts.sample ?? true); return Array.from({ length: Math.max(1, Math.round(c.n)) }, (_, k) => ({ ...g, id: k ? `${g.id}-${k}` : g.id, lift: fan(k, c.n), sway: g.near ? 0.6 + sway(k, c.n) * 0.5 : sway(k, c.n), twin: k > 0 })) }),
+    ...cities.filter((c) => c.n > 0).flatMap((c, i) => { const g = guest(c, false, i, opts.sample ?? true); const n = Math.min(3, Math.max(1, Math.round(c.n))); return Array.from({ length: n }, (_, k) => ({ ...g, id: k ? `${g.id}-${k}` : g.id, lift: fan(k, n), sway: g.near ? 0.6 + sway(k, n) * 0.5 : sway(k, n), twin: k > 0 })) }), // up to 3 lines a city, however many people (28 Oct)
     ...crowd.map((c, i) => guest(c, true, i)),
     // Run 27, as the site: their "You" sits under the N when they're from Brisbane
     ...(you ? [{ id: "you", kind: "you" as const, lat: you.lat, lon: you.lon, label: names.you ?? you.name, always: false, demo: false, ...(Math.hypot(you.lat - BRISBANE.lat, you.lon - BRISBANE.lon) < NEAR ? { near: true, nudge: [0, 22] as [number, number] } : spot(you)) }] : []),

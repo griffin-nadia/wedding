@@ -1815,24 +1815,32 @@ function flyingCounts_() {
   const cache = CacheService.getScriptCache()
   const hit = cache.get("flying")
   if (hit) return JSON.parse(hit)
+  // 28 Oct (Jehan): people, not households. told = guests who've said they're coming (the "on our way" number);
+  // a city's n = people coming from it (only those whose household gave a place), so the map draws them, capped
+  // on the site. The bucket counts (the flying summary) stay per household.
   const seen = {}
   const counts = {}
   const cities = {}
+  let people = 0, coming = 0
   rows_(TABS.guests).forEach((r) => {
     const t = String(r.Token || "").trim()
-    if (!t || TEST_HOUSEHOLD.test(String(r.Household || "")) || seen[t]) return
-    seen[t] = true
+    if (!t || TEST_HOUSEHOLD.test(String(r.Household || ""))) return
+    if (!String(r["First name"] || "").trim()) return
+    people++
+    const yes = String(r.Attending || "").trim().toLowerCase() === "yes"
+    if (yes) coming++
     const c = flyingOf_(r)
-    if (!c) return
-    const b = bucketOf_(c)
-    counts[b] = (counts[b] || 0) + 1
-    if (c.lat === null) return
+    if (!seen[t]) {
+      seen[t] = true
+      if (c) counts[bucketOf_(c)] = (counts[bucketOf_(c)] || 0) + 1
+    }
+    if (!c || c.lat === null || !yes) return
     const k = c.name + "|" + c.country
     cities[k] = cities[k] || { name: c.name, country: c.country, lat: c.lat, lon: c.lon, n: 0 }
     cities[k].n++
   })
   const list = Object.keys(cities).map((k) => cities[k])
-  const out = { ok: true, counts: counts, cities: list, told: Object.values(counts).reduce((a, b) => a + b, 0), households: Object.keys(seen).length }
+  const out = { ok: true, counts: counts, cities: list, told: coming, households: Object.keys(seen).length, people: people }
   cache.put("flying", JSON.stringify(out), 600)
   return out
 }

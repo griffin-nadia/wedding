@@ -34,7 +34,8 @@ export function JourneyLook({ you, cities, label, mode = "globe", size = "stop",
     const mine = you && you.id !== "jp" && you.lat != null && you.lon != null ? { name: you.name, country: you.country ?? "", lat: you.lat, lon: you.lon, n: 1 } : null
     return trips(guests, [], mine, { brisbane: t.journey.from.nadia, victoria: t.journey.from.griffin }, { sample: false, label: (c) => (c as (typeof guests)[number]).label })
   }, [cities, you, lang, t.journey])
-  const arcs = useMemo(() => list.map((x) => ({ trip: x, ...arcOf(x) })), [list])
+  // 28 Oct: guests first, then N, G and you, so those three draw over the guest lines
+  const arcs = useMemo(() => [...list].sort((a, b) => Number(a.kind !== "guest") - Number(b.kind !== "guest")).map((x) => ({ trip: x, ...arcOf(x) })), [list])
   const reduce = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches
   const ink = inks?.night === night ? inks.ink : null
   return (
