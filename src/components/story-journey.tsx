@@ -231,7 +231,7 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
         {/* Run 27: the key and how many lines are drawn so far, together under the map */}
         <div className="journey-viewer-foot">
           <JourneyLegend you={Boolean(you && you.id !== "jp")} />
-          {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
+          {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told)}</p>}
         </div>
       </SheetContent>
     </Sheet>

@@ -145,7 +145,7 @@ export function GuestMap({ you, flying, label, listable = true }: { you: City | 
           </ul>
         : <><JourneyMini you={you} counts={flying?.counts} cities={flying?.cities} label={label} /><JourneyLegend you={Boolean(you)} /></>}
       {(listable || told) && <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        {told ? <p className="text-small text-muted-foreground">{t.journey.count(flying!.told, flying!.households)}</p> : <span />}
+        {told ? <p className="text-small text-muted-foreground">{t.journey.count(flying!.told)}</p> : <span />}
         {listable && <button type="button" className="btn-text min-h-11" onClick={() => setList((v) => !v)}>{list ? t.journey.seeMap : t.journey.seeList}</button>}
       </div>}
     </div>
