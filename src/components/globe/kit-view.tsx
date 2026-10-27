@@ -88,14 +88,17 @@ export function arcOf(t: Trip) {
   // Near a home start (Brisbane, Victoria) a guest line flies clearly lower than the N or G line, so both read (27 Oct)
   const to = t.to ?? KYOTO, a = v(t.lat, t.lon), b = v(to.lat, to.lon), lift = (t.near ? 0.35 : 1) * (t.lift ?? 1)
   const om = Math.acos(Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))
+  const cx = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], cl = Math.hypot(cx[0], cx[1], cx[2]) || 1, nrm = [cx[0] / cl, cx[1] / cl, cx[2] / cl]
   const lat = new Float32Array(N), lon = new Float32Array(N), alt = new Float32Array(N)
   let prev = 0
   for (let i = 0; i < N; i++) {
     const s = i / (N - 1), p = om < 1e-4 ? [a[0], a[1], a[2]] : [0, 1, 2].map((k) => (a[k] * Math.sin((1 - s) * om) + b[k] * Math.sin(s * om)) / Math.sin(om))
-    let l = Math.atan2(p[1], p[0])
+    // The sideways bow (28 Oct): pushed off the great circle along its normal, most in the middle, back to 0 at both ends
+    const w = (t.sway ?? 0) * 0.1 * om * Math.sin(Math.PI * s), q0 = [p[0] + w * nrm[0], p[1] + w * nrm[1], p[2] + w * nrm[2]], ql = Math.hypot(q0[0], q0[1], q0[2]) || 1, q = [q0[0] / ql, q0[1] / ql, q0[2] / ql]
+    let l = Math.atan2(q[1], q[0])
     if (i) l = prev + wrap(l - prev)
     prev = l
-    lat[i] = Math.asin(Math.max(-1, Math.min(1, p[2]))); lon[i] = l; alt[i] = 0.004 + 0.09 * lift * om * Math.sin(Math.PI * s)
+    lat[i] = Math.asin(Math.max(-1, Math.min(1, q[2]))); lon[i] = l; alt[i] = 0.004 + 0.09 * lift * om * Math.sin(Math.PI * s)
   }
   return { lat, lon, alt }
 }
