@@ -197,7 +197,8 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
   const guests = bundle(cities.filter((c) => c.n > 0).map((c) => ({ name: c.name ?? "", country: c.country ?? "", lat: c.lat, lon: c.lon, n: c.n }) as Place), lang, t.journey.households)
   const others = guests.map((c) => flatPoint([c.lat, c.lon]))
   // Jehan, 27 Oct: one line per household from a city, fanned in height (the globe's fan), so none hides another
-  const fanned = guests.flatMap((c, gi) => Array.from({ length: Math.max(1, Math.round(c.n)) }, (_, k) => ({ gi, p: others[gi], lift: 0.15 * fan(k, c.n) })))
+  // Near a home start they bow the other way from the N or G line (as "you" does), so none sits under it
+  const fanned = guests.flatMap((c, gi) => Array.from({ length: Math.max(1, Math.round(c.n)) }, (_, k) => ({ gi, p: others[gi], lift: (nearHome(c.lat, c.lon) ? -0.12 : 0.15) * fan(k, c.n) })))
   // Their own line, unless they're in Kyoto already (no line to draw)
   const mine = you && you.id !== "jp" && you.lat != null && you.lon != null && Math.hypot(you.lat - KYOTO[0], you.lon - KYOTO[1]) > 0.5 ? flatPoint([you.lat, you.lon]) : null
   // Beside a home line's start, their line bows the other way, so the two part and both read

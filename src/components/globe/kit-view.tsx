@@ -85,7 +85,8 @@ const TURN = { auto: 4 * RAD, wait: 3000, easeIn: 1500, glide: 2.4, tilt: 55 * R
 const N = 64
 export function arcOf(t: Trip) {
   const v = (lat: number, lon: number) => [Math.cos(lat * RAD) * Math.cos(lon * RAD), Math.cos(lat * RAD) * Math.sin(lon * RAD), Math.sin(lat * RAD)]
-  const to = t.to ?? KYOTO, a = v(t.lat, t.lon), b = v(to.lat, to.lon), lift = (t.near ? 0.5 : 1) * (t.lift ?? 1)
+  // Near a home start (Brisbane, Victoria) a guest line flies clearly lower than the N or G line, so both read (27 Oct)
+  const to = t.to ?? KYOTO, a = v(t.lat, t.lon), b = v(to.lat, to.lon), lift = (t.near ? 0.35 : 1) * (t.lift ?? 1)
   const om = Math.acos(Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))
   const lat = new Float32Array(N), lon = new Float32Array(N), alt = new Float32Array(N)
   let prev = 0
