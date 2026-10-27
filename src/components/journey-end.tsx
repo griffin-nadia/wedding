@@ -135,7 +135,7 @@ export function FlyingMap({ fly }: { fly: Flying }) {
       {/* Run 26c (the review): the "From Melbourne" line under the map is gone (their gold line says it); screen
           readers still hear where they picked */}
       {city && !pinning && <p role="status" className="sr-only">{t.flying.yours("city", city.name)}</p>}
-      {told && !pinning && <p className="text-small text-muted-foreground text-center">{t.journey.count(told.told, told.households)}</p>}
+      {told && !pinning && <p className="text-small text-muted-foreground text-center">{t.journey.count(told.told)}</p>}
     </div>
   )
 }

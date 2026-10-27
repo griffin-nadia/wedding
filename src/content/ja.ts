@@ -114,7 +114,7 @@ export const ja: DeepPartial<Content> = {
     open: "全画面", openLabel: "地図を全画面で開く", loading: "地図を描いています…", drag: "ドラッグするか矢印キーで動かせます。", guestsFrom: "ゲストの出発地", close: "地図を閉じる", view: "地球儀か地図", globe: "地球儀", flat: "地図",
     pin: (n: number, title: string, place: string) => `${n ? `第${n}章：` : ""}${title}、${place}。この章へ移動`,
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "ゲスト", you: "あなたの線" },
-    count: (n: number, of: number) => `${of}本中${n}本の線が描かれました`,
+    count: (n: number) => `これまでに${n}本の線が描かれました`,
     seeList: "リストで見る", seeMap: "地図で見る",
     list: { nadia: `${NADIA}：ブリスベンから京都へ`, griffin: `${GRIFFIN}：カナダのビクトリアから京都へ`, you: (city: string) => `あなたの線：${city}から京都へ`, city: (city: string, n: number) => `${city}：${n}本` },
   },
