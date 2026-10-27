@@ -1362,7 +1362,7 @@ svg.lucide { stroke-width: 1.5; }
 /* Run 27 (Jehan): on laptops the opener's two prints are bigger and more of a pile (tilted further, hers lower), filling
    the stop's height instead of sitting small at its top */
 @media (min-width: 768px) {
-  .story-slide-opener { justify-content: center; min-height: var(--chapter-h, auto); } /* 27 Oct: a chapter's height, so the controls stay put */
+  .story-slide-opener { justify-content: center; }
   /* Run 27 review: never taller than a shorter laptop's card can show (no scrollbar on the opener at 780px tall) */
   .story-slide-opener .story-media { flex: 1 0 auto; height: auto; min-height: var(--stop-h); container-type: size; } /* fills the stop; the stop itself is a chapter's height */
   .story-slide-opener .story-kids { height: 100%; width: min(100%, 52rem); }
@@ -1375,12 +1375,8 @@ svg.lucide { stroke-width: 1.5; }
   .story-slide-opener .story-kid-him .story-print { --tilt: -8deg; }
   .story-slide-opener .story-kid-her .story-print { --tilt: 7deg; }
 }
-/* Run 27 review: on laptops each stop is as tall as itself, not the tallest, so the opener and short chapters don't
-   scroll on a 13" screen; only a long chapter does. The stops not showing sit over the track instead of sizing it */
-@media (min-width: 768px) {
-  .story-track { position: relative; }
-  .story-track > .story-slide[inert] { position: absolute; top: 0; left: 0; width: 100%; }
-}
+/* 27 Oct (Jehan): every stop is the track's height again (the grid's tallest, a chapter: a print, a title, four lines
+   and Keep reading), so the arrows and dots stay put between the opener and the chapters. The opener's pile fills it. */
 @media (min-width: 768px) and (hover: hover) {
   .story-slide-opener .story-kid-him:hover, .story-slide-opener .story-kid-him:focus-within { z-index: 4; }
 }

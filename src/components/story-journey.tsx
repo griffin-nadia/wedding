@@ -299,15 +299,6 @@ export function StoryJourney({ chapters, opener }: { chapters: Chapter[]; opener
   const { t } = useLang()
   const [at, setAt] = useState(0)
   const track = useRef<HTMLDivElement>(null)
-  // Jehan, 27 Oct: the opener is as tall as a chapter stop, so the arrows and dots don't move between them. The first
-  // chapter's height (they're all the same: a print, a title, four lines, Keep reading) goes on the track as --chapter-h
-  useEffect(() => {
-    const el = track.current, first = el?.querySelector<HTMLElement>(".story-slide:not(.story-slide-opener):not(.story-slide-map)")
-    if (!el || !first || typeof ResizeObserver === "undefined") return
-    const ro = new ResizeObserver(() => el.style.setProperty("--chapter-h", `${Math.round(first.getBoundingClientRect().height)}px`))
-    ro.observe(first)
-    return () => ro.disconnect()
-  }, [])
   // The planner's last stop (Kyoto, no photo) carries the map; otherwise the map is a stop of its own after the chapters
   const last = chapters[chapters.length - 1]
   const ends = last && !last.photo ? last : null
