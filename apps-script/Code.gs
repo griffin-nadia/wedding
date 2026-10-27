@@ -35,6 +35,8 @@
  *   RSVP_BY         2027-03-15
  *   TEST_EMAIL      where test invites go (asked for the first time you send a test)
  *   NOTIFY_CHANGES  "yes" to email REPLY_TO when someone changes from coming to not coming
+ *   NOTIFY_REPLIES  "no" to stop the note the couple get for every reply (on by default, 27 Oct)
+ *   NOTIFY_TO       where those notes go, comma-separated (default: REPLY_TO)
  *   RESEND_LIVE     "yes" to let "Can't find your invite?" email real guests (test households only until then)
  *   PLANNER_ID      the planner sheet's ID, so Travel can read its Accommodation Options tab (kept out of the repo)
  *   REMINDER_AT     when the gentle reminder goes, e.g. 2027-03-01T10:00:00+11:00 (off until you turn it on)
@@ -599,6 +601,7 @@ function doPost(e) {
     if (isWeddingAccount_()) {
       safely_(() => sendConfirmation_(after, updated ? changes : null))
       safely_(() => notifyDropped_(after.displayName, droppedNames_(before, after)))
+      safely_(() => notifyReply_(after, updated ? changes : null))
     } else {
       wrongAccount_("The web app")
       holdMail_(after.token, updated, updated ? changes : ["No changes"], droppedNames_(before, after))
@@ -1105,6 +1108,7 @@ function flushQueue_() {
     if (!h) return
     safely_(() => sendConfirmation_(h, m.data.updated ? m.data.changes : null))
     safely_(() => notifyDropped_(h.displayName, m.data.dropped || []))
+    safely_(() => notifyReply_(h, m.data.updated ? m.data.changes : null))
   })
   const now = Date.now()
   if (now >= new Date(WARM.from).getTime() && now < new Date(WARM.to).getTime() && new Date().getMinutes() % 15 === 0) {
@@ -2097,6 +2101,27 @@ function droppedNames_(b, a) {
       return old && old.attending === "yes" && g.attending === "no"
     })
     .map((g) => g.firstName)
+}
+
+/**
+ * 27 Oct: a short note to the couple for every reply (new or changed), so nobody has to keep checking the sheet.
+ * Goes to NOTIFY_TO (Script Properties, comma-separated) or the wedding inbox. NOTIFY_REPLIES "no" turns it off.
+ * Test households never notify.
+ */
+function notifyReply_(h, changes) {
+  if (String(prop_("NOTIFY_REPLIES") || "yes").toLowerCase() === "no") return
+  if (TEST_HOUSEHOLD.test(String(h.displayName || ""))) return
+  const to = String(prop_("NOTIFY_TO") || prop_("REPLY_TO") || "").trim()
+  if (!to) return
+  const coming = h.guests.filter((g) => g.attending === "yes").length
+  const lines = h.guests.map((g) => "  " + g.firstName + ": " + status_(g))
+  if (h.arrival || h.departure) lines.push("  Dates: " + (shortDate_(h.arrival) || "?") + " to " + (shortDate_(h.departure) || "?"))
+  if (h.songs && h.songs.length) lines.push("  Songs: " + h.songs.join(", "))
+  if (h.message) lines.push("  Message: " + h.message)
+  const subject = (changes ? "Reply changed: " : "New reply: ") + h.displayName + " (" + coming + " of " + h.guests.length + " coming)"
+  const body = h.displayName + (changes ? " changed their reply.\n\nWhat changed:\n  " + changes.join("\n  ") + "\n\nNow:" : " replied.") + "\n" + lines.join("\n") +
+    "\n\nSummary: " + ss_().getUrl()
+  MailApp.sendEmail({ to: to, subject: subject, body: body })
 }
 
 function notifyDropped_(household, names) {
