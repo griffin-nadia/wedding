@@ -113,7 +113,8 @@ export function PhotoOpen({ name, label, className, children }: { name: string; 
         <button ref={btn} type="button" className={cn("photo-open", className)} aria-label={t.story.openPhoto(label)}
           onClick={(e) => { if ((e.currentTarget as HTMLElement).closest("[data-dragged]")) e.preventDefault() }}>{children}</button>
       </SheetTrigger>
-      <SheetContent className="photo-viewer" data-vt={viaVt || undefined} closeLabel={t.story.closePhoto} aria-describedby={undefined}>
+      <SheetContent className="photo-viewer" data-vt={viaVt || undefined} closeLabel={t.story.closePhoto} aria-describedby={undefined}
+        onClick={(e) => { if (e.target === e.currentTarget) change(false) }} /* the dark ground around the photo closes it, like any lightbox (Jehan, 27 Oct) */>
         <SheetTitle className="sr-only">{label}</SheetTitle>
         <div className="photo-viewer-frame" style={{ "--r": r } as React.CSSProperties}>
           {/* The frame's width (index.css .photo-viewer-frame), so a laptop gets the sharp file and a phone no more than it shows */}

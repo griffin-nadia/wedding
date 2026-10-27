@@ -2237,7 +2237,7 @@ function inviteEmail_(kind, h, testNote) {
     heading: fill(copy[kind + "_heading"]),
     paragraphs: fill(copy[kind + "_body"]).split(/\n\s*\n/),
     rows: [["When", WEDDING.date], ["Where", WEDDING.venue]],
-    button: { label: fill(copy[kind + "_button"]), url: h.link },
+    button: { label: fill(copy[kind + "_button"]), url: testNote ? demoLink_() || h.link : h.link }, // a test opens the demo, never a guest's own link (27 Oct)
     after: copy[kind + "_after"] ? fill(copy[kind + "_after"]).split(/\n\s*\n/) : [],
     notes: ["This link is just for your household, so please don't share it."],
     signoff: copy[kind + "_signoff"] || "",
@@ -2547,6 +2547,13 @@ function knownLink_(token) {
   token = String(token || "").trim()
   if (!token || !TOKEN_SHAPE.test(token)) return false
   return Boolean(cachedHousehold_(token) || previewLang_(token) || crew_(token).ok)
+}
+
+/** The demo link (a Preview row with Language "demo"), for test emails: clicking it can't count as a guest opening theirs. */
+function demoLink_() {
+  const tab = ss_().getSheetByName(PREVIEW_TAB)
+  const row = tab ? rows_(PREVIEW_TAB).find((r) => String(r.Language || "").trim().toLowerCase() === "demo" && r.Token) : null
+  return row ? linkFor_(String(row.Token).trim()) : ""
 }
 
 /** The made-up household a review link opens: the same shape as getHousehold_, plus preview (its language). */
