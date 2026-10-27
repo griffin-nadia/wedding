@@ -86,7 +86,7 @@ const N = 64
 export function arcOf(t: Trip) {
   const v = (lat: number, lon: number) => [Math.cos(lat * RAD) * Math.cos(lon * RAD), Math.cos(lat * RAD) * Math.sin(lon * RAD), Math.sin(lat * RAD)]
   // Near a home start (Brisbane, Victoria) a guest line flies clearly lower than the N or G line, so both read (27 Oct)
-  const to = t.to ?? KYOTO, a = v(t.lat, t.lon), b = v(to.lat, to.lon), lift = (t.near ? 0.35 : 1) * (t.lift ?? 1)
+  const to = t.to ?? KYOTO, a = v(t.lat, t.lon), b = v(to.lat, to.lon), lift = (t.near ? 0.35 : t.kind === "guest" ? 0.7 : 1) * (t.lift ?? 1) // guests fly under N, G and you (28 Oct)
   const om = Math.acos(Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))
   const cx = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], cl = Math.hypot(cx[0], cx[1], cx[2]) || 1, nrm = [cx[0] / cl, cx[1] / cl, cx[2] / cl]
   const lat = new Float32Array(N), lon = new Float32Array(N), alt = new Float32Array(N)
@@ -380,7 +380,9 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
           const weight = tune.weight * (look.weight ?? 1)
           for (let j = 0; j < arcs.length; j++) {
             const { trip, lat, lon, alt } = arcs[j]
-            const p = reduce ? 1 : Math.max(0, Math.min(1, (s.clock - starts[j]) / dur))
+            // 28 Oct: each guest line at its own pace (±20%), so lines from one city don't land in lockstep
+            const pace = trip.kind === "guest" ? 1 + (((j * 7919) % 41) / 41 - 0.5) * 0.4 : 1
+            const p = reduce ? 1 : Math.max(0, Math.min(1, (s.clock - starts[j]) / (dur * pace)))
             const n = Math.round(p * (N - 1)) + 1
             if (n < 2) continue
             if (xs.length < N) { xs = new Float32Array(N); ys = new Float32Array(N); al = new Float32Array(N) }
