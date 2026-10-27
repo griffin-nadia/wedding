@@ -277,7 +277,7 @@ export function JourneyStop({ active }: { active: boolean }) {
         ? <Suspense fallback={<div className="journey-globe">{toggle}</div>}><JourneyGlobe you={you} cities={journeys} label={label}>{toggle}</JourneyGlobe></Suspense>
         : mode === "globe" ? <div className="journey-globe">{toggle}</div> : <JourneyFlat you={you} cities={journeys} label={label}>{toggle}</JourneyFlat>}
       {mode === "flat" && <JourneyLegend you={Boolean(you && you.id !== "jp")} />}
-      {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
+      {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told)}</p>}
     </div>
   )
 }
