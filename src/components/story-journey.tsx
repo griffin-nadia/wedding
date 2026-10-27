@@ -222,16 +222,17 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
           {view === "flat" && base === "flat"
             ? <Suspense key="flat" fallback={<FlatWaiting />}><JourneyFlat you={you} cities={cities} label={label} pins={pins} onPin={go} zoomable zoomRef={zoom} /></Suspense>
             : <Suspense key="look" fallback={<GlobeWaiting />}><JourneyLook you={you} cities={cities} label={label} mode={view} size="full" zoomRef={zoom} /></Suspense>}
-          {/* + and − on both, smaller than it opens too (run 27); pinch and Ctrl or Cmd with the wheel as well */}
-          <div className="globe-zoom">
-            <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}><Plus className="size-5" aria-hidden /></button>
-            <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}><Minus className="size-5" aria-hidden /></button>
-          </div>
+        </div>
+        {/* + and − on both, smaller than it opens too (run 27); pinch and Ctrl or Cmd with the wheel as well. Jehan, 27 Oct:
+            outside the stage so a phone can put them in a row under it; on a laptop they sit in the stage's corner as before */}
+        <div className="globe-zoom">
+          <button type="button" className="utility-btn" aria-label={t.journey.zoomIn} onClick={() => zoom.current?.(STEP)}><Plus className="size-5" aria-hidden /></button>
+          <button type="button" className="utility-btn" aria-label={t.journey.zoomOut} onClick={() => zoom.current?.(1 / STEP)}><Minus className="size-5" aria-hidden /></button>
         </div>
         {/* Run 27: the key and how many lines are drawn so far, together under the map */}
         <div className="journey-viewer-foot">
           <JourneyLegend you={Boolean(you && you.id !== "jp")} />
-          {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told)}</p>}
+          {told && <p className="text-small text-muted-foreground">{t.journey.count(told.told, told.households)}</p>}
         </div>
       </SheetContent>
     </Sheet>
