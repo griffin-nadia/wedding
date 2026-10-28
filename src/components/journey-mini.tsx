@@ -76,7 +76,8 @@ export function CoupleLines({ id }: { id: string }) {
 /** Griffin / Nadia / Guests (and Your line when there is one): what each colour of line means. */
 export function JourneyLegend({ you = false }: { you?: boolean }) {
   const { t } = useLang()
-  const items = [["griffin", t.journey.legend.griffin], ["nadia", t.journey.legend.nadia], ["guests", t.journey.legend.guests], ...(you ? [["you", t.journey.legend.you]] : [])]
+  // 28 Oct (Jehan): Griffin, Nadia, You, then the other guests, so the three solid lines sit together and the dashed one last
+  const items = [["griffin", t.journey.legend.griffin], ["nadia", t.journey.legend.nadia], ...(you ? [["you", t.journey.legend.you]] : []), ["guests", t.journey.legend.guests]]
   return (
     <ul className="journey-legend" aria-hidden>
       {items.map(([k, label]) => <li key={k}><span className={`journey-key journey-key-${k}`} />{label}</li>)}
