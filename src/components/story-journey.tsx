@@ -207,9 +207,10 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
   const zoom = useRef<((f: number) => void) | null>(null)
   // 28 Oct (Jehan): the compass and + / − hang off the frame (the globe's or the map's), not the screen: the gap each
   // side of the frame goes on the stage as --frame-l / --frame-r, so they sit just outside its bottom corners
-  const stage = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = stage.current
+  // The stage mounts when the sheet opens (after this component), so a callback ref measures it then, not at mount
+  const stageCleanup = useRef<(() => void) | null>(null)
+  const stage = useCallback((el: HTMLDivElement | null) => {
+    stageCleanup.current?.(); stageCleanup.current = null
     if (!el || typeof ResizeObserver === "undefined") return
     const frameOf = () => el.querySelector<HTMLElement>(".x-g24-box, .journey-flat")
     const measure = () => {
@@ -223,7 +224,7 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
     const mo = new MutationObserver(() => { measure(); const f = frameOf(); if (f) ro.observe(f) })
     mo.observe(el, { childList: true, subtree: true })
     measure(); const f = frameOf(); if (f) ro.observe(f)
-    return () => { ro.disconnect(); mo.disconnect() }
+    stageCleanup.current = () => { ro.disconnect(); mo.disconnect() }
   }, [])
   const cities = journeys ?? NONE
   const go = (key: string) => { jumped.current = true; setOpen(false); onOpenChange?.(false); onPin(key) }
