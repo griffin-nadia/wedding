@@ -20,6 +20,7 @@ import { Sheet, SheetBody, SheetClose, SheetContent, SheetHead, SheetTitle, Shee
 import { Button } from "@/components/ui/button"
 import photos from "@/content/photos.json"
 import { BrandMark } from "@/components/brand-mark"
+import { rose } from "@/components/globe/globe-antique"
 
 /** Run 24: what's written on a print's bottom border, lowercase and casual: the year and the place's own name
  *  ("Kansai Gaidai, Hirakata" → "2017 · hirakata", "Australia (Brisbane)" → "2022 · brisbane") */
@@ -204,6 +205,26 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
   const [view, setView] = useState<View>(base)
   const jumped = useRef(false)
   const zoom = useRef<((f: number) => void) | null>(null)
+  // 28 Oct (Jehan): the compass and + / − hang off the frame (the globe's or the map's), not the screen: the gap each
+  // side of the frame goes on the stage as --frame-l / --frame-r, so they sit just outside its bottom corners
+  const stage = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = stage.current
+    if (!el || typeof ResizeObserver === "undefined") return
+    const frameOf = () => el.querySelector<HTMLElement>(".x-g24-box, .journey-flat")
+    const measure = () => {
+      const f = frameOf(); if (!f) return
+      const a = el.getBoundingClientRect(), b = f.getBoundingClientRect()
+      el.style.setProperty("--frame-l", `${Math.max(0, Math.round(b.left - a.left))}px`)
+      el.style.setProperty("--frame-r", `${Math.max(0, Math.round(a.right - b.right))}px`)
+      el.style.setProperty("--frame-b", `${Math.max(0, Math.round(a.bottom - b.bottom))}px`)
+    }
+    const ro = new ResizeObserver(measure); ro.observe(el)
+    const mo = new MutationObserver(() => { measure(); const f = frameOf(); if (f) ro.observe(f) })
+    mo.observe(el, { childList: true, subtree: true })
+    measure(); const f = frameOf(); if (f) ro.observe(f)
+    return () => { ro.disconnect(); mo.disconnect() }
+  }, [])
   const cities = journeys ?? NONE
   const go = (key: string) => { jumped.current = true; setOpen(false); onOpenChange?.(false); onPin(key) }
   return (
@@ -216,7 +237,9 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
         <div className="journey-viewer-bar">
           <Segmented label={t.journey.view} size="sm" className="journey-mode" value={view} onChange={setView} items={[{ value: "globe", label: t.journey.globe }, { value: "flat", label: t.journey.flat }]} />
         </div>
-        <div className="journey-viewer-stage" data-view={view}>
+        <div ref={stage} className="journey-viewer-stage" data-view={view}>
+          {/* 28 Oct (Jehan): the compass rose just outside the frame's bottom-left corner (the look's own is hidden here) */}
+          <div className="journey-rose" aria-hidden>{rose}</div>
           {/* Run 27: the antique globe, its paper curling between the globe and the map you drag round the world; a
               phone that starts flat keeps the painted flat map with + and − */}
           {view === "flat" && base === "flat"
