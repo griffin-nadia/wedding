@@ -775,6 +775,12 @@ svg.lucide { stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; 
 @keyframes step-back { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .step-fwd, .step-back, .sheet[data-state="open"] { animation: fade-in var(--duration-fast) linear both; } }
 /* Filled fields show a small moss tick on the right */
+/* 28 Oct (Jehan): the date fields show the same calendar icon on every browser (Android Chrome's default is a chevron). The
+   native control stays underneath it, so tapping anywhere still opens the picker. */
+.field[type="date"] { padding-right: 44px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23727354' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-size: 20px; background-position: right 14px center; }
+.field[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; cursor: pointer; }
+.field[type="date"] { position: relative; }
+:root[data-theme="lantern"] .field[type="date"] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a37e' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3C/svg%3E"); }
 .field[data-filled="true"]:not([type="date"]):not(textarea) { padding-right: 44px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23727354' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-size: 18px; background-position: right 16px center; }
 .field[aria-invalid="true"] { background-image: none !important; }
 .chip-tick { animation: tick-in var(--duration-fast) var(--ease-paper) both; }
@@ -1154,7 +1160,7 @@ svg.lucide { stroke-width: 1.5; }
 .journey-key { display: inline-block; width: 18px; height: 0; border-top: 2px solid; border-radius: 1px; } /* run 27: the antique globe's lines are solid inked routes */
 .journey-key-nadia { border-color: var(--journey-nadia); }
 .journey-key-griffin { border-color: var(--journey-griffin); }
-.journey-key-guests { border-color: var(--journey-guest); opacity: 0.8; }
+.journey-key-guests { border-color: var(--journey-guest); border-top-style: dashed; opacity: 0.8; } /* 28 Oct: dashed, as the lines */
 .journey-key-you { border-top-style: solid; border-top-width: 2px; border-color: var(--journey-line-you); }
 [data-theme="lantern"] .journey-hifi :is(.journey-route, .journey-guest, .journey-you) { filter: drop-shadow(0 0 2.5px currentColor); }
 [data-theme="lantern"] .journey-hifi .journey-route-nadia { color: var(--journey-nadia); }
