@@ -16,7 +16,7 @@ const COL = {
 const css = `
 .x-gan-rose { position: absolute; left: 4%; bottom: 4%; width: clamp(44px, 12%, 72px); height: auto; color: var(--ink); opacity: .75; pointer-events: none; }
 `
-const rose = (
+export const rose = (
   <svg className="x-gan-rose" viewBox="-50 -50 100 100" aria-hidden>
     <circle r="30" fill="none" stroke="currentColor" strokeWidth="1" />
     <circle r="26" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1 2" />
