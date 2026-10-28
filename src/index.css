@@ -1615,7 +1615,8 @@ svg.lucide { stroke-width: 1.5; }
   .story-slide-map .story-media { flex: 0 0 auto; }
   /* Run 26c (the review): a tilted print's low corner reached its own title on a big laptop; the print stands a little
      higher, by its tilt's drop, so it never covers the words */
-  .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { margin-bottom: calc(var(--print-h) * 0.08); }
+  /* 28 Oct: the lift under the print comes out of the stop's height, not on top of it, so a chapter is the map stop's height */
+  .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--stop-h) - var(--print-h) * 0.08); margin-bottom: calc(var(--print-h) * 0.08); }
   .story-controls { justify-content: center; gap: var(--space-5); }
 }
 /* Big screens (run 21, 1920 to 2560): the spread grows with the screen, prints and words together, up to two prints
