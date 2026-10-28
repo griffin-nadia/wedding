@@ -198,11 +198,11 @@ export function JourneyFlat({ you, cities, label, children, pins = [], onPin, on
   const others = guests.map((c) => flatPoint([c.lat, c.lon]))
   // Jehan, 27 Oct: one line per household from a city, fanned in height (the globe's fan), so none hides another
   // Near a home start they bow the other way from the N or G line (as "you" does), so none sits under it
-  const fanned = guests.flatMap((c, gi) => { const n = Math.min(3, Math.max(1, Math.round(c.n))); return Array.from({ length: n }, (_, k) => ({ gi, p: others[gi], lift: (nearHome(c.lat, c.lon) ? -0.12 : 0.15) * fan(k, n) })) })
+  const fanned = guests.flatMap((c, gi) => { const n = Math.min(3, Math.max(1, Math.round(c.n))); return Array.from({ length: n }, (_, k) => ({ gi, p: others[gi], lift: (nearHome(c.lat, c.lon) ? 0.42 : 0.15) * fan(k, n) /* near a home start: past the N line, the opposite side to you */ })) })
   // Their own line, unless they're in Kyoto already (no line to draw)
   const mine = you && you.id !== "jp" && you.lat != null && you.lon != null && Math.hypot(you.lat - KYOTO[0], you.lon - KYOTO[1]) > 0.5 ? flatPoint([you.lat, you.lon]) : null
   // Beside a home line's start, their line bows the other way, so the two part and both read
-  const mineLift = you?.lat != null && you.lon != null && nearHome(you.lat, you.lon) ? -0.1 : 0.25
+  const mineLift = you?.lat != null && you.lon != null && nearHome(you.lat, you.lon) ? -0.3 : 0.25 // 28 Oct: well clear of the N line
   // Run 26c: every time here is run 26's times PACE (journey-names.ts), set on each line, so the planes keep pace
   const ms = (x: number) => Math.round(x * PACE)
   const youDelay = ms(900 + fanned.length * 120)

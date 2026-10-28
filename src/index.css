@@ -1615,7 +1615,8 @@ svg.lucide { stroke-width: 1.5; }
   .story-slide-map .story-media { flex: 0 0 auto; }
   /* Run 26c (the review): a tilted print's low corner reached its own title on a big laptop; the print stands a little
      higher, by its tilt's drop, so it never covers the words */
-  .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { margin-bottom: calc(var(--print-h) * 0.08); }
+  /* 28 Oct: the lift under the print comes out of the stop's height, not on top of it, so a chapter is the map stop's height */
+  .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--stop-h) - var(--print-h) * 0.08); margin-bottom: calc(var(--print-h) * 0.08); }
   .story-controls { justify-content: center; gap: var(--space-5); }
 }
 /* Big screens (run 21, 1920 to 2560): the spread grows with the screen, prints and words together, up to two prints
@@ -1914,6 +1915,8 @@ g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
 /* Run 27: the map and its key together in the middle of the screen, the toggle staying at the top */
 .journey-viewer-stage { grid-row: 3; grid-column: 1; }
 .journey-viewer .globe-zoom { grid-column: 1; }
+.journey-viewer-foot { grid-column: 1; }
+.sheet.journey-viewer { grid-template-columns: 100%; }
 .journey-viewer-foot { grid-row: 4; }
 .journey-viewer-bar { display: flex; align-items: center; justify-content: center; height: 64px; }
 .journey-viewer .segmented.journey-mode .segmented-item { min-height: 40px; padding-inline: var(--space-4); font-size: 14px; }
@@ -1938,12 +1941,15 @@ g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
 /* Phones (Jehan, 27 Oct): the globe fills the width and the empty paper above and below goes; + and − leave the stage
    for a row beside the key, so nothing sits over the globe or clips the map's edge; the compass rose is laptop only */
 @media (max-width: 767px) {
-  .sheet.journey-viewer { grid-template-rows: 64px minmax(0, 1fr) auto auto minmax(0, 1fr); --flat-h: calc(100dvh - 220px); }
-  .journey-viewer .journey-globe { height: auto; aspect-ratio: 1; max-height: calc(100dvh - 220px); }
-  .journey-viewer .globe-zoom { position: static; flex-direction: row; justify-content: center; gap: var(--space-3); grid-row: 4; margin-top: var(--space-3); }
+  /* 28 Oct: one column, in order: the switch, the frame (full width), + and − in a row, the key and count, then air */
+  .sheet.journey-viewer { grid-template-columns: 100%; grid-template-rows: 64px auto auto auto minmax(0, 1fr); --flat-h: calc(100dvh - 240px); }
+  .journey-viewer-stage { grid-row: 2; grid-column: 1; width: 100%; }
+  .journey-viewer .journey-look, .journey-viewer .journey-look .x-g24-box { width: 100%; }
+  .journey-viewer .journey-flat { width: 100%; }
+  .journey-viewer .globe-zoom { grid-row: 3; grid-column: 1; justify-self: center; align-self: start; position: static; flex-direction: row; gap: var(--space-3); margin-top: var(--space-3); right: auto; bottom: auto; }
   .journey-viewer .globe-zoom .utility-btn { width: 44px; height: 44px; }
+  .journey-viewer-foot { grid-row: 4; grid-column: 1; padding-top: var(--space-2); }
   .journey-viewer .journey-look .x-gan-rose, .journey-rose { display: none; }
-  .journey-viewer .globe-zoom { right: auto; bottom: auto; }
 }
 /* Chapter pins (run 25, the lab's stamp): a paper disc with an ink ring and the chapter's number, 20px, a 44px target */
 .chapter-pins { position: absolute; inset: 0; z-index: 2; pointer-events: none; }

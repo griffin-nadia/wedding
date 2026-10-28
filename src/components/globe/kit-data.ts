@@ -108,6 +108,8 @@ export function trips(cities: Journey[], crowd: Journey[], you: Journey | null, 
     ...cities.filter((c) => c.n > 0).flatMap((c, i) => { const g = guest(c, false, i, opts.sample ?? true); const n = Math.min(3, Math.max(1, Math.round(c.n))); return Array.from({ length: n }, (_, k) => ({ ...g, id: k ? `${g.id}-${k}` : g.id, lift: fan(k, n), sway: g.near ? 0.6 + sway(k, n) * 0.5 : sway(k, n), twin: k > 0 })) }), // up to 3 lines a city, however many people (28 Oct)
     ...crowd.map((c, i) => guest(c, true, i)),
     // Run 27, as the site: their "You" sits under the N when they're from Brisbane
-    ...(you ? [{ id: "you", kind: "you" as const, lat: you.lat, lon: you.lon, label: names.you ?? you.name, always: false, demo: false, ...(Math.hypot(you.lat - BRISBANE.lat, you.lon - BRISBANE.lon) < NEAR ? { near: true, nudge: [0, 22] as [number, number] } : spot(you)) }] : []),
+    // 28 Oct (Jehan): from a home city, their line is its own: a touch higher than the N or G line and bowing the
+    // other way to the guest lines, so the three read apart (N up the middle, you one side, guests the other)
+    ...(you ? [{ id: "you", kind: "you" as const, lat: you.lat, lon: you.lon, label: names.you ?? you.name, always: false, demo: false, ...(Math.hypot(you.lat - BRISBANE.lat, you.lon - BRISBANE.lon) < NEAR ? { near: true, nudge: [0, 22] as [number, number], lift: 3.3, sway: -0.9 } : spot(you).near ? { ...spot(you), lift: 3.3, sway: -0.9 } : spot(you)) }] : []),
   ]
 }
