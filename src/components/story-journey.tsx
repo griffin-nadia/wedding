@@ -215,10 +215,12 @@ export function JourneyViewer({ trigger, pins, onPin, onOpenChange }: { trigger:
     const frameOf = () => el.querySelector<HTMLElement>(".x-g24-box, .journey-flat")
     const measure = () => {
       const f = frameOf(); if (!f) return
+      // On the sheet (the stage's parent), so the zoom buttons beside the stage can read them too
+      const host = (el.closest(".journey-viewer") as HTMLElement | null) ?? el
       const a = el.getBoundingClientRect(), b = f.getBoundingClientRect()
-      el.style.setProperty("--frame-l", `${Math.max(0, Math.round(b.left - a.left))}px`)
-      el.style.setProperty("--frame-r", `${Math.max(0, Math.round(a.right - b.right))}px`)
-      el.style.setProperty("--frame-b", `${Math.max(0, Math.round(a.bottom - b.bottom))}px`)
+      host.style.setProperty("--frame-l", `${Math.max(0, Math.round(b.left - a.left))}px`)
+      host.style.setProperty("--frame-r", `${Math.max(0, Math.round(a.right - b.right))}px`)
+      host.style.setProperty("--frame-b", `${Math.max(0, Math.round(a.bottom - b.bottom))}px`)
     }
     const ro = new ResizeObserver(measure); ro.observe(el)
     const mo = new MutationObserver(() => { measure(); const f = frameOf(); if (f) ro.observe(f) })
