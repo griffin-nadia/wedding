@@ -114,7 +114,7 @@ export const en = {
     open: "Full screen", openLabel: "Open the map full screen", loading: "Drawing the map…", drag: "Drag, or use the arrow keys, to move it.", guestsFrom: "Where guests are coming from", close: "Close the map", view: "Globe or map", globe: "Globe", flat: "Map",
     pin: (n: number, title: string, place: string) => `${n ? `Chapter ${n}: ` : ""}${title}, ${place}. Go to its stop`,
     legend: { nadia: NADIA, griffin: GRIFFIN, guests: "Guests", you: "Your line" },
-    count: (n: number) => (n === 1 ? "1 of you is on the way so far" : `${n} of you are on the way so far`), // 28 Oct: people who've said coming
+    count: (n: number) => (n === 0 ? "No one's locked in yet. You could be first." : n === 1 ? "1 goose locked in so far" : `${n} geese locked in so far`), // 28 Oct (Jehan): their voice (two silly geese); people who've said coming
     seeList: "See as a list", seeMap: "See the map",
     list: { nadia: `${NADIA}: Brisbane to Kyoto`, griffin: `${GRIFFIN}: Victoria, Canada to Kyoto`, you: (city: string) => `Your line: ${city} to Kyoto`, city: (city: string, n: number) => `${city}: ${n} ${n === 1 ? "line" : "lines"}` },
   },
