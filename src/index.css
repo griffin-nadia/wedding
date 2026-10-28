@@ -1955,7 +1955,6 @@ g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
   .journey-viewer-foot { grid-row: 4; grid-column: 1; padding-top: var(--space-2); }
   .journey-viewer .journey-look .x-gan-rose, .journey-rose { display: none; }
 }
-}
 /* Chapter pins (run 25, the lab's stamp): a paper disc with an ink ring and the chapter's number, 20px, a 44px target */
 .chapter-pins { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .chapter-pin-at { position: absolute; left: var(--x); top: var(--y); width: 0; height: 0; transition: opacity var(--duration-fast) linear; }
