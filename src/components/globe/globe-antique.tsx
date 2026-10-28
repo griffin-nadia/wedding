@@ -39,8 +39,8 @@ export const look: Look = {
   // Run 27 (Jehan): the routes stronger against the faded paper, each mode its own (3:1 or more on the sea and the land,
   // the household's gold too; tokens.css --journey-* keep the key the same)
   inks: (night) => night
-    ? { nadia: "#f6a27c", griffin: "#b3cf8f", guest: "#e3cfa2", you: "#f7c948", ink: "#efdfbf" }
-    : { nadia: "#932f15", griffin: "#3e5a2a", guest: "#5b4126", you: "#a86a00", ink: "#3d2a18" },
+    ? { nadia: "#f6a27c", griffin: "#b3cf8f", guest: "#e3cfa2", you: "#f2d35a", ink: "#efdfbf" }
+    : { nadia: "#932f15", griffin: "#3e5a2a", guest: "#5b4126", you: "#b58a00", ink: "#3d2a18" },
   weight: 1.15,
   decor: rose,
   css,

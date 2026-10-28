@@ -162,7 +162,7 @@ export function Swatch({ style, colour, inks, width, back }: { style: LineStyle;
 }
 
 /** Run 27: the household's own line is as strong as the home lines */
-export const WIDTH: Record<Kind, number> = { nadia: 2.4, griffin: 2.4, guest: 1.1, you: 2.8 } // 28 Oct: you a touch heavier, guests lighter and dashed
+export const WIDTH: Record<Kind, number> = { nadia: 2.4, griffin: 2.4, guest: 1.1, you: 2.4 } // 28 Oct: you the same weight as N and G, just yellower; guests lighter and dashed
 
 /** The land as a mask (white land on black, 2:1), for the Land opacity slider: one per page */
 let landMask: Promise<HTMLCanvasElement> | null = null
