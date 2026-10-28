@@ -1870,7 +1870,7 @@ b.home-mark-you { width: auto; padding-inline: 4px; } /* the globe's HTML badge;
 .journey-flat-lines .journey-route { stroke-width: calc(2.5px * var(--k, 1)); stroke-dasharray: none; stroke-linecap: round; opacity: 1; }
 .journey-flat-lines .journey-route-nadia { stroke: var(--journey-nadia); }
 .journey-flat-lines .journey-route-griffin { stroke: var(--journey-griffin); }
-.journey-flat-lines .journey-guest { stroke: var(--journey-guest); stroke-width: calc(1.2px * var(--k, 1)); stroke-dasharray: none; stroke-linecap: round; opacity: 0.7; }
+.journey-flat-lines .journey-guest { stroke: var(--journey-guest); stroke-width: calc(1.1px * var(--k, 1)); stroke-dasharray: calc(3px * var(--k, 1)) calc(3.5px * var(--k, 1)); stroke-linecap: round; opacity: 0.7; } /* 28 Oct: dashed, apart from the solid home lines */
 .journey-flat-lines .journey-you:not(.journey-you-edge) { stroke: var(--journey-line-you); }
 .journey-flat-lines .journey-you-dot { fill: var(--journey-line-you); }
 .journey-flat-lines .journey-guest-bundle { stroke-width: calc(2.4px * var(--k, 1)); }
@@ -1941,15 +1941,20 @@ g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
 /* Phones (Jehan, 27 Oct): the globe fills the width and the empty paper above and below goes; + and − leave the stage
    for a row beside the key, so nothing sits over the globe or clips the map's edge; the compass rose is laptop only */
 @media (max-width: 767px) {
-  /* 28 Oct: one column, in order: the switch, the frame (full width), + and − in a row, the key and count, then air */
-  .sheet.journey-viewer { grid-template-columns: 100%; grid-template-rows: 64px auto auto auto minmax(0, 1fr); --flat-h: calc(100dvh - 240px); }
-  .journey-viewer-stage { grid-row: 2; grid-column: 1; width: 100%; }
-  .journey-viewer .journey-look, .journey-viewer .journey-look .x-g24-box { width: 100%; }
+  /* 28 Oct (Jehan): one column: the switch, then the frame taking all the height down to the controls (so zoomed in
+     it fills tall, not just wide), then + and −, the key and the count pinned at the bottom */
+  .sheet.journey-viewer { grid-template-columns: 100%; grid-template-rows: 64px minmax(0, 1fr) auto auto; padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); --flat-h: calc(100dvh - 240px); }
+  .journey-viewer-stage { grid-row: 2; grid-column: 1; width: 100%; height: 100%; min-height: 0; display: grid; place-items: center; }
+  /* The frame keeps its shape (the camera assumes it): as wide as the screen or as tall as the room, whichever is smaller, centred */
+  .journey-viewer .journey-look { width: min(100%, calc((100dvh - 240px) * 1.25)); height: auto; display: grid; place-items: center; }
+  .journey-viewer .journey-look .x-g24-box { width: 100%; }
+  .journey-viewer .journey-globe { width: min(100%, calc(100dvh - 240px)); height: auto; aspect-ratio: 1; max-height: none; margin-inline: 0; }
   .journey-viewer .journey-flat { width: 100%; }
-  .journey-viewer .globe-zoom { grid-row: 3; grid-column: 1; justify-self: center; align-self: start; position: static; flex-direction: row; gap: var(--space-3); margin-top: var(--space-3); right: auto; bottom: auto; }
+  .journey-viewer .globe-zoom { grid-row: 3; grid-column: 1; justify-self: center; align-self: end; position: static; flex-direction: row; gap: var(--space-3); margin-top: var(--space-3); right: auto; bottom: auto; }
   .journey-viewer .globe-zoom .utility-btn { width: 44px; height: 44px; }
   .journey-viewer-foot { grid-row: 4; grid-column: 1; padding-top: var(--space-2); }
   .journey-viewer .journey-look .x-gan-rose, .journey-rose { display: none; }
+}
 }
 /* Chapter pins (run 25, the lab's stamp): a paper disc with an ink ring and the chapter's number, 20px, a 44px target */
 .chapter-pins { position: absolute; inset: 0; z-index: 2; pointer-events: none; }

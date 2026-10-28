@@ -162,7 +162,7 @@ export function Swatch({ style, colour, inks, width, back }: { style: LineStyle;
 }
 
 /** Run 27: the household's own line is as strong as the home lines */
-export const WIDTH: Record<Kind, number> = { nadia: 2.4, griffin: 2.4, guest: 1.3, you: 2.4 }
+export const WIDTH: Record<Kind, number> = { nadia: 2.4, griffin: 2.4, guest: 1.1, you: 2.8 } // 28 Oct: you a touch heavier, guests lighter and dashed
 
 /** The land as a mask (white land on black, 2:1), for the Land opacity slider: one per page */
 let landMask: Promise<HTMLCanvasElement> | null = null
@@ -399,7 +399,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
               const k = ((s.clock - starts[j] - dur) / dur) % (1.8 + (j % 3) * 0.25)
               if (k < 1) at = Math.round(k * (N - 1))
             }
-            const o = { colour: inks[trip.kind], width: WIDTH[trip.kind] * weight, ink: inks.ink, paper: inks.paper, head: !reduce && (p < 1 || at != null), at, time: s.clock, icon: tune.icon, iconSize: tune.iconSize }
+            const o = { colour: inks[trip.kind], width: WIDTH[trip.kind] * weight, dashed: trip.kind === "guest", ink: inks.ink, paper: inks.paper, head: !reduce && (p < 1 || at != null), at, time: s.clock, icon: tune.icon, iconSize: tune.iconSize }
             g.globalAlpha = trip.kind === "guest" ? 0.7 : 1
             // The household's own line gets a soft darker edge under it, so the gold holds on pale paper
             if (trip.kind === "you") { g.globalAlpha = 0.3; drawLine(g, style, xs, ys, al, n, N, { ...o, colour: inks.ink, width: o.width + 2, head: false }); g.globalAlpha = 1 }

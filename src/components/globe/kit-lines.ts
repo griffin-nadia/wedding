@@ -15,6 +15,8 @@ export const iconFor = (s: LineStyle, icon: Icon = "auto"): Exclude<Icon, "auto"
 
 export type LineDraw = {
   colour: string
+  /** 28 Oct: a plain dashed stroke instead of the look's line (the guest lines, so they read apart from the solid home lines) */
+  dashed?: boolean
   /** CSS pixels (the canvas is already scaled for the pixel ratio) */
   width: number
   /** The look's ink: the leaf, the plane's fold and the knots' outline */
@@ -74,6 +76,7 @@ function ribbon(g: CanvasRenderingContext2D, xs: ArrayLike<number>, ys: ArrayLik
 function run(g: CanvasRenderingContext2D, style: LineStyle, xs: ArrayLike<number>, ys: ArrayLike<number>, a: number, b: number, total: number, o: LineDraw) {
   const w = o.width, k = o.halo ? 3.4 : 1
   g.strokeStyle = o.colour; g.fillStyle = o.colour; g.lineCap = "round"; g.lineJoin = "round"
+  if (o.dashed && !o.halo) { g.lineWidth = w; g.setLineDash([w * 2.2, w * 2.6]); path(g, xs, ys, a, b); g.stroke(); return }
   if (style === "ink") return ribbon(g, xs, ys, a, b, total, w * 1.25 * k)
   if (o.halo && style === "thread") { g.lineWidth = w * k; g.setLineDash([]); path(g, xs, ys, a, b); g.stroke(); return }
   if (style === "thread") {
