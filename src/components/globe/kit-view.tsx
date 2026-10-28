@@ -194,7 +194,10 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
   const [open, setOpen] = useState<string | null>(null)
   const [focusAt, setFocusAt] = useState(0)
   // Everything the frame loop reads, kept in one place so a knob or the toggle never rebuilds the globe
-  const st = useRef({ lon: mode === "flat" ? FLAT_LON : face.lon, tilt: look.tilt == null || face !== FACE ? face.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, z: 1, zt: 1, pinch: null as null | { d: number; z: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
+  // 28 Oct (Jehan): full screen on a phone, the globe starts a touch closer, so it fills its 5:4 frame instead of
+  // sitting as a small disc in it (the frame's shape is the camera's; a taller frame would stretch the globe)
+  const z0 = size === "full" && mode !== "flat" && typeof matchMedia !== "undefined" && matchMedia("(max-width: 767px)").matches ? 1.3 : 1
+  const st = useRef({ lon: mode === "flat" ? FLAT_LON : face.lon, tilt: look.tilt == null || face !== FACE ? face.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, z: z0, zt: z0, pinch: null as null | { d: number; z: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
   const live = useRef({ arcs, style, open, inks, tune })
   live.current = { arcs, style, open, inks, tune }
   // A new line style, crowd or travelling icon draws the lines again from the start; any other tuning redraws
