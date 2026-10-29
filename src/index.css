@@ -1630,7 +1630,8 @@ svg.lucide { stroke-width: 1.5; }
 /* Big screens (run 21, 1920 to 2560): the spread grows with the screen, prints and words together, up to two prints
    side by side in the card's one width, so no empty bands above and below small prints */
 @media (min-width: 1600px) and (min-height: 960px) {
-  .story-slide { --print-h: min(36svh, 400px); --caption-h: 3.25rem; font-size: clamp(1rem, 0.55rem + 0.45vw, 1.25rem); gap: var(--space-5); }
+  /* 29 Oct (Jehan): the words stay at the site's Body size (16) like every other page; only the prints grow */
+  .story-slide { --print-h: min(36svh, 400px); --caption-h: 3.25rem; gap: var(--space-5); }
 }
 
 /* Shorter laptop screens: smaller names and tighter blocks, so the whole card still fits */

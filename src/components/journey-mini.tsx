@@ -145,10 +145,11 @@ export function GuestMap({ you, flying, label, listable = true }: { you: City | 
             {cities.map(([c, n]) => <li key={c}>{t.journey.list.city(name(c), n)}</li>)}
           </ul>
         : <><JourneyMini you={you} counts={flying?.counts} cities={flying?.cities} label={label} /><JourneyLegend you={Boolean(you)} /></>}
-      {(listable || told) && <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        {told ? <p className="text-small text-muted-foreground">{t.journey.count(flying!.told)}</p> : <span />}
+      {/* 29 Oct (Jehan): the row is always there (blank until the count arrives), so nothing jumps */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <p className="text-small text-muted-foreground">{told ? t.journey.count(flying!.told) : "\u00a0"}</p>
         {listable && <button type="button" className="btn-text min-h-11" onClick={() => setList((v) => !v)}>{list ? t.journey.seeMap : t.journey.seeList}</button>}
-      </div>}
+      </div>
     </div>
   )
 }
