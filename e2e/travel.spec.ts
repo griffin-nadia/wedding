@@ -58,9 +58,12 @@ test("taps land in the right place: sections under the tab row, opened rows on s
     await expect.poll(() => page.evaluate((id) => {
       const row = document.querySelector(".jump-links")!.getBoundingClientRect(), sec = document.getElementById(id)!.getBoundingClientRect()
       const ul = document.querySelector(".jump-links ul")!.getBoundingClientRect(), a = document.querySelector(`.jump-link[href="#${id}"]`)!
-      const ar = a.getBoundingClientRect()
-      return { gap: Math.round(sec.top - row.bottom), current: a.hasAttribute("aria-current"), inView: ar.left >= ul.left - 1 && ar.right <= ul.right + 1 }
-    }, id), id).toEqual({ gap: 8, current: true, inView: true })
+      const ar = a.getBoundingClientRect(), s = document.querySelector(".letter-scroll")!
+      // 29 Oct: the last section is short and no longer padded to the card's height, so it lands as far as the card
+      // scrolls (its end) rather than under the row
+      const atEnd = s.scrollTop + s.clientHeight >= s.scrollHeight - 2, gap = Math.round(sec.top - row.bottom)
+      return { landed: gap === 8 || (id === "on-the-day" && atEnd && gap >= 8), current: a.hasAttribute("aria-current"), inView: ar.left >= ul.left - 1 && ar.right <= ul.right + 1 }
+    }, id), id).toEqual({ landed: true, current: true, inView: true })
   }
   for (const [url, sel] of [["travel?h=sample", "#medicines"], ["faqs?h=sample", "#q6"]]) {
     await page.goto(url)
