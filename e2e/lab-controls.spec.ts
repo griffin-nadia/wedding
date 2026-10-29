@@ -45,6 +45,8 @@ test("lab: a globe look shows both views under one switch, and its tuning panel 
 
 test("lab: every globe look has the site's marks only: the Kyoto seal, G, N and You, no chapter pins or inset", async ({ page }) => {
   await page.goto("lab/lab-play.html?x=globe-papercut&view=flat")
+  // 29 Oct: the marks stay hidden until the first drawn frame places them, so wait for the paper to be painted first
+  await expect(page.locator(".x-g24-wait")).toHaveCount(0, { timeout: 30000 })
   await expect(page.locator(".x-g24-badge", { hasText: "G" }).first()).toBeVisible()
   await expect(page.locator(".x-g24-badge", { hasText: "N" }).first()).toBeVisible()
   await expect(page.locator(".x-g24-badge", { hasText: "You" }).first()).toBeVisible()

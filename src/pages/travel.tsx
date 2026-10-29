@@ -206,7 +206,11 @@ function JumpLinks({ order, labels }: { order: readonly Section[]; labels: Recor
     const free = () => { held.current = "" }
     const opts = { passive: true }
     addEventListener("touchstart", free, opts); addEventListener("wheel", free, opts); addEventListener("keydown", free)
-    return () => { io.disconnect(); removeEventListener("touchstart", free); removeEventListener("wheel", free); removeEventListener("keydown", free) }
+    // 29 Oct (Jehan): the last section is short and can't reach the top, so the card's end marks it instead
+    const sc = letterScroll()
+    const atEnd = () => { if (sc && !held.current && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2) setAt(order[order.length - 1]) }
+    sc?.addEventListener("scroll", atEnd, opts)
+    return () => { io.disconnect(); removeEventListener("touchstart", free); removeEventListener("wheel", free); removeEventListener("keydown", free); sc?.removeEventListener("scroll", atEnd) }
   }, [order])
   // On a narrow screen the strip scrolls sideways: keep the current link in view (the first and last all the way to
   // their end), and fade whichever edge has more past it
