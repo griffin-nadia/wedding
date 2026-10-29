@@ -236,6 +236,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
     setState("painting")
     el.style.setProperty("--x-g24-guest", inks.guest)
     const phone = matchMedia("(pointer: coarse)").matches
+    const full = size === "full"
     const countries = ["AU", "CA", "JP", "NZ", "GB"]
     // The paper goes on the page first (empty) while the look paints, then gets its picture
     const painting = pictureOf(look, night, phone ? 1024 : 2048, countries, inks)
@@ -257,12 +258,17 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
           rg.addColorStop(0, glow.colour); rg.addColorStop(0.25, glow.colour); rg.addColorStop(1, "transparent")
           sg.globalAlpha = 1; sg.fillStyle = rg; sg.fillRect(0, 0, 64, 64)
         }
-        let w = 0, h = 0, r = 1
+        // 29 Oct (Jehan): full screen opens at the stop's size, not zoomed in: the stop's box is 5:4, so in a taller box
+        // (a phone) the globe and the flat map start at 0.8 w/h of their 1x (the globe the same size as in the story, the
+        // whole map in view), and − can go down to that too; a laptop's wide box stays at 1x
+        let w = 0, h = 0, r = 1, fit = 1
         const size = () => {
           w = el.clientWidth; h = el.clientHeight; r = Math.min(phone ? 1.5 : 2, devicePixelRatio)
+          fit = full ? Math.min(1, (0.8 * w) / Math.max(1, h)) : 1
           cv.width = Math.round(w * r); cv.height = Math.round(h * r); paper.resize(w, h); st.current.dirty = true
         }
         size()
+        if (full) { st.current.z = st.current.zt = fit }
         const ro = new ResizeObserver(size); ro.observe(el)
         stop = () => { ro.disconnect(); paper.canvas.remove(); paper.dispose() }
         const [picture, mask] = await Promise.all([painting, maskOf()])
@@ -280,7 +286,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
           const globe = Math.PI / Math.max(160, w), flat = ((DIST - 1) * TAN * (w / Math.max(1, h)) * 2) / (FLAT * w)
           return (flat + (globe - flat) * s.m) / s.z
         }
-        const zoomTo = (z: number) => { s.zt = Math.min(ZOOM.max, Math.max(ZOOM.min, z)); s.touched = performance.now(); s.dirty = true }
+        const zoomTo = (z: number) => { s.zt = Math.min(ZOOM.max, Math.max(Math.min(ZOOM.min, fit), z)); s.touched = performance.now(); s.dirty = true }
         if (zoomable && zoomRef) zoomRef.current = (f) => zoomTo(s.zt * f)
         // Two fingers pinch: the zoom follows the spread between them (and the drag stops)
         const fingers = new Map<number, [number, number]>()

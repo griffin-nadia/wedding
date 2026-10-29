@@ -57,7 +57,8 @@ test("the stop shows the globe; Full screen opens it with Globe / Map, and close
   await expect(dialog.locator(".chapter-pin")).toHaveCount(0)
   // The sample's 8 cities: Australia's 4 are one bundle, so 5 guest dots, each a button named for where it is
   await expect(full.locator(".x-g24-dot")).toHaveCount(5)
-  // + magnifies (the seal moves away from the middle), − goes below where it opened
+  // + magnifies (the seal moves away from the middle), − goes back to where it opened or below (29 Oct: on a phone it
+  // opens at the stop's size, which is also as far out as − goes)
   const seal = () => full.locator(".x-g24-mark").first().evaluate((e) => { const m = new DOMMatrix(getComputedStyle(e).transform); return [m.e, m.f] })
   const box0 = (await full.boundingBox())!, mid = [box0.width / 2, box0.height / 2]
   const dist = async () => { const [x, y] = await seal(); return Math.hypot(x - mid[0], y - mid[1]) }
@@ -66,7 +67,7 @@ test("the stop shows the globe; Full screen opens it with Globe / Map, and close
   expect(await dist()).toBeGreaterThan(d0 * 1.2)
   for (let i = 0; i < 4; i++) await dialog.getByRole("button", { name: "Zoom out" }).click()
   await page.waitForTimeout(300)
-  expect(await dist()).toBeLessThan(d0)
+  expect(await dist()).toBeLessThanOrEqual(d0 + 0.5)
   // Globe / Map in one fixed spot; Map opens the same paper out flat
   const toggle = (await dialog.locator(".journey-mode").boundingBox())!
   await dialog.getByRole("radio", { name: "Map" }).click()

@@ -1160,7 +1160,8 @@ svg.lucide { stroke-width: 1.5; }
 .journey-key { display: inline-block; width: 18px; height: 0; border-top: 2px solid; border-radius: 1px; } /* run 27: the antique globe's lines are solid inked routes */
 .journey-key-nadia { border-color: var(--journey-nadia); }
 .journey-key-griffin { border-color: var(--journey-griffin); }
-.journey-key-guests { border-color: var(--journey-guest); border-top-style: dashed; opacity: 0.8; } /* 28 Oct: dashed, as the lines */
+/* 28 Oct: dashed, as the lines. 29 Oct (Jehan): drawn as short dashes (a dashed 2px border on 18px read as solid on a phone) */
+.journey-key-guests { width: 22px; height: 2px; border-top: 0; background: repeating-linear-gradient(90deg, var(--journey-guest) 0 4px, transparent 4px 7px); opacity: 0.8; }
 .journey-key-you { border-top-style: solid; border-top-width: 2px; border-color: var(--journey-line-you); }
 [data-theme="lantern"] .journey-hifi :is(.journey-route, .journey-guest, .journey-you) { filter: drop-shadow(0 0 2.5px currentColor); }
 [data-theme="lantern"] .journey-hifi .journey-route-nadia { color: var(--journey-nadia); }
