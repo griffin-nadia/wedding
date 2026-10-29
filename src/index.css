@@ -1623,10 +1623,11 @@ svg.lucide { stroke-width: 1.5; }
      higher, by its tilt's drop, so it never covers the words */
   /* 28 Oct: the lift under the print comes out of the stop's height, not on top of it, so a chapter is the map stop's height */
   .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: var(--stop-h); }
-  /* 29 Oct (Jehan): the print a touch smaller (86%) rather than the box shorter, so a tilted corner never reaches the title */
-  .story-slide:not(.story-slide-opener) .story-media > .photo-open { scale: 0.86; }
   .story-controls { justify-content: center; gap: var(--space-5); }
 }
+/* 29 Oct (Jehan): from tablets up, the print a touch smaller (86%) rather than the box shorter, so a tilted corner
+   never reaches the title (at 900 wide it touched it) */
+@media (min-width: 768px) { .story-slide:not(.story-slide-opener) .story-media > .photo-open { scale: 0.86; } }
 /* Big screens (run 21, 1920 to 2560): the spread grows with the screen, prints and words together, up to two prints
    side by side in the card's one width, so no empty bands above and below small prints */
 @media (min-width: 1600px) and (min-height: 960px) {
