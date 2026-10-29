@@ -7,7 +7,7 @@
  * both always agree. Keep the two in step if you change one.
  */
 export const FOV = 32 // degrees, vertical
-export const ASPECT = 5 / 4 // the map's box, fixed, so nothing moves when you switch
+export const ASPECT = 5 / 4 // the map's box by default (a phone's full screen can be taller, 29 Oct)
 export const TAN = Math.tan((FOV * Math.PI) / 360)
 /** The camera's distance: the globe (radius 1) fills about four fifths of the box's height */
 export const DIST = 1.25 / TAN
@@ -37,8 +37,10 @@ export function place(lat: number, dl: number, alt: number, m: number, tilt: num
 /** Screen pixels for a view-space point in a w × h box, magnified z times about the middle (run 27: the zoom, the
  *  camera's own, kit-three.ts) */
 export function project(p: number[], w: number, h: number, out: number[] = [0, 0], z = 1) {
-  const d = DIST - p[2]
-  out[0] = ((p[0] / (d * TAN * ASPECT)) * z + 1) * 0.5 * w
+  // 29 Oct: the box's own aspect (w / h), not the fixed 5:4, so a taller box on a phone shows more of the globe
+  // instead of stretching it (kit-three's camera gets the same aspect on resize)
+  const d = DIST - p[2], aspect = w / Math.max(1, h)
+  out[0] = ((p[0] / (d * TAN * aspect)) * z + 1) * 0.5 * w
   out[1] = (1 - (p[1] / (d * TAN)) * z) * 0.5 * h
   return out
 }

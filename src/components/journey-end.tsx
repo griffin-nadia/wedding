@@ -135,7 +135,9 @@ export function FlyingMap({ fly }: { fly: Flying }) {
       {/* Run 26c (the review): the "From Melbourne" line under the map is gone (their gold line says it); screen
           readers still hear where they picked */}
       {city && !pinning && <p role="status" className="sr-only">{t.flying.yours("city", city.name)}</p>}
-      {told && !pinning && <p className="text-small text-muted-foreground text-center">{t.journey.count(told.told)}</p>}
+      {/* 29 Oct (Jehan): the line keeps its row from the first paint (a blank line until the count arrives), so the
+          step doesn't jump when it does */}
+      {!pinning && <p className="text-small text-muted-foreground text-center">{told ? t.journey.count(told.told) : "\u00a0"}</p>}
     </div>
   )
 }

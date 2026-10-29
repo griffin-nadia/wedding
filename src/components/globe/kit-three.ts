@@ -61,7 +61,7 @@ export function makePaper(o: PaperOptions, pixelRatio: number) {
   if (far) far.renderOrder = 0
   return {
     canvas: renderer.domElement,
-    resize: (w: number, h: number) => { renderer.setSize(w, h, false); renderer.render(scene, camera) },
+    resize: (w: number, h: number) => { renderer.setSize(w, h, false); camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix(); renderer.render(scene, camera) },
     /** The look's picture onto the paper: its upload, then the shader's compile, each in a task of its own */
     setPicture: async (picture: HTMLCanvasElement) => {
       tex = new THREE.CanvasTexture(picture)

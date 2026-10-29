@@ -113,7 +113,7 @@ export function pictureOf(look: Look, night: boolean, width: number, countries: 
 
 export const P = "x-g24"
 export const viewCss = `
-.${P}-box { position: relative; width: min(100%, 680px); aspect-ratio: ${ASPECT}; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; border-radius: var(--radius-md, 8px); outline: 2px solid transparent; outline-offset: 4px; }
+.${P}-box { position: relative; width: min(100%, 680px); aspect-ratio: var(--box-aspect, ${ASPECT}); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; border-radius: var(--radius-md, 8px); outline: 2px solid transparent; outline-offset: 4px; }
 .${P}-box:active { cursor: grabbing; }
 .${P}-box:focus-visible { outline-color: var(--input-focus); }
 .${P}-art, .${P}-art > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -196,7 +196,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
   // Everything the frame loop reads, kept in one place so a knob or the toggle never rebuilds the globe
   // 28 Oct (Jehan): full screen on a phone, the globe starts a touch closer, so it fills its 5:4 frame instead of
   // sitting as a small disc in it (the frame's shape is the camera's; a taller frame would stretch the globe)
-  const z0 = size === "full" && mode !== "flat" && typeof matchMedia !== "undefined" && matchMedia("(max-width: 767px)").matches ? 1.3 : 1
+  const z0 = size === "full" && mode !== "flat" && typeof matchMedia !== "undefined" && matchMedia("(max-width: 767px)").matches ? 1.05 : 1
   const st = useRef({ lon: mode === "flat" ? FLAT_LON : face.lon, tilt: look.tilt == null || face !== FACE ? face.tilt : look.tilt * RAD, m: mode === "flat" ? 0 : 1, vLon: 0, vTilt: 0, drag: null as null | { id: number; x: number; y: number; t: number }, z: z0, zt: z0, pinch: null as null | { d: number; z: number }, touched: -Infinity, clock: 0, morphing: false, dirty: true })
   const live = useRef({ arcs, style, open, inks, tune })
   live.current = { arcs, style, open, inks, tune }
@@ -275,7 +275,7 @@ export function View({ look, night, inks, arcs, list, style, tune, mode, reduce,
         // finger), it coasts when let go, the tilt is clamped, and the slow turn comes back 3 s after the last touch
         const s = st.current
         const perPx = () => {
-          const globe = Math.PI / Math.max(160, w), flat = ((DIST - 1) * TAN * ASPECT * 2) / (FLAT * w)
+          const globe = Math.PI / Math.max(160, w), flat = ((DIST - 1) * TAN * (w / Math.max(1, h)) * 2) / (FLAT * w)
           return (flat + (globe - flat) * s.m) / s.z
         }
         const zoomTo = (z: number) => { s.zt = Math.min(ZOOM.max, Math.max(ZOOM.min, z)); s.touched = performance.now(); s.dirty = true }

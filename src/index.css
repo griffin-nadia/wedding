@@ -1407,7 +1407,7 @@ svg.lucide { stroke-width: 1.5; }
   .story-kid .story-print { --print-h: min(45cqh, 60cqw); }
   .story-kid-him .story-print { --tilt: -6deg; }
   .story-kid-her .story-print { --tilt: 6deg; }
-  .story-kid-him { left: 2%; top: -2%; } /* run 27 (Jehan): both a little higher, so hers clears the dots (30px at 390) */
+  .story-kid-him { left: 2%; top: 1%; } /* 29 Oct (Jehan): its tilted top corner stays inside the stop (the stop clips) */
   /* Run 27 (Nadia): hers sits lower and further right, so "griffin" on his print's border shows */
   .story-kid-her { right: 0; top: auto; bottom: 6%; } /* run 27: higher again, so its shadow clears the card's edge */
   .story-kid .story-print { --print-h: min(43cqh, 57cqw); }
@@ -1622,13 +1622,16 @@ svg.lucide { stroke-width: 1.5; }
   /* Run 26c (the review): a tilted print's low corner reached its own title on a big laptop; the print stands a little
      higher, by its tilt's drop, so it never covers the words */
   /* 28 Oct: the lift under the print comes out of the stop's height, not on top of it, so a chapter is the map stop's height */
-  .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: calc(var(--stop-h) - var(--print-h) * 0.08); margin-bottom: calc(var(--print-h) * 0.08); }
+  .story-slide:not(.story-slide-map):not(.story-slide-opener) .story-media { height: var(--stop-h); }
+  /* 29 Oct (Jehan): the print a touch smaller (86%) rather than the box shorter, so a tilted corner never reaches the title */
+  .story-slide:not(.story-slide-opener) .story-media > .photo-open { scale: 0.86; }
   .story-controls { justify-content: center; gap: var(--space-5); }
 }
 /* Big screens (run 21, 1920 to 2560): the spread grows with the screen, prints and words together, up to two prints
    side by side in the card's one width, so no empty bands above and below small prints */
 @media (min-width: 1600px) and (min-height: 960px) {
-  .story-slide { --print-h: min(36svh, 400px); --caption-h: 3.25rem; font-size: clamp(1rem, 0.55rem + 0.45vw, 1.25rem); gap: var(--space-5); }
+  /* 29 Oct (Jehan): the words stay at the site's Body size (16) like every other page; only the prints grow */
+  .story-slide { --print-h: min(36svh, 400px); --caption-h: 3.25rem; gap: var(--space-5); }
 }
 
 /* Shorter laptop screens: smaller names and tighter blocks, so the whole card still fits */
@@ -1947,15 +1950,14 @@ g.journey-plane .journey-plane-fold { fill: none; stroke-width: 1.1px; }
 /* Phones (Jehan, 27 Oct): the globe fills the width and the empty paper above and below goes; + and − leave the stage
    for a row beside the key, so nothing sits over the globe or clips the map's edge; the compass rose is laptop only */
 @media (max-width: 767px) {
-  /* 28 Oct (Jehan): one column: the switch, then the frame taking all the height down to the controls (so zoomed in
-     it fills tall, not just wide), then + and −, the key and the count pinned at the bottom */
+  /* 29 Oct (Jehan): one column: the switch, then the frame filling the room down to the controls (the camera follows the
+     box's shape now, so a tall box shows more globe instead of stretching it), then + and −, the key and the count */
   .sheet.journey-viewer { grid-template-columns: 100%; grid-template-rows: 64px minmax(0, 1fr) auto auto; padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); --flat-h: calc(100dvh - 240px); }
-  .journey-viewer-stage { grid-row: 2; grid-column: 1; width: 100%; height: 100%; min-height: 0; display: grid; place-items: center; }
-  /* The frame keeps its shape (the camera assumes it): as wide as the screen or as tall as the room, whichever is smaller, centred */
-  .journey-viewer .journey-look { width: min(100%, calc((100dvh - 240px) * 1.25)); height: auto; display: grid; place-items: center; }
-  .journey-viewer .journey-look .x-g24-box { width: 100%; }
-  .journey-viewer .journey-globe { width: min(100%, calc(100dvh - 240px)); height: auto; aspect-ratio: 1; max-height: none; margin-inline: 0; }
-  .journey-viewer .journey-flat { width: 100%; }
+  .journey-viewer-stage { grid-row: 2; grid-column: 1; width: 100%; height: 100%; min-height: 0; display: grid; place-items: stretch; }
+  .journey-viewer .journey-look { width: 100%; height: 100%; display: grid; place-items: stretch; }
+  .journey-viewer .journey-look .x-g24-box { width: 100%; height: 100%; --box-aspect: auto; }
+  .journey-viewer .journey-globe { width: 100%; height: 100%; aspect-ratio: auto; max-height: none; margin-inline: 0; }
+  .journey-viewer .journey-flat { width: 100%; align-self: center; }
   .journey-viewer .globe-zoom { grid-row: 3; grid-column: 1; justify-self: center; align-self: end; position: static; flex-direction: row; gap: var(--space-3); margin-top: var(--space-3); right: auto; bottom: auto; }
   .journey-viewer .globe-zoom .utility-btn { width: 44px; height: 44px; }
   .journey-viewer-foot { grid-row: 4; grid-column: 1; padding-top: var(--space-2); }
