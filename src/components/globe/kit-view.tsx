@@ -186,7 +186,7 @@ export type ViewProps = {
 export const ZOOM = { min: 0.6, max: 3 }
 
 /** One view of the look: the map's box, its paper, lines and names. Every view on a page reads the same switch and tuning. */
-export function View({ look, night, inks, arcs, list, style, tune, mode, reduce, label, face = FACE, zoomable = false, zoomRef }: ViewProps) {
+export function View({ look, night, inks, arcs, list, style, tune, mode, reduce, size, label, face = FACE, zoomable = false, zoomRef }: ViewProps) {
   const { t } = useLang()
   const box = useRef<HTMLDivElement>(null), art = useRef<HTMLDivElement>(null), layer = useRef<HTMLCanvasElement>(null), tip = useRef<HTMLDivElement>(null)
   const marks = useRef(new Map<string, HTMLElement>())
