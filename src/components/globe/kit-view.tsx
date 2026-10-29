@@ -118,9 +118,9 @@ export const viewCss = `
 .${P}-box:focus-visible { outline-color: var(--input-focus); }
 .${P}-art, .${P}-art > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .${P}-marks { position: absolute; inset: 0; pointer-events: none; }
-/* 29 Oct (Jehan): a mark is hidden until the first frame places it, so the names never flash in the corner while the
-   globe loads */
-.${P}-mark { position: absolute; left: 0; top: 0; visibility: hidden; will-change: transform; }
+/* 29 Oct (Jehan): a mark starts far off the box until the first frame places it (the loop writes its transform), so
+   the names never flash in the corner while the globe loads */
+.${P}-mark { position: absolute; left: 0; top: 0; transform: translate3d(-9999px, -9999px, 0); will-change: transform; }
 .${P}-name { position: absolute; left: 8px; top: 0; translate: 0 -50%; white-space: nowrap; padding: 1px 6px; border-radius: 4px; background: color-mix(in oklab, var(--letter-bg) 90%, transparent); color: var(--ink); font: 500 12px / 1.3 var(--font-label); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
 .${P}-mark[data-side="left"] .${P}-name { left: auto; right: 8px; }
 .${P}-pip { position: absolute; width: 7px; height: 7px; translate: -50% -50%; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 2px var(--letter-bg); }
